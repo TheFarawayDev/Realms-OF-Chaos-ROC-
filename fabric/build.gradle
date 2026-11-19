@@ -1,0 +1,56 @@
+plugins {
+	id 'net.fabricmc.fabric-loom' version "${loom_version}"
+	id 'maven-publish'
+}
+
+version = "${project.mod_version}+mc${project.minecraft_version}"
+group = 'com.thefarawaydev.realmsofchaos'
+base { archivesName = 'realms-of-chaos-fabric' }
+
+loom {
+	splitEnvironmentSourceSets()
+	mods {
+		"realms_of_chaos" {
+			sourceSet sourceSets.main
+			sourceSet sourceSets.client
+		}
+	}
+}
+
+// Shared (loader independent) sources and resources live in ../common
+sourceSets {
+	main {
+		java.srcDir '../common/src/main/java'
+		resources.srcDir '../common/src/main/resources'
+	}
+	client {
+		java.srcDir '../common/src/client/java'
+	}
+}
+
+dependencies {
+	minecraft "com.mojang:minecraft:${project.minecraft_version}"
+	implementation "net.fabricmc:fabric-loader:${project.loader_version}"
+	implementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_api_version}"
+}
+
+processResources {
+	def version = project.mod_version
+	inputs.property "version", version
+	filesMatching("fabric.mod.json") { expand "version": version }
+}
+
+tasks.withType(JavaCompile).configureEach {
+	it.options.release = 25
+	it.options.encoding = 'UTF-8'
+}
+
+java {
+	withSourcesJar()
+	sourceCompatibility = JavaVersion.VERSION_25
+	targetCompatibility = JavaVersion.VERSION_25
+}
+
+jar {
+	from("../LICENSE") { rename { "${it}_realms_of_chaos" } }
+}

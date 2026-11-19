@@ -1,0 +1,32 @@
+{
+	"schemaVersion": 1,
+	"id": "realms_of_chaos",
+	"version": "${version}",
+	"name": "Realms of Chaos",
+	"description": "A mashup of world mythologies forged into weapons. Start at the Hub of Realms and climb the Greek god lines of Zeus, Poseidon and Hades - 45 bosses, 45 relic weapons. By TheFarawayDev.",
+	"authors": [
+		"TheFarawayDev"
+	],
+	"contact": {
+		"homepage": "https://github.com/TheFarawayDev/Realms-OF-Chaos-ROC-",
+		"sources": "https://github.com/TheFarawayDev/Realms-OF-Chaos-ROC-",
+		"issues": "https://github.com/TheFarawayDev/Realms-OF-Chaos-ROC-/issues"
+	},
+	"license": "MIT",
+	"icon": "assets/realms_of_chaos/icon.png",
+	"environment": "*",
+	"entrypoints": {
+		"main": [
+			"com.thefarawaydev.realmsofchaos.fabric.RealmsOfChaosFabric"
+		],
+		"client": [
+			"com.thefarawaydev.realmsofchaos.fabric.RealmsOfChaosFabricClient"
+		]
+	},
+	"depends": {
+		"fabricloader": ">=0.20.1",
+		"minecraft": "~26.3",
+		"java": ">=25",
+		"fabric-api": "*"
+	}
+}

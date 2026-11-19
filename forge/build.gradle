@@ -1,0 +1,67 @@
+plugins {
+    id 'java'
+    id 'idea'
+    id 'eclipse'
+    id 'net.minecraftforge.gradle' version '[7.0.17,8)'
+}
+
+version = "${mod_version}+mc${minecraft_version}"
+group = 'com.thefarawaydev.realmsofchaos'
+base { archivesName = 'realms-of-chaos-forge' }
+
+java.toolchain.languageVersion = JavaLanguageVersion.of(25)
+
+// Shared (loader independent) sources and resources live in ../common (client code is merged into main on Forge)
+sourceSets.main {
+    java.srcDir '../common/src/main/java'
+    java.srcDir '../common/src/client/java'
+    resources.srcDir '../common/src/main/resources'
+}
+
+minecraft {
+    runs {
+        configureEach {
+            workingDir = layout.projectDirectory.dir('run')
+            systemProperty 'eventbus.api.strictRuntimeChecks', 'true'
+        }
+        register('client')
+        register('server') {
+            args '--nogui'
+        }
+    }
+}
+
+repositories {
+    minecraft.mavenizer(it)
+    maven fg.forgeMaven
+    maven fg.minecraftLibsMaven
+    mavenCentral()
+}
+
+dependencies {
+    implementation minecraft.dependency("net.minecraftforge:forge:${minecraft_version}-${forge_version}")
+    annotationProcessor 'net.minecraftforge:eventbus-validator:7.0.6'
+}
+
+tasks.withType(JavaCompile).configureEach {
+    options.encoding = 'UTF-8'
+}
+
+processResources {
+    def props = [mod_id: mod_id, mod_version: mod_version, minecraft_version: minecraft_version]
+    inputs.properties props
+    filesMatching('META-INF/mods.toml') { expand props }
+}
+
+jar {
+    manifest {
+        attributes([
+            'Specification-Title'   : 'Realms of Chaos',
+            'Specification-Vendor'  : 'TheFarawayDev',
+            'Implementation-Title'  : 'Realms of Chaos',
+            'Implementation-Version': mod_version,
+            'Implementation-Vendor' : 'TheFarawayDev'
+        ])
+    }
+    from('../LICENSE') { rename { "${it}_realms_of_chaos" } }
+}
