@@ -35,7 +35,7 @@ jobs:
           path: dist/*.zip
           if-no-files-found: error
 
-      # Every push to master publishes a GitHub release with the zip and both jars.
+      # Every push to master publishes a GitHub release with the Fabric and Forge jars.
       - name: Publish release
         if: github.ref == 'refs/heads/master'
         uses: softprops/action-gh-release@v2
@@ -44,8 +44,7 @@ jobs:
           name: Realms of Chaos 1.0.0 (build ${{ github.run_number }})
           body: |
             Realms of Chaos by TheFarawayDev for Minecraft 26.3 (Fabric and Forge).
-            Download the zip, or just the jar for your loader.
+            Download the jar for your loader: Fabric or Forge.
           files: |
-            dist/*.zip
             fabric/build/libs/realms-of-chaos-fabric-*[0-9].jar
             forge/build/libs/realms-of-chaos-forge-*[0-9].jar
