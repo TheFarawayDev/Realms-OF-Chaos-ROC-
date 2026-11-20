@@ -42,7 +42,13 @@ public class GateBlock extends Block {
 
     private void use(ServerPlayer player) {
         switch (kind) {
-            case HUB -> Teleports.toHub(player);
+            case HUB -> {
+                // a gate to the hub standing outside the realms is a woken Ruined Gate: walking through it attunes
+                if (com.thefarawaydev.realmsofchaos.world.Realm.of(player.level().dimension()) == null) {
+                    com.thefarawaydev.realmsofchaos.world.Access.attune(player);
+                }
+                Teleports.toHub(player);
+            }
             case ZEUS -> Teleports.enterTower(player, Line.ZEUS);
             case POSEIDON -> Teleports.enterTower(player, Line.POSEIDON);
             case HADES -> Teleports.enterTower(player, Line.HADES);

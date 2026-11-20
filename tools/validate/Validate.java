@@ -78,7 +78,7 @@ public class Validate {
         @SuppressWarnings("unchecked") EntityType<com.thefarawaydev.realmsofchaos.entity.GodBoss> bt = (EntityType<com.thefarawaydev.realmsofchaos.entity.GodBoss>) boss;
         ModContent.GOD_BOSS.bind(() -> bt);
         check(boss != null, "boss type");
-        check(ModContent.tabItems().size() == 2 + 45 + 12 + 1 + 22 + 4 + 12, "tab item count " + ModContent.tabItems().size());
+        check(ModContent.tabItems().size() == 2 + 45 + 12 + 6 + 1 + 22 + 4 + 14, "tab item count " + ModContent.tabItems().size());
 
         // 3. dimension types + dimensions parse with vanilla codecs
         HolderLookup.Provider lookup = VanillaRegistries.createWorldLookup();
@@ -133,6 +133,16 @@ public class Validate {
         }
         for (com.thefarawaydev.realmsofchaos.god.Signature kind : com.thefarawaydev.realmsofchaos.god.Signature.values()) {
             check(lang.contains("\"move.realms_of_chaos.kind." + kind.name().toLowerCase() + "\""), "lang move kind " + kind);
+        }
+
+        for (com.thefarawaydev.realmsofchaos.story.Story.Chapter chapter : com.thefarawaydev.realmsofchaos.story.Story.Chapter.values()) {
+            String base = "\"story.realms_of_chaos." + chapter.id();
+            check(lang.contains(base + ".title\"") && lang.contains(base + ".blurb\""), "lang story " + chapter.id());
+            for (int n = 1; n <= chapter.pages(); n++) check(lang.contains(base + ".page" + n + "\""), "lang story " + chapter.id() + " page " + n);
+        }
+        for (com.thefarawaydev.realmsofchaos.god.Line line : com.thefarawaydev.realmsofchaos.god.Line.values()) {
+            check(lang.contains("\"item.realms_of_chaos.keystone_" + line.id() + "\"") && lang.contains("\"item.realms_of_chaos.seeker_" + line.id() + "\"")
+                    && lang.contains("\"ruin.realms_of_chaos." + line.id() + "\""), "lang keystone/seeker/shrine " + line.id());
         }
 
         // 5b. relic tags: one per tower with its fifteen weapons

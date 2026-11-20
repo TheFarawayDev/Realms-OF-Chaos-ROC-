@@ -18,6 +18,11 @@ import com.thefarawaydev.realmsofchaos.item.TarotEffects;
 import com.thefarawaydev.realmsofchaos.world.Hermitage;
 import com.thefarawaydev.realmsofchaos.world.Scheduler;
 import com.thefarawaydev.realmsofchaos.world.Passages;
+import com.thefarawaydev.realmsofchaos.world.Ruins;
+import com.thefarawaydev.realmsofchaos.world.Access;
+import com.thefarawaydev.realmsofchaos.world.HubLife;
+import com.thefarawaydev.realmsofchaos.story.Story;
+import com.thefarawaydev.realmsofchaos.ui.StoryMenu;
 import com.thefarawaydev.realmsofchaos.ui.StrikeBar;
 import com.thefarawaydev.realmsofchaos.ui.SealMenu;
 import com.thefarawaydev.realmsofchaos.block.SealBlock;
@@ -315,6 +320,53 @@ public final class SelfTest {
                 Vec3 a = Realm.hubArrival(r);
                 check(level.getBlockState(BlockPos.containing(a)).isAir() && solid(level, BlockPos.containing(a).below()), "hub arrival for " + r.id());
             }
+            // the livelier hub: the Oracle's Flame, a canal bridged by the four paths, gardens, and residents
+            check(level.getBlockState(RealmBuilder.ORACLE).is(ModContent.ORACLE.get()), "the Oracle's Flame");
+            check(level.getBlockState(new BlockPos(9, 64, 8)).is(Blocks.WATER) && level.getBlockState(new BlockPos(-9, 64, -8)).is(Blocks.WATER), "the canal holds water");
+            for (BlockPos bridge : new BlockPos[]{new BlockPos(12, 64, 0), new BlockPos(-12, 64, 2), new BlockPos(0, 64, 12), new BlockPos(-3, 64, -12)}) {
+                check(solid(level, bridge) && level.getBlockState(bridge.above()).isAir(), "the paths bridge the canal at " + bridge);
+            }
+            // nothing spills: every canal block has floor or canal on all four sides and stone beneath
+            for (int x = -14; x <= 14; x++) {
+                for (int z = -14; z <= 14; z++) {
+                    BlockPos w = new BlockPos(x, 64, z);
+                    if (!level.getBlockState(w).is(Blocks.WATER)) continue;
+                    check(solid(level, w.below()), "canal has a bed at " + w);
+                    for (net.minecraft.core.Direction d : net.minecraft.core.Direction.Plane.HORIZONTAL) {
+                        check(solid(level, w.relative(d)) || level.getBlockState(w.relative(d)).is(Blocks.WATER), "canal is contained at " + w);
+                    }
+                }
+            }
+            check(level.getBlockState(new BlockPos(HubLife.GARDEN, 65, HubLife.GARDEN)).is(Blocks.CHERRY_LOG)
+                    && level.getBlockState(new BlockPos(-HubLife.GARDEN, 69, -HubLife.GARDEN)).is(Blocks.CHERRY_LEAVES), "garden trees");
+            settle(level);
+            List<net.minecraft.world.entity.Entity> residents = HubLife.residents(level);
+            List<GodBoss> echoes = residents.stream().filter(e -> e instanceof GodBoss).map(e -> (GodBoss) e).toList();
+            check(echoes.size() == 6, "six echoes stand by the gates: " + echoes.size());
+            for (Line line : Line.values()) {
+                BlockPos[] plinths = HubLife.plinths(line);
+                for (int i = 0; i < 2; i++) {
+                    BlockPos plinth = plinths[i];
+                    God expect = i == 0 ? Gods.get(line, Line.RANKS) : Gods.get(line, 1);
+                    GodBoss echo = echoes.stream().filter(e -> e.blockPosition().equals(plinth.above())).findFirst().orElse(null);
+                    check(echo != null && echo.god() == expect && echo.isStatue(), "echo of " + expect.id() + " on its plinth");
+                    check(solid(level, plinth) && level.noCollision(echo) && !echo.isInWall(), "echo of " + expect.id() + " stands free");
+                    check(echo.getMainHandItem().is(ModContent.weaponItem(expect)), "the echo holds its relic");
+                    float hp = echo.getHealth();
+                    check(!echo.hurtServer(level, level.damageSources().playerAttack(player), 50.0F) && echo.getHealth() == hp, "an echo cannot be hurt");
+                    check(!echo.isPushable() && echo.getAttributeValue(net.minecraft.world.entity.ai.attributes.Attributes.MOVEMENT_SPEED) == 0.0, "an echo stays where it is");
+                }
+            }
+            check(residents.stream().filter(e -> e instanceof net.minecraft.world.entity.npc.villager.Villager).count() == HubLife.PILGRIMS, "pilgrims");
+            check(residents.stream().filter(e -> e instanceof net.minecraft.world.entity.animal.feline.Cat).count() == HubLife.CATS, "cats");
+            check(residents.stream().filter(e -> e instanceof net.minecraft.world.entity.animal.allay.Allay).count() == HubLife.ALLAYS, "allays");
+            for (net.minecraft.world.entity.Entity e : residents) check(level.noCollision(e), "a resident is stuck in a block: " + e.getType().toShortString() + " at " + e.blockPosition());
+            // rebuilding does not double them up
+            HubLife.populate(level);
+            settle(level);
+            check(HubLife.residents(level).size() == residents.size(), "repopulating replaces the residents: " + HubLife.residents(level).size());
+            HubLife.clear(level);
+            check(HubLife.residents(level).isEmpty(), "residents cleared");
         });
 
         step("the 15 floors of a tower all differ (layout + tier)", () -> {
@@ -408,6 +460,7 @@ public final class SelfTest {
             Welcome.onJoin(player);
             check(count(player, ModContent.CHAOS_CODEX.get()) == 1, "codex given");
             check(count(player, ModContent.CHAOS_COMPASS.get()) == 1, "compass given");
+            check(Story.holds(player, Story.Chapter.PROLOGUE), "the Oracle's letter given");
             Welcome.onJoin(player);
             check(count(player, ModContent.CHAOS_CODEX.get()) == 1, "not given twice");
             check(player.getAdvancements().getOrStartProgress(server.getAdvancements().get(RocAdvancements.ROOT)).isDone(), "root advancement granted");
@@ -1311,6 +1364,233 @@ public final class SelfTest {
             for (VoodooDollItem.Pin pin : VoodooDollItem.Pin.values()) {
                 var key = ResourceKey.create(Registries.RECIPE, RealmsOfChaos.id("voodoo_doll_" + pin.name().toLowerCase()));
                 check(server.getRecipeManager().byKey(key).isPresent(), "recipe for the doll of " + pin);
+            }
+        });
+
+        step("the way in: ruins lie across the Overworld at places fixed by the seed", () -> {
+            long seed = level.getSeed();
+            java.util.Random random = new java.util.Random(7);
+            for (Ruins.Kind kind : Ruins.Kind.values()) {
+                for (int i = 0; i < 40; i++) {
+                    int rx = random.nextInt(41) - 20, rz = random.nextInt(41) - 20;
+                    Ruins.Site a = Ruins.site(seed, kind, rx, rz);
+                    check(a.equals(Ruins.site(seed, kind, rx, rz)), "a ruin stays where it is");
+                    check(a.x() >= rx * kind.spacing + 96 && a.x() < (rx + 1) * kind.spacing - 96 && a.z() >= rz * kind.spacing + 96 && a.z() < (rz + 1) * kind.spacing - 96,
+                            "a ruin lies inside its own square, clear of the edges");
+                }
+                // the nearest ruin really is the nearest, and never far
+                for (int i = 0; i < 60; i++) {
+                    double x = random.nextInt(40000) - 20000, z = random.nextInt(40000) - 20000;
+                    Ruins.Site near = Ruins.nearest(seed, kind, x, z);
+                    double best = Double.MAX_VALUE;
+                    int rx = Math.floorDiv((int) x, kind.spacing), rz = Math.floorDiv((int) z, kind.spacing);
+                    for (int dx = -2; dx <= 2; dx++) {
+                        for (int dz = -2; dz <= 2; dz++) {
+                            Ruins.Site o = Ruins.site(seed, kind, rx + dx, rz + dz);
+                            best = Math.min(best, Math.hypot(o.x() - x, o.z() - z));
+                        }
+                    }
+                    check(Math.abs(Math.hypot(near.x() - x, near.z() - z) - best) < 1e-6, kind + ": nearest is nearest");
+                    check(best <= kind.spacing * 1.2, kind + ": one is always within reach, was " + (int) best);
+                }
+            }
+            check(!Ruins.site(seed, Ruins.Kind.SKY, 0, 0).equals(Ruins.site(seed + 1, Ruins.Kind.SKY, 0, 0))
+                    || !Ruins.site(seed, Ruins.Kind.SKY, 1, 0).equals(Ruins.site(seed + 1, Ruins.Kind.SKY, 1, 0)), "another world, other places");
+            check(Ruins.directionKey(0, 10).endsWith("south") && Ruins.directionKey(0, -10).endsWith("north") && Ruins.directionKey(10, 0).endsWith(".east")
+                    && Ruins.directionKey(-10, 0).endsWith(".west") && Ruins.directionKey(10, -10).endsWith("north_east"), "compass directions");
+        });
+
+        step("the way in: the realms are closed until a Ruined Gate is woken with three keystones and stepped through", () -> {
+            Realm.testAlias(Level.OVERWORLD, null);              // here the overworld is the Overworld
+            try {
+                ServerPlayer hero = fakePlayer(server, level, "RocWanderer");
+                hero.setPos(5000.5, 100, 5000.5);
+                // closed: no gate knows this player
+                check(!Access.attuned(hero) && !Access.check(hero), "a new player is not attuned");
+                Teleports.toHub(hero);
+                Teleports.enterTower(hero, Line.ZEUS);
+                check(hero.position().distanceTo(new Vec3(5000.5, 100, 5000.5)) < 0.01, "the realms refuse them");
+                // the compass leads to a Ruined Gate instead of travelling
+                Ruins.Site gateSite = Ruins.nearest(level.getSeed(), Ruins.Kind.GATE, hero.getX(), hero.getZ());
+                check(gateSite.equals(Ruins.point(hero, Ruins.Kind.GATE)), "the compass points at the nearest Ruined Gate");
+                ModContent.CHAOS_COMPASS.get().use(level, hero, InteractionHand.MAIN_HAND);
+                check(hero.position().distanceTo(new Vec3(5000.5, 100, 5000.5)) < 0.01, "the Compass of Chaos does not travel yet");
+
+                // the Ruined Gate is raised once, where the seed says
+                check(Ruins.centre(level, gateSite) == null, "not raised until someone comes");
+                BlockPos c = Ruins.ensure(level, gateSite);
+                check(c.getX() == gateSite.x() && c.getZ() == gateSite.z() && c.equals(Ruins.ensure(level, gateSite)) && c.equals(Ruins.centre(level, gateSite)), "raised once, and remembered");
+                BlockPos pedestal = Ruins.pedestalPos(c);
+                check(level.getBlockState(pedestal).is(ModContent.GATE_PEDESTAL.get()), "pedestal");
+                check(Ruins.hasArch(level, pedestal) && Ruins.keystonesSet(level, pedestal) == 0 && !Ruins.awake(level, pedestal), "a dead arch with three empty sockets");
+                for (BlockPos o : Ruins.opening(pedestal)) check(level.getBlockState(o).isAir(), "the arch is empty");
+                check(level.getBlockState(c.offset(3, 1, 2)).is(Blocks.CAMPFIRE), "a fire still smoking");
+                check(solid(level, c) && level.getBlockState(c.above()).isAir() && level.getBlockState(c.above(2)).isAir(), "room to stand at the pedestal");
+                var chest = (net.minecraft.world.level.block.entity.ChestBlockEntity) level.getBlockEntity(c.offset(-3, 1, 2));
+                check(chest != null, "the ruin's chest");
+                boolean tale = false;
+                for (int i = 0; i < chest.getContainerSize(); i++) tale |= Story.Chapter.SUNDERING.isBook(chest.getItem(i));
+                check(tale, "the chest holds the story of the Sundering");
+                for (Line line : Line.values()) check(chest.countItem(ModContent.seekerItem(line)) == 1, "the chest holds the seeker for " + line);
+
+                // each seeker points to its shrine, and each shrine keeps its keystone
+                for (Line line : Line.values()) {
+                    Ruins.Kind kind = Ruins.Kind.of(line);
+                    Ruins.Site shrine = Ruins.nearest(level.getSeed(), kind, hero.getX(), hero.getZ());
+                    check(shrine.equals(Ruins.point(hero, kind)), "the seeker of " + line + " points at its shrine");
+                    BlockPos sc = Ruins.ensure(level, shrine);
+                    BlockPos chestAt = line == Line.HADES ? sc.offset(1, -4, 0) : sc.above();
+                    var keep = (net.minecraft.world.level.block.entity.ChestBlockEntity) level.getBlockEntity(chestAt);
+                    check(keep != null && keep.countItem(ModContent.keystoneItem(line)) == 1, "the " + kind + " shrine keeps its keystone");
+                    Story.Chapter chapter = line == Line.ZEUS ? Story.Chapter.SKY : line == Line.POSEIDON ? Story.Chapter.SEA : Story.Chapter.SHADE;
+                    boolean page = false;
+                    for (int i = 0; i < keep.getContainerSize(); i++) page |= chapter.isBook(keep.getItem(i));
+                    check(page, "and a chapter of the story");
+                    if (line == Line.POSEIDON) {
+                        check(level.getBlockState(sc.offset(2, 0, 2)).is(Blocks.WATER) && solid(level, sc.offset(2, -1, 2)) && solid(level, sc.offset(0, 0, 3)), "a pool with a floor, bridged to the middle");
+                    }
+                    if (line == Line.ZEUS) check(level.getBlockState(sc.offset(3, 6, 3)).is(Blocks.GOLD_BLOCK), "gold-capped columns");
+                    if (line == Line.HADES) {
+                        // the crypt can be walked down into, one step at a time, and back out
+                        Set<BlockPos> seen = new HashSet<>();
+                        java.util.ArrayDeque<BlockPos> queue = new java.util.ArrayDeque<>();
+                        BlockPos start = sc.offset(-4, 1, 2);          // on the rim, between two standing stones
+                        check(solid(level, start.below()) && open(level, start) && open(level, start.above()), "the rim of the crypt");
+                        seen.add(start);
+                        queue.add(start);
+                        while (!queue.isEmpty()) {
+                            BlockPos here = queue.poll();
+                            for (net.minecraft.core.Direction d : net.minecraft.core.Direction.Plane.HORIZONTAL) {
+                                for (int dy = -1; dy <= 1; dy++) {
+                                    BlockPos next = here.relative(d).above(dy);
+                                    if (Math.abs(next.getX() - sc.getX()) > 6 || Math.abs(next.getZ() - sc.getZ()) > 6 || seen.contains(next)) continue;
+                                    if (!solid(level, next.below()) || !open(level, next) || !open(level, next.above())) continue;
+                                    // stepping up needs headroom where you stand; stepping down needs it where you go
+                                    if (dy == 1 && !open(level, here.above(2))) continue;
+                                    if (dy == -1 && !open(level, next.above(2))) continue;
+                                    seen.add(next);
+                                    queue.add(next);
+                                }
+                            }
+                        }
+                        check(seen.contains(sc.offset(0, -4, 0)), "the steps lead down to the chest");
+                    }
+                }
+
+                // the pedestal: it says what is missing, takes each keystone once, and wakes the gate at three
+                hero.setItemInHand(InteractionHand.MAIN_HAND, ItemStack.EMPTY);
+                check(!Ruins.usePedestal(level, pedestal, hero, hero.getMainHandItem()) && Ruins.keystonesSet(level, pedestal) == 0, "an empty hand sets nothing");
+                hero.setItemInHand(InteractionHand.MAIN_HAND, new ItemStack(ModContent.keystoneItem(Line.ZEUS), 2));
+                level.getBlockState(pedestal).useItemOn(hero.getMainHandItem(), level, hero, InteractionHand.MAIN_HAND,
+                        new BlockHitResult(Vec3.atCenterOf(pedestal), net.minecraft.core.Direction.UP, pedestal, false));
+                check(Ruins.isSet(level, pedestal, Line.ZEUS) && hero.getMainHandItem().getCount() == 1, "right-clicking the pedestal sets the keystone held");
+                check(level.getBlockState(Ruins.socket(pedestal, Line.ZEUS)).is(Blocks.GOLD_BLOCK), "its socket lights");
+                check(!Ruins.usePedestal(level, pedestal, hero, hero.getMainHandItem()) && hero.getMainHandItem().getCount() == 1, "a keystone already set is not taken again");
+                check(!Ruins.awake(level, pedestal), "one keystone does not wake it");
+                ItemStack tides = new ItemStack(ModContent.keystoneItem(Line.POSEIDON)), shades = new ItemStack(ModContent.keystoneItem(Line.HADES));
+                check(Ruins.usePedestal(level, pedestal, hero, tides) && tides.isEmpty() && !Ruins.awake(level, pedestal), "two");
+                check(Ruins.usePedestal(level, pedestal, hero, shades) && Ruins.keystonesSet(level, pedestal) == 3 && Ruins.awake(level, pedestal), "three keystones wake the gate");
+                for (BlockPos o : Ruins.opening(pedestal)) check(level.getBlockState(o).is(ModContent.GATE_HUB.get()), "the arch fills with the gate");
+                for (var bolt : level.getEntitiesOfClass(net.minecraft.world.entity.LightningBolt.class, new AABB(c).inflate(16), e -> true)) bolt.discard();
+
+                // stepping through attunes; from then on the realms are open from anywhere
+                check(!Access.attuned(hero), "waking the gate is not enough: you have to go through");
+                BlockPos gate = Ruins.opening(pedestal).get(0);
+                level.getBlockState(gate).useWithoutItem(level, hero, new BlockHitResult(Vec3.atCenterOf(gate), net.minecraft.core.Direction.SOUTH, gate, false));
+                check(Access.attuned(hero) && Access.check(hero), "stepping through the gate attunes the player");
+                check(!Access.attune(hero), "attuning happens once");
+                // players from before gates were needed, and creative players, are let in
+                ServerPlayer veteran = fakePlayer(server, level, "RocVeteran");
+                data.markDefeated(veteran.getUUID(), Gods.byId("iris"));
+                check(Access.attuned(veteran), "a player who had already woken a god keeps their way in");
+                data.reset(veteran.getUUID());
+                ServerPlayer builder = fakePlayer(server, level, "RocBuilder");
+                check(!Access.attuned(builder), "test setup: a fresh survival player");
+                builder.setGameMode(GameType.CREATIVE);
+                check(Access.attuned(builder), "creative mode is let in");
+                // a pedestal with no arch says so and takes nothing
+                BlockPos lone = c.offset(40, 2, 40);
+                level.setBlock(lone, ModContent.GATE_PEDESTAL.get().defaultBlockState(), 2);
+                ItemStack spare = new ItemStack(ModContent.keystoneItem(Line.ZEUS));
+                check(!Ruins.usePedestal(level, lone, hero, spare) && spare.getCount() == 1, "a pedestal without an arch takes nothing");
+                level.setBlock(lone, Blocks.AIR.defaultBlockState(), 2);
+            } finally {
+                Realm.testAlias(Level.OVERWORLD, Realm.OLYMPUS);
+            }
+        });
+
+        step("the story: nineteen chapters, each a book, written as the journey goes", () -> {
+            Realm.testAlias(Level.OVERWORLD, null);
+            try {
+                check(Story.Chapter.values().length == 19, "chapters: " + Story.Chapter.values().length);
+                Set<String> titles = new HashSet<>();
+                Set<Integer> slots = new HashSet<>();
+                for (Story.Chapter c : Story.Chapter.values()) {
+                    check(c.pages() >= 2 && titles.add(c.englishTitle()) && c.englishTitle().length() <= 32, c + ": text");
+                    ItemStack book = c.book();
+                    var content = book.get(DataComponents.WRITTEN_BOOK_CONTENT);
+                    check(book.is(net.minecraft.world.item.Items.WRITTEN_BOOK) && content != null && content.pages().size() == c.pages()
+                            && content.author().equals(Story.AUTHOR), c + ": the book");
+                    check(c.isBook(book), c + ": knows its own book");
+                    check(slots.add(StoryMenu.slotOf(c)), c + " shares a slot in the chronicle");
+                }
+                check(!Story.Chapter.SKY.isBook(Story.Chapter.SEA.book()) && !Story.Chapter.SKY.isBook(new ItemStack(net.minecraft.world.item.Items.WRITTEN_BOOK)), "books are told apart");
+
+                // what a player has earned
+                ServerPlayer hero = fakePlayer(server, level, "RocReaderOfTales");
+                check(Story.unlockedCount(hero) == 1 && Story.Chapter.PROLOGUE.unlocked(hero), "at first only the Oracle's letter");
+                check(StoryMenu.guidance(hero).size() == 2, "the guide sends a new player to a Ruined Gate");
+                Access.attune(hero);
+                check(Story.unlockedCount(hero) == 9, "a gate opens the road in and the foot of each tower: " + Story.unlockedCount(hero));
+                check(StoryMenu.guidance(hero).size() == 3, "then the guide names the next god of each tower");
+                for (int rank = Line.RANKS; rank > Line.RANKS - 5; rank--) {
+                    check(!Story.Chapter.ZEUS_MID.unlocked(hero), "not before five");
+                    data.markDefeated(hero.getUUID(), Gods.get(Line.ZEUS, rank));
+                }
+                check(Story.Chapter.ZEUS_MID.unlocked(hero) && !Story.Chapter.ZEUS_HIGH.unlocked(hero) && !Story.Chapter.POSEIDON_MID.unlocked(hero), "five gods of a tower write its second chapter");
+                check(Story.writtenBy(hero, Gods.get(Line.ZEUS, Line.RANKS - 4)).equals(List.of(Story.Chapter.ZEUS_MID)), "the fifth victory writes it");
+                data.markDefeated(hero.getUUID(), Gods.get(Line.ZEUS, Line.RANKS - 5));
+                check(Story.writtenBy(hero, Gods.get(Line.ZEUS, Line.RANKS - 5)).isEmpty(), "most victories write nothing new");
+
+                // the chronicle: opened from the Codex, earned chapters can be taken as books, once
+                CodexMenu.open(hero);
+                check(!hero.containerMenu.getSlot(CodexMenu.SLOT_STORY).getItem().isEmpty(), "the Codex has the chronicle");
+                ((CodexMenu) hero.containerMenu).clicked(CodexMenu.SLOT_STORY, 0, ContainerInput.PICKUP, hero);
+                check(hero.containerMenu instanceof StoryMenu, "the Codex opens the Oracle's Chronicle");
+                StoryMenu menu = (StoryMenu) hero.containerMenu;
+                check(menu.getSlot(StoryMenu.slotOf(Story.Chapter.ZEUS_MID)).getItem().is(net.minecraft.world.item.Items.WRITTEN_BOOK), "an earned chapter shows as a book");
+                check(menu.getSlot(StoryMenu.slotOf(Story.Chapter.ZEUS_FALL)).getItem().is(net.minecraft.world.item.Items.STAINED_GLASS_PANE.pick(net.minecraft.world.item.DyeColor.GRAY)), "an unwritten chapter is blank");
+                menu.clicked(StoryMenu.slotOf(Story.Chapter.ZEUS_FALL), 0, ContainerInput.PICKUP, hero);
+                check(!Story.holds(hero, Story.Chapter.ZEUS_FALL), "an unwritten chapter cannot be taken");
+                menu.clicked(StoryMenu.slotOf(Story.Chapter.ZEUS_MID), 0, ContainerInput.PICKUP, hero);
+                menu.clicked(StoryMenu.slotOf(Story.Chapter.ZEUS_MID), 0, ContainerInput.PICKUP, hero);
+                check(count(hero, net.minecraft.world.item.Items.WRITTEN_BOOK) == 1 && Story.holds(hero, Story.Chapter.ZEUS_MID), "a chapter is handed over once");
+                check(menu.getCarried().isEmpty(), "the chronicle moves no items");
+                hero.closeContainer();
+
+                // the Oracle's Flame opens the same chronicle and hands over the chapter about the hub
+                BlockPos flame = new BlockPos(5030, 120, 5030);
+                level.setBlock(flame, ModContent.ORACLE.get().defaultBlockState(), 2);
+                level.getBlockState(flame).useWithoutItem(level, hero, new BlockHitResult(Vec3.atCenterOf(flame), net.minecraft.core.Direction.UP, flame, false));
+                check(hero.containerMenu instanceof StoryMenu && Story.holds(hero, Story.Chapter.HUB), "the Oracle speaks");
+                hero.closeContainer();
+                level.setBlock(flame, Blocks.AIR.defaultBlockState(), 2);
+
+                // a king's own words are handed over when he falls; the epilogue when all three have
+                for (God g : Gods.ofLine(Line.ZEUS)) data.markDefeated(hero.getUUID(), g);
+                check(Story.writtenBy(hero, Gods.byId("zeus")).equals(List.of(Story.Chapter.ZEUS_FALL)), "the king's fall writes his chapter");
+                Story.onDefeated(hero, Gods.byId("zeus"));
+                check(!Story.holds(hero, Story.Chapter.ZEUS_FALL), "it comes a moment after the victory");
+                advance(server, 120);
+                Scheduler.tick(server);
+                check(Story.holds(hero, Story.Chapter.ZEUS_FALL), "Zeus's words are handed over");
+                for (God g : Gods.ALL) data.markDefeated(hero.getUUID(), g);
+                check(Story.Chapter.EPILOGUE.unlocked(hero) && Story.unlockedCount(hero) == 19, "all three towers write the epilogue");
+                check(Story.writtenBy(hero, Gods.byId("hades")).contains(Story.Chapter.EPILOGUE), "the last king's fall writes it");
+                check(StoryMenu.guidance(hero).size() == 4, "the guide knows the towers are done");
+                data.reset(hero.getUUID());
+            } finally {
+                Realm.testAlias(Level.OVERWORLD, Realm.OLYMPUS);
             }
         });
 

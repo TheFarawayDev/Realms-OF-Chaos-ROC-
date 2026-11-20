@@ -16,6 +16,30 @@ The current build is an **Alpha**.
 
 ## What's in 1.2.0
 
+* **A story.** Chaos, the oldest thing there is, has woken and is unmaking the world one story at a time. The
+  gods of the sky, the sea and the dead shut themselves in three towers to hold it off - and have forgotten why.
+  You do not slay them: every trial wakes a god, and a relic is its thanks. The story is told by the **Oracle** in
+  nineteen chapters, each a real book: her letter (given on first join), books found in the ruins, a chapter for
+  each stretch of each tower (after 5, 10 and 15 of its gods are awake - the last in the king's own words) and an
+  epilogue. **The Oracle's Chronicle** (her flame in the hub, or the Codex) lists them, hands out the ones you
+  have earned, and always says what to do next.
+* **The way in has to be found.** The gates were broken on purpose. Until a gate knows you, the realms are closed
+  and the **Compass of Chaos** points to the nearest **Ruined Gate** in the Overworld instead of travelling.
+  * A Ruined Gate is a broken plaza round a dead arch, with a campfire still smoking. Its chest holds the story so
+    far and three **seekers** - compasses that each point to the nearest shrine of one keystone.
+  * The three **keystones** lie in three kinds of shrine elsewhere in the world: the **Shrine of the Sky** (a
+    white temple), the **Shrine of the Tides** (a ring of prismarine round a pool) and the **Shrine of the Shades**
+    (standing stones round a crypt you walk down into).
+  * Right-click the gate's **pedestal** with each keystone to set it in the arch. Three keystones wake the gate
+    (for everyone); stepping through it **attunes** you, and from then on the compass, the Codex and `/roc hub`
+    carry you to the hub from anywhere.
+  * Ruins are placed from the world seed - there is always a Ruined Gate within about 800 blocks and each kind of
+    shrine within about 700 - and are raised on the surface when a player first comes near. Players who had
+    already woken a god before this update, and players in creative mode, are let in without a gate.
+* **A livelier hub.** The Oracle's Flame burns at its heart. Beside each tower gate stand two **echoes** of its
+  gods - the first you will meet and the king at the top - which hold their relics and turn their heads to watch
+  you. A canal rings the plaza, bridged by the four paths; cherry trees stand in four gardens; pilgrims wander,
+  cats sit about and allays drift overhead; fireflies rise over the gardens.
 * **The Hub of Realms** - a plaza with four gates: **Zeus** (north), **Poseidon** (east), **Hades** (west), and the
   **exit** back to where you came from (south).
 * **Three towers of 15 floors**, one per god line. Every floor is its own enclosed arena holding one god; floor 1 has
@@ -195,7 +219,10 @@ Signature moves, floor by floor:
 
 ## How to play
 
-1. Join a world. Open the **Codex of Chaos** (or run `/roc`), or use the **Compass of Chaos** / `/roc hub`.
+1. Join a world. You are given the Codex, the Compass of Chaos and the Oracle's letter. Read the letter, then
+   right-click the **Compass of Chaos**: it points to the nearest **Ruined Gate**. Take the three seekers from its
+   chest, follow each to its shrine for a keystone, set the keystones at the pedestal and step through the gate.
+   (After that the compass, the Codex and `/roc hub` take you straight to the hub.)
 2. In the hub, walk into a tower gate. You arrive on the floor you are working on.
 3. Right-click the floor's **Trial Altar** and press **Begin the trial**. (Trials need a difficulty above Peaceful.)
 4. Defeat the god: it drops its **relic weapon** (scaled by rank, with a hit power of its own and its god's
@@ -237,14 +264,17 @@ JAVA_HOME=/path/to/jdk-25 ./build.sh
   lang, advancements and the website's roster
 * `site/` - the download page (GitHub Pages)
 * `art/weapon-designs/` - a sheet of every weapon silhouette, including designs for mythologies that are not in the
-  mod yet (katana, naginata, kunai, tessen, battleaxe, Mjolnir, khopesh, claymore, halberd, mace, crossbow). Their
+  mod yet. Japanese, planned next: a curved katana, wakizashi, tanto, nodachi, naginata, yari, kusarigama, sai,
+  kanabo, nunchaku, yumi, kunai, shuriken and tessen. Others: battleaxe, Mjolnir, khopesh, claymore, halberd, mace,
+  crossbow. Their
   textures already ship under `textures/item/design/`.
 
 ### Self-test
 
 The mod contains a developer self-test that only runs when the JVM has `-Droc.selftest=true`. It exercises the mod
 on a real server: data loading, the hub, building and walking every floor of every tower, a full climb of all three
-towers through the altar menu (with rematches) and all 42 passages (built, checked room by room for reachability,
+towers through the altar menu (with rematches) and all 42 passages, the Ruined Gate and its keystones, the story's
+chapters, the hub's residents (built, checked room by room for reachability,
 seals struck, guardians, shrine, map), every god's signature move, the relic moves, the forging quick-time rounds,
 tier materials, each tarot card, the Codex, leaving the realms, the welcome and the anti-stuck safeguards.
 

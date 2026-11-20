@@ -84,6 +84,8 @@ public class GodBoss extends Monster implements RangedAttackMob {
     private int casts;
     /** A rematch against a god already beaten: it gives up forge materials, but not its relic a second time. */
     private boolean rematch;
+    /** An echo in the hub: it has the god's look and relic but only stands and watches. */
+    private boolean statue;
     // the attack goal follows the god's weapon: melee for blades and the like, ranged for bows, staffs and relics
     private Goal attackGoal;
 
@@ -166,6 +168,40 @@ public class GodBoss extends Monster implements RangedAttackMob {
 
     private ParticleOptions lineParticle() {
         return com.thefarawaydev.realmsofchaos.god.Signature.spark(god().line());
+    }
+
+    /**
+     * Turns this into an echo: no fight in it, no boss bar, nothing to drop. It stands where it is put and turns
+     * its head to watch whoever comes by.
+     */
+    public void setStatue(boolean statue) {
+        this.statue = statue;
+        if (!statue) return;
+        this.goalSelector.removeAllGoals(goal -> true);
+        this.targetSelector.removeAllGoals(goal -> true);
+        this.attackGoal = null;
+        this.goalSelector.addGoal(1, new LookAtPlayerGoal(this, Player.class, 14.0F));
+        this.goalSelector.addGoal(2, new RandomLookAroundGoal(this));
+        getAttribute(Attributes.MOVEMENT_SPEED).setBaseValue(0.0);
+        getAttribute(Attributes.KNOCKBACK_RESISTANCE).setBaseValue(1.0);
+        setPermanentlyInvulnerable(true);
+        setTarget(null);
+        bossEvent.removeAllPlayers();
+        bossEvent.setVisible(false);
+    }
+
+    public boolean isStatue() {
+        return statue;
+    }
+
+    @Override
+    public boolean isPushable() {
+        return !statue && super.isPushable();
+    }
+
+    @Override
+    public void checkDespawn() {
+        if (!statue) super.checkDespawn();
     }
 
     public void setRematch(boolean rematch) {
@@ -313,7 +349,7 @@ public class GodBoss extends Monster implements RangedAttackMob {
     @Override
     public void startSeenByPlayer(ServerPlayer player) {
         super.startSeenByPlayer(player);
-        bossEvent.addPlayer(player);
+        if (!statue) bossEvent.addPlayer(player);
     }
 
     @Override
@@ -325,6 +361,7 @@ public class GodBoss extends Monster implements RangedAttackMob {
     @Override
     protected void customServerAiStep(ServerLevel level) {
         super.customServerAiStep(level);
+        if (statue) return;
         bossEvent.setProgress(getHealth() / getMaxHealth());
         God god = god();
 
@@ -556,6 +593,7 @@ public class GodBoss extends Monster implements RangedAttackMob {
 
     private void onDefeated(ServerLevel level, DamageSource source) {
         God god = god();
+        if (statue) return;
         ProgressData data = ProgressData.get(level.getServer());
         discardMinions(level);
         AABB area = getBoundingBox().inflate(96);
@@ -564,8 +602,9 @@ public class GodBoss extends Monster implements RangedAttackMob {
         if (source.getEntity() instanceof ServerPlayer killer) victors.add(killer);
         String hud = "hud." + RealmsOfChaos.MOD_ID + ".";
         for (ServerPlayer player : victors) {
-            data.markDefeated(player.getUUID(), god);
+            boolean first = data.markDefeated(player.getUUID(), god);
             RocAdvancements.awardGod(player, god);
+            if (first) com.thefarawaydev.realmsofchaos.story.Story.onDefeated(player, god);
             if (god.isFinalBoss()) {
                 Hud.title(player, Hud.colored(Component.translatable(hud + "line_complete"), god.line().color()),
                         Hud.colored(Component.translatable(hud + "line_complete.sub", god.line().displayName()), 0xFFFFFF), 10, 100, 30);
@@ -586,6 +625,7 @@ public class GodBoss extends Monster implements RangedAttackMob {
     @Override
     protected void dropCustomDeathLoot(ServerLevel level, DamageSource source, boolean killedByPlayer) {
         super.dropCustomDeathLoot(level, source, killedByPlayer);
+        if (statue) return;
         God god = god();
         // forge materials: each tier of a tower drops its own, and the summit's god drops the essence
         spawnAtLocation(level, new ItemStack(ModContent.materialItem(god.line(), Tower.tier(Tower.floorOf(god))), materialDrop(god)));
@@ -622,6 +662,7 @@ public class GodBoss extends Monster implements RangedAttackMob {
         output.putInt("ShiftStage", shiftStage);
         output.putInt("Casts", casts);
         output.putBoolean("Rematch", rematch);
+        output.putBoolean("Statue", statue);
         Vec3 h = home();
         output.putDouble("HomeX", h.x);
         output.putDouble("HomeY", h.y);
@@ -641,5 +682,6 @@ public class GodBoss extends Monster implements RangedAttackMob {
             this.home = new Vec3(input.getDoubleOr("HomeX", getX()), hy, input.getDoubleOr("HomeZ", getZ()));
         }
         configure(god(), false);
+        if (input.getBooleanOr("Statue", false)) setStatue(true);
     }
 }

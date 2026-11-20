@@ -70,7 +70,7 @@ public final class Teleports {
 
     public static void toHub(ServerPlayer player) {
         MinecraftServer server = player.level().getServer();
-        if (server == null || throttled(LAST_TRAVEL, player, server)) return;
+        if (server == null || !Access.check(player) || throttled(LAST_TRAVEL, player, server)) return;
         ServerLevel dest = realmLevel(player, server, Realm.HUB);
         if (dest == null) return;
         Realm from = Realm.of(player.level().dimension());
@@ -98,7 +98,7 @@ public final class Teleports {
     /** Travel to a floor the player has reached. Floors above their progress are refused. */
     public static void toFloor(ServerPlayer player, Line line, int floor) {
         MinecraftServer server = player.level().getServer();
-        if (server == null) return;
+        if (server == null || !Access.check(player)) return;
         ProgressData data = ProgressData.get(server);
         floor = Math.min(Tower.clampFloor(floor), Tower.currentFloor(data, player.getUUID(), line));
         if (throttled(LAST_TRAVEL, player, server)) return;

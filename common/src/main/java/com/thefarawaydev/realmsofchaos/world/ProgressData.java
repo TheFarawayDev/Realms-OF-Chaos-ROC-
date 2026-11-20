@@ -145,6 +145,12 @@ public class ProgressData extends SavedData {
         return built.contains(key);
     }
 
+    /** The first build key starting with {@code prefix}, or null: for keys that carry a value after their name. */
+    public String findBuilt(String prefix) {
+        for (String key : built) if (key.startsWith(prefix)) return key;
+        return null;
+    }
+
     public void markBuilt(String key) {
         if (built.add(key)) setDirty();
     }

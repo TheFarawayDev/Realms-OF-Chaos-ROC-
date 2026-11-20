@@ -14,7 +14,10 @@ import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.component.TooltipDisplay;
 import net.minecraft.world.level.Level;
 
-/** Right-click to travel to the Hub of Realms. Inside a passage it points the way instead (sneak to travel). */
+/**
+ * Until a gate knows its holder it points to the nearest Ruined Gate; after that, right-click travels to the Hub of
+ * Realms. Inside a passage it points the way instead (sneak to travel).
+ */
 public class ChaosCompassItem extends Item {
     public ChaosCompassItem(Properties properties) {
         super(properties);
@@ -27,6 +30,13 @@ public class ChaosCompassItem extends Item {
             if (spot != null && !player.isShiftKeyDown() && sp.level() instanceof net.minecraft.server.level.ServerLevel passage) {
                 // inside a passage the compass is a guide: it points at the nearest seal, then at the gate
                 com.thefarawaydev.realmsofchaos.world.Passages.point(sp, passage, spot);
+                player.getCooldowns().addCooldown(player.getItemInHand(hand), 20);
+                return InteractionResult.SUCCESS;
+            }
+            if (com.thefarawaydev.realmsofchaos.world.Realm.of(sp.level().dimension()) == null
+                    && !com.thefarawaydev.realmsofchaos.world.Access.attuned(sp)) {
+                // no gate knows this player yet: the compass leads to the nearest Ruined Gate
+                com.thefarawaydev.realmsofchaos.world.Ruins.point(sp, com.thefarawaydev.realmsofchaos.world.Ruins.Kind.GATE);
                 player.getCooldowns().addCooldown(player.getItemInHand(hand), 20);
                 return InteractionResult.SUCCESS;
             }

@@ -117,6 +117,109 @@ MOVE_KINDS = {
     "ERUPTION": "The ground erupts under every foe a moment later",
 }
 
+# The story, chapter by chapter: (id, title, one-line blurb for menus, pages). Every chapter is a book that can be read
+# in game; the Oracle in the hub and the Codex list the ones a player has earned. A page fits a written book page.
+STORY = [
+    ("prologue", "The Oracle's Letter", "A letter that found you. It asks for help.", [
+        "If you are reading this, the last of my ravens found you.\n\nI am the Oracle. Once of Delphi. Now of nowhere you could walk to.",
+        "Chaos has woken: the first thing that ever was, older than any god. It does not hate the world. It is simply taking it back, one story at a time.",
+        "The gods of the sky, the sea and the dead have shut themselves in three towers to hold it off.\n\nThey are losing.",
+        "The gates to their realm were broken on purpose, so no mortal would wander in.\n\nI am asking you to wander in.",
+        "Take the compass. It remembers where a gate still stands.\n\nThe gate will want three keystones. You will find seekers there that know the way to each.\n\nHurry.",
+    ]),
+    ("sundering", "The Sundering", "How the gods hid, and what it cost them.", [
+        "When Chaos rose, Zeus did the one thing a king hates.\n\nHe hid.",
+        "The three brothers raised towers in a realm between realms and locked every god of their houses inside: the least at the foot, themselves at the crown.\n\nA wall of gods between Chaos and the world.",
+        "Then they broke the gates and gave the keystones away: one to the sky, one to the tides, one to the dark. Each to keep what it was owed.",
+        "But a wall that stands in Chaos does not stay a wall.\n\nThe gods you will meet no longer know what they are guarding. They only know they must not be passed.",
+        "Set the three keystones in the arch above the pedestal. The gate will wake.\n\nWhat is on the other side has been waiting a long time for someone stubborn.",
+    ]),
+    ("sky", "Keystone of the Sky", "Where Zeus set his keystone, and what waits in his tower.", [
+        "Zeus set his keystone where eagles could watch it.\n\nYou are holding it now, which says something about the eagles.",
+        "His tower is the brightest and the proudest. Messengers at its foot. Fear and dread on the stair. War and wisdom near the crown.",
+        "They will greet you as a thief. Do not argue.\n\nA god beaten in fair trial remembers itself, for a while. That is the whole of the plan.",
+    ]),
+    ("sea", "Keystone of the Tides", "Where Poseidon left his keystone, and what waits in his tower.", [
+        "Poseidon gave his keystone to the water, and the water kept it the way water keeps everything: carelessly, and for ever.",
+        "His tower goes down, whatever your feet tell you. Sunlit shallows, then drowned halls, then the trench, where no light was ever asked for.",
+        "The sea does not hate you.\n\nIt simply does not stop. Learn its rhythm and strike between the waves.",
+    ]),
+    ("shade", "Keystone of the Shades", "Where Hades buried his keystone, and what waits in his tower.", [
+        "Hades buried his keystone, as he buries everything, and marked the place so that it could be found by anyone willing to go down.",
+        "His tower is the quietest. The ferryman at its door will take your measure. The dreams above him will lie to you kindly.",
+        "At the top sits a king who never wanted a throne, holding the one deck of cards that Chaos is afraid of.\n\nAsk him for it. Loudly.",
+    ]),
+    ("hub", "The Hub of Realms", "The Oracle speaks: where you are, and what the trials are for.", [
+        "You stand where three realms touch.\n\nNorth, Olympus. East, the Abyss. West, the Underworld. South, the way home, which I advise you to remember.",
+        "The flame you are speaking to is me. I burn here so the towers have something to point at.\n\nThe figures by the gates are echoes. They still turn their heads. Be polite.",
+        "Understand what a trial is. You do not slay a god. You wake one.\n\nEach relic is the thanks of a god who has remembered its own name.",
+        "Between the floors lie passages: what Chaos made of the stairs. Break its seals and the way opens.\n\nClimb. I will write down what you find.",
+    ]),
+    ("zeus_foot", "Olympus: The Foothills", "The first gods of the sky tower.", [
+        "Iris ran messages between gods who stopped listening. She still runs. Nobody told her the letters are blank.",
+        "The foothills are green because Chaos has not finished with them. Enjoy the moss. Higher up it is marble, and marble does not forgive.",
+    ]),
+    ("zeus_mid", "Olympus: The Marble Halls", "Five gods of the sky are awake.", [
+        "Five awake. Hebe poured you a cup, I hope. She has been pouring for nobody for a very long time.",
+        "Fear and Dread guard the same stair as Medicine. That was never the order of things. Chaos shuffles gods the way a bored hand shuffles cards.",
+        "Ares is above you. He was not locked in. He volunteered. Keep that in mind when he smiles.",
+    ]),
+    ("zeus_high", "Olympus: The Cloud Sanctum", "Ten gods of the sky are awake.", [
+        "Ten awake, and the clouds are beginning to move again. From down here it looks like weather. It is the sky remembering how.",
+        "Artemis will not miss. Apollo will not stop talking. Athena has already worked out how this ends and is checking her sums by fighting you.",
+        "Then the summit. He will not be glad to see you. He will be relieved, and hate that.",
+    ]),
+    ("zeus_fall", "Zeus Speaks", "The king of the gods, awake.", [
+        "\"I built a wall out of my own children and called it wisdom.\"",
+        "\"Every one of them you woke, I felt. Like stones coming out of a dam. I thought the flood would be Chaos.\n\nIt was only the truth, which is worse and more useful.\"",
+        "\"Take the thunderbolt. I threw it at everything except the one thing that mattered.\n\nYou will aim better. You have had practice. On us.\"",
+    ]),
+    ("poseidon_foot", "The Abyss: Sunlit Shallows", "The first gods of the sea tower.", [
+        "Galatea was a statue once, then loved into life. Chaos is trying to remind her of the statue.\n\nRemind her of the other part.",
+        "The shallows are kind. That is how the sea begins every conversation.",
+    ]),
+    ("poseidon_mid", "The Abyss: Drowned Halls", "Five gods of the sea are awake.", [
+        "Five awake, and the tide in the hub has started keeping time.\n\nProteus will be whoever you least want to fight. Do not take it personally. He does it to everyone.",
+        "Old Nereus knows every answer and gives none of them willingly. He is the only god in that tower who is hiding on purpose.",
+        "Below the halls the light gives up. Bring your own.",
+    ]),
+    ("poseidon_high", "The Abyss: The Trench", "Ten gods of the sea are awake.", [
+        "Ten awake. The canals here run clear now. You did that.",
+        "Chrysaor was born with a golden sword in his hand and has never once put it down. Triton's horn can be heard through stone. The Queen is patient. She married the sea.",
+        "And then him. Earthshaker. Mind your footing.",
+    ]),
+    ("poseidon_fall", "Poseidon Speaks", "The lord of the seas, awake.", [
+        "\"My brother built a wall. I built a depth. I thought nothing could follow us down there.\"",
+        "\"Something did. It was patient, the way I am patient. I mistook it for myself. For an age I sat in the dark, proud of how still the water was.\"",
+        "\"Take the trident. It was made to stir things.\n\nGo and stir my brother in the west. He has been still the longest.\"",
+    ]),
+    ("hades_foot", "Underworld: Fields of Asphodel", "The first gods of the tower of the dead.", [
+        "Charon wants a coin. He has always wanted a coin. Pay him the other way.",
+        "The fields are grey because the dead forget colour first. The dreams that drift here are the Oneiroi. They mean no harm. They do it anyway.",
+    ]),
+    ("hades_mid", "Underworld: Tartarus", "Five gods of the dead are awake.", [
+        "Five awake. The Fates measured your thread while you fought them. I looked over their shoulders. It is longer than they expected.",
+        "The Furies punish oath-breakers. Chaos convinced them everything is a broken oath. In a way it is right, which is why they are so hard to wake.",
+        "Night herself is above you. Nyx is older than the towers, older than me. Chaos is her mother. She has not decided whose side she is on.",
+    ]),
+    ("hades_high", "Underworld: Halls of the Dead", "Ten gods of the dead are awake.", [
+        "Ten awake. Sleep and Death are brothers, and you have met one. The other is coming, and for once he is the one who is afraid.",
+        "Zagreus fights like someone who has died often and resents each time. Persephone keeps the seasons of a place that has none.",
+        "And the king. He kept the dead in order when order was unfashionable. He will make you earn every step.",
+    ]),
+    ("hades_fall", "Hades Speaks", "The king of the dead, awake.", [
+        "\"They gave me the dark because nobody else wanted it. I kept it well. Chaos came, and I thought: here at last is something darker. I can rest.\"",
+        "\"That was the lie it told me. Not that I was weak. That I was finished.\"",
+        "\"Take the deck. Every card in it is a story Chaos could not eat. I have been dealing them into the dark for an age, hoping somebody would pick one up.\n\nSomebody did.\"",
+    ]),
+    ("epilogue", "What Comes After", "Three kings awake. The Oracle looks further.", [
+        "Three kings awake. Forty-five gods who know their names.\n\nChaos is not beaten. It cannot be. It is what everything is made of.",
+        "But it has been told no, by a mortal, forty-five times. It is not used to that. It has drawn back from these towers like a tide.",
+        "It has not gone far. I can feel other gates, in other places it is busy unmaking.\n\nA bridge of light that is not Iris's. A river lined with reeds.",
+        "And a mountain where a blade is folded a thousand times before anyone dares to call it finished.\n\nRest. Sharpen what they gave you. Then come back to the flame.",
+    ]),
+]
+
 LINE_INFO = {
     "ZEUS":     dict(label="Zeus", zone="Olympian Heights", metals=[(236, 196, 84), (206, 212, 224), (196, 142, 84)]),
     "POSEIDON": dict(label="Poseidon", zone="The Abyssal Palace", metals=[(86, 196, 206), (200, 214, 226), (232, 150, 120)]),
@@ -250,6 +353,25 @@ final class GodRoster {{
 """
     w(os.path.join(JAVA_DIR, "GodRoster.java"), src)
 
+def gen_story_java():
+    rows = [f"        new Entry({jstr(sid)}, {jstr(title)}, {len(pages)})" for sid, title, _blurb, pages in STORY]
+    src = f"""package {JAVA_PKG}.story;
+
+import java.util.List;
+
+/** GENERATED by tools/generate.py - do not edit by hand. The chapters of the story: id, book title, pages. */
+final class StoryData {{
+    private StoryData() {{}}
+
+    record Entry(String id, String title, int pages) {{}}
+
+    static final List<Entry> ALL = List.of(
+{(",\n").join(rows)}
+    );
+}}
+"""
+    w(os.path.join(ROOT, "common/src/main/java", *JAVA_PKG.split("."), "story", "StoryData.java"), src)
+
 def read_version():
     """VERSION holds e.g. 1.2.0-alpha / 1.2.0-beta / 1.2.0 ; the suffix is the release channel."""
     raw = open(os.path.join(ROOT, "VERSION")).read().strip()
@@ -279,7 +401,7 @@ def gen_lang():
     lang = {
         "itemGroup.realms_of_chaos.main": "Realms of Chaos",
         "item.realms_of_chaos.chaos_compass": "Compass of Chaos",
-        "item.realms_of_chaos.chaos_compass.tooltip": "Right-click: travel to the Hub of Realms. In a passage it points to the nearest seal (sneak to travel)",
+        "item.realms_of_chaos.chaos_compass.tooltip": "Right-click: points to the nearest Ruined Gate. Once a gate knows you, it carries you to the Hub of Realms. In a passage it points to the nearest seal (sneak to travel)",
         "item.realms_of_chaos.chaos_codex": "Codex of Chaos",
         "item.realms_of_chaos.chaos_codex.tooltip": "Right-click to open the Codex: your progress, the gods and fast travel.",
         "block.realms_of_chaos.gate_hub": "Gate to the Hub",
@@ -291,6 +413,43 @@ def gen_lang():
         "block.realms_of_chaos.altar_hades": "Trial Altar of Hades",
         "entity.realms_of_chaos.god_boss": "God of the Realms",
         "block.realms_of_chaos.chaos_forge": "Forge of Chaos",
+        "block.realms_of_chaos.gate_pedestal": "Keystone Pedestal",
+        "block.realms_of_chaos.oracle": "The Oracle's Flame",
+        "ruin.realms_of_chaos.gate": "Ruined Gate",
+        "item.realms_of_chaos.keystone.tooltip": "Set it in the arch of a Ruined Gate: right-click the pedestal",
+        "item.realms_of_chaos.seeker.tooltip": "Right-click: points to the nearest %s",
+        "hud.realms_of_chaos.point": "%s: %s blocks to the %s",
+        "hud.realms_of_chaos.point.here": "%s is right here",
+        "hud.realms_of_chaos.point.overworld": "It only finds its way in the Overworld",
+        "hud.realms_of_chaos.access.closed": "The realms are closed to you. Follow the Compass of Chaos to a Ruined Gate",
+        "hud.realms_of_chaos.access.attuned": "Attuned",
+        "hud.realms_of_chaos.access.attuned.sub": "The gate knows you now. The compass will carry you to the hub",
+        "hud.realms_of_chaos.pedestal.set": "The %s is set: %s of 3",
+        "hud.realms_of_chaos.pedestal.already": "That keystone is already set",
+        "hud.realms_of_chaos.pedestal.need": "The gate sleeps. Still missing: %s",
+        "hud.realms_of_chaos.pedestal.awake": "The gate is awake. Step through",
+        "hud.realms_of_chaos.pedestal.nogate": "There is no gate here for the pedestal to wake",
+        "hud.realms_of_chaos.gate.wakes": "The gate wakes",
+        "hud.realms_of_chaos.gate.wakes.sub": "Step through to the Hub of Realms",
+        "hud.realms_of_chaos.story.new": "A new chapter is written: %s",
+        "hud.realms_of_chaos.story.given": "The Oracle hands you: %s",
+        "menu.realms_of_chaos.story": "The Oracle's Chronicle",
+        "menu.realms_of_chaos.story.locked": "Not yet written",
+        "menu.realms_of_chaos.story.read": "Click to take this chapter as a book",
+        "menu.realms_of_chaos.story.unlock.attuned": "Pass through a Ruined Gate",
+        "menu.realms_of_chaos.story.unlock.count": "Wake %s gods of the %s",
+        "menu.realms_of_chaos.story.unlock.all": "Wake all three kings",
+        "menu.realms_of_chaos.story.guide": "What now?",
+        "menu.realms_of_chaos.story.guide.gate": "Follow the Compass of Chaos to a Ruined Gate in the Overworld",
+        "menu.realms_of_chaos.story.guide.keystones": "Its seekers lead to three keystones. Set them in the arch",
+        "menu.realms_of_chaos.story.guide.next": "%s: %s waits on floor %s",
+        "menu.realms_of_chaos.story.guide.done": "%s: every god is awake",
+        "menu.realms_of_chaos.story.guide.finished": "All three towers are yours. Read the last chapter",
+        "menu.realms_of_chaos.story.open": "The Oracle's Chronicle",
+        "menu.realms_of_chaos.story.open.lore": "The story so far, and what to do next",
+        "menu.realms_of_chaos.story.count": "%s of %s chapters written",
+        "entity.realms_of_chaos.pilgrim": "Pilgrim",
+        "entity.realms_of_chaos.echo": "Echo of %s",
         "block.realms_of_chaos.passage_seal": "Passage Seal",
         "block.realms_of_chaos.passage_shrine": "Passage Shrine",
         "hud.realms_of_chaos.passage.title": "Passage to floor %s",
@@ -507,7 +666,7 @@ def gen_lang():
         "hud.realms_of_chaos.line_complete.sub": "The whole line of %s has fallen to you",
         "welcome.realms_of_chaos.title": "Realms of Chaos",
         "welcome.realms_of_chaos.subtitle": "Thank you for using our mod!",
-        "welcome.realms_of_chaos.hint": "Open the Codex of Chaos in your inventory to begin",
+        "welcome.realms_of_chaos.hint": "Read the Oracle's letter, then follow the Compass of Chaos to a Ruined Gate",
         "menu.realms_of_chaos.codex": "Codex of Chaos",
         "menu.realms_of_chaos.line": "Line of %s",
         "menu.realms_of_chaos.line.progress": "%s / 15 gods defeated",
@@ -566,6 +725,17 @@ def gen_lang():
         "advancement.realms_of_chaos.root.title": "Realms of Chaos",
         "advancement.realms_of_chaos.root.desc": "Thank you for using our mod! Open the Codex of Chaos to begin. - TheFarawayDev",
     }
+    for sid, title, blurb, pages in STORY:
+        assert len(title) <= 32, title
+        lang[f"story.realms_of_chaos.{sid}.title"] = title
+        lang[f"story.realms_of_chaos.{sid}.blurb"] = blurb
+        for n, page in enumerate(pages, start=1):
+            assert len(page) <= 255, (sid, n, len(page))
+            lang[f"story.realms_of_chaos.{sid}.page{n}"] = page
+    for line, (kname, sname, shrine) in KEYSTONES.items():
+        lang[f"item.realms_of_chaos.keystone_{line.lower()}"] = kname
+        lang[f"item.realms_of_chaos.seeker_{line.lower()}"] = sname
+        lang[f"ruin.realms_of_chaos.{line.lower()}"] = shrine
     for gid, (mname, mkind) in SIGNATURES.items():
         lang[f"move.realms_of_chaos.{gid}"] = mname
     for mkind, mdesc in MOVE_KINDS.items():
@@ -602,8 +772,15 @@ def gen_lang():
 # ----------------------------------------------------------------------------
 # Item definitions / models
 # ----------------------------------------------------------------------------
+# The three keystones a Ruined Gate needs: (keystone name, the seeker compass that finds it, the shrine it lies in)
+KEYSTONES = {
+    "ZEUS": ("Keystone of the Sky", "Seeker of the Sky", "Shrine of the Sky"),
+    "POSEIDON": ("Keystone of the Tides", "Seeker of the Tides", "Shrine of the Tides"),
+    "HADES": ("Keystone of the Shades", "Seeker of the Shades", "Shrine of the Shades"),
+}
+
 BLOCKS = ["gate_hub", "gate_zeus", "gate_poseidon", "gate_hades", "gate_ascend", "gate_leave",
-          "altar_zeus", "altar_poseidon", "altar_hades", "chaos_forge", "passage_seal", "passage_shrine"]
+          "altar_zeus", "altar_poseidon", "altar_hades", "chaos_forge", "passage_seal", "passage_shrine", "gate_pedestal", "oracle"]
 
 # The 22 Major Arcana: (id, numeral, name, what the card does, 8x8 symbol (# ink, + colour), colour)
 TAROT = [
@@ -696,7 +873,8 @@ def gen_models():
         wj(os.path.join(ASSETS, f"models/item/{iid}.json"), {"parent": parent, "textures": {"layer0": f"{MOD}:item/{iid}"}})
     extra = ["chaos_compass", "chaos_codex", "tarot_deck"] + [f"tarot_{c[0]}" for c in TAROT] + [f"voodoo_doll_{d[0]}" for d in DOLLS] \
         + [f"essence_{l.lower()}" for l in LINES] + [f"orb_{o}" for o in ORBS] \
-        + [f"material_{l.lower()}_{t}" for l in LINES for t in (1, 2, 3)]
+        + [f"material_{l.lower()}_{t}" for l in LINES for t in (1, 2, 3)] \
+        + [f"keystone_{l.lower()}" for l in LINES] + [f"seeker_{l.lower()}" for l in LINES]
     for flat in extra:
         item_def(flat, f"item/{flat}")
         wj(os.path.join(ASSETS, f"models/item/{flat}.json"),
@@ -707,6 +885,14 @@ def gen_models():
             wj(os.path.join(ASSETS, f"models/block/{b}.json"),
                station_model(f"{MOD}:block/chaos_forge_top", f"{MOD}:block/altar_base", f"{MOD}:block/chaos_forge_side",
                              [(1, 0, 1, 15, 4, 15), (3, 4, 3, 13, 9, 13), (0, 9, 0, 16, 16, 16)]))
+        elif b == "gate_pedestal":
+            wj(os.path.join(ASSETS, f"models/block/{b}.json"),
+               station_model(f"{MOD}:block/gate_pedestal_top", f"{MOD}:block/altar_base", f"{MOD}:block/gate_pedestal_side",
+                             [(1, 0, 1, 15, 3, 15), (4, 3, 4, 12, 11, 12), (2, 11, 2, 14, 14, 14)]))
+        elif b == "oracle":
+            wj(os.path.join(ASSETS, f"models/block/{b}.json"),
+               station_model(f"{MOD}:block/oracle_top", f"{MOD}:block/altar_base", f"{MOD}:block/oracle_side",
+                             [(0, 0, 0, 16, 4, 16), (3, 4, 3, 13, 8, 13), (1, 8, 1, 15, 12, 15), (4, 12, 4, 12, 16, 12)]))
         elif b.startswith("altar"):
             wj(os.path.join(ASSETS, f"models/block/{b}.json"),
                station_model(f"{MOD}:block/{b}_top", f"{MOD}:block/altar_base", f"{MOD}:block/{b}_side",
@@ -720,10 +906,13 @@ def gen_models():
 # Weapon textures: hand-drawn 16x16 templates, auto-outlined, shaded, with an animated glint
 #   h highlight  b blade  s blade shadow  g guard/accent  w wood  W dark wood  p gem (power colour)
 # ----------------------------------------------------------------------------
-GENERATED_SHAPES = {"chalice", "conch", "flute", "orb", "lantern", "star", "talon", "crossbow", "tessen", "kunai", "mjolnir"}      # held flat, not like a tool
+GENERATED_SHAPES = {"chalice", "conch", "flute", "orb", "lantern", "star", "talon", "crossbow", "tessen", "kunai", "mjolnir", "shuriken", "kusarigama", "nunchaku", "yumi"}      # held flat, not like a tool
 
 # Designs drawn ahead of the mythologies that will use them (Japanese, Norse, Egyptian, Celtic...)
-FUTURE_SHAPES = ["katana", "naginata", "kunai", "tessen", "battleaxe", "mjolnir", "khopesh", "claymore", "halberd", "mace", "crossbow"]
+# Japanese first: the next mythology planned
+JAPANESE_SHAPES = ["katana", "wakizashi", "tanto", "nodachi", "naginata", "yari", "kusarigama", "sai", "kanabo", "nunchaku",
+                   "yumi", "kunai", "shuriken", "tessen"]
+FUTURE_SHAPES = JAPANESE_SHAPES + ["battleaxe", "mjolnir", "khopesh", "claymore", "halberd", "mace", "crossbow"]
 
 SHAPES = {
     "scythe": """
@@ -847,21 +1036,191 @@ pW..............
 ................""",
     "katana": """
 ................
+............hhh.
+..........hhbbs.
+.........hbbss..
+........hbbs....
+.......hbbs.....
+......hbbs......
+.....hbbs.......
+.....hbs........
+....hbbs........
+....hbs.........
+...gggg.........
+...wWg..........
+..wWw...........
+..WwW...........
+.pW.............""",
+    "wakizashi": """
+................
+................
+................
+...........hhh..
+.........hhbbs..
+........hbbss...
+.......hbbs.....
+......hbbs......
+......hbs.......
+.....hbbs.......
+....gggg........
+....wWg.........
+...wWw..........
+...WwW..........
+..pW............
+................""",
+    "tanto": """
+................
+................
+................
+................
+..........hh....
+.........hbs....
+........hbbs....
+.......hbbs.....
+.......hbs......
+......hbs.......
+.....ggg........
+.....wW.........
+....wW..........
+....Ww..........
+...pW...........
+................""",
+    "nodachi": """
+.............hhh
+...........hhbbs
+..........hbbbs.
+.........hbbbs..
+........hbbbs...
+.......hbbbs....
+......hbbbs.....
+.....hbbbs......
+.....hbbs.......
+....hbbbs.......
+....hbbs........
+...hbbs.........
+..gggg..........
+..wWg...........
+.wWw............
+pWW.............""",
+    "yari": """
 ..............h.
 .............hb.
 ............hbs.
+..........ghbs..
+.........gghs...
+..........wgg...
+.........wW.g...
+........wW......
+.......wW.......
+......wW........
+.....wW.........
+....wW..........
+...wW...........
+..wW............
+.wW.............
+pW..............""",
+    "kusarigama": """
+................
+.....hhhhh......
+....hbbbbbh.....
+...hbs...sbh....
+...bs.....sb....
+..........wW....
+.........wW.....
+........wW......
+.......wW.......
+......wW........
+.....gW.........
+....g...........
+...g..g.........
+..g..g.g........
+.ppg...g........
+.pp.gggg........""",
+    "sai": """
+................
+.............h..
+............hb..
 ...........hbs..
-..........hbs...
-.........hbs....
-........hbs.....
-.......hbs......
+....h.....hbs...
+....bh...hbs....
+.....bh.hbs.....
+......bhbs......
+......gggh......
+.....gggg.bh....
+....wW....sb....
+...wW......s....
+..wW............
+.wW.............
+pW..............
+................""",
+    "kanabo": """
+................
+..........hhh...
+.........hbgbs..
+........hbbbbgs.
+.......hgbbbbs..
+......hbbbgbs...
+.....hbgbbbs....
+......hbbbs.....
+......gggs......
+.....wW.........
+....wW..........
+....Ww..........
+...wW...........
+..gg............
+.pg.............
+................""",
+    "shuriken": """
+................
+.......h........
+.......hb.......
+.......hb.......
+......hbbs......
+..hh.hbbbs......
+.hbbbbbgbbbbbh..
+..sbbbgpgbbbs...
+...ssbbgbbbbbs..
+......hbbs.ss...
 ......hbs.......
-.....ggs........
-....wgg.........
-...WwW..........
-..wWw...........
-.WwW............
-.pW.............""",
+.......bs.......
+.......bs.......
+.......s........
+................
+................""",
+    "yumi": """
+................
+.........WWWw...
+.......WWw..h...
+......Ww....h...
+.....Ww.....h...
+....Ww......h...
+....Ww......h...
+...ggg......h...
+...ggg.....h....
+....Ww....h.....
+....Ww...h......
+.....Ww.h.......
+.....WWh........
+......Ww........
+................
+................""",
+    "nunchaku": """
+................
+...........wW...
+..........wWw...
+.........wWw....
+........wWw.....
+.......gWw......
+......g.g.......
+.....g..........
+....g...........
+...g.g..........
+....gWw.........
+.....wWw........
+......wWw.......
+.......wWw......
+........wW......
+................""",
     "battleaxe": """
 ................
 ......hhhh......
@@ -1475,7 +1834,8 @@ def gen_concepts():
                 frame.save(dst)
     sheet.save(os.path.join(out, "sheet.png"))
     w(os.path.join(out, "README.md"), "# Weapon designs\n\nGenerated by `tools/generate.py`. `sheet.png` shows every weapon silhouette in three metals; "
-      "the first rows are designs for mythologies that are not in the mod yet:\n\n" + "".join(f"* `{n}`\n" for n in FUTURE_SHAPES)
+      "the first rows are designs for mythologies that are not in the mod yet.\n\nJapanese (planned next):\n\n"
+      + "".join(f"* `{n}`\n" for n in JAPANESE_SHAPES) + "\nOther mythologies:\n\n" + "".join(f"* `{n}`\n" for n in FUTURE_SHAPES if n not in JAPANESE_SHAPES)
       + "\nThe single PNGs are also shipped in the mod under `textures/item/design/`, ready for an item to point at.\n")
 
 def gen_flat_items():
@@ -1649,6 +2009,45 @@ def gen_dolls():
 GEM_SHAPE = ["................", "................", "......hhhh......", ".....hhbbbb.....", "....hhbbbbbb....", "...hhbbbbbbss...",
              "...hbbbbbbbss...", "...bbbbbbbsss...", "....bbbbbsss....", ".....bbbsss.....", "......bsss......", ".......ss.......", "................"]
 
+KEYSTONE_SHAPE = ["................", "......oooo......", "....oossssoo....", "...osssssssso...", "..osshhhhhhsso..", "..oshbbbbbbhso..",
+                  ".osshbbrrbbhsso.", ".osshbrrrrbhsso.", ".osshbrrrrbhsso.", ".osshbbrrbbhsso.", "..oshbbbbbbhso..", "..osshhhhhhsso..",
+                  "...osssssssso...", "....oossssoo....", "......oooo......", "................"]
+
+def gen_keystones_and_seekers():
+    cols = {"ZEUS": (245, 196, 70), "POSEIDON": (60, 190, 215), "HADES": (170, 80, 230)}
+    for line, col in cols.items():
+        frames = []
+        for f in range(6):
+            k = 0.5 + 0.5 * math.sin(f / 6 * math.tau)
+            pal = {"o": (40, 40, 48), "s": (118, 122, 128), "h": (170, 174, 180), "b": shade(col, 0.55), "r": mix(col, (255, 255, 255), 0.2 + 0.6 * k)}
+            img = Image.new("RGBA", (16, 16), (0, 0, 0, 0))
+            for y, row in enumerate(KEYSTONE_SHAPE):
+                for x, ch in enumerate(row):
+                    if ch in pal:
+                        img.putpixel((x, y), pal[ch] + (255,))
+            frames.append(img)
+        save_strip(frames, os.path.join(ASSETS, f"textures/item/keystone_{line.lower()}.png"), {"animation": {"frametime": 4, "interpolate": True}})
+        frames = []
+        for f in range(8):
+            img = Image.new("RGBA", (16, 16), (0, 0, 0, 0))
+            px = img.load()
+            for y in range(16):
+                for x in range(16):
+                    d = math.hypot(x - 7.5, y - 7.5)
+                    if d < 7.4:
+                        px[x, y] = shade(col, 0.22) + (255,)
+                    if 5.6 <= d < 7.4:
+                        px[x, y] = shade((150, 154, 164), 1.15 if (x + y) < 14 else 0.75) + (255,)
+                    if 4.6 <= d < 5.6:
+                        px[x, y] = shade(col, 0.5) + (255,)
+            a = math.sin(f / 8 * math.tau) * 0.5 - math.pi / 4            # the needle sways about one heading
+            for r in range(1, 5):
+                px[int(round(7.5 + math.cos(a) * r)), int(round(7.5 + math.sin(a) * r))] = mix(col, (255, 255, 255), 0.35) + (255,)
+                px[int(round(7.5 - math.cos(a) * r)), int(round(7.5 - math.sin(a) * r))] = (90, 92, 104, 255)
+            px[7, 7] = px[8, 8] = px[7, 8] = px[8, 7] = col + (255,)
+            frames.append(img)
+        save_strip(frames, os.path.join(ASSETS, f"textures/item/seeker_{line.lower()}.png"), {"animation": {"frametime": 3}})
+
 def gen_essences_and_orbs():
     for line, (ename, col) in ESSENCES.items():
         frames = []
@@ -1815,6 +2214,56 @@ def gen_block_textures():
     os.makedirs(T, exist_ok=True)
     save_strip(seal_frames, os.path.join(T, "passage_seal.png"), {"animation": {"frametime": 3, "interpolate": True}})
     save_strip(shrine_frames, os.path.join(T, "passage_shrine.png"), {"animation": {"frametime": 4, "interpolate": True}})
+
+    # keystone pedestal: weathered stone with three coloured sockets; the Oracle's flame: a brazier of violet fire
+    line_cols = [(245, 196, 70), (60, 190, 215), (170, 80, 230)]
+    ped_top, ped_side, ora_top, ora_side = [], [], [], []
+    for f in range(8):
+        k = 0.5 + 0.5 * math.sin(f / 8 * math.tau)
+        pt, ps, ot, os_ = (Image.new("RGBA", (16, 16)) for _ in range(4))
+        for y in range(16):
+            for x in range(16):
+                g = grain[y][x]
+                r = math.hypot(x - 7.5, y - 7.5)
+                # pedestal top: mossy stone, a triangle of three sockets round a central rune
+                c = shade((112, 118, 112), g)
+                if (x * 7 + y * 13) % 11 == 0:
+                    c = shade((86, 120, 78), g)
+                for i, lc in enumerate(line_cols):
+                    a = -math.pi / 2 + i * math.tau / 3
+                    if math.hypot(x - (7.5 + math.cos(a) * 4.2), y - (7.5 + math.sin(a) * 4.2)) < 1.6:
+                        c = mix(shade(lc, 0.55), lc, k)
+                if r < 1.5:
+                    c = mix((200, 200, 215), (255, 255, 255), k)
+                pt.putpixel((x, y), c + (255,))
+                # pedestal side: stone courses with a carved band
+                c = shade((104, 110, 106), g * (0.8 if y % 4 == 3 else 1.0))
+                if (x * 5 + y * 3) % 13 == 0:
+                    c = shade((80, 112, 74), g)
+                if 6 <= y <= 9 and (x + y) % 4 < 2:
+                    c = mix(shade(line_cols[(x // 5) % 3], 0.5), line_cols[(x // 5) % 3], k * 0.8)
+                ps.putpixel((x, y), c + (255,))
+                # oracle top: a bowl of fire
+                c = shade((58, 50, 78), g)
+                if r < 6.5:
+                    heat = max(0.0, 1 - r / 6.5)
+                    flick = 0.5 + 0.5 * math.sin(f / 8 * math.tau + x * 1.3 + y * 0.9)
+                    c = mix((70, 30, 120), mix((190, 110, 255), (255, 240, 255), heat), min(1, heat * (0.8 + 0.6 * flick)))
+                elif r < 7.5:
+                    c = shade((214, 170, 74), g)
+                ot.putpixel((x, y), c + (255,))
+                # oracle side: dark bronze with rising violet glyphs
+                c = shade((66, 56, 86), g * (0.75 if x in (0, 15) else 1.0))
+                if y in (2, 13):
+                    c = shade((214, 170, 74), g)
+                if 4 <= y <= 11 and x % 4 == 1 and (y + f) % 4 < 2:
+                    c = mix((120, 60, 200), (230, 190, 255), k)
+                os_.putpixel((x, y), c + (255,))
+        ped_top.append(pt); ped_side.append(ps); ora_top.append(ot); ora_side.append(os_)
+    save_strip(ped_top, os.path.join(T, "gate_pedestal_top.png"), {"animation": {"frametime": 4, "interpolate": True}})
+    save_strip(ped_side, os.path.join(T, "gate_pedestal_side.png"), {"animation": {"frametime": 4, "interpolate": True}})
+    save_strip(ora_top, os.path.join(T, "oracle_top.png"), {"animation": {"frametime": 2, "interpolate": True}})
+    save_strip(ora_side, os.path.join(T, "oracle_side.png"), {"animation": {"frametime": 3, "interpolate": True}})
 
     stone = {"altar_zeus": ((232, 232, 240), (250, 205, 70)), "altar_poseidon": ((74, 150, 150), (120, 240, 250)),
              "altar_hades": ((44, 38, 58), (190, 80, 250))}
@@ -2435,11 +2884,13 @@ if __name__ == "__main__":
     gen_tarot()
     gen_dolls()
     gen_essences_and_orbs()
+    gen_keystones_and_seekers()
     gen_materials()
     gen_concepts()
     gen_forge_textures()
     gen_recipes()
     gen_tags()
+    gen_story_java()
     previews = gen_skins()
     gen_pack()
     gen_data()

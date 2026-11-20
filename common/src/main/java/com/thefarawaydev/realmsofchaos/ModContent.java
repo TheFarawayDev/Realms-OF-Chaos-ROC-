@@ -71,6 +71,8 @@ public final class ModContent {
     public static final Ref<Block> CHAOS_FORGE = new Ref<>();
     public static final Ref<Block> PASSAGE_SEAL = new Ref<>();
     public static final Ref<Block> PASSAGE_SHRINE = new Ref<>();
+    public static final Ref<Block> GATE_PEDESTAL = new Ref<>();
+    public static final Ref<Block> ORACLE = new Ref<>();
 
     public static final List<Def<Block>> BLOCK_DEFS = new ArrayList<>();
 
@@ -83,6 +85,8 @@ public final class ModContent {
     public static final Map<Tarot, Ref<Item>> TAROT = new HashMap<>();
     public static final Map<VoodooDollItem.Pin, Ref<Item>> DOLLS = new HashMap<>();
     public static final Map<Line, Ref<Item>> ESSENCES = new HashMap<>();
+    public static final Map<Line, Ref<Item>> KEYSTONES = new HashMap<>();
+    public static final Map<Line, Ref<Item>> SEEKERS = new HashMap<>();
     /** Forge materials dropped on tiers 1-3 of each tower, keyed "<line id>/<tier>". */
     public static final Map<String, Ref<Item>> MATERIALS = new HashMap<>();
     /** Not obtainable: the sprites staff bolts and god projectiles are drawn with, one per power. */
@@ -113,6 +117,11 @@ public final class ModContent {
         block("passage_shrine", PASSAGE_SHRINE, key -> new com.thefarawaydev.realmsofchaos.block.ShrineBlock(
                 unbreakable(key).mapColor(MapColor.QUARTZ).lightLevel(s -> 14).sound(SoundType.AMETHYST)));
 
+        block("gate_pedestal", GATE_PEDESTAL, key -> new com.thefarawaydev.realmsofchaos.block.GatePedestalBlock(
+                unbreakable(key).mapColor(MapColor.STONE).lightLevel(s -> 8).noOcclusion().sound(SoundType.STONE)));
+        block("oracle", ORACLE, key -> new com.thefarawaydev.realmsofchaos.block.OracleBlock(
+                unbreakable(key).mapColor(MapColor.COLOR_PURPLE).lightLevel(s -> 15).noOcclusion().sound(SoundType.AMETHYST)));
+
         // items: codex, compass, 45 god weapons (ordered by line, rank 1 -> 15), then the block items
         item("chaos_codex", CHAOS_CODEX, key -> new CodexItem(new Item.Properties().setId(key).stacksTo(1)));
         item("chaos_compass", CHAOS_COMPASS, key -> new ChaosCompassItem(new Item.Properties().setId(key).stacksTo(1)));
@@ -122,6 +131,16 @@ public final class ModContent {
                 WEAPONS.put(god.id(), ref);
                 item(god.id() + "_weapon", ref, key -> new GodWeaponItem(god, GodWeaponItem.properties(god, key)));
             }
+        }
+        // the way in: three keystones and the seekers that find them
+        for (Line line : Line.values()) {
+            Ref<Item> keystone = new Ref<>(), seeker = new Ref<>();
+            KEYSTONES.put(line, keystone);
+            SEEKERS.put(line, seeker);
+            item("keystone_" + line.id(), keystone, key -> new com.thefarawaydev.realmsofchaos.item.KeystoneItem(line,
+                    new Item.Properties().setId(key).stacksTo(16).rarity(net.minecraft.world.item.Rarity.RARE).fireResistant()));
+            item("seeker_" + line.id(), seeker, key -> new com.thefarawaydev.realmsofchaos.item.SeekerItem(line,
+                    new Item.Properties().setId(key).stacksTo(1).rarity(net.minecraft.world.item.Rarity.UNCOMMON)));
         }
         // tarot: the Deck of Fate and the 22 single cards
         item("tarot_deck", TAROT_DECK, key -> new TarotDeckItem(new Item.Properties().setId(key).stacksTo(1).rarity(net.minecraft.world.item.Rarity.EPIC).fireResistant()));
@@ -211,6 +230,14 @@ public final class ModContent {
         return TAROT.get(card).get();
     }
 
+    public static Item keystoneItem(Line line) {
+        return KEYSTONES.get(line).get();
+    }
+
+    public static Item seekerItem(Line line) {
+        return SEEKERS.get(line).get();
+    }
+
     public static Item essenceItem(Line line) {
         return ESSENCES.get(line).get();
     }
@@ -256,6 +283,8 @@ public final class ModContent {
         for (Line line : Line.values()) {
             for (int tier = 1; tier <= 4; tier++) out.add(materialItem(line, tier));
         }
+        for (Line line : Line.values()) out.add(seekerItem(line));
+        for (Line line : Line.values()) out.add(keystoneItem(line));
         out.add(TAROT_DECK.get());
         for (Tarot card : Tarot.values()) out.add(TAROT.get(card).get());
         for (VoodooDollItem.Pin pin : VoodooDollItem.Pin.values()) out.add(DOLLS.get(pin).get());

@@ -16,12 +16,18 @@ public final class RealmBuilder {
     public static final int LAYOUT_VERSION = TowerBuilder.LAYOUT_VERSION;
     public static final int Y = 64;
     private static final int HUB_RADIUS = 26;
+    /** The hub has its own design number, so it can be rebuilt without rebuilding the towers. */
+    public static final int HUB_VERSION = 2;
+    /** The Oracle's Flame: just north of where arrivals appear, on the way to the gate of Zeus. */
+    public static final BlockPos ORACLE = new BlockPos(0, Y + 1, -5);
+    /** The canal that rings the plaza, bridged where the four paths cross it. */
+    public static final double CANAL_INNER = 11.0, CANAL_OUTER = 13.0;
 
     private RealmBuilder() {}
 
     public static void ensureHub(ServerLevel level) {
         ProgressData data = ProgressData.get(level.getServer());
-        String key = Realm.HUB.id() + "@" + LAYOUT_VERSION;
+        String key = Realm.HUB.id() + "@" + LAYOUT_VERSION + "h" + HUB_VERSION;
         if (data.isBuilt(key)) return;
         buildHub(level);
         data.markBuilt(key);
@@ -171,6 +177,51 @@ public final class RealmBuilder {
         // two Forges of Chaos beside the central medallion
         set(level, 6, Y + 1, 6, ModContent.CHAOS_FORGE.get().defaultBlockState());
         set(level, -6, Y + 1, 6, ModContent.CHAOS_FORGE.get().defaultBlockState());
+
+        // a canal rings the plaza: clear water over prismarine, lit from below, with lily pads, bridged by the four paths
+        annulus(CANAL_INNER, CANAL_OUTER, (x, z, d) -> {
+            if (Math.abs(x) <= 3 || Math.abs(z) <= 3) return;
+            set(level, x, Y - 1, z, ((x * 7 + z * 13) & 3) == 0 ? Blocks.SEA_LANTERN : Blocks.PRISMARINE_BRICKS);
+            set(level, x, Y, z, Blocks.WATER);
+            if (Math.floorMod(x * 31 + z * 17, 7) == 0) set(level, x, Y + 1, z, Blocks.LILY_PAD);
+        });
+        // a garden in each corner: a cherry tree in a bed of moss and flowers
+        for (int sx = -1; sx <= 1; sx += 2) {
+            for (int sz = -1; sz <= 1; sz += 2) {
+                int gx = sx * HubLife.GARDEN, gz = sz * HubLife.GARDEN;
+                for (int dx = -2; dx <= 2; dx++) {
+                    for (int dz = -2; dz <= 2; dz++) {
+                        set(level, gx + dx, Y, gz + dz, Math.abs(dx) == 2 || Math.abs(dz) == 2 ? Blocks.MOSSY_STONE_BRICKS : Blocks.MOSS_BLOCK);
+                    }
+                }
+                Block[] flowers = {Blocks.PINK_TULIP, Blocks.ALLIUM, Blocks.AZURE_BLUET, Blocks.OXEYE_DAISY};
+                int n = 0;
+                for (int[] f : new int[][]{{-1, -1}, {1, -1}, {-1, 1}, {1, 1}, {0, -1}, {1, 0}}) set(level, gx + f[0], Y + 1, gz + f[1], flowers[n++ % flowers.length]);
+                column(level, gx, gz, Y + 1, 4, Blocks.CHERRY_LOG);
+                BlockState leaves = Blocks.CHERRY_LEAVES.defaultBlockState().setValue(net.minecraft.world.level.block.LeavesBlock.PERSISTENT, true);
+                for (int dx = -2; dx <= 2; dx++) {
+                    for (int dz = -2; dz <= 2; dz++) {
+                        for (int dy = 4; dy <= 6; dy++) {
+                            int reach = dy == 6 ? 1 : 2;
+                            if (Math.abs(dx) > reach || Math.abs(dz) > reach || (Math.abs(dx) == 2 && Math.abs(dz) == 2)) continue;
+                            if (dx == 0 && dz == 0 && dy == 4) continue;
+                            set(level, gx + dx, Y + dy, gz + dz, leaves);
+                        }
+                    }
+                }
+            }
+        }
+        // the Oracle's Flame, on gilded stone
+        for (int dx = -1; dx <= 1; dx++) for (int dz = -1; dz <= 1; dz++) set(level, ORACLE.getX() + dx, Y, ORACLE.getZ() + dz, Blocks.GILDED_BLACKSTONE);
+        set(level, ORACLE.getX(), ORACLE.getY(), ORACLE.getZ(), ModContent.ORACLE.get().defaultBlockState());
+        // plinths either side of each tower gate, for the echoes of its gods
+        for (com.thefarawaydev.realmsofchaos.god.Line line : com.thefarawaydev.realmsofchaos.god.Line.values()) {
+            for (BlockPos plinth : HubLife.plinths(line)) {
+                set(level, plinth.getX(), plinth.getY(), plinth.getZ(), Blocks.CHISELED_STONE_BRICKS);
+                for (int dy = 1; dy <= 4; dy++) set(level, plinth.getX(), plinth.getY() + dy, plinth.getZ(), Blocks.AIR);
+            }
+        }
         makeSafe(level, 0.5, Y + 1, 0.5);
+        HubLife.populate(level);
     }
 }
