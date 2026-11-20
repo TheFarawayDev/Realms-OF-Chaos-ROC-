@@ -8,55 +8,75 @@ This release implements the **Greek mythology** path (the part of the design tha
 The other four starting points (Norse, Egyptian, Celtic, Japanese) and the optional side-realms (Hellish, Heavenly,
 Phobias, Community weapons, Voodoo & Tarot) are not in yet.
 
-## What's in 1.1.0
+## Release channel
 
-* **The Hub of Realms** - a plaza with three gates: **Zeus** (north), **Poseidon** (east), **Hades** (west).
-* **Three arenas**, one behind each gate: *Olympian Heights* (marble temple), *The Abyssal Palace* (prismarine ringed
-  by water), *The Underworld* (basalt spikes and a river of lava).
-* **45 gods** - each is a boss with its own look *and* an animated relic weapon, in three ranked lines
-  (rank 1 = strongest, rank 15 = weakest and the starter):
+The `VERSION` file at the repo root sets the version and channel for both loaders, the in-game Codex, the GitHub
+release and the download page: `1.2.0-alpha` and `1.2.0-beta` are published as pre-releases, `1.2.0` as a full release.
+The current build is an **Alpha**.
 
-| Rank | Zeus line | Poseidon line | Hades line |
+## What's in 1.2.0
+
+* **The Hub of Realms** - a plaza with four gates: **Zeus** (north), **Poseidon** (east), **Hades** (west), and the
+  **exit** back to where you came from (south).
+* **Three towers of 15 floors**, one per god line. Every floor is its own enclosed arena holding one god; floor 1 has
+  the starter (rank 15) and floor 15, the open summit, has the final god (rank 1). Beat a floor's god and its
+  **Gate of Ascent** opens.
+* **Every floor is different.** Ten terrain layouts (flat, mounds, pillared hall, pit, dais, waves, moat, terraces,
+  split level, ziggurat, summit) are combined with four material tiers per tower:
+
+| Floors | Tower of Zeus | Tower of Poseidon | Tower of Hades |
 |---|---|---|---|
-| 1 | Zeus | Poseidon | Hades |
-| 2 | Athena | Amphitrite | Persephone |
-| 3 | Apollo | Triton | Zagreus |
-| 4 | Dionysus | Chrysaor | Thanatos |
-| 5 | Artemis | Cymopoleia | Hypnos |
-| 6 | Ares | Rhode | Melinoe |
-| 7 | Hermes | Pegasus | Macaria |
-| 8 | Asclepius | Benthesikyme | Hecate |
-| 9 | Hebe | Halia | Morpheus |
-| 10 | Phobos | Nereus | Nyx |
-| 11 | Deimos | Proteus | Erinyes |
-| 12 | Hygeia | Palaemon | Moirai |
-| 13 | Pan | Thetis | Keres |
-| 14 | Nike | Galene | Oneiroi |
-| 15 (starter) | **Iris** | **Galatea** | **Charon** |
+| 1-5 | Foothills of Olympus | The Sunlit Shallows | Fields of Asphodel |
+| 6-10 | The Marble Halls | The Prismarine Halls | Tartarus |
+| 11-14 | The Cloud Sanctum | The Trench | Halls of the Dead |
+| 15 | Summit of Olympus | Throne of the Deep | Throne of the Underworld |
 
-* **Codex of Chaos** - an in-game menu (item or `/roc menu`): every line and god, what you have defeated, what is
-  next, and one-click travel to the hub and the arenas.
-* **Advancements tab** - "Realms of Chaos", one advancement per god, a challenge for each final boss.
-* **First-join welcome** - the first time a player enters a world they are thanked, and given the Codex and the
-  Compass of Chaos.
+* **45 gods** - each is a boss with its own look *and* an animated relic weapon:
+
+| Floor | Rank | Zeus line | Poseidon line | Hades line |
+|---|---|---|---|---|
+| 15 | 1 | Zeus | Poseidon | Hades |
+| 14 | 2 | Athena | Amphitrite | Persephone |
+| 13 | 3 | Apollo | Triton | Zagreus |
+| 12 | 4 | Dionysus | Chrysaor | Thanatos |
+| 11 | 5 | Artemis | Cymopoleia | Hypnos |
+| 10 | 6 | Ares | Rhode | Melinoe |
+| 9 | 7 | Hermes | Pegasus | Macaria |
+| 8 | 8 | Asclepius | Benthesikyme | Hecate |
+| 7 | 9 | Hebe | Halia | Morpheus |
+| 6 | 10 | Phobos | Nereus | Nyx |
+| 5 | 11 | Deimos | Proteus | Erinyes |
+| 4 | 12 | Hygeia | Palaemon | Moirai |
+| 3 | 13 | Pan | Thetis | Keres |
+| 2 | 14 | Nike | Galene | Oneiroi |
+| 1 (start) | 15 | **Iris** | **Galatea** | **Charon** |
+
+* **In-game UI instead of chat** - nothing the mod tells you goes to chat:
+  * **Codex of Chaos** (item or `/roc`): the three towers, every floor and god, travel to any floor you have
+    reached, travel to the hub, and leave the realms.
+  * **Trial Altar menu**: right-click a floor's altar to see its god and begin the trial, or ascend once it is won.
+  * **Tower bar**: a bar at the top of the screen shows the tower, floor and tier you are on.
+  * **Titles and action bar** for arrivals, trials, victories and short notices.
+  * **Advancements tab** with one advancement per god.
+* **First-join welcome** - a thank-you title, plus the Codex and the Compass of Chaos.
 
 ## How to play
 
-1. Join a world. Open the **Codex of Chaos** (or run `/roc menu`), or use the **Compass of Chaos** / `/roc hub`.
-2. Walk into one of the three gates to enter an arena.
-3. Use the arena's **Trial Altar**. Each line is climbed from the **starter** (Iris / Galatea / Charon, rank 15) up to
-   the **final god** (Zeus / Poseidon / Hades, rank 1). The next trial unlocks once you have defeated the previous
-   god of that line. The three lines are independent: pick any path. (Trials need a difficulty above Peaceful.)
-4. Every god you defeat drops its **relic weapon**: sword-class, scaled by rank, with a signature hit power and a
-   right-click **Divine Surge** (12 s cooldown).
+1. Join a world. Open the **Codex of Chaos** (or run `/roc`), or use the **Compass of Chaos** / `/roc hub`.
+2. In the hub, walk into a tower gate. You arrive on the floor you are working on.
+3. Right-click the floor's **Trial Altar** and press **Begin the trial**. (Trials need a difficulty above Peaceful.)
+4. Defeat the god: it drops its **relic weapon** (sword-class, scaled by rank, with a signature hit power and a
+   right-click **Divine Surge**), and the **Gate of Ascent** at the far side of the floor opens for you.
+5. Climb. The three towers are independent, and progress is saved per player.
+6. To go home, take the south gate in the hub, the Codex's *Leave the Realms* button, or `/roc leave`.
 
 Each line fights differently: **Zeus** calls lightning, **Poseidon** drags you in and crashes tidal waves over you,
 **Hades** drains your life and (for the top gods) raises wither skeletons. Bosses raise their arms and gather
 particles for about a second before a big attack, and enrage at half health.
 
-**No getting stuck:** the fight ring of every arena is flat and empty, an invisible wall stops anyone being thrown
-out, bosses that end up out of bounds, inside a block or unable to reach you are put back, and a player who falls
-into the void or is stuck in a block is returned to the arrival pad.
+**No getting stuck:** no step on any floor is taller than one block and nothing stands inside the fight ring, floors
+are fully enclosed, bosses that end up off their floor, inside a block or unable to reach you are put back, and a
+player who is stuck in a block or falls out is returned to the floor's arrival pad.
 
 ## Install
 
@@ -65,9 +85,10 @@ into the void or is stuck in a block is returned to the arrival pad.
 | Fabric | Minecraft 26.3, Java 25, Fabric Loader >= 0.20.1, Fabric API 0.166.2+26.3 (or newer for 26.3) |
 | Forge | Minecraft 26.3, Java 25, Forge 66.1.9 (or newer for 26.3) |
 
-Drop the matching `realms-of-chaos-<loader>-1.1.0+mc26.3.jar` into your `mods` folder.
+Drop the matching `realms-of-chaos-<loader>-<version>+mc26.3.jar` into your `mods` folder.
 
-Updating from 1.0.0: the hub and arenas are rebuilt automatically the next time someone enters them. Progress is kept.
+Updating from 1.0 / 1.1: the hub is rebuilt and the old arenas are replaced by the towers automatically the next
+time someone enters them. Progress is kept: you arrive on the floor matching the gods you have already defeated.
 
 ## Building from source
 
@@ -84,8 +105,9 @@ JAVA_HOME=/path/to/jdk-25 ./build.sh
 ### Self-test
 
 The mod contains a developer self-test that only runs when the JVM has `-Droc.selftest=true`. It exercises the mod
-on a real server: data loading, building the hub and arenas, the altar, a boss fight, every weapon power, the Codex
-menu, the welcome and the anti-stuck safeguards.
+on a real server: data loading, the hub, building and walking every floor of every tower, a full climb of all three
+towers through the altar menu, every weapon power, the Codex, leaving the realms, the welcome and the anti-stuck
+safeguards.
 
 ```bash
 cd forge && ./gradlew runGameTestServer && cat run/roc-selftest.txt

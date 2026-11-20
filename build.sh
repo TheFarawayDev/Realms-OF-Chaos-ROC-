@@ -3,7 +3,7 @@
 # Needs JDK 25 (set JAVA_HOME). Forge's tooling additionally wants a JDK 8 installed locally.
 set -euo pipefail
 cd "$(dirname "$0")"
-VERSION="1.1.0"
+VERSION="$(tr -d '[:space:]' < VERSION)"
 MC="26.3"
 python3 tools/generate.py
 (cd fabric && ./gradlew --no-daemon build)

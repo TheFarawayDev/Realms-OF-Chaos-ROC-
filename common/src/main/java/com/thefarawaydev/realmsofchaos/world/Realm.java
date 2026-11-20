@@ -58,12 +58,24 @@ public enum Realm {
         };
     }
 
-    /** Where bosses of this realm's arena spawn and are leashed to (the arena centre). */
-    public Vec3 arenaCentre() {
-        return new Vec3(0.5, 65, 0.5);
+    // Test seam: the developer self-test runs on a server without the realm dimensions, so it can make one
+    // ordinary dimension stand in for a realm. Never set in normal play.
+    private static ResourceKey<Level> aliasDimension;
+    private static Realm aliasRealm;
+
+    public static void testAlias(ResourceKey<Level> dimension, Realm realm) {
+        aliasDimension = dimension;
+        aliasRealm = realm;
+    }
+
+    /** The loaded level of this realm, or null if this world does not have it. */
+    public net.minecraft.server.level.ServerLevel level(net.minecraft.server.MinecraftServer server) {
+        if (aliasRealm == this && aliasDimension != null) return server.getLevel(aliasDimension);
+        return server.getLevel(key);
     }
 
     public static Realm of(ResourceKey<Level> dimension) {
+        if (aliasDimension != null) return aliasDimension.equals(dimension) ? aliasRealm : null;
         for (Realm r : values()) {
             if (r.key.equals(dimension)) return r;
         }

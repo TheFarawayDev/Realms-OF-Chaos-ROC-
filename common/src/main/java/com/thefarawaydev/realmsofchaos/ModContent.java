@@ -9,7 +9,6 @@ import com.thefarawaydev.realmsofchaos.god.Line;
 import com.thefarawaydev.realmsofchaos.item.ChaosCompassItem;
 import com.thefarawaydev.realmsofchaos.item.CodexItem;
 import com.thefarawaydev.realmsofchaos.item.GodWeaponItem;
-import com.thefarawaydev.realmsofchaos.world.Realm;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -57,6 +56,8 @@ public final class ModContent {
     public static final Ref<Block> GATE_ZEUS = new Ref<>();
     public static final Ref<Block> GATE_POSEIDON = new Ref<>();
     public static final Ref<Block> GATE_HADES = new Ref<>();
+    public static final Ref<Block> GATE_ASCEND = new Ref<>();
+    public static final Ref<Block> GATE_LEAVE = new Ref<>();
     public static final Ref<Block> ALTAR_ZEUS = new Ref<>();
     public static final Ref<Block> ALTAR_POSEIDON = new Ref<>();
     public static final Ref<Block> ALTAR_HADES = new Ref<>();
@@ -77,10 +78,12 @@ public final class ModContent {
 
     static {
         // blocks
-        block("gate_hub", GATE_HUB, key -> gate(Realm.HUB, key));
-        block("gate_zeus", GATE_ZEUS, key -> gate(Realm.OLYMPUS, key));
-        block("gate_poseidon", GATE_POSEIDON, key -> gate(Realm.ABYSS, key));
-        block("gate_hades", GATE_HADES, key -> gate(Realm.UNDERWORLD, key));
+        block("gate_hub", GATE_HUB, key -> gate(GateBlock.Kind.HUB, key));
+        block("gate_zeus", GATE_ZEUS, key -> gate(GateBlock.Kind.ZEUS, key));
+        block("gate_poseidon", GATE_POSEIDON, key -> gate(GateBlock.Kind.POSEIDON, key));
+        block("gate_hades", GATE_HADES, key -> gate(GateBlock.Kind.HADES, key));
+        block("gate_ascend", GATE_ASCEND, key -> gate(GateBlock.Kind.ASCEND, key));
+        block("gate_leave", GATE_LEAVE, key -> gate(GateBlock.Kind.LEAVE, key));
         block("altar_zeus", ALTAR_ZEUS, key -> altar(Line.ZEUS, key));
         block("altar_poseidon", ALTAR_POSEIDON, key -> altar(Line.POSEIDON, key));
         block("altar_hades", ALTAR_HADES, key -> altar(Line.HADES, key));
@@ -114,8 +117,8 @@ public final class ModContent {
         return BlockBehaviour.Properties.of().setId(key).strength(-1.0F, 3600000.0F).noLootTable();
     }
 
-    private static Block gate(Realm destination, ResourceKey<Block> key) {
-        return new GateBlock(destination, unbreakable(key).mapColor(MapColor.COLOR_PURPLE).noCollision().lightLevel(s -> 15)
+    private static Block gate(GateBlock.Kind kind, ResourceKey<Block> key) {
+        return new GateBlock(kind, unbreakable(key).mapColor(MapColor.COLOR_PURPLE).noCollision().lightLevel(s -> 15)
                 .sound(SoundType.AMETHYST));
     }
 

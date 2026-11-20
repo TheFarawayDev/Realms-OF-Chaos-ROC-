@@ -3,7 +3,9 @@ plugins {
 	id 'maven-publish'
 }
 
-version = "${project.mod_version}+mc${project.minecraft_version}"
+// One VERSION file at the repo root drives both loaders (e.g. 1.2.0-alpha, 1.2.0-beta, 1.2.0).
+def modVersion = file('../VERSION').text.trim()
+version = "${modVersion}+mc${project.minecraft_version}"
 group = 'com.thefarawaydev.realmsofchaos'
 base { archivesName = 'realms-of-chaos-fabric' }
 
@@ -35,7 +37,7 @@ dependencies {
 }
 
 processResources {
-	def version = project.mod_version
+	def version = modVersion
 	inputs.property "version", version
 	filesMatching("fabric.mod.json") { expand "version": version }
 }

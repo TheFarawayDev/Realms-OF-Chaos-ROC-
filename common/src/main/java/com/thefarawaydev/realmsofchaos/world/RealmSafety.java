@@ -1,22 +1,29 @@
 package com.thefarawaydev.realmsofchaos.world;
 
 import com.thefarawaydev.realmsofchaos.RealmsOfChaos;
+import com.thefarawaydev.realmsofchaos.god.Line;
+import com.thefarawaydev.realmsofchaos.ui.Hud;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.level.ServerBossEvent;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.BossEvent;
 import net.minecraft.world.phys.Vec3;
 
 /**
- * Called once per server tick by each loader. Once a second it rescues players inside a realm who fell into the
- * void or have been stuck inside a block, by putting them back on that realm's arrival pad.
+ * Called once per server tick by each loader; does its work once a second for players inside a realm:
+ * builds the floor they stand on if needed, shows the tower progress bar, and rescues anyone who fell into the
+ * void or has been stuck inside a block by putting them back on the arrival pad.
  */
 public final class RealmSafety {
     private static final Map<UUID, Integer> STUCK_SECONDS = new HashMap<>();
+    private static final Map<UUID, ServerBossEvent> BARS = new HashMap<>();
     private static int ticker;
 
     private RealmSafety() {}
@@ -25,13 +32,23 @@ public final class RealmSafety {
         if (++ticker % 20 != 0) return;
         for (ServerPlayer player : server.getPlayerList().getPlayers()) {
             Realm realm = Realm.of(player.level().dimension());
-            if (realm == null || !player.isAlive() || player.isSpectator()) {
+            if (realm == null || !(player.level() instanceof ServerLevel level)) {
+                STUCK_SECONDS.remove(player.getUUID());
+                hideBar(player.getUUID());
+                continue;
+            }
+            Line line = realm.line();
+            int floor = line == null ? 0 : Tower.floorAt(player.getY());
+            // someone who logged out inside a realm before an update still gets the current layout
+            if (line == null) RealmBuilder.ensureHub(level);
+            else TowerBuilder.ensureFloor(level, line, floor);
+            updateBar(player, line, floor);
+
+            if (!player.isAlive() || player.isSpectator()) {
                 STUCK_SECONDS.remove(player.getUUID());
                 continue;
             }
-            // someone who logged out inside a realm before an update still gets the current arena layout
-            if (player.level() instanceof ServerLevel realmLevel) RealmBuilder.ensureBuilt(realmLevel, realm);
-            boolean fell = player.getY() < RealmBuilder.Y - 14;
+            boolean fell = player.getY() < (line == null ? RealmBuilder.Y - 14 : Tower.BASE_Y - Tower.DEPTH - 6);
             int stuck = player.isInWall() ? STUCK_SECONDS.merge(player.getUUID(), 1, Integer::sum) : 0;
             if (stuck == 0) STUCK_SECONDS.remove(player.getUUID());
             if (fell || stuck >= 2) {
@@ -39,15 +56,55 @@ public final class RealmSafety {
                 STUCK_SECONDS.remove(player.getUUID());
             }
         }
+        // forget bars of players who logged out
+        for (Iterator<Map.Entry<UUID, ServerBossEvent>> it = BARS.entrySet().iterator(); it.hasNext(); ) {
+            Map.Entry<UUID, ServerBossEvent> e = it.next();
+            if (server.getPlayerList().getPlayer(e.getKey()) == null) {
+                e.getValue().removeAllPlayers();
+                it.remove();
+            }
+        }
+    }
+
+    /** The always-visible tower HUD: "Tower of Zeus - Floor 3 of 15 - Foothills of Olympus" with a climb meter. */
+    public static void updateBar(ServerPlayer player, Line line, int floor) {
+        if (line == null) {
+            hideBar(player.getUUID());
+            return;
+        }
+        ServerBossEvent bar = BARS.computeIfAbsent(player.getUUID(), id -> new ServerBossEvent(
+                UUID.randomUUID(), Component.empty(), BossEvent.BossBarColor.WHITE, BossEvent.BossBarOverlay.NOTCHED_20));
+        bar.setName(Component.translatable("hud." + RealmsOfChaos.MOD_ID + ".bar", Tower.towerName(line), floor, Tower.tierName(line, floor)));
+        bar.setColor(line.barColor());
+        bar.setProgress(floor / (float) Tower.FLOORS);
+        if (!bar.getPlayers().contains(player)) {
+            bar.removeAllPlayers();      // a respawn or dimension change makes a new player object
+            bar.addPlayer(player);
+        }
+    }
+
+    private static void hideBar(UUID id) {
+        ServerBossEvent bar = BARS.remove(id);
+        if (bar != null) bar.removeAllPlayers();
     }
 
     public static void rescue(ServerPlayer player, Realm realm) {
         if (!(player.level() instanceof ServerLevel level)) return;
-        Vec3 pos = realm.spawn();
-        RealmBuilder.makeSafe(level, pos.x, pos.y, pos.z);
+        Vec3 pos;
+        float yaw;
+        if (realm.line() == null) {
+            pos = realm.spawn();
+            yaw = realm.yaw();
+            RealmBuilder.makeSafe(level, pos.x, pos.y, pos.z);
+        } else {
+            int floor = Tower.floorAt(player.getY());
+            TowerBuilder.ensureFloor(level, realm.line(), floor);
+            pos = Tower.arrival(floor);
+            yaw = Tower.ARRIVAL_YAW;
+        }
         player.setDeltaMovement(Vec3.ZERO);
         player.resetFallDistance();
-        player.teleportTo(level, pos.x, pos.y, pos.z, Set.of(), realm.yaw(), 0.0F, true);
-        player.sendSystemMessage(Component.translatable("message." + RealmsOfChaos.MOD_ID + ".rescued"));
+        player.teleportTo(level, pos.x, pos.y, pos.z, Set.of(), yaw, 0.0F, true);
+        Hud.actionBar(player, Hud.colored(Component.translatable("hud." + RealmsOfChaos.MOD_ID + ".rescued"), 0x55FFFF));
     }
 }

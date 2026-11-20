@@ -5,6 +5,8 @@ plugins {
     id 'net.minecraftforge.gradle' version '[7.0.17,8)'
 }
 
+// One VERSION file at the repo root drives both loaders (e.g. 1.2.0-alpha, 1.2.0-beta, 1.2.0).
+def mod_version = file('../VERSION').text.trim()
 version = "${mod_version}+mc${minecraft_version}"
 group = 'com.thefarawaydev.realmsofchaos'
 base { archivesName = 'realms-of-chaos-forge' }

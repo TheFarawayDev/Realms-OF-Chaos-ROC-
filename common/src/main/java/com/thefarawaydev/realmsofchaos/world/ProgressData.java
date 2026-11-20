@@ -18,12 +18,24 @@ import net.minecraft.util.datafix.DataFixTypes;
 import net.minecraft.world.level.saveddata.SavedData;
 import net.minecraft.world.level.saveddata.SavedDataType;
 
-/** Per-world persistent state: which gods each player has defeated and which realms have been built. */
+/** Per-world persistent state: defeated gods per player, built realm pieces, and where to send players who leave. */
 public class ProgressData extends SavedData {
+    /** Where a player stood before entering the realms, so the exit gate can put them back. */
+    public record ReturnPoint(String dimension, double x, double y, double z, float yaw) {
+        public static final Codec<ReturnPoint> CODEC = RecordCodecBuilder.create(i -> i.group(
+                Codec.STRING.fieldOf("dimension").forGetter(ReturnPoint::dimension),
+                Codec.DOUBLE.fieldOf("x").forGetter(ReturnPoint::x),
+                Codec.DOUBLE.fieldOf("y").forGetter(ReturnPoint::y),
+                Codec.DOUBLE.fieldOf("z").forGetter(ReturnPoint::z),
+                Codec.FLOAT.optionalFieldOf("yaw", 0.0F).forGetter(ReturnPoint::yaw)
+        ).apply(i, ReturnPoint::new));
+    }
+
     public static final Codec<ProgressData> CODEC = RecordCodecBuilder.create(i -> i.group(
             Codec.unboundedMap(Codec.STRING, Codec.STRING.listOf()).optionalFieldOf("defeated", Map.of()).forGetter(ProgressData::exportDefeated),
             Codec.STRING.listOf().optionalFieldOf("built", List.of()).forGetter(d -> new ArrayList<>(d.built)),
-            Codec.STRING.listOf().optionalFieldOf("welcomed", List.of()).forGetter(d -> new ArrayList<>(d.welcomed))
+            Codec.STRING.listOf().optionalFieldOf("welcomed", List.of()).forGetter(d -> new ArrayList<>(d.welcomed)),
+            Codec.unboundedMap(Codec.STRING, ReturnPoint.CODEC).optionalFieldOf("returns", Map.of()).forGetter(d -> new HashMap<>(d.returns))
     ).apply(i, ProgressData::new));
 
     public static final SavedDataType<ProgressData> TYPE = new SavedDataType<>(
@@ -32,13 +44,24 @@ public class ProgressData extends SavedData {
     private final Map<String, Set<String>> defeated = new HashMap<>();
     private final Set<String> built = new HashSet<>();
     private final Set<String> welcomed = new HashSet<>();
+    private final Map<String, ReturnPoint> returns = new HashMap<>();
 
     public ProgressData() {}
 
-    private ProgressData(Map<String, List<String>> defeated, List<String> built, List<String> welcomed) {
+    private ProgressData(Map<String, List<String>> defeated, List<String> built, List<String> welcomed, Map<String, ReturnPoint> returns) {
         defeated.forEach((k, v) -> this.defeated.put(k, new HashSet<>(v)));
         this.built.addAll(built);
         this.welcomed.addAll(welcomed);
+        this.returns.putAll(returns);
+    }
+
+    public ReturnPoint returnPoint(UUID player) {
+        return returns.get(player.toString());
+    }
+
+    public void setReturnPoint(UUID player, ReturnPoint point) {
+        returns.put(player.toString(), point);
+        setDirty();
     }
 
     public static ProgressData get(MinecraftServer server) {

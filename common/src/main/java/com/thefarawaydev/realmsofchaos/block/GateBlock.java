@@ -1,12 +1,12 @@
 package com.thefarawaydev.realmsofchaos.block;
 
-import com.thefarawaydev.realmsofchaos.world.Realm;
+import com.thefarawaydev.realmsofchaos.god.Line;
 import com.thefarawaydev.realmsofchaos.world.Teleports;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.particles.ParticleTypes;
-import net.minecraft.util.RandomSource;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.InsideBlockEffectApplier;
@@ -16,47 +16,71 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
 
-/** A gate: walk into it (or right-click it) to travel to {@link #destination()}. */
+/** A gate: walk into it (or right-click it) to travel. What it does depends on its {@link Kind}. */
 public class GateBlock extends Block {
-    private final Realm destination;
-
-    public GateBlock(Realm destination, Properties properties) {
-        super(properties);
-        this.destination = destination;
+    public enum Kind {
+        /** Back to the Hub of Realms. */
+        HUB,
+        /** Hub gates into the towers: they take you to the floor you are working on. */
+        ZEUS, POSEIDON, HADES,
+        /** Inside a tower: up one floor, once this floor's god is defeated. */
+        ASCEND,
+        /** In the hub: out of the realms, back to where you came from. */
+        LEAVE
     }
 
-    public Realm destination() {
-        return destination;
+    private final Kind kind;
+
+    public GateBlock(Kind kind, Properties properties) {
+        super(properties);
+        this.kind = kind;
+    }
+
+    public Kind kind() {
+        return kind;
+    }
+
+    private void use(ServerPlayer player) {
+        switch (kind) {
+            case HUB -> Teleports.toHub(player);
+            case ZEUS -> Teleports.enterTower(player, Line.ZEUS);
+            case POSEIDON -> Teleports.enterTower(player, Line.POSEIDON);
+            case HADES -> Teleports.enterTower(player, Line.HADES);
+            case ASCEND -> Teleports.ascend(player);
+            case LEAVE -> Teleports.leave(player);
+        }
     }
 
     @Override
     protected void entityInside(BlockState state, Level level, BlockPos pos, Entity entity,
                                 InsideBlockEffectApplier effectApplier, boolean isPrecise) {
         if (!level.isClientSide() && entity instanceof ServerPlayer player) {
-            Teleports.travel(player, destination);
-        }
-    }
-
-    /** Client-side ambience: motes drift out of the gate in its realm's colour. */
-    @Override
-    public void animateTick(BlockState state, Level level, BlockPos pos, RandomSource random) {
-        ParticleOptions particle = switch (destination) {
-            case HUB -> ParticleTypes.PORTAL;
-            case OLYMPUS -> ParticleTypes.ELECTRIC_SPARK;
-            case ABYSS -> ParticleTypes.BUBBLE_POP;
-            case UNDERWORLD -> ParticleTypes.SOUL_FIRE_FLAME;
-        };
-        for (int i = 0; i < 2; i++) {
-            level.addParticle(particle, pos.getX() + random.nextDouble(), pos.getY() + random.nextDouble(), pos.getZ() + random.nextDouble(),
-                    (random.nextDouble() - 0.5) * 0.3, random.nextDouble() * 0.12, (random.nextDouble() - 0.5) * 0.3);
+            use(player);
         }
     }
 
     @Override
     protected InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hit) {
         if (!level.isClientSide() && player instanceof ServerPlayer sp) {
-            Teleports.travel(sp, destination);
+            use(sp);
         }
         return InteractionResult.SUCCESS;
+    }
+
+    /** Client-side ambience: motes drift out of the gate in its own colour. */
+    @Override
+    public void animateTick(BlockState state, Level level, BlockPos pos, RandomSource random) {
+        ParticleOptions particle = switch (kind) {
+            case HUB -> ParticleTypes.PORTAL;
+            case ZEUS -> ParticleTypes.ELECTRIC_SPARK;
+            case POSEIDON -> ParticleTypes.BUBBLE_POP;
+            case HADES -> ParticleTypes.SOUL_FIRE_FLAME;
+            case ASCEND -> ParticleTypes.END_ROD;
+            case LEAVE -> ParticleTypes.HAPPY_VILLAGER;
+        };
+        for (int i = 0; i < 2; i++) {
+            level.addParticle(particle, pos.getX() + random.nextDouble(), pos.getY() + random.nextDouble(), pos.getZ() + random.nextDouble(),
+                    (random.nextDouble() - 0.5) * 0.3, random.nextDouble() * 0.12, (random.nextDouble() - 0.5) * 0.3);
+        }
     }
 }

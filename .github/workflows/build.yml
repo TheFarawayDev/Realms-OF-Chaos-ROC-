@@ -44,16 +44,29 @@ jobs:
           path: dist/*.zip
           if-no-files-found: error
 
+      # The VERSION file decides the channel: 1.2.0-alpha / 1.2.0-beta are published as pre-releases, 1.2.0 as a full release.
+      - name: Read version
+        id: ver
+        run: |
+          V="$(tr -d '[:space:]' < VERSION)"
+          echo "version=$V" >> "$GITHUB_OUTPUT"
+          case "$V" in
+            *alpha*) echo "channel=Alpha" >> "$GITHUB_OUTPUT"; echo "pre=true" >> "$GITHUB_OUTPUT" ;;
+            *beta*)  echo "channel=Beta"  >> "$GITHUB_OUTPUT"; echo "pre=true" >> "$GITHUB_OUTPUT" ;;
+            *)       echo "channel=Release" >> "$GITHUB_OUTPUT"; echo "pre=false" >> "$GITHUB_OUTPUT" ;;
+          esac
+
       # Every push to master publishes a GitHub release with the Fabric and Forge jars.
       - name: Publish release
         if: github.ref == 'refs/heads/master'
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: v1.1.0-build.${{ github.run_number }}
-          name: Realms of Chaos 1.1.0 (build ${{ github.run_number }})
+          tag_name: v${{ steps.ver.outputs.version }}.${{ github.run_number }}
+          name: Realms of Chaos ${{ steps.ver.outputs.version }} (${{ steps.ver.outputs.channel }}, build ${{ github.run_number }})
+          prerelease: ${{ steps.ver.outputs.pre }}
           body: |
             Realms of Chaos by TheFarawayDev for Minecraft 26.3 (Fabric and Forge).
-            Download the jar for your loader: Fabric or Forge.
+            Channel: ${{ steps.ver.outputs.channel }}. Download the jar for your loader: Fabric or Forge.
           files: |
             fabric/build/libs/realms-of-chaos-fabric-*[0-9].jar
             forge/build/libs/realms-of-chaos-forge-*[0-9].jar

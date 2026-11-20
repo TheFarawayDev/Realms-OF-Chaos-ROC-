@@ -1,7 +1,6 @@
 package com.thefarawaydev.realmsofchaos.item;
 
 import com.thefarawaydev.realmsofchaos.RealmsOfChaos;
-import com.thefarawaydev.realmsofchaos.world.Realm;
 import com.thefarawaydev.realmsofchaos.world.Teleports;
 import java.util.function.Consumer;
 import net.minecraft.network.chat.Component;
@@ -24,7 +23,7 @@ public class ChaosCompassItem extends Item {
     @Override
     public InteractionResult use(Level level, Player player, InteractionHand hand) {
         if (!level.isClientSide() && player instanceof ServerPlayer sp) {
-            Teleports.travel(sp, Realm.HUB);
+            Teleports.toHub(sp);
             player.getCooldowns().addCooldown(player.getItemInHand(hand), 60);
         }
         return InteractionResult.SUCCESS;

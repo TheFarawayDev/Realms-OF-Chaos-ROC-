@@ -129,7 +129,7 @@
   .linecol h3 { margin:0 0 4px; font:400 1.15rem var(--pixel); color:var(--lc); }
   .linecol > p { margin:0 0 12px; color:var(--muted); font-size:13px; }
   .god { display:grid; grid-template-columns:28px 32px 1fr 32px; gap:10px; align-items:center; padding:7px 8px; border-radius:10px; }
-  .god:nth-child(odd) { background:var(--panel-sh); }
+  .god.alt { background:var(--panel-sh); }
   .god .rk { font:400 11px var(--pixel); color:var(--muted); text-align:center; }
   .god.final .rk, .god.starter .rk { color:#16122b; background:var(--lc); border-radius:6px; padding:3px 0; }
   .god b { display:block; font:400 13px var(--pixel); line-height:1.3; }
@@ -154,6 +154,12 @@
   .title-mock b { display:block; font:400 1.3rem var(--pixel); color:var(--purple); } .title-mock span { font:400 12px var(--pixel); color:var(--gold); }
   .news { margin:0; padding-left:20px; } .news li { margin:6px 0; color:#d6d1f5; font-size:14px; }
 
+  .chan { display:inline-block; font:400 12px var(--pixel); padding:4px 10px; border-radius:7px; color:#16122b; background:var(--green); vertical-align:middle; }
+  .chan.alpha { background:var(--purple); color:#fff; } .chan.beta { background:var(--teal); }
+  .chan[hidden] { display:none; }
+  h1 .chan { font-size:clamp(.8rem,2vw,1.1rem); padding:6px 14px; letter-spacing:1px; text-shadow:none; box-shadow:0 4px 0 #000; margin-left:10px; position:relative; top:-.6em; }
+  .tierh { font:400 11px var(--pixel); color:var(--lc); padding:12px 8px 5px; letter-spacing:.5px; text-transform:uppercase; }
+
   .reveal { opacity:0; transform:translateY(16px); transition:opacity .5s, transform .5s; }
   .reveal.in { opacity:1; transform:none; }
   @media (prefers-reduced-motion: reduce) { .reveal { opacity:1; transform:none; transition:none; } html { scroll-behavior:auto; } }
@@ -166,17 +172,18 @@
   <div class="wrap">
     <div class="hero">
       <div class="hero-left">
-        <h1><span>Realms</span><span class="l2">of Chaos</span></h1>
+        <h1><span>Realms</span><span class="l2">of Chaos<b class="chan" id="chan-hero" hidden></b></span></h1>
         <div class="bar"><b></b><b></b><b></b></div>
         <div class="champs">
-          <a class="champ chunk c-gold hov" href="#gods"><span class="spr" style="--i:0"></span><b>Zeus</b><small>Olympian Heights</small></a>
-          <a class="champ chunk c-teal hov" href="#gods"><span class="spr" style="--i:15"></span><b>Poseidon</b><small>Abyssal Palace</small></a>
-          <a class="champ chunk c-purple hov" href="#gods"><span class="spr" style="--i:30"></span><b>Hades</b><small>The Underworld</small></a>
+          <a class="champ chunk c-gold hov" href="#gods"><span class="spr" style="--i:0"></span><b>Zeus</b><small>15 floors</small></a>
+          <a class="champ chunk c-teal hov" href="#gods"><span class="spr" style="--i:15"></span><b>Poseidon</b><small>15 floors</small></a>
+          <a class="champ chunk c-purple hov" href="#gods"><span class="spr" style="--i:30"></span><b>Hades</b><small>15 floors</small></a>
         </div>
       </div>
       <aside class="info chunk c-panel">
         <span class="eyebrow chunk c-green" id="hero-ver">Loading release...</span>
         <div class="irow"><span>Version</span><b id="i-ver">-</b></div>
+        <div class="irow"><span>Channel</span><b><span class="chan" id="i-chan">-</span></b></div>
         <div class="irow"><span>Last updated</span><b id="i-date">-</b></div>
         <div class="irow"><span>Total downloads</span><b id="i-dl">-</b></div>
         <div class="irow"><span>Minecraft</span><b>26.3</b></div>
@@ -218,63 +225,63 @@
       <div class="stats">
         <div class="chunk c-gold stat"><b>45</b><span>Gods to defeat</span></div>
         <div class="chunk c-teal stat"><b>45</b><span>Relic weapons</span></div>
-        <div class="chunk c-purple stat"><b>3</b><span>God lines</span></div>
-        <div class="chunk c-green stat"><b>4</b><span>Realms</span></div>
+        <div class="chunk c-purple stat"><b>3</b><span>Towers to climb</span></div>
+        <div class="chunk c-green stat"><b>45</b><span>Unique floors</span></div>
       </div>
     </section>
 
     <section id="features" class="reveal">
       <div class="sh"><h2 class="chunk c-gold">Features</h2></div>
       <div class="feat">
-        <div class="chunk c-gold with-spr"><span class="spr" style="--i:14"></span><div><h3>Line of Zeus</h3><p>Start against Iris and climb to the King of the Gods in a marble temple above the clouds. Lightning, wisdom and war.</p></div></div>
-        <div class="chunk c-teal with-spr"><span class="spr" style="--i:29"></span><div><h3>Line of Poseidon</h3><p>From Galatea to the Lord of the Seas, in a prismarine arena ringed by water. Tidal waves and crushing currents.</p></div></div>
-        <div class="chunk c-purple with-spr"><span class="spr" style="--i:44"></span><div><h3>Line of Hades</h3><p>From Charon to the Lord of the Underworld, among basalt spikes and a river of lava. Drained life and risen dead.</p></div></div>
-        <div class="chunk c-green"><h3>Hub of Realms</h3><p>One hub, three gates. Choose any path; every line is independent and saved per player.</p></div>
+        <div class="chunk c-gold with-spr"><span class="spr" style="--i:14"></span><div><h3>Tower of Zeus</h3><p>Fifteen floors from the mossy foothills, through marble halls and a cloud sanctum, to the open summit of Olympus.</p></div></div>
+        <div class="chunk c-teal with-spr"><span class="spr" style="--i:29"></span><div><h3>Tower of Poseidon</h3><p>From sunlit sandstone shallows down through prismarine halls and the black trench to the Throne of the Deep.</p></div></div>
+        <div class="chunk c-purple with-spr"><span class="spr" style="--i:44"></span><div><h3>Tower of Hades</h3><p>Past the Fields of Asphodel and the fires of Tartarus, through the Halls of the Dead, to the throne of the Underworld.</p></div></div>
+        <div class="chunk c-green"><h3>Climb floor by floor</h3><p>Every floor is its own arena with its own terrain: pits, terraces, ziggurats, moats, mounds. Beat its god and the Gate of Ascent opens.</p></div>
         <div class="chunk c-gold"><h3>Relic weapons</h3><p>Every god drops an animated relic weapon, scaled by rank, with its own hit power and a right-click Divine Surge.</p></div>
-        <div class="chunk c-teal"><h3>Fair fights</h3><p>Bosses telegraph their big attacks, arenas are flat and walled, and nobody - you or a god - can get stuck or fall out.</p></div>
+        <div class="chunk c-teal"><h3>Fair fights</h3><p>Bosses telegraph their big attacks, no step is ever taller than one block, and nobody - you or a god - can get stuck or fall out.</p></div>
       </div>
     </section>
 
     <section id="gods" class="reveal">
-      <div class="sh"><h2 class="chunk c-gold">The Gods</h2><small>45 bosses, each with a relic weapon. Rank 15 is where you start.</small></div>
+      <div class="sh"><h2 class="chunk c-gold">The Gods</h2><small>One god per floor. Floor 1 is where you start; floor 15 is the summit.</small></div>
       <div class="tabs" id="god-tabs">
         <button class="chunk c-gold" data-l="zeus">Zeus</button>
         <button class="chunk c-teal" data-l="poseidon">Poseidon</button>
         <button class="chunk c-purple" data-l="hades">Hades</button>
       </div>
       <div class="lines3" id="god-lines">
-        <div class="chunk c-panel linecol on" data-l="zeus" style="--lc:var(--gold)"><h3>Line of Zeus</h3><p>Olympian Heights</p><div class="list"></div></div>
-        <div class="chunk c-panel linecol" data-l="poseidon" style="--lc:var(--teal)"><h3>Line of Poseidon</h3><p>The Abyssal Palace</p><div class="list"></div></div>
-        <div class="chunk c-panel linecol" data-l="hades" style="--lc:var(--purple)"><h3>Line of Hades</h3><p>The Underworld</p><div class="list"></div></div>
+        <div class="chunk c-panel linecol on" data-l="zeus" style="--lc:var(--gold)"><h3>Tower of Zeus</h3><p>15 floors</p><div class="list"></div></div>
+        <div class="chunk c-panel linecol" data-l="poseidon" style="--lc:var(--teal)"><h3>Tower of Poseidon</h3><p>15 floors</p><div class="list"></div></div>
+        <div class="chunk c-panel linecol" data-l="hades" style="--lc:var(--purple)"><h3>Tower of Hades</h3><p>15 floors</p><div class="list"></div></div>
       </div>
     </section>
 
     <section id="ingame" class="reveal">
-      <div class="sh"><h2 class="chunk c-gold">In game</h2><small>New in 1.1</small></div>
+      <div class="sh"><h2 class="chunk c-gold">In game</h2><small>Menus and on-screen prompts, not chat spam</small></div>
       <div class="ingame">
         <div class="chunk c-panel"><h3>Codex of Chaos</h3>
-          <p>An in-game menu for your whole journey: every line, every god, what is defeated, what is next, and one-click travel. Open it with the Codex item or <code>/roc menu</code>.</p>
+          <p>Your whole journey in one menu: the three towers, every floor and god, what is defeated and what is next. Click a floor you have reached to travel there, go to the hub, or leave the realms.</p>
           <div class="mock" aria-hidden="true">
             <i class="g"><span class="wpn" style="--i:14"></span></i><i class="g"><span class="wpn" style="--i:13"></span></i><i class="g"><span class="wpn" style="--i:12"></span></i><i class="n"><span class="wpn" style="--i:11"></span></i><i class="x"></i><i class="x"></i><i class="x"></i><i class="x"></i><i class="x"></i>
             <i></i><i class="x"></i><i class="x"></i><i class="x"></i><i class="x"></i><i class="x"></i><i class="x"></i><i></i><i></i>
           </div>
         </div>
-        <div class="chunk c-panel"><h3>Advancements</h3>
-          <p>A Realms of Chaos tab tracks all three lines, with a toast for every god you bring down and a challenge for each final boss.</p>
-          <div class="toast"><span class="wpn" style="--i:0;--k:2"></span><div><b>Challenge Complete!</b><span>Zeus</span></div></div>
-          <div class="toast"><span class="wpn" style="--i:44;--k:2"></span><div><b>Advancement Made!</b><span>Charon</span></div></div>
+        <div class="chunk c-panel"><h3>Trial Altar</h3>
+          <p>Each floor's altar opens its own screen: who waits on this floor, their relic, and one button that begins the trial - or, once they have fallen, sends you up.</p>
+          <div class="toast"><span class="wpn" style="--i:9;--k:2"></span><div><b>Begin the trial</b><span>Phobos will rise at the centre of the floor</span></div></div>
+          <div class="toast"><span class="wpn" style="--i:8;--k:2"></span><div><b>Ascend to floor 8</b><span>Or walk through the Gate of Ascent</span></div></div>
         </div>
-        <div class="chunk c-panel"><h3>A proper welcome</h3>
-          <p>The first time you enter a world you are greeted, handed the Codex and the Compass of Chaos, and pointed at the Hub.</p>
-          <div class="title-mock"><b>Realms of Chaos</b><span>Thank you for using our mod!</span></div>
+        <div class="chunk c-panel"><h3>Tower HUD</h3>
+          <p>A bar at the top of the screen always shows which tower and floor you are on. Arrivals, trials and victories appear as titles; short notices sit above the hotbar.</p>
+          <div class="title-mock"><span style="color:var(--muted)">Tower of Zeus - Floor 6 of 15 - The Marble Halls</span><b style="margin-top:10px;color:var(--gold)">Victory!</b><span>Artemis has fallen</span></div>
         </div>
-        <div class="chunk c-panel"><h3>What changed in 1.1</h3>
+        <div class="chunk c-panel"><h3>What changed in 1.2</h3>
           <ul class="news">
-            <li>Redrawn, animated weapons, gates and altars.</li>
-            <li>A unique look for every one of the 45 gods.</li>
-            <li>Rebuilt hub and arenas with themed moats and pillars.</li>
-            <li>Bosses wind up before big attacks and can no longer spawn or get stuck inside blocks.</li>
-            <li>Falling into the void puts you back on the arena pad.</li>
+            <li>Each god line is now a 15-floor tower you climb one god at a time.</li>
+            <li>Every floor has its own terrain and its tier's own materials.</li>
+            <li>The hub has an exit gate; the Codex and <code>/roc leave</code> take you out too.</li>
+            <li>Chat messages are gone: menus, titles and a tower bar instead.</li>
+            <li>Builds are labelled Alpha or Beta until they are battle-tested.</li>
           </ul>
         </div>
       </div>
@@ -319,7 +326,9 @@
   const REPO = "TheFarawayDev/Realms-OF-Chaos-ROC-";
   const $ = s => document.querySelector(s), $$ = s => [...document.querySelectorAll(s)];
   const fmtSize = b => b > 1048576 ? (b / 1048576).toFixed(2) + " MB" : Math.round(b / 1024) + " KB";
-  const ver = n => (n.match(/(\d+\.\d+\.\d+)/) || [])[1] || "-";
+  const ver = n => (n.match(/(\d+\.\d+\.\d+(?:-[a-z]+)?)/) || [])[1] || "-";
+  const channelOf = r => /alpha/i.test(r.tag_name + r.name) ? "Alpha" : /beta/i.test(r.tag_name + r.name) ? "Beta" : "Release";
+  const setChan = (el, c) => { el.textContent = c.toUpperCase(); el.className = "chan " + c.toLowerCase(); el.hidden = false; };
 
   function fill(card, asset, tag, ctaSel, btnSel, label) {
     const card_ = $$(".dlcard")[card];
@@ -342,14 +351,18 @@
       $("#i-ver").textContent = ver((jars[0] || {}).name || "") + " (" + latest.tag_name + ")";
       $("#i-date").textContent = new Date(latest.published_at).toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric" });
       $("#i-dl").textContent = list.reduce((n, r) => n + r.assets.reduce((m, a) => m + a.download_count, 0), 0).toLocaleString();
+      const chan = channelOf(latest);
+      setChan($("#i-chan"), chan);
+      if (chan !== "Release") setChan($("#chan-hero"), chan);
       $("#dl-note").textContent = `Released ${new Date(latest.published_at).toLocaleDateString()}`;
       $("#rel-list").innerHTML = list.map((r, i) => `
-        <div class="row chunk c-panel"><div><b>${r.name || r.tag_name}</b>${i === 0 ? '<span class="tagl">LATEST</span>' : ""}<br><small>${r.tag_name}</small></div>
+        <div class="row chunk c-panel"><div><b>${r.name || r.tag_name}</b>${i === 0 ? '<span class="tagl">LATEST</span>' : ""}${channelOf(r) !== "Release" ? `<span class="tagl" style="background:${channelOf(r) === "Alpha" ? "var(--purple);color:#fff" : "var(--teal)"}">${channelOf(r).toUpperCase()}</span>` : ""}<br><small>${r.tag_name}</small></div>
         <small>${new Date(r.published_at).toLocaleDateString()} &middot; ${r.assets.reduce((n, a) => n + a.download_count, 0).toLocaleString()} downloads</small>
         <span class="dls">${["fabric", "forge"].map(k => { const a = r.assets.find(x => x.name.endsWith(".jar") && x.name.toLowerCase().includes(k)); return a ? `<a class="chunk ${k === "fabric" ? "c-gold" : "c-teal"}" href="${a.browser_download_url}">${k[0].toUpperCase() + k.slice(1)}</a>` : ""; }).join("")}</span></div>`).join("");
     })
     .catch(() => {
       $("#hero-ver").textContent = "Release info unavailable";
+      fetch("version.json").then(r => r.json()).then(v => { setChan($("#i-chan"), v.channel); if (v.channel !== "Release") setChan($("#chan-hero"), v.channel); $("#i-ver").textContent = v.version; }).catch(() => {});
       for (const s of ["#cta-fabric", "#dl-fabric", "#cta-forge", "#dl-forge"]) $(s).textContent = "Unavailable";
       $("#rel-list").innerHTML = `<div class="row chunk c-panel"><small>Could not load releases right now. Please try again later.</small></div>`;
     });
@@ -358,12 +371,15 @@
   fetch("roster.json").then(r => r.json()).then(roster => {
     for (const col of $$(".linecol")) {
       const gods = roster.filter(g => g.line === col.dataset.l).sort((a, b) => b.rank - a.rank);
-      col.querySelector(".list").innerHTML = gods.map(g => `
-        <div class="god${g.rank === 1 ? " final" : g.rank === 15 ? " starter" : ""}">
-          <span class="rk">${g.rank}</span><span class="spr" style="--i:${g.i};--k:2"></span>
+      let tier = "", n = 0;
+      col.querySelector(".list").innerHTML = gods.map(g => {
+        const head = g.tier !== tier ? `<div class="tierh">${tier = g.tier}</div>` : "";
+        return head + `
+        <div class="god${n++ % 2 ? "" : " alt"}${g.rank === 1 ? " final" : g.rank === 15 ? " starter" : ""}">
+          <span class="rk" title="Floor ${g.floor}">${g.floor}</span><span class="spr" style="--i:${g.i};--k:2"></span>
           <div><b>${g.name}</b><small>${g.title}</small><small>${g.weapon}</small></div>
           <span class="wpn" style="--i:${g.i}" title="${g.weapon}"></span>
-        </div>`).join("");
+        </div>`; }).join("");
     }
   }).catch(() => { $("#gods").style.display = "none"; });
   for (const b of $$("#god-tabs button")) b.addEventListener("click", () =>

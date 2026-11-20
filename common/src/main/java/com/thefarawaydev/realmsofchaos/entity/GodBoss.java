@@ -7,7 +7,8 @@ import com.thefarawaydev.realmsofchaos.god.Gods;
 import com.thefarawaydev.realmsofchaos.god.Line;
 import com.thefarawaydev.realmsofchaos.world.ProgressData;
 import com.thefarawaydev.realmsofchaos.world.Realm;
-import com.thefarawaydev.realmsofchaos.world.RealmBuilder;
+import com.thefarawaydev.realmsofchaos.world.Tower;
+import com.thefarawaydev.realmsofchaos.ui.Hud;
 import com.thefarawaydev.realmsofchaos.world.RocAdvancements;
 import java.util.LinkedHashSet;
 import java.util.Set;
@@ -122,7 +123,7 @@ public class GodBoss extends Monster {
     }
 
     private double leashRadius() {
-        return Realm.of(level().dimension()) != null ? RealmBuilder.FIGHT_RADIUS + 6.0 : 40.0;
+        return Realm.of(level().dimension()) != null ? Tower.FIGHT_RADIUS + 3.0 : 40.0;
     }
 
     private ParticleOptions lineParticle() {
@@ -135,7 +136,6 @@ public class GodBoss extends Monster {
 
     /** Puts the boss back somewhere it can fight from. Called when it is out of bounds, inside a block or stuck. */
     private void warpTo(ServerLevel level, Vec3 to) {
-        RealmBuilder.makeSafeIfRealm(level, to);
         level.sendParticles(ParticleTypes.POOF, getX(), getY() + 1, getZ(), 20, 0.4, 0.8, 0.4, 0.02);
         getNavigation().stop();
         setDeltaMovement(Vec3.ZERO);
@@ -149,7 +149,8 @@ public class GodBoss extends Monster {
     public void keepUnstuck(ServerLevel level) {
         Vec3 h = home();
         double dx = getX() - h.x, dz = getZ() - h.z, r = leashRadius();
-        boolean outside = dx * dx + dz * dz > r * r || getY() < h.y - 6 || getY() > h.y + 24;
+        // a tower floor is 20 blocks tall: leaving it vertically means the boss fell or was launched out
+        boolean outside = dx * dx + dz * dz > r * r || getY() < h.y - 5 || getY() > h.y + 13;
         if (outside || isInWall()) {
             warpTo(level, h);
             return;
@@ -168,7 +169,7 @@ public class GodBoss extends Monster {
             Vec3 dir = toHome.lengthSqr() < 0.01 ? new Vec3(1, 0, 0) : new Vec3(toHome.x, 0, toHome.z).normalize();
             Vec3 spot = new Vec3(target.getX() + dir.x * 2.5, target.getY(), target.getZ() + dir.z * 2.5);
             double sx = spot.x - h.x, sz = spot.z - h.z;
-            boolean inside = sx * sx + sz * sz <= r * r && Math.abs(spot.y - h.y) < 8;
+            boolean inside = sx * sx + sz * sz <= r * r && Math.abs(spot.y - h.y) < 5;
             boolean free = level.noCollision(this, getBoundingBox().move(spot.subtract(position())));
             warpTo(level, inside && free ? spot : h);
         }
@@ -385,16 +386,17 @@ public class GodBoss extends Monster {
         // everyone who was there shares the victory, and the killer always counts
         Set<ServerPlayer> victors = new LinkedHashSet<>(level.getEntitiesOfClass(ServerPlayer.class, area, Player::isAlive));
         if (source.getEntity() instanceof ServerPlayer killer) victors.add(killer);
+        String hud = "hud." + RealmsOfChaos.MOD_ID + ".";
         for (ServerPlayer player : victors) {
-            boolean first = data.markDefeated(player.getUUID(), god);
+            data.markDefeated(player.getUUID(), god);
             RocAdvancements.awardGod(player, god);
-            player.sendSystemMessage(Component.translatable("message." + RealmsOfChaos.MOD_ID + ".victory", god.displayName()));
-            if (!first) continue;
             if (god.isFinalBoss()) {
-                player.sendSystemMessage(Component.translatable("message." + RealmsOfChaos.MOD_ID + ".line_complete", god.line().displayName()));
+                Hud.title(player, Hud.colored(Component.translatable(hud + "line_complete"), god.line().color()),
+                        Hud.colored(Component.translatable(hud + "line_complete.sub", god.line().displayName()), 0xFFFFFF), 10, 100, 30);
             } else {
-                God next = Gods.get(god.line(), god.rank() - 1);
-                player.sendSystemMessage(Component.translatable("message." + RealmsOfChaos.MOD_ID + ".unlocked", next.displayName()));
+                Hud.title(player, Hud.colored(Component.translatable(hud + "victory"), 0x55FF55),
+                        Hud.colored(Component.translatable(hud + "victory.sub", god.displayName()), 0xFFFFFF));
+                Hud.actionBar(player, Hud.colored(Component.translatable(hud + "ascend", Tower.floorOf(god) + 1), 0x55FFFF));
             }
         }
         level.playSound(null, blockPosition(), SoundEvents.UI_TOAST_CHALLENGE_COMPLETE, SoundSource.HOSTILE, 2.0F, 1.0F);

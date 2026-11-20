@@ -6,40 +6,123 @@ import com.thefarawaydev.realmsofchaos.entity.GodBoss;
 import com.thefarawaydev.realmsofchaos.god.God;
 import com.thefarawaydev.realmsofchaos.god.Gods;
 import com.thefarawaydev.realmsofchaos.god.Line;
+import com.thefarawaydev.realmsofchaos.ui.AltarMenu;
+import com.thefarawaydev.realmsofchaos.ui.Hud;
 import com.thefarawaydev.realmsofchaos.world.ProgressData;
-import java.util.List;
+import com.thefarawaydev.realmsofchaos.world.Realm;
+import com.thefarawaydev.realmsofchaos.world.Tower;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleTypes;
-import net.minecraft.util.RandomSource;
-import net.minecraft.world.entity.EntityTypes;
-import net.minecraft.world.entity.LightningBolt;
-import net.minecraft.world.phys.Vec3;
-import com.thefarawaydev.realmsofchaos.world.Realm;
-import com.thefarawaydev.realmsofchaos.world.RealmBuilder;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
+import net.minecraft.util.RandomSource;
+import net.minecraft.world.Difficulty;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.EntitySpawnReason;
+import net.minecraft.world.entity.EntityTypes;
+import net.minecraft.world.entity.LightningBolt;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.Vec3;
 
 /**
- * The trial altar of a god line. Each player climbs the line from rank 15 (the starter god) to rank 1 (the final god);
- * the next trial is only available once the previous god of that line has been defeated.
+ * The trial altar of a god line. Inside a tower each floor's altar belongs to that floor's god; right-clicking
+ * opens the Trial Altar menu, from which the trial is started. Players climb from the starter god (rank 15,
+ * floor 1) to the final god (rank 1, floor 15), and a trial only opens once the previous god has fallen.
  */
 public class AltarBlock extends Block {
+    public enum State { READY, UNDERWAY, DEFEATED, LOCKED, COMPLETE, PEACEFUL }
+
     private final Line line;
 
     public AltarBlock(Line line, Properties properties) {
         super(properties);
         this.line = line;
+    }
+
+    public Line line() {
+        return line;
+    }
+
+    @Override
+    protected InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hit) {
+        if (level instanceof ServerLevel && player instanceof ServerPlayer sp) {
+            AltarMenu.open(sp, line, pos);
+        }
+        return InteractionResult.SUCCESS;
+    }
+
+    private static boolean inTower(ServerLevel level, Line line) {
+        Realm realm = Realm.of(level.dimension());
+        return realm != null && realm.line() == line;
+    }
+
+    /** The god this altar offers to this player: the floor's god inside a tower, otherwise their next trial. */
+    public static God godFor(ServerLevel level, ServerPlayer player, BlockPos altar, Line line) {
+        if (inTower(level, line)) return Tower.god(line, Tower.floorAt(altar.getY()));
+        int next = ProgressData.get(level.getServer()).nextRank(player.getUUID(), line);
+        return next == 0 ? null : Gods.get(line, next);
+    }
+
+    /** The space a fight at this altar occupies: one tower floor, or a generous box around a free-standing altar. */
+    private static AABB fightArea(ServerLevel level, BlockPos altar, Line line) {
+        if (inTower(level, line)) {
+            int y0 = Tower.floorY(Tower.floorAt(altar.getY()));
+            return new AABB(-Tower.WALL_OUTER, y0 - Tower.DEPTH, -Tower.WALL_OUTER, Tower.WALL_OUTER, y0 + Tower.ROOM_HEIGHT + 1, Tower.WALL_OUTER);
+        }
+        return new AABB(altar).inflate(64);
+    }
+
+    public static State state(ServerLevel level, ServerPlayer player, BlockPos altar, Line line) {
+        ProgressData data = ProgressData.get(level.getServer());
+        God god = godFor(level, player, altar, line);
+        if (god == null) return State.COMPLETE;
+        if (data.isDefeated(player.getUUID(), god)) return State.DEFEATED;
+        if (level.getDifficulty() == Difficulty.PEACEFUL) return State.PEACEFUL;
+        if (!level.getEntitiesOfClass(GodBoss.class, fightArea(level, altar, line), GodBoss::isAlive).isEmpty()) return State.UNDERWAY;
+        if (god.rank() != data.nextRank(player.getUUID(), line)) return State.LOCKED;
+        return State.READY;
+    }
+
+    /** Starts the trial if the altar is {@link State#READY}. @return the summoned boss, or null. */
+    public static GodBoss begin(ServerLevel level, ServerPlayer player, BlockPos altar, Line line) {
+        if (state(level, player, altar, line) != State.READY) return null;
+        God god = godFor(level, player, altar, line);
+        GodBoss boss = ModContent.GOD_BOSS.get().create(level, EntitySpawnReason.TRIGGERED);
+        if (boss == null) return null;
+        // In a tower the god appears on the floor's centre; an altar placed elsewhere summons a few blocks away.
+        Vec3 spawn = inTower(level, line) ? Tower.centre(level, Tower.floorAt(altar.getY())) : findSpawn(level, boss, altar);
+        boss.setGod(god);
+        boss.setPos(spawn.x, spawn.y, spawn.z);
+        boss.setHome(spawn);
+        level.addFreshEntity(boss);
+        boss.setTarget(player);
+        LightningBolt bolt = EntityTypes.LIGHTNING_BOLT.create(level, EntitySpawnReason.TRIGGERED);
+        if (bolt != null) {
+            bolt.setPos(spawn.x, spawn.y, spawn.z);
+            bolt.setVisualOnly(true);
+            level.addFreshEntity(bolt);
+        }
+        level.sendParticles(ParticleTypes.POOF, spawn.x, spawn.y + 1, spawn.z, 60, 0.6, 1.0, 0.6, 0.08);
+        level.playSound(null, boss.blockPosition(), SoundEvents.WITHER_SPAWN, SoundSource.HOSTILE, 0.8F, 1.3F);
+        String hud = "hud." + RealmsOfChaos.MOD_ID + ".";
+        for (ServerPlayer witness : level.getEntitiesOfClass(ServerPlayer.class, fightArea(level, altar, line), Player::isAlive)) {
+            announce(witness, god, hud);
+        }
+        if (!fightArea(level, altar, line).contains(player.position())) announce(player, god, hud);
+        return boss;
+    }
+
+    private static void announce(ServerPlayer player, God god, String hud) {
+        Hud.title(player, Hud.colored(Component.translatable(hud + "trial", god.displayName()), god.line().color()),
+                Hud.colored(Component.translatable(hud + "trial.sub", god.displayTitle(), god.rank()), 0xCCCCCC));
     }
 
     /** The first free spot around the altar where the boss fits, so it never appears inside a block. */
@@ -62,53 +145,5 @@ public class AltarBlock extends Block {
             level.addParticle(ParticleTypes.ENCHANT, pos.getX() + 0.5 + (random.nextDouble() - 0.5) * 1.6, pos.getY() + 1.6,
                     pos.getZ() + 0.5 + (random.nextDouble() - 0.5) * 1.6, 0, -0.6, 0);
         }
-    }
-
-    @Override
-    protected InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hit) {
-        if (!(level instanceof ServerLevel serverLevel) || !(player instanceof ServerPlayer sp)) {
-            return InteractionResult.SUCCESS;
-        }
-        if (serverLevel.getDifficulty() == net.minecraft.world.Difficulty.PEACEFUL) {
-            sp.sendSystemMessage(Component.translatable("message." + RealmsOfChaos.MOD_ID + ".altar.peaceful"));
-            return InteractionResult.SUCCESS;
-        }
-        ProgressData data = ProgressData.get(serverLevel.getServer());
-        int next = data.nextRank(sp.getUUID(), line);
-        if (next == 0) {
-            sp.sendSystemMessage(Component.translatable("message." + RealmsOfChaos.MOD_ID + ".altar.done", line.displayName()));
-            return InteractionResult.SUCCESS;
-        }
-
-        List<GodBoss> active = serverLevel.getEntitiesOfClass(GodBoss.class, new AABB(pos).inflate(96), b -> b.isAlive());
-        if (!active.isEmpty()) {
-            sp.sendSystemMessage(Component.translatable("message." + RealmsOfChaos.MOD_ID + ".altar.active"));
-            return InteractionResult.SUCCESS;
-        }
-
-        God god = Gods.get(line, next);
-        GodBoss boss = ModContent.GOD_BOSS.get().create(serverLevel, EntitySpawnReason.TRIGGERED);
-        if (boss == null) {
-            return InteractionResult.FAIL;
-        }
-        // In a realm the god appears at the arena centre; an altar placed elsewhere summons a few blocks away.
-        Realm realm = Realm.of(serverLevel.dimension());
-        Vec3 spawn = realm != null ? realm.arenaCentre() : findSpawn(serverLevel, boss, pos);
-        RealmBuilder.makeSafeIfRealm(serverLevel, spawn);
-        boss.setGod(god);
-        boss.setPos(spawn.x, spawn.y, spawn.z);
-        boss.setHome(spawn);
-        serverLevel.addFreshEntity(boss);
-        boss.setTarget(sp);
-        LightningBolt bolt = EntityTypes.LIGHTNING_BOLT.create(serverLevel, EntitySpawnReason.TRIGGERED);
-        if (bolt != null) {
-            bolt.setPos(spawn.x, spawn.y, spawn.z);
-            bolt.setVisualOnly(true);
-            serverLevel.addFreshEntity(bolt);
-        }
-        serverLevel.sendParticles(ParticleTypes.POOF, spawn.x, spawn.y + 1, spawn.z, 60, 0.6, 1.0, 0.6, 0.08);
-        serverLevel.playSound(null, boss.blockPosition(), SoundEvents.WITHER_SPAWN, SoundSource.HOSTILE, 0.8F, 1.3F);
-        sp.sendSystemMessage(Component.translatable("message." + RealmsOfChaos.MOD_ID + ".altar.summon", god.displayName(), god.rank()));
-        return InteractionResult.SUCCESS;
     }
 }
