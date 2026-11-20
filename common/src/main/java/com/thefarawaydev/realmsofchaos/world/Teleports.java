@@ -41,6 +41,9 @@ public final class Teleports {
             pos = Realm.hubArrival(from);
             yaw = Realm.hubArrivalYaw(from);
         }
+        RealmBuilder.makeSafe(dest, pos.x, pos.y, pos.z);
+        player.setDeltaMovement(Vec3.ZERO);
+        player.resetFallDistance();
         player.teleportTo(dest, pos.x, pos.y, pos.z, Set.of(), yaw, 0.0F, true);
 
         if (to == Realm.HUB) {

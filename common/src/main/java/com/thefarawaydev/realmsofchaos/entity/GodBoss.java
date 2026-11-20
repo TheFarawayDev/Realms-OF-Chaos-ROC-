@@ -6,6 +6,12 @@ import com.thefarawaydev.realmsofchaos.god.God;
 import com.thefarawaydev.realmsofchaos.god.Gods;
 import com.thefarawaydev.realmsofchaos.god.Line;
 import com.thefarawaydev.realmsofchaos.world.ProgressData;
+import com.thefarawaydev.realmsofchaos.world.Realm;
+import com.thefarawaydev.realmsofchaos.world.RealmBuilder;
+import com.thefarawaydev.realmsofchaos.world.RocAdvancements;
+import java.util.LinkedHashSet;
+import java.util.Set;
+import net.minecraft.core.particles.ParticleOptions;
 import java.util.List;
 import java.util.UUID;
 import net.minecraft.core.particles.ParticleTypes;
@@ -53,13 +59,19 @@ import net.minecraft.world.phys.Vec3;
  */
 public class GodBoss extends Monster {
     private static final EntityDataAccessor<Integer> DATA_GOD = SynchedEntityData.defineId(GodBoss.class, EntityDataSerializers.INT);
+    private static final EntityDataAccessor<Boolean> DATA_CASTING = SynchedEntityData.defineId(GodBoss.class, EntityDataSerializers.BOOLEAN);
     private static final String MINION_TAG = "realms_of_chaos_minion";
+    private static final int WINDUP_TICKS = 24;
 
     private final ServerBossEvent bossEvent = new ServerBossEvent(
             UUID.randomUUID(), Component.empty(), BossEvent.BossBarColor.WHITE, BossEvent.BossBarOverlay.NOTCHED_10);
     private int abilityCooldown = 100;
     private int lonelyTicks;
     private boolean enraged;
+    // anti-stuck: where this boss belongs, and how long it has failed to make progress towards its target
+    private Vec3 home;
+    private Vec3 lastProgressPos = Vec3.ZERO;
+    private int stuckSeconds;
 
     public GodBoss(EntityType<? extends GodBoss> type, Level level) {
         super(type, level);
@@ -91,6 +103,75 @@ public class GodBoss extends Monster {
     protected void defineSynchedData(SynchedEntityData.Builder builder) {
         super.defineSynchedData(builder);
         builder.define(DATA_GOD, 0);
+        builder.define(DATA_CASTING, false);
+    }
+
+    /** True while the boss winds up its line ability (the renderer raises its arms). */
+    public boolean isCasting() {
+        return this.entityData.get(DATA_CASTING);
+    }
+
+    /** The point this boss is leashed to: the arena centre in a realm, otherwise where it was summoned. */
+    public void setHome(Vec3 home) {
+        this.home = home;
+    }
+
+    private Vec3 home() {
+        if (home == null) home = position();
+        return home;
+    }
+
+    private double leashRadius() {
+        return Realm.of(level().dimension()) != null ? RealmBuilder.FIGHT_RADIUS + 6.0 : 40.0;
+    }
+
+    private ParticleOptions lineParticle() {
+        return switch (god().line()) {
+            case ZEUS -> ParticleTypes.ELECTRIC_SPARK;
+            case POSEIDON -> ParticleTypes.SPLASH;
+            case HADES -> ParticleTypes.SOUL_FIRE_FLAME;
+        };
+    }
+
+    /** Puts the boss back somewhere it can fight from. Called when it is out of bounds, inside a block or stuck. */
+    private void warpTo(ServerLevel level, Vec3 to) {
+        RealmBuilder.makeSafeIfRealm(level, to);
+        level.sendParticles(ParticleTypes.POOF, getX(), getY() + 1, getZ(), 20, 0.4, 0.8, 0.4, 0.02);
+        getNavigation().stop();
+        setDeltaMovement(Vec3.ZERO);
+        teleportTo(to.x, to.y, to.z);
+        level.sendParticles(lineParticle(), to.x, to.y + 1, to.z, 40, 0.5, 1.0, 0.5, 0.1);
+        level.playSound(null, blockPosition(), SoundEvents.ENDERMAN_TELEPORT, SoundSource.HOSTILE, 1.0F, 0.7F);
+        stuckSeconds = 0;
+    }
+
+    /** Once a second: keep the boss inside its arena, out of walls, and moving towards its target. */
+    public void keepUnstuck(ServerLevel level) {
+        Vec3 h = home();
+        double dx = getX() - h.x, dz = getZ() - h.z, r = leashRadius();
+        boolean outside = dx * dx + dz * dz > r * r || getY() < h.y - 6 || getY() > h.y + 24;
+        if (outside || isInWall()) {
+            warpTo(level, h);
+            return;
+        }
+        LivingEntity target = getTarget();
+        if (target == null || !target.isAlive()) {
+            stuckSeconds = 0;
+            return;
+        }
+        boolean noProgress = position().distanceToSqr(lastProgressPos) < 1.0 && distanceToSqr(target) > 36.0;
+        lastProgressPos = position();
+        stuckSeconds = noProgress ? stuckSeconds + 1 : 0;
+        if (stuckSeconds >= 5) {
+            // step in next to the target, on the side facing the arena centre, if that spot is inside the leash and free
+            Vec3 toHome = h.subtract(target.position());
+            Vec3 dir = toHome.lengthSqr() < 0.01 ? new Vec3(1, 0, 0) : new Vec3(toHome.x, 0, toHome.z).normalize();
+            Vec3 spot = new Vec3(target.getX() + dir.x * 2.5, target.getY(), target.getZ() + dir.z * 2.5);
+            double sx = spot.x - h.x, sz = spot.z - h.z;
+            boolean inside = sx * sx + sz * sz <= r * r && Math.abs(spot.y - h.y) < 8;
+            boolean free = level.noCollision(this, getBoundingBox().move(spot.subtract(position())));
+            warpTo(level, inside && free ? spot : h);
+        }
     }
 
     public God god() {
@@ -166,16 +247,48 @@ public class GodBoss extends Monster {
             level.playSound(null, blockPosition(), SoundEvents.WITHER_AMBIENT, SoundSource.HOSTILE, 1.5F, 0.6F);
         }
 
+        if (tickCount % 20 == 0) keepUnstuck(level);
+        if (tickCount % 6 == 0) {
+            level.sendParticles(lineParticle(), getX(), getY() + 1.1, getZ(), enraged ? 4 : 2, 0.35, 0.7, 0.35, 0.02);
+        }
+
         LivingEntity target = getTarget();
-        if (target == null || !target.isAlive()) return;
+        if (target == null || !target.isAlive()) {
+            if (isCasting()) this.entityData.set(DATA_CASTING, false);
+            return;
+        }
 
         if (abilityCooldown > 0) {
             abilityCooldown--;
+            if (abilityCooldown == WINDUP_TICKS) {
+                // telegraph: arms go up, a ring of particles gathers, and players get a moment to react
+                this.entityData.set(DATA_CASTING, true);
+                level.playSound(null, blockPosition(), SoundEvents.EVOKER_PREPARE_ATTACK, SoundSource.HOSTILE, 1.6F, 0.8F);
+            }
+            if (isCasting() && abilityCooldown % 4 == 0) {
+                for (int i = 0; i < 12; i++) {
+                    double a = Math.PI * 2 * i / 12 + abilityCooldown * 0.2;
+                    level.sendParticles(lineParticle(), getX() + Math.cos(a) * 2.2, getY() + 0.3 + (WINDUP_TICKS - abilityCooldown) * 0.08,
+                            getZ() + Math.sin(a) * 2.2, 1, 0, 0, 0, 0);
+                }
+            }
             return;
         }
         double base = 220.0 - (Line.RANKS - god.rank()) * 8.0;
         abilityCooldown = (int) Math.max(70.0, enraged ? base * 0.6 : base);
         castAbility(level, god);
+        this.entityData.set(DATA_CASTING, false);
+    }
+
+    /** Gods cannot be cheesed with fall damage or pushed around by the arena moats. */
+    @Override
+    public boolean causeFallDamage(double fallDistance, float damageModifier, DamageSource source) {
+        return false;
+    }
+
+    @Override
+    public boolean isPushedByFluid() {
+        return false;
     }
 
     private List<Player> nearbyPlayers(ServerLevel level, double radius) {
@@ -183,8 +296,13 @@ public class GodBoss extends Monster {
                 p -> p.isAlive() && !p.isSpectator() && !p.isCreative());
     }
 
+    /** Test hook: makes the next ability fire after {@code ticks} ticks. */
+    public void primeAbility(int ticks) {
+        this.abilityCooldown = ticks;
+    }
+
     /** Each god line has its own signature attack, strengthened by the god's rank. */
-    private void castAbility(ServerLevel level, God god) {
+    public void castAbility(ServerLevel level, God god) {
         float s = (Line.RANKS + 1 - god.rank()) / (float) Line.RANKS;
         switch (god.line()) {
             case ZEUS -> {
@@ -237,7 +355,8 @@ public class GodBoss extends Monster {
         for (int i = 0; i < 2; i++) {
             Mob minion = EntityTypes.WITHER_SKELETON.create(level, EntitySpawnReason.TRIGGERED);
             if (minion == null) continue;
-            minion.setPos(getX() + (random.nextDouble() - 0.5) * 6, getY(), getZ() + (random.nextDouble() - 0.5) * 6);
+            minion.setPos(getX() + (random.nextDouble() - 0.5) * 4, getY() + 0.1, getZ() + (random.nextDouble() - 0.5) * 4);
+            if (!level.noCollision(minion)) minion.setPos(getX(), getY() + 0.1, getZ());
             minion.addTag(MINION_TAG);
             minion.setTarget(getTarget());
             level.addFreshEntity(minion);
@@ -254,17 +373,21 @@ public class GodBoss extends Monster {
     public void die(DamageSource source) {
         super.die(source);
         if (level() instanceof ServerLevel serverLevel) {
-            onDefeated(serverLevel);
+            onDefeated(serverLevel, source);
         }
     }
 
-    private void onDefeated(ServerLevel level) {
+    private void onDefeated(ServerLevel level, DamageSource source) {
         God god = god();
         ProgressData data = ProgressData.get(level.getServer());
         discardMinions(level);
         AABB area = getBoundingBox().inflate(96);
-        for (ServerPlayer player : level.getEntitiesOfClass(ServerPlayer.class, area, Player::isAlive)) {
+        // everyone who was there shares the victory, and the killer always counts
+        Set<ServerPlayer> victors = new LinkedHashSet<>(level.getEntitiesOfClass(ServerPlayer.class, area, Player::isAlive));
+        if (source.getEntity() instanceof ServerPlayer killer) victors.add(killer);
+        for (ServerPlayer player : victors) {
             boolean first = data.markDefeated(player.getUUID(), god);
+            RocAdvancements.awardGod(player, god);
             player.sendSystemMessage(Component.translatable("message." + RealmsOfChaos.MOD_ID + ".victory", god.displayName()));
             if (!first) continue;
             if (god.isFinalBoss()) {
@@ -297,6 +420,10 @@ public class GodBoss extends Monster {
         super.addAdditionalSaveData(output);
         output.putInt("God", godIndex());
         output.putBoolean("Enraged", enraged);
+        Vec3 h = home();
+        output.putDouble("HomeX", h.x);
+        output.putDouble("HomeY", h.y);
+        output.putDouble("HomeZ", h.z);
     }
 
     @Override
@@ -304,6 +431,10 @@ public class GodBoss extends Monster {
         super.readAdditionalSaveData(input);
         this.entityData.set(DATA_GOD, input.getIntOr("God", 0));
         this.enraged = input.getBooleanOr("Enraged", false);
+        double hy = input.getDoubleOr("HomeY", Double.NaN);
+        if (!Double.isNaN(hy)) {
+            this.home = new Vec3(input.getDoubleOr("HomeX", getX()), hy, input.getDoubleOr("HomeZ", getZ()));
+        }
         configure(god(), false);
     }
 }

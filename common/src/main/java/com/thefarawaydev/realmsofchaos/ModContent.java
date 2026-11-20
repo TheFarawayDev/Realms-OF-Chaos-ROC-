@@ -7,6 +7,7 @@ import com.thefarawaydev.realmsofchaos.god.God;
 import com.thefarawaydev.realmsofchaos.god.Gods;
 import com.thefarawaydev.realmsofchaos.god.Line;
 import com.thefarawaydev.realmsofchaos.item.ChaosCompassItem;
+import com.thefarawaydev.realmsofchaos.item.CodexItem;
 import com.thefarawaydev.realmsofchaos.item.GodWeaponItem;
 import com.thefarawaydev.realmsofchaos.world.Realm;
 import java.util.ArrayList;
@@ -64,6 +65,7 @@ public final class ModContent {
 
     // ---- items --------------------------------------------------------------------------------
     public static final Ref<Item> CHAOS_COMPASS = new Ref<>();
+    public static final Ref<Item> CHAOS_CODEX = new Ref<>();
     public static final Map<String, Ref<Item>> WEAPONS = new HashMap<>();
     public static final Map<String, Ref<Item>> BLOCK_ITEMS = new HashMap<>();
 
@@ -83,7 +85,8 @@ public final class ModContent {
         block("altar_poseidon", ALTAR_POSEIDON, key -> altar(Line.POSEIDON, key));
         block("altar_hades", ALTAR_HADES, key -> altar(Line.HADES, key));
 
-        // items: compass, 45 god weapons (ordered by line, rank 1 -> 15), then the block items
+        // items: codex, compass, 45 god weapons (ordered by line, rank 1 -> 15), then the block items
+        item("chaos_codex", CHAOS_CODEX, key -> new CodexItem(new Item.Properties().setId(key).stacksTo(1)));
         item("chaos_compass", CHAOS_COMPASS, key -> new ChaosCompassItem(new Item.Properties().setId(key).stacksTo(1)));
         for (Line line : Line.values()) {
             for (God god : Gods.ofLine(line)) {
@@ -156,6 +159,7 @@ public final class ModContent {
     /** Everything that belongs in the Realms of Chaos creative tab, in display order. */
     public static List<Item> tabItems() {
         List<Item> out = new ArrayList<>();
+        out.add(CHAOS_CODEX.get());
         out.add(CHAOS_COMPASS.get());
         for (Line line : Line.values()) {
             for (God god : Gods.ofLine(line)) {

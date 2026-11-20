@@ -8,6 +8,7 @@ import net.minecraft.client.model.geom.ModelLayers;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
 import net.minecraft.client.renderer.entity.HumanoidMobRenderer;
 import net.minecraft.resources.Identifier;
+import net.minecraft.world.entity.HumanoidArm;
 
 /** Draws every god boss as a humanoid with its own generated skin. */
 public class GodBossRenderer extends HumanoidMobRenderer<GodBoss, GodBossRenderState, HumanoidModel<GodBossRenderState>> {
@@ -25,6 +26,12 @@ public class GodBossRenderer extends HumanoidMobRenderer<GodBoss, GodBossRenderS
     public void extractRenderState(GodBoss entity, GodBossRenderState state, float partialTicks) {
         super.extractRenderState(entity, state, partialTicks);
         state.godIndex = entity.godIndex();
+    }
+
+    /** While a god winds up its ability both arms are thrown up, as if calling down its power. */
+    @Override
+    protected HumanoidModel.ArmPose getArmPose(GodBoss mob, HumanoidArm arm) {
+        return mob.isCasting() ? HumanoidModel.ArmPose.THROW_TRIDENT : super.getArmPose(mob, arm);
     }
 
     @Override

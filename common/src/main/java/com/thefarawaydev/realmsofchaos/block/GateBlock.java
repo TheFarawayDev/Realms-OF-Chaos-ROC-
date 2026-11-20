@@ -3,6 +3,9 @@ package com.thefarawaydev.realmsofchaos.block;
 import com.thefarawaydev.realmsofchaos.world.Realm;
 import com.thefarawaydev.realmsofchaos.world.Teleports;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.particles.ParticleOptions;
+import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.util.RandomSource;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.Entity;
@@ -31,6 +34,21 @@ public class GateBlock extends Block {
                                 InsideBlockEffectApplier effectApplier, boolean isPrecise) {
         if (!level.isClientSide() && entity instanceof ServerPlayer player) {
             Teleports.travel(player, destination);
+        }
+    }
+
+    /** Client-side ambience: motes drift out of the gate in its realm's colour. */
+    @Override
+    public void animateTick(BlockState state, Level level, BlockPos pos, RandomSource random) {
+        ParticleOptions particle = switch (destination) {
+            case HUB -> ParticleTypes.PORTAL;
+            case OLYMPUS -> ParticleTypes.ELECTRIC_SPARK;
+            case ABYSS -> ParticleTypes.BUBBLE_POP;
+            case UNDERWORLD -> ParticleTypes.SOUL_FIRE_FLAME;
+        };
+        for (int i = 0; i < 2; i++) {
+            level.addParticle(particle, pos.getX() + random.nextDouble(), pos.getY() + random.nextDouble(), pos.getZ() + random.nextDouble(),
+                    (random.nextDouble() - 0.5) * 0.3, random.nextDouble() * 0.12, (random.nextDouble() - 0.5) * 0.3);
         }
     }
 

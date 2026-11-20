@@ -40,8 +40,8 @@ jobs:
         if: github.ref == 'refs/heads/master'
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: v1.0.0-build.${{ github.run_number }}
-          name: Realms of Chaos 1.0.0 (build ${{ github.run_number }})
+          tag_name: v1.1.0-build.${{ github.run_number }}
+          name: Realms of Chaos 1.1.0 (build ${{ github.run_number }})
           body: |
             Realms of Chaos by TheFarawayDev for Minecraft 26.3 (Fabric and Forge).
             Download the jar for your loader: Fabric or Forge.

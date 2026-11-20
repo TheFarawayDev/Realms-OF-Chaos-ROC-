@@ -1,0 +1,28 @@
+{
+  "display": {
+    "icon": {
+      "id": "realms_of_chaos:zeus_weapon"
+    },
+    "title": {
+      "translate": "god.realms_of_chaos.zeus"
+    },
+    "description": {
+      "translate": "advancement.realms_of_chaos.zeus.desc"
+    },
+    "frame": "challenge",
+    "show_toast": true,
+    "announce_to_chat": true,
+    "hidden": false
+  },
+  "criteria": {
+    "done": {
+      "trigger": "minecraft:impossible"
+    }
+  },
+  "requirements": [
+    [
+      "done"
+    ]
+  ],
+  "parent": "realms_of_chaos:zeus/athena"
+}

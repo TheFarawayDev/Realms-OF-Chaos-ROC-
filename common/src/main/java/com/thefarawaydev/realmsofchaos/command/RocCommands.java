@@ -4,6 +4,7 @@ import com.mojang.brigadier.CommandDispatcher;
 import com.thefarawaydev.realmsofchaos.RealmsOfChaos;
 import com.thefarawaydev.realmsofchaos.god.Gods;
 import com.thefarawaydev.realmsofchaos.god.Line;
+import com.thefarawaydev.realmsofchaos.ui.CodexMenu;
 import com.thefarawaydev.realmsofchaos.world.ProgressData;
 import com.thefarawaydev.realmsofchaos.world.Realm;
 import com.thefarawaydev.realmsofchaos.world.Teleports;
@@ -12,12 +13,20 @@ import net.minecraft.commands.Commands;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 
-/** /roc hub - travel to the hub;  /roc progress - show how far up each god line you have climbed. */
+/** /roc menu - open the Codex;  /roc hub - travel to the hub;  /roc progress - list your progress in chat. */
 public final class RocCommands {
     private RocCommands() {}
 
     public static void register(CommandDispatcher<CommandSourceStack> dispatcher) {
         dispatcher.register(Commands.literal("roc")
+                .executes(ctx -> {
+                    CodexMenu.open(ctx.getSource().getPlayerOrException());
+                    return 1;
+                })
+                .then(Commands.literal("menu").executes(ctx -> {
+                    CodexMenu.open(ctx.getSource().getPlayerOrException());
+                    return 1;
+                }))
                 .then(Commands.literal("hub").executes(ctx -> {
                     ServerPlayer player = ctx.getSource().getPlayerOrException();
                     Teleports.travel(player, Realm.HUB);

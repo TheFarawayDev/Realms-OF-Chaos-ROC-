@@ -28,6 +28,10 @@ minecraft {
         register('server') {
             args '--nogui'
         }
+        // Headless smoke test: Forge's game-test server with the mod's built-in self-test switched on.
+        register('gameTestServer') {
+            systemProperty 'roc.selftest', 'true'
+        }
     }
 }
 

@@ -3,7 +3,13 @@ package com.thefarawaydev.realmsofchaos.fabric;
 import com.thefarawaydev.realmsofchaos.ModContent;
 import com.thefarawaydev.realmsofchaos.RealmsOfChaos;
 import com.thefarawaydev.realmsofchaos.command.RocCommands;
+import com.thefarawaydev.realmsofchaos.dev.SelfTest;
 import com.thefarawaydev.realmsofchaos.entity.GodBoss;
+import com.thefarawaydev.realmsofchaos.world.RealmSafety;
+import com.thefarawaydev.realmsofchaos.world.Welcome;
+import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
+import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
+import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.creativetab.v1.FabricCreativeModeTab;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
@@ -51,6 +57,13 @@ public class RealmsOfChaosFabric implements ModInitializer {
         ModContent.TAB.bind(() -> tab);
 
         CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) -> RocCommands.register(dispatcher));
+
+        // first-join thank-you, and the once-a-second void / stuck rescue inside the realms
+        ServerPlayConnectionEvents.JOIN.register((handler, sender, server) -> Welcome.onJoin(handler.getPlayer()));
+        ServerTickEvents.END_SERVER_TICK.register(RealmSafety::tick);
+        if (SelfTest.enabled()) {
+            ServerLifecycleEvents.SERVER_STARTED.register(SelfTest::run);
+        }
 
         LOGGER.info("{} by {} loaded: 45 gods, 3 realms, 1 hub.", RealmsOfChaos.MOD_NAME, RealmsOfChaos.AUTHOR);
     }

@@ -1,0 +1,452 @@
+[
+  {
+    "i": 0,
+    "line": "zeus",
+    "rank": 1,
+    "id": "zeus",
+    "name": "Zeus",
+    "title": "King of the Gods",
+    "weapon": "Keraunos, the Thunderbolt",
+    "power": "lightning"
+  },
+  {
+    "i": 1,
+    "line": "zeus",
+    "rank": 2,
+    "id": "athena",
+    "name": "Athena",
+    "title": "Goddess of Wisdom and War",
+    "weapon": "Spear of the Grey-Eyed",
+    "power": "knockback"
+  },
+  {
+    "i": 2,
+    "line": "zeus",
+    "rank": 3,
+    "id": "apollo",
+    "name": "Apollo",
+    "title": "God of the Sun and Prophecy",
+    "weapon": "Helios Lance",
+    "power": "fire"
+  },
+  {
+    "i": 3,
+    "line": "zeus",
+    "rank": 4,
+    "id": "dionysus",
+    "name": "Dionysus",
+    "title": "God of Wine and Madness",
+    "weapon": "Thyrsus of Madness",
+    "power": "none"
+  },
+  {
+    "i": 4,
+    "line": "zeus",
+    "rank": 5,
+    "id": "artemis",
+    "name": "Artemis",
+    "title": "Goddess of the Hunt and Moon",
+    "weapon": "Crescent Fang",
+    "power": "none"
+  },
+  {
+    "i": 5,
+    "line": "zeus",
+    "rank": 6,
+    "id": "ares",
+    "name": "Ares",
+    "title": "God of War",
+    "weapon": "Warblade of Ares",
+    "power": "knockback"
+  },
+  {
+    "i": 6,
+    "line": "zeus",
+    "rank": 7,
+    "id": "hermes",
+    "name": "Hermes",
+    "title": "Messenger of the Gods",
+    "weapon": "Winged Caduceus",
+    "power": "none"
+  },
+  {
+    "i": 7,
+    "line": "zeus",
+    "rank": 8,
+    "id": "asclepius",
+    "name": "Asclepius",
+    "title": "God of Medicine",
+    "weapon": "Rod of Asclepius",
+    "power": "drain"
+  },
+  {
+    "i": 8,
+    "line": "zeus",
+    "rank": 9,
+    "id": "hebe",
+    "name": "Hebe",
+    "title": "Goddess of Youth",
+    "weapon": "Ambrosia Sabre",
+    "power": "none"
+  },
+  {
+    "i": 9,
+    "line": "zeus",
+    "rank": 10,
+    "id": "phobos",
+    "name": "Phobos",
+    "title": "God of Fear",
+    "weapon": "Terror Fang",
+    "power": "none"
+  },
+  {
+    "i": 10,
+    "line": "zeus",
+    "rank": 11,
+    "id": "deimos",
+    "name": "Deimos",
+    "title": "God of Dread",
+    "weapon": "Dread Reaper",
+    "power": "none"
+  },
+  {
+    "i": 11,
+    "line": "zeus",
+    "rank": 12,
+    "id": "hygeia",
+    "name": "Hygeia",
+    "title": "Goddess of Health",
+    "weapon": "Serpent Scalpel",
+    "power": "drain"
+  },
+  {
+    "i": 12,
+    "line": "zeus",
+    "rank": 13,
+    "id": "pan",
+    "name": "Pan",
+    "title": "God of Wild Nature",
+    "weapon": "Wildwood Cudgel",
+    "power": "none"
+  },
+  {
+    "i": 13,
+    "line": "zeus",
+    "rank": 14,
+    "id": "nike",
+    "name": "Nike",
+    "title": "Goddess of Victory",
+    "weapon": "Victory Gladius",
+    "power": "none"
+  },
+  {
+    "i": 14,
+    "line": "zeus",
+    "rank": 15,
+    "id": "iris",
+    "name": "Iris",
+    "title": "Divine Messenger of the Rainbow",
+    "weapon": "Rainbow Rapier",
+    "power": "none"
+  },
+  {
+    "i": 15,
+    "line": "poseidon",
+    "rank": 1,
+    "id": "poseidon",
+    "name": "Poseidon",
+    "title": "Lord of the Seas",
+    "weapon": "Trident of the Deep",
+    "power": "sweep"
+  },
+  {
+    "i": 16,
+    "line": "poseidon",
+    "rank": 2,
+    "id": "amphitrite",
+    "name": "Amphitrite",
+    "title": "Queen of the Sea",
+    "weapon": "Queen's Coral Scepter",
+    "power": "freeze"
+  },
+  {
+    "i": 17,
+    "line": "poseidon",
+    "rank": 3,
+    "id": "triton",
+    "name": "Triton",
+    "title": "Herald of the Sea",
+    "weapon": "Conch Spear",
+    "power": "knockback"
+  },
+  {
+    "i": 18,
+    "line": "poseidon",
+    "rank": 4,
+    "id": "chrysaor",
+    "name": "Chrysaor",
+    "title": "Golden Blade of the Sea",
+    "weapon": "Golden Sword of Chrysaor",
+    "power": "sweep"
+  },
+  {
+    "i": 19,
+    "line": "poseidon",
+    "rank": 5,
+    "id": "cymopoleia",
+    "name": "Cymopoleia",
+    "title": "Goddess of Storm Waves",
+    "weapon": "Stormwave Maul",
+    "power": "knockback"
+  },
+  {
+    "i": 20,
+    "line": "poseidon",
+    "rank": 6,
+    "id": "rhode",
+    "name": "Rhode",
+    "title": "Nymph of Rhodes",
+    "weapon": "Roserain Blade",
+    "power": "none"
+  },
+  {
+    "i": 21,
+    "line": "poseidon",
+    "rank": 7,
+    "id": "pegasus",
+    "name": "Pegasus",
+    "title": "The Winged Horse",
+    "weapon": "Wingbeat Saber",
+    "power": "none"
+  },
+  {
+    "i": 22,
+    "line": "poseidon",
+    "rank": 8,
+    "id": "benthesikyme",
+    "name": "Benthesikyme",
+    "title": "Goddess of the Deep Waves",
+    "weapon": "Deepcurrent Dirk",
+    "power": "drain"
+  },
+  {
+    "i": 23,
+    "line": "poseidon",
+    "rank": 9,
+    "id": "halia",
+    "name": "Halia",
+    "title": "Sea Nymph of the Salt",
+    "weapon": "Seafoam Cutlass",
+    "power": "freeze"
+  },
+  {
+    "i": 24,
+    "line": "poseidon",
+    "rank": 10,
+    "id": "nereus",
+    "name": "Nereus",
+    "title": "Old Man of the Sea",
+    "weapon": "Elder's Tideblade",
+    "power": "none"
+  },
+  {
+    "i": 25,
+    "line": "poseidon",
+    "rank": 11,
+    "id": "proteus",
+    "name": "Proteus",
+    "title": "The Shapeshifter",
+    "weapon": "Shapeshifter's Kris",
+    "power": "none"
+  },
+  {
+    "i": 26,
+    "line": "poseidon",
+    "rank": 12,
+    "id": "palaemon",
+    "name": "Palaemon",
+    "title": "God of Harbours",
+    "weapon": "Anchor Pike",
+    "power": "none"
+  },
+  {
+    "i": 27,
+    "line": "poseidon",
+    "rank": 13,
+    "id": "thetis",
+    "name": "Thetis",
+    "title": "Silver-Footed Sea Nymph",
+    "weapon": "Silverfoot Rapier",
+    "power": "freeze"
+  },
+  {
+    "i": 28,
+    "line": "poseidon",
+    "rank": 14,
+    "id": "galene",
+    "name": "Galene",
+    "title": "Goddess of Calm Seas",
+    "weapon": "Calmwater Foil",
+    "power": "none"
+  },
+  {
+    "i": 29,
+    "line": "poseidon",
+    "rank": 15,
+    "id": "galatea",
+    "name": "Galatea",
+    "title": "Sea Nymph of the Pearl Shore",
+    "weapon": "Pearl Sea Dagger",
+    "power": "freeze"
+  },
+  {
+    "i": 30,
+    "line": "hades",
+    "rank": 1,
+    "id": "hades",
+    "name": "Hades",
+    "title": "Lord of the Underworld",
+    "weapon": "Bident of the Dead",
+    "power": "drain"
+  },
+  {
+    "i": 31,
+    "line": "hades",
+    "rank": 2,
+    "id": "persephone",
+    "name": "Persephone",
+    "title": "Queen of the Underworld",
+    "weapon": "Pomegranate Scythe",
+    "power": "none"
+  },
+  {
+    "i": 32,
+    "line": "hades",
+    "rank": 3,
+    "id": "zagreus",
+    "name": "Zagreus",
+    "title": "The Hunter of the Dead",
+    "weapon": "Stygian Blade",
+    "power": "fire"
+  },
+  {
+    "i": 33,
+    "line": "hades",
+    "rank": 4,
+    "id": "thanatos",
+    "name": "Thanatos",
+    "title": "Death Incarnate",
+    "weapon": "Reaper's Sickle",
+    "power": "drain"
+  },
+  {
+    "i": 34,
+    "line": "hades",
+    "rank": 5,
+    "id": "hypnos",
+    "name": "Hypnos",
+    "title": "God of Sleep",
+    "weapon": "Slumber Staff",
+    "power": "none"
+  },
+  {
+    "i": 35,
+    "line": "hades",
+    "rank": 6,
+    "id": "melinoe",
+    "name": "Melinoe",
+    "title": "Goddess of Ghosts",
+    "weapon": "Witchlight Knife",
+    "power": "none"
+  },
+  {
+    "i": 36,
+    "line": "hades",
+    "rank": 7,
+    "id": "macaria",
+    "name": "Macaria",
+    "title": "Goddess of Blessed Death",
+    "weapon": "Mercy's Edge",
+    "power": "drain"
+  },
+  {
+    "i": 37,
+    "line": "hades",
+    "rank": 8,
+    "id": "hecate",
+    "name": "Hecate",
+    "title": "Goddess of Witchcraft",
+    "weapon": "Hecate's Torchblade",
+    "power": "fire"
+  },
+  {
+    "i": 38,
+    "line": "hades",
+    "rank": 9,
+    "id": "morpheus",
+    "name": "Morpheus",
+    "title": "God of Dreams",
+    "weapon": "Dreamshaper Blade",
+    "power": "none"
+  },
+  {
+    "i": 39,
+    "line": "hades",
+    "rank": 10,
+    "id": "nyx",
+    "name": "Nyx",
+    "title": "Primordial Goddess of Night",
+    "weapon": "Midnight Shard",
+    "power": "none"
+  },
+  {
+    "i": 40,
+    "line": "hades",
+    "rank": 11,
+    "id": "erinyes",
+    "name": "The Erinyes",
+    "title": "The Furies of Vengeance",
+    "weapon": "Furies' Lash Blade",
+    "power": "fire"
+  },
+  {
+    "i": 41,
+    "line": "hades",
+    "rank": 12,
+    "id": "moirai",
+    "name": "The Moirai",
+    "title": "The Three Fates",
+    "weapon": "Shears of Fate",
+    "power": "none"
+  },
+  {
+    "i": 42,
+    "line": "hades",
+    "rank": 13,
+    "id": "keres",
+    "name": "The Keres",
+    "title": "Spirits of Violent Death",
+    "weapon": "Carrion Talon",
+    "power": "drain"
+  },
+  {
+    "i": 43,
+    "line": "hades",
+    "rank": 14,
+    "id": "oneiroi",
+    "name": "The Oneiroi",
+    "title": "Spirits of Dreams",
+    "weapon": "Nightmare Reed",
+    "power": "none"
+  },
+  {
+    "i": 44,
+    "line": "hades",
+    "rank": 15,
+    "id": "charon",
+    "name": "Charon",
+    "title": "Ferryman of the Dead",
+    "weapon": "Ferryman's Oar",
+    "power": "knockback"
+  }
+]

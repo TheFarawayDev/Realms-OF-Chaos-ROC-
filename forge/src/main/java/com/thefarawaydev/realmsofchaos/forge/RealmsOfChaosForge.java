@@ -3,7 +3,14 @@ package com.thefarawaydev.realmsofchaos.forge;
 import com.thefarawaydev.realmsofchaos.ModContent;
 import com.thefarawaydev.realmsofchaos.RealmsOfChaos;
 import com.thefarawaydev.realmsofchaos.command.RocCommands;
+import com.thefarawaydev.realmsofchaos.dev.SelfTest;
 import com.thefarawaydev.realmsofchaos.entity.GodBoss;
+import com.thefarawaydev.realmsofchaos.world.RealmSafety;
+import com.thefarawaydev.realmsofchaos.world.Welcome;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraftforge.event.TickEvent;
+import net.minecraftforge.event.entity.player.PlayerEvent;
+import net.minecraftforge.event.server.ServerStartedEvent;
 import com.mojang.logging.LogUtils;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.world.entity.EntityType;
@@ -60,6 +67,15 @@ public final class RealmsOfChaosForge {
 
         EntityAttributeCreationEvent.BUS.addListener(event -> event.put(ModContent.GOD_BOSS.get(), GodBoss.createAttributes().build()));
         RegisterCommandsEvent.BUS.addListener(event -> RocCommands.register(event.getDispatcher()));
+
+        // first-join thank-you, and the once-a-second void / stuck rescue inside the realms
+        PlayerEvent.PlayerLoggedInEvent.BUS.addListener(event -> {
+            if (event.getEntity() instanceof ServerPlayer player) Welcome.onJoin(player);
+        });
+        TickEvent.ServerTickEvent.Post.BUS.addListener(event -> RealmSafety.tick(event.server()));
+        if (SelfTest.enabled()) {
+            ServerStartedEvent.BUS.addListener(event -> SelfTest.run(event.getServer()));
+        }
 
         LOGGER.info("{} by {} loaded: 45 gods, 3 realms, 1 hub.", RealmsOfChaos.MOD_NAME, RealmsOfChaos.AUTHOR);
     }
