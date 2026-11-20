@@ -4,166 +4,319 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Realms of Chaos - Download</title>
-<meta name="description" content="Realms of Chaos by TheFarawayDev: a Minecraft mythology boss-rush mod for Fabric and Forge.">
-<link rel="icon" href="icon.png">
+<meta name="description" content="Realms of Chaos by TheFarawayDev - a Minecraft mythology boss-rush mod for Fabric and Forge.">
+<meta name="theme-color" content="#07060f">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%2307060f'/%3E%3Cpath d='M16 4l10 6v12l-10 6-10-6V10z' fill='none' stroke='%23f2c94c' stroke-width='3'/%3E%3C/svg%3E">
 <style>
   @font-face { font-family:"Monocraft"; src:url("Monocraft.ttf") format("truetype"); font-display:swap; }
-  :root { --bg:#0b0718; --card:rgba(24,17,52,.82); --line:#4a3a8c; --text:#f1edff; --muted:#b4acdc;
-          --gold:#f2c94c; --teal:#2fb5c8; --purple:#a55ad6; }
+  :root {
+    --bg:#07060f; --panel:rgba(16,13,34,.78); --panel-solid:#100d22; --line:rgba(150,130,255,.22); --line-strong:rgba(150,130,255,.45);
+    --text:#eeeaff; --muted:#9d97c4; --gold:#f2c94c; --teal:#35c4d8; --purple:#a55ad6; --green:#58d68d;
+    --pixel:"Monocraft", ui-monospace, Menlo, Consolas, monospace;
+    --sans:system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  }
   * { box-sizing:border-box; }
-  html { image-rendering:pixelated; }
-  body { margin:0; min-height:100vh; background:var(--bg); color:var(--text);
-         font-family:"Monocraft", ui-monospace, Menlo, Consolas, monospace; font-size:15px; line-height:1.7; overflow-x:hidden; }
+  html { scroll-behavior:smooth; }
+  body { margin:0; background:var(--bg); color:var(--text); font:15px/1.65 var(--sans); overflow-x:hidden; }
   #bg { position:fixed; inset:0; width:100%; height:100%; z-index:-1; display:block; }
-  main { max-width:900px; margin:0 auto; padding:56px 16px 72px; position:relative; }
+  a { color:inherit; }
+  .wrap { max-width:1040px; margin:0 auto; padding:0 20px; }
 
-  header { text-align:center; }
-  .logo { width:112px; height:112px; image-rendering:pixelated; border:4px solid var(--gold); box-shadow:0 0 0 4px #000, 0 0 40px rgba(242,201,76,.45);
-          animation:float 4s ease-in-out infinite; }
-  @keyframes float { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-10px)} }
-  h1 { margin:26px 0 6px; font-size:clamp(1.8rem,7vw,3.2rem); line-height:1.15; color:#fff; letter-spacing:1px;
-       text-shadow:4px 4px 0 #3b2a7a, 8px 8px 0 #000; animation:glow 3s ease-in-out infinite alternate; }
-  @keyframes glow { from{text-shadow:4px 4px 0 #3b2a7a, 8px 8px 0 #000, 0 0 10px rgba(242,201,76,.0)}
-                    to  {text-shadow:4px 4px 0 #3b2a7a, 8px 8px 0 #000, 0 0 28px rgba(242,201,76,.65)} }
-  .tag { color:var(--muted); margin:0 auto; max-width:620px; }
-  .by { color:var(--gold); }
+  /* header */
+  .nav { position:sticky; top:0; z-index:10; backdrop-filter:blur(10px); background:rgba(7,6,15,.72); border-bottom:1px solid var(--line); }
+  .nav .wrap { display:flex; align-items:center; justify-content:space-between; height:60px; gap:16px; }
+  .brand { font-family:var(--pixel); font-size:15px; letter-spacing:.5px; text-decoration:none; display:flex; align-items:center; gap:10px; }
+  .brand i { width:10px; height:10px; background:var(--gold); box-shadow:12px 0 0 var(--teal), 24px 0 0 var(--purple); margin-right:26px; }
+  .links { display:flex; gap:22px; font-size:13px; }
+  .links a { color:var(--muted); text-decoration:none; transition:color .15s; }
+  .links a:hover { color:#fff; }
+  .nav .gh { border:1px solid var(--line-strong); padding:6px 12px; border-radius:6px; color:var(--text); }
+  @media (max-width:640px) { .links a:not(.gh) { display:none; } }
 
-  .grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(270px,1fr)); gap:22px; margin:40px 0 14px; }
-  .card { background:var(--card); backdrop-filter:blur(4px); padding:24px; border:4px solid #000;
-          box-shadow:inset 0 0 0 4px var(--line), 6px 6px 0 #000; transition:transform .15s; }
-  .card:hover { transform:translate(-3px,-3px); }
-  .card h2 { margin:0 0 6px; font-size:1.4rem; }
-  .fabric h2 { color:var(--gold); } .forge h2 { color:var(--teal); }
-  .card p { color:var(--muted); margin:0 0 18px; font-size:.85rem; }
+  /* hero */
+  .hero { padding:96px 0 40px; text-align:center; }
+  .eyebrow { display:inline-flex; gap:8px; align-items:center; font:12px var(--pixel); color:var(--green); border:1px solid rgba(88,214,141,.35);
+             background:rgba(88,214,141,.08); padding:6px 12px; border-radius:999px; }
+  .eyebrow b { width:7px; height:7px; border-radius:50%; background:var(--green); animation:pulse 1.8s infinite; }
+  @keyframes pulse { 0%{box-shadow:0 0 0 0 rgba(88,214,141,.6)} 100%{box-shadow:0 0 0 9px rgba(88,214,141,0)} }
+  h1 { font:400 clamp(2.4rem,8vw,4.6rem)/1.05 var(--pixel); margin:22px 0 10px; letter-spacing:-1px;
+       background:linear-gradient(90deg,var(--gold),#fff 45%,var(--teal) 70%,var(--purple)); -webkit-background-clip:text; background-clip:text; color:transparent;
+       filter:drop-shadow(0 4px 0 rgba(0,0,0,.6)); }
+  .badges { display:flex; flex-wrap:wrap; gap:8px; justify-content:center; margin-top:22px; }
+  .badge { font:12px var(--pixel); padding:6px 11px; border:1px solid var(--line-strong); background:var(--panel); border-radius:6px; color:var(--text); }
+  .badge span { color:var(--muted); margin-right:6px; }
+  .cta { margin-top:30px; display:flex; gap:12px; justify-content:center; flex-wrap:wrap; }
 
-  .btn { display:block; text-align:center; text-decoration:none; font-family:inherit; font-size:1rem; padding:14px 12px; color:#fff;
-         border:4px solid #000; text-shadow:2px 2px 0 rgba(0,0,0,.55); cursor:pointer;
-         box-shadow:inset 0 -6px 0 rgba(0,0,0,.28), inset 0 6px 0 rgba(255,255,255,.28); transition:transform .08s; }
-  .btn:hover { filter:brightness(1.12); } .btn:active { transform:translateY(3px); }
-  .fabric .btn { background:#d9971f; } .forge .btn { background:#1f9db0; }
-  .btn[aria-disabled=true] { filter:grayscale(1) brightness(.7); pointer-events:none; }
+  .btn { font:13px var(--pixel); text-decoration:none; display:inline-flex; align-items:center; justify-content:center; gap:10px; padding:13px 20px;
+         border-radius:8px; border:1px solid transparent; color:#0b0818; cursor:pointer; transition:transform .12s, box-shadow .12s, filter .12s; }
+  .btn:hover { transform:translateY(-2px); }
+  .btn.fabric { background:var(--gold); box-shadow:0 6px 24px -6px rgba(242,201,76,.55); }
+  .btn.forge { background:var(--teal); box-shadow:0 6px 24px -6px rgba(53,196,216,.55); }
+  .btn.ghost { background:transparent; color:var(--text); border-color:var(--line-strong); }
+  .btn[aria-disabled=true] { filter:grayscale(1) brightness(.6); pointer-events:none; box-shadow:none; }
+  .btn svg { width:18px; height:18px; }
 
-  .meta { text-align:center; color:var(--muted); font-size:.85rem; min-height:1.6em; }
-  .meta a, footer a { color:var(--gold); }
+  /* sections */
+  section { padding:44px 0 8px; }
+  .sh { display:flex; align-items:baseline; justify-content:space-between; margin-bottom:18px; gap:12px; }
+  .sh h2 { font:400 1.35rem var(--pixel); margin:0; }
+  .sh small { color:var(--muted); font-size:13px; }
+  .panel { background:var(--panel); border:1px solid var(--line); border-radius:14px; backdrop-filter:blur(6px); }
 
-  .panel { margin-top:36px; background:var(--card); border:4px solid #000; box-shadow:inset 0 0 0 4px var(--line), 6px 6px 0 #000; padding:22px 24px; }
-  h3 { margin:0 0 8px; color:var(--gold); font-size:1.15rem; }
-  ul { padding-left:22px; margin:8px 0; } li { margin:6px 0; }
-  code { background:#2b2058; padding:1px 7px; border:2px solid #000; }
-  .lines { display:flex; gap:10px; flex-wrap:wrap; margin-top:12px; }
-  .chip { padding:4px 12px; border:3px solid #000; font-size:.8rem; color:#111; }
-  footer { margin-top:44px; text-align:center; color:var(--muted); font-size:.75rem; }
-  @media (prefers-reduced-motion: reduce) { .logo, h1 { animation:none; } }
+  .dl { display:grid; grid-template-columns:repeat(auto-fit,minmax(310px,1fr)); gap:18px; }
+  .dlcard { padding:24px; position:relative; overflow:hidden; transition:border-color .2s, transform .2s; }
+  .dlcard:hover { border-color:var(--line-strong); transform:translateY(-3px); }
+  .dlcard::before { content:""; position:absolute; inset:0 0 auto 0; height:3px; background:var(--accent); }
+  .dlcard.fabric { --accent:var(--gold); } .dlcard.forge { --accent:var(--teal); }
+  .dltop { display:flex; align-items:center; gap:14px; margin-bottom:16px; }
+  .logo { width:52px; height:52px; border-radius:12px; display:grid; place-items:center; background:color-mix(in srgb, var(--accent) 14%, transparent); border:1px solid color-mix(in srgb, var(--accent) 45%, transparent); }
+  .logo svg { width:30px; height:30px; color:var(--accent); }
+  .dltop h3 { margin:0; font:400 1.25rem var(--pixel); }
+  .dltop p { margin:0; color:var(--muted); font-size:13px; }
+  dl.facts { display:grid; grid-template-columns:auto 1fr; gap:6px 18px; margin:0 0 20px; font-size:13px; }
+  dl.facts dt { color:var(--muted); } dl.facts dd { margin:0; text-align:right; font-family:var(--pixel); font-size:12px; }
+  .dlcard .btn { width:100%; }
+
+  .stats { display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:14px; }
+  .stat { padding:20px; text-align:center; }
+  .stat b { display:block; font:400 2rem var(--pixel); color:var(--accent,var(--gold)); }
+  .stat span { color:var(--muted); font-size:13px; }
+
+  .feat { display:grid; grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); gap:16px; }
+  .feat .panel { padding:22px; border-top:3px solid var(--accent); }
+  .feat h3 { margin:0 0 6px; font:400 1.05rem var(--pixel); color:var(--accent); }
+  .feat p { margin:0; color:var(--muted); font-size:14px; }
+
+  .two { display:grid; grid-template-columns:repeat(auto-fit,minmax(320px,1fr)); gap:18px; }
+  .two .panel { padding:24px; }
+  .two h3 { margin:0 0 12px; font:400 1.05rem var(--pixel); color:var(--gold); }
+  ol, ul { margin:0; padding-left:20px; } li { margin:7px 0; color:#d6d1f5; }
+  code { font:12px var(--pixel); background:rgba(150,130,255,.15); border:1px solid var(--line); border-radius:5px; padding:2px 6px; }
+  table { width:100%; border-collapse:collapse; font-size:14px; }
+  td { padding:9px 0; border-bottom:1px solid var(--line); } tr:last-child td { border:0; }
+  td:first-child { color:var(--muted); width:42%; } td:last-child { text-align:right; font-family:var(--pixel); font-size:12px; }
+
+  .rel { padding:0; overflow:hidden; }
+  .row { display:grid; grid-template-columns:1.4fr 1fr auto; gap:12px; align-items:center; padding:14px 20px; border-bottom:1px solid var(--line); }
+  .row:last-child { border:0; }
+  .row b { font:400 13px var(--pixel); } .row small { color:var(--muted); }
+  .row a { font-size:13px; color:var(--gold); text-decoration:none; } .row a:hover { text-decoration:underline; }
+  .tagl { font:11px var(--pixel); color:#0b0818; background:var(--green); border-radius:4px; padding:2px 7px; margin-left:8px; }
+  @media (max-width:560px) { .row { grid-template-columns:1fr; } }
+
+  footer { margin-top:56px; border-top:1px solid var(--line); padding:26px 0 40px; color:var(--muted); font-size:13px; }
+  footer .wrap { display:flex; justify-content:space-between; flex-wrap:wrap; gap:10px; }
+  footer a { color:var(--text); }
+  .reveal { opacity:0; transform:translateY(14px); transition:opacity .6s, transform .6s; }
+  .reveal.in { opacity:1; transform:none; }
+  @media (prefers-reduced-motion: reduce) { .reveal { opacity:1; transform:none; transition:none; } .eyebrow b { animation:none; } html { scroll-behavior:auto; } }
 </style>
 </head>
 <body>
 <canvas id="bg" aria-hidden="true"></canvas>
-<main>
-  <header>
-    <img class="logo" src="icon.png" alt="Realms of Chaos icon">
-    <h1>Realms of Chaos</h1>
-    <p class="tag">Mythologies forged into weapons. Climb the god lines of Zeus, Poseidon and Hades: 45 bosses, 45 relic weapons.<br>
-      Minecraft 26.3 &middot; by <span class="by">TheFarawayDev</span></p>
-  </header>
 
-  <div class="grid">
-    <div class="card fabric">
-      <h2>Fabric</h2>
-      <p>Needs Fabric Loader 0.20.1+ and Fabric API for 26.3.</p>
-      <a id="dl-fabric" class="btn" aria-disabled="true" href="#">Loading...</a>
-    </div>
-    <div class="card forge">
-      <h2>Forge</h2>
-      <p>Needs Forge 66.1.9+ for 26.3.</p>
-      <a id="dl-forge" class="btn" aria-disabled="true" href="#">Loading...</a>
-    </div>
+<header class="nav">
+  <div class="wrap">
+    <a class="brand" href="#top"><i></i>REALMS OF CHAOS</a>
+    <nav class="links">
+      <a href="#download">Download</a><a href="#features">Features</a><a href="#install">Install</a><a href="#releases">Releases</a>
+      <a class="gh" id="gh-link" href="#">GitHub</a>
+    </nav>
   </div>
-  <p class="meta" id="meta"></p>
+</header>
 
-  <div class="panel">
-    <h3>Install</h3>
-    <ul>
-      <li>Install Java 25 and your loader for Minecraft 26.3.</li>
-      <li>Drop the <code>.jar</code> into your <code>mods</code> folder.</li>
-      <li>Right-click the <b>Compass of Chaos</b> or run <code>/roc hub</code> to reach the Hub of Realms.</li>
-    </ul>
-  </div>
-
-  <div class="panel">
-    <h3>What's inside</h3>
-    <ul>
-      <li>A hub with three gates to the Olympian Heights, the Abyssal Palace and the Underworld.</li>
-      <li>Ranked god lines, from the starters Iris, Galatea and Charon up to Zeus, Poseidon and Hades.</li>
-      <li>Every god drops a relic weapon with its own power and a right-click Divine Surge.</li>
-    </ul>
-    <div class="lines">
-      <span class="chip" style="background:#f2c94c">Zeus</span>
-      <span class="chip" style="background:#2fb5c8">Poseidon</span>
-      <span class="chip" style="background:#a55ad6">Hades</span>
+<main id="top">
+  <div class="wrap">
+    <div class="hero">
+      <span class="eyebrow"><b></b><span id="hero-ver">Loading release...</span></span>
+      <h1>Realms of Chaos</h1>
+      <div class="badges">
+        <span class="badge"><span>Minecraft</span>26.3</span>
+        <span class="badge"><span>Loaders</span>Fabric &middot; Forge</span>
+        <span class="badge"><span>Java</span>25</span>
+        <span class="badge"><span>License</span>MIT</span>
+        <span class="badge"><span>Author</span>TheFarawayDev</span>
+      </div>
+      <div class="cta">
+        <a class="btn fabric" id="cta-fabric" aria-disabled="true" href="#download">Download Fabric</a>
+        <a class="btn forge" id="cta-forge" aria-disabled="true" href="#download">Download Forge</a>
+        <a class="btn ghost" href="#install">How to install</a>
+      </div>
     </div>
-  </div>
 
-  <footer>Realms of Chaos &copy; TheFarawayDev &middot; MIT licensed &middot; Font: Monocraft (SIL OFL)</footer>
+    <section id="download" class="reveal">
+      <div class="sh"><h2>Download</h2><small id="dl-note"></small></div>
+      <div class="dl">
+        <article class="panel dlcard fabric">
+          <div class="dltop">
+            <div class="logo"><svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="square"><path d="M5 9h22M5 16h22M5 23h22M9 5v22M16 5v22M23 5v22"/><path d="M5 5h22v22H5z" stroke-width="3"/></svg></div>
+            <div><h3>Fabric</h3><p>Lightweight loader</p></div>
+          </div>
+          <dl class="facts"><dt>Version</dt><dd data-f="ver">-</dd><dt>File</dt><dd data-f="name">-</dd><dt>Size</dt><dd data-f="size">-</dd><dt>Downloads</dt><dd data-f="count">-</dd><dt>Requires</dt><dd>Loader 0.20.1+ &amp; Fabric API</dd></dl>
+          <a class="btn fabric" id="dl-fabric" aria-disabled="true" href="#">Loading...</a>
+        </article>
+        <article class="panel dlcard forge">
+          <div class="dltop">
+            <div class="logo"><svg viewBox="0 0 32 32" fill="currentColor"><path d="M4 8h24v4c0 3-3 5-7 5h-1l1 4h5v4H8v-4h5l1-4h-1c-4 0-7-2-7-5z"/></svg></div>
+            <div><h3>Forge</h3><p>Established mod platform</p></div>
+          </div>
+          <dl class="facts"><dt>Version</dt><dd data-f="ver">-</dd><dt>File</dt><dd data-f="name">-</dd><dt>Size</dt><dd data-f="size">-</dd><dt>Downloads</dt><dd data-f="count">-</dd><dt>Requires</dt><dd>Forge 66.1.9+</dd></dl>
+          <a class="btn forge" id="dl-forge" aria-disabled="true" href="#">Loading...</a>
+        </article>
+      </div>
+    </section>
+
+    <section class="reveal">
+      <div class="stats">
+        <div class="panel stat"><b>45</b><span>Gods to defeat</span></div>
+        <div class="panel stat" style="--accent:var(--teal)"><b>45</b><span>Relic weapons</span></div>
+        <div class="panel stat" style="--accent:var(--purple)"><b>3</b><span>God lines</span></div>
+        <div class="panel stat"><b>4</b><span>Realms</span></div>
+      </div>
+    </section>
+
+    <section id="features" class="reveal">
+      <div class="sh"><h2>Features</h2></div>
+      <div class="feat">
+        <div class="panel" style="--accent:var(--gold)"><h3>Zeus</h3><p>Climb from Iris to the King of the Gods across the Olympian Heights. Lightning, wisdom and war.</p></div>
+        <div class="panel" style="--accent:var(--teal)"><h3>Poseidon</h3><p>From Galatea to the Lord of the Seas in the Abyssal Palace. Tidal waves and crushing currents.</p></div>
+        <div class="panel" style="--accent:var(--purple)"><h3>Hades</h3><p>From Charon to the Lord of the Underworld. Drain life, wither flesh, command the dead.</p></div>
+        <div class="panel" style="--accent:var(--green)"><h3>Hub of Realms</h3><p>One hub, three gates. Choose any path; every line is independent and saved per player.</p></div>
+        <div class="panel" style="--accent:var(--gold)"><h3>Relic weapons</h3><p>Every god drops a weapon scaled by rank with its own hit power and a right-click Divine Surge.</p></div>
+        <div class="panel" style="--accent:var(--teal)"><h3>Fabric and Forge</h3><p>One codebase, two loaders, same content and behaviour on both.</p></div>
+      </div>
+    </section>
+
+    <section id="install" class="reveal">
+      <div class="sh"><h2>Install</h2></div>
+      <div class="two">
+        <div class="panel"><h3>Steps</h3>
+          <ol>
+            <li>Install Java 25 and your loader for Minecraft 26.3.</li>
+            <li>Fabric only: add Fabric API.</li>
+            <li>Put the downloaded <code>.jar</code> in your <code>mods</code> folder.</li>
+            <li>In game, right-click the Compass of Chaos or run <code>/roc hub</code>.</li>
+          </ol>
+        </div>
+        <div class="panel"><h3>Requirements</h3>
+          <table>
+            <tr><td>Minecraft</td><td>26.3</td></tr>
+            <tr><td>Java</td><td>25+</td></tr>
+            <tr><td>Fabric</td><td>Loader 0.20.1+ / API 0.166.2+</td></tr>
+            <tr><td>Forge</td><td>66.1.9+</td></tr>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <section id="releases" class="reveal">
+      <div class="sh"><h2>Releases</h2><small><a id="all-rel" href="#" style="color:var(--gold)">View all on GitHub</a></small></div>
+      <div class="panel rel" id="rel-list"><div class="row"><small>Loading...</small></div></div>
+    </section>
+  </div>
 </main>
 
-<script>
-  // ---- downloads: point REPO at the repository that hosts your releases ----
-  const REPO = "TheFarawayDev/Realms-OF-Chaos-ROC-";
-  const fab = document.getElementById("dl-fabric"), frg = document.getElementById("dl-forge"), meta = document.getElementById("meta");
-  const releasesUrl = `https://github.com/${REPO}/releases`;
-  const enable = (el, label, a) => { el.textContent = label; el.href = a.browser_download_url; el.removeAttribute("aria-disabled"); };
-  const fallback = msg => { for (const el of [fab, frg]) { el.textContent = "Open releases page"; el.href = releasesUrl; el.removeAttribute("aria-disabled"); } meta.innerHTML = msg; };
-  fetch(`https://api.github.com/repos/${REPO}/releases/latest`, { headers: { Accept: "application/vnd.github+json" } })
-    .then(r => { if (!r.ok) throw new Error(r.status); return r.json(); })
-    .then(rel => {
-      const jars = (rel.assets || []).filter(a => a.name.endsWith(".jar"));
-      const fabric = jars.find(a => /fabric/i.test(a.name)), forge = jars.find(a => /forge/i.test(a.name));
-      if (!fabric && !forge) return fallback("No files found yet. See the releases page.");
-      fabric ? enable(fab, "Download for Fabric", fabric) : (fab.textContent = "Not available");
-      forge ? enable(frg, "Download for Forge", forge) : (frg.textContent = "Not available");
-      meta.innerHTML = `Latest: <b>${rel.name || rel.tag_name}</b> &middot; ${new Date(rel.published_at).toLocaleDateString()} &middot; <a href="${rel.html_url}">release notes</a>`;
-    })
-    .catch(() => fallback(`Could not load the latest release. <a href="${releasesUrl}">Open releases page</a>.`));
+<footer><div class="wrap">
+  <span>Realms of Chaos &copy; TheFarawayDev &middot; MIT licensed</span>
+  <span>Not affiliated with Mojang or Microsoft &middot; Font: Monocraft (SIL OFL)</span>
+</div></footer>
 
-  // ---- animated pixel background: sky gradient, drifting pixel clouds, rising embers, lightning flashes ----
-  const cv = document.getElementById("bg"), cx = cv.getContext("2d");
-  const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
-  const PX = 6; let W, H, clouds = [], motes = [], flash = 0, nextFlash = 200, t = 0;
-  const cols = ["#f2c94c", "#2fb5c8", "#a55ad6"];
-  const rnd = (a, b) => a + Math.random() * (b - a);
-  function resize() {
-    W = cv.width = Math.ceil(innerWidth / PX); H = cv.height = Math.ceil(innerHeight / PX);
-    cv.style.imageRendering = "pixelated";
-    clouds = Array.from({ length: Math.max(6, W / 18 | 0) }, () => ({ x: rnd(0, W), y: rnd(2, H * .5), w: rnd(10, 26), s: rnd(.03, .1), a: rnd(.08, .22) }));
-    motes = Array.from({ length: Math.max(40, W / 2 | 0) }, () => ({ x: rnd(0, W), y: rnd(0, H), s: rnd(.05, .3), c: cols[Math.random() * 3 | 0], p: rnd(0, 6.28) }));
+<script>
+  // Repository that hosts the releases. Change this if releases move to another repo.
+  const REPO = "TheFarawayDev/Realms-OF-Chaos-ROC-";
+  const $ = s => document.querySelector(s), $$ = s => [...document.querySelectorAll(s)];
+  const repoUrl = `https://github.com/${REPO}`;
+  $("#gh-link").href = repoUrl; $("#all-rel").href = `${repoUrl}/releases`;
+  const fmtSize = b => b > 1048576 ? (b / 1048576).toFixed(2) + " MB" : Math.round(b / 1024) + " KB";
+  const ver = n => (n.match(/(\d+\.\d+\.\d+)/) || [])[1] || "-";
+
+  function fill(card, asset, tag, ctaSel, btnSel, label) {
+    const card_ = $$(".dlcard")[card];
+    const set = (k, v) => card_.querySelector(`[data-f=${k}]`).textContent = v;
+    for (const sel of [ctaSel, btnSel]) { const el = $(sel); if (asset) { el.href = asset.browser_download_url; el.textContent = sel === btnSel ? `Download ${label}` : `Download ${label}`; el.removeAttribute("aria-disabled"); } else { el.textContent = "Not available"; } }
+    if (!asset) return;
+    set("ver", `${ver(asset.name)} (${tag})`); set("name", asset.name.length > 26 ? asset.name.slice(0, 24) + "..." : asset.name);
+    set("size", fmtSize(asset.size)); set("count", asset.download_count.toLocaleString());
   }
-  addEventListener("resize", resize); resize();
+
+  fetch(`https://api.github.com/repos/${REPO}/releases?per_page=6`, { headers: { Accept: "application/vnd.github+json" } })
+    .then(r => { if (!r.ok) throw new Error(r.status); return r.json(); })
+    .then(list => {
+      list = list.filter(r => !r.draft);
+      const latest = list[0]; if (!latest) throw new Error("none");
+      const jars = latest.assets.filter(a => a.name.endsWith(".jar"));
+      fill(0, jars.find(a => /fabric/i.test(a.name)), latest.tag_name, "#cta-fabric", "#dl-fabric", "Fabric");
+      fill(1, jars.find(a => /forge/i.test(a.name)), latest.tag_name, "#cta-forge", "#dl-forge", "Forge");
+      $("#hero-ver").textContent = `Latest: ${latest.tag_name} - ${new Date(latest.published_at).toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric" })}`;
+      $("#dl-note").textContent = `Released ${new Date(latest.published_at).toLocaleDateString()}`;
+      $("#rel-list").innerHTML = list.map((r, i) => `
+        <div class="row"><div><b>${r.name || r.tag_name}</b>${i === 0 ? '<span class="tagl">LATEST</span>' : ""}<br><small>${r.tag_name}</small></div>
+        <small>${new Date(r.published_at).toLocaleDateString()} &middot; ${r.assets.reduce((n, a) => n + a.download_count, 0).toLocaleString()} downloads</small>
+        <a href="${r.html_url}">Details</a></div>`).join("");
+    })
+    .catch(() => {
+      $("#hero-ver").textContent = "Release info unavailable";
+      for (const s of ["#cta-fabric", "#dl-fabric", "#cta-forge", "#dl-forge"]) { const el = $(s); el.textContent = "Open releases page"; el.href = `${repoUrl}/releases`; el.removeAttribute("aria-disabled"); }
+      $("#rel-list").innerHTML = `<div class="row"><small>Could not load releases. <a href="${repoUrl}/releases">Open on GitHub</a></small></div>`;
+    });
+
+  // scroll reveal
+  const io = new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting) { e.target.classList.add("in"); io.unobserve(e.target); } }), { threshold: .08 });
+  $$(".reveal").forEach(el => io.observe(el));
+
+  // ---- background: scrolling neon grid (flat + perspective floor) with comets flying across ----
+  const cv = $("#bg"), cx = cv.getContext("2d");
+  const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+  let W, H, DPR, t = 0, comets = [], nextComet = 120;
+  function size() { DPR = Math.min(devicePixelRatio || 1, 2); W = innerWidth; H = innerHeight; cv.width = W * DPR; cv.height = H * DPR; cx.setTransform(DPR, 0, 0, DPR, 0, 0); }
+  addEventListener("resize", size); size();
+  const palette = [[242, 201, 76], [53, 196, 216], [165, 90, 214]];
+  const rnd = (a, b) => a + Math.random() * (b - a);
+  function spawn() {
+    const fromLeft = Math.random() < .5, c = palette[Math.random() * 3 | 0];
+    const sp = rnd(7, 12), ang = rnd(.12, .38);
+    comets.push({ x: fromLeft ? -80 : W + 80, y: rnd(30, H * .5), vx: (fromLeft ? 1 : -1) * sp, vy: sp * ang, c, life: 0, len: rnd(110, 200) });
+  }
   function frame() {
-    t++;
+    t += reduce ? 0 : 1;
     const g = cx.createLinearGradient(0, 0, 0, H);
-    g.addColorStop(0, "#0a0620"); g.addColorStop(.55, "#1d1245"); g.addColorStop(1, "#3a1d5c");
+    g.addColorStop(0, "#05040c"); g.addColorStop(.6, "#0d0a26"); g.addColorStop(1, "#1a0f3a");
     cx.fillStyle = g; cx.fillRect(0, 0, W, H);
-    for (const c of clouds) {                       // blocky pixel clouds
-      c.x += c.s; if (c.x > W + 5) c.x = -c.w - 5;
-      cx.fillStyle = `rgba(190,170,255,${c.a})`;
-      cx.fillRect(c.x | 0, c.y | 0, c.w | 0, 3); cx.fillRect((c.x + 3) | 0, (c.y - 2) | 0, (c.w - 8) | 0, 2); cx.fillRect((c.x + 6) | 0, (c.y + 3) | 0, (c.w - 12) | 0, 2);
+
+    // faint flat grid drifting diagonally across the whole screen
+    const cell = 56, ox = (t * .25) % cell, oy = (t * .15) % cell;
+    cx.lineWidth = 1; cx.strokeStyle = "rgba(130,110,255,.07)"; cx.beginPath();
+    for (let x = -cell + ox; x < W + cell; x += cell) { cx.moveTo(x, 0); cx.lineTo(x, H); }
+    for (let y = -cell + oy; y < H + cell; y += cell) { cx.moveTo(0, y); cx.lineTo(W, y); }
+    cx.stroke();
+
+    // perspective floor: horizontal lines rush toward the viewer, verticals fan from the horizon
+    const hz = H * .62, vx = W / 2;
+    const fl = cx.createLinearGradient(0, hz, 0, H); fl.addColorStop(0, "rgba(165,90,214,0)"); fl.addColorStop(1, "rgba(165,90,214,.16)");
+    cx.fillStyle = fl; cx.fillRect(0, hz, W, H - hz);
+    cx.strokeStyle = "rgba(165,120,255,.38)"; cx.lineWidth = 1.2; cx.beginPath();
+    const f = (t * .012) % 1;
+    for (let i = 0; i < 18; i++) { const p = (i + f) / 18, y = hz + (H - hz) * p * p; cx.moveTo(0, y); cx.lineTo(W, y); }
+    for (let i = -22; i <= 22; i++) { cx.moveTo(vx + i * 14, hz); cx.lineTo(vx + i * (W / 14), H); }
+    cx.stroke();
+    // horizon glow
+    const hg = cx.createLinearGradient(0, hz - 70, 0, hz + 4); hg.addColorStop(0, "rgba(242,201,76,0)"); hg.addColorStop(1, "rgba(242,201,76,.16)");
+    cx.fillStyle = hg; cx.fillRect(0, hz - 70, W, 74);
+
+    // comets
+    if (!reduce && --nextComet <= 0) { spawn(); nextComet = rnd(260, 620); }
+    for (const m of comets) {
+      m.x += m.vx; m.y += m.vy; m.life++;
+      const mag = Math.hypot(m.vx, m.vy), tx = m.x - m.vx / mag * m.len, ty = m.y - m.vy / mag * m.len;
+      const tg = cx.createLinearGradient(m.x, m.y, tx, ty);
+      tg.addColorStop(0, `rgba(${m.c},.95)`); tg.addColorStop(1, `rgba(${m.c},0)`);
+      cx.strokeStyle = tg; cx.lineWidth = 2.5; cx.lineCap = "round"; cx.beginPath(); cx.moveTo(m.x, m.y); cx.lineTo(tx, ty); cx.stroke();
+      cx.fillStyle = "#fff"; cx.shadowColor = `rgb(${m.c})`; cx.shadowBlur = 16; cx.beginPath(); cx.arc(m.x, m.y, 2.6, 0, 7); cx.fill(); cx.shadowBlur = 0;
     }
-    for (const m of motes) {                        // embers/stars in the three god colours
-      m.y -= m.s; m.x += Math.sin(t / 60 + m.p) * .08; if (m.y < -2) { m.y = H + 2; m.x = rnd(0, W); }
-      cx.globalAlpha = .35 + .65 * Math.abs(Math.sin(t / 40 + m.p)); cx.fillStyle = m.c; cx.fillRect(m.x | 0, m.y | 0, 1, 1);
-    }
-    cx.globalAlpha = 1;
-    if (!reduce) {                                   // occasional Zeus lightning flash + bolt
-      if (--nextFlash <= 0) { flash = 12; nextFlash = rnd(240, 620); boltX = rnd(W * .1, W * .9); }
-      if (flash > 0) {
-        cx.fillStyle = `rgba(255,240,170,${flash / 40})`; cx.fillRect(0, 0, W, H);
-        if (flash > 6) { cx.fillStyle = "#fff6c0"; let x = boltX; for (let y = 0; y < H * .7; y += 2) { x += (Math.random() - .5) * 3; cx.fillRect(x | 0, y, 1, 2); } }
-        flash--;
-      }
-    }
+    comets = comets.filter(m => m.x > -300 && m.x < W + 300 && m.y < H + 100);
     requestAnimationFrame(frame);
   }
-  let boltX = 0; frame();
+  frame();
 </script>
 </body>
 </html>
