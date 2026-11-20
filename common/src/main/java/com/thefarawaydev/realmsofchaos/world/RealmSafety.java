@@ -29,6 +29,8 @@ public final class RealmSafety {
                 STUCK_SECONDS.remove(player.getUUID());
                 continue;
             }
+            // someone who logged out inside a realm before an update still gets the current arena layout
+            if (player.level() instanceof ServerLevel realmLevel) RealmBuilder.ensureBuilt(realmLevel, realm);
             boolean fell = player.getY() < RealmBuilder.Y - 14;
             int stuck = player.isInWall() ? STUCK_SECONDS.merge(player.getUUID(), 1, Integer::sum) : 0;
             if (stuck == 0) STUCK_SECONDS.remove(player.getUUID());

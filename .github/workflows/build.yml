@@ -29,6 +29,15 @@ jobs:
       - name: Build Fabric + Forge and package the zip
         run: ./build.sh
 
+      # Headless smoke test on a real Forge game-test server (the mod's built-in self-test). Reported, not blocking.
+      - name: Self-test on a Forge test server
+        continue-on-error: true
+        run: |
+          cd forge
+          ./gradlew --no-daemon runGameTestServer
+          cat run/roc-selftest.txt
+          grep -q "ALL PASSED" run/roc-selftest.txt
+
       - uses: actions/upload-artifact@v4
         with:
           name: RealmsOfChaos-mc26.3

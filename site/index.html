@@ -107,6 +107,53 @@
 
   footer { margin-top:64px; background:var(--panel-sh); padding:28px 0 40px; color:var(--muted); font-size:13px; }
   footer .wrap { display:flex; justify-content:space-between; flex-wrap:wrap; gap:10px; }
+  /* pixel sprites cut from the generated atlases (gods.png: 45 x 16x32, weapons.png: 45 x 16x16) */
+  .spr, .wpn { display:inline-block; flex:none; image-rendering:pixelated; background-repeat:no-repeat; --k:2; }
+  .spr { width:calc(16px*var(--k)); height:calc(32px*var(--k)); background-image:url(gods.png);
+         background-size:calc(720px*var(--k)) calc(32px*var(--k)); background-position:calc(-16px*var(--i)*var(--k)) 0; }
+  .wpn { width:calc(16px*var(--k)); height:calc(16px*var(--k)); background-image:url(weapons.png);
+         background-size:calc(720px*var(--k)) calc(16px*var(--k)); background-position:calc(-16px*var(--i)*var(--k)) 0; }
+
+  .champs { display:grid; grid-template-columns:repeat(3,1fr); gap:14px; margin-top:34px; }
+  .champ { padding:14px 10px 10px; text-align:center; text-decoration:none; }
+  .champ .spr { --k:4; filter:drop-shadow(0 4px 0 rgba(0,0,0,.35)); }
+  .champ b { display:block; font:400 13px var(--pixel); margin-top:6px; }
+  .champ small { font-size:11px; font-weight:600; opacity:.8; }
+  @media (max-width:420px) { .champ .spr { --k:3; } }
+
+  .feat .with-spr { display:flex; gap:16px; align-items:center; }
+  .feat .with-spr .spr { --k:3; }
+
+  .lines3 { display:grid; grid-template-columns:repeat(auto-fit,minmax(310px,1fr)); gap:22px; align-items:start; }
+  .linecol { padding:18px 16px 12px; }
+  .linecol h3 { margin:0 0 4px; font:400 1.15rem var(--pixel); color:var(--lc); }
+  .linecol > p { margin:0 0 12px; color:var(--muted); font-size:13px; }
+  .god { display:grid; grid-template-columns:28px 32px 1fr 32px; gap:10px; align-items:center; padding:7px 8px; border-radius:10px; }
+  .god:nth-child(odd) { background:var(--panel-sh); }
+  .god .rk { font:400 11px var(--pixel); color:var(--muted); text-align:center; }
+  .god.final .rk, .god.starter .rk { color:#16122b; background:var(--lc); border-radius:6px; padding:3px 0; }
+  .god b { display:block; font:400 13px var(--pixel); line-height:1.3; }
+  .god small { display:block; color:var(--muted); font-size:11.5px; line-height:1.3; }
+  .god .wpn { --k:2; }
+  .tabs { display:none; gap:10px; margin-bottom:16px; }
+  .tabs button { flex:1; font:400 13px var(--pixel); border:0; padding:12px 6px; }
+  @media (max-width:720px) { .tabs { display:flex; } .linecol { display:none; } .linecol.on { display:block; } }
+
+  .ingame { display:grid; grid-template-columns:repeat(auto-fit,minmax(min(100%,420px),1fr)); gap:20px; }
+  .ingame > div { padding:22px; }
+  .ingame h3 { margin:0 0 8px; font:400 1.1rem var(--pixel); color:var(--gold); }
+  .ingame p { margin:0 0 12px; color:#d6d1f5; font-size:14px; }
+  /* a tiny mock of the Codex chest menu */
+  .mock { display:grid; grid-template-columns:repeat(9,1fr); gap:3px; background:var(--panel-sh); padding:8px; border-radius:10px; }
+  .mock i { aspect-ratio:1; background:#3a3270; border-radius:3px; display:grid; place-items:center; }
+  .mock i .wpn { --k:1; }
+  .mock i.g { background:#2c5a3c; } .mock i.n { background:#6a5a1e; } .mock i.x { background:#2a2550; }
+  .toast { display:flex; gap:12px; align-items:center; background:var(--panel-sh); border-radius:10px; padding:10px 14px; margin-top:8px; }
+  .toast b { font:400 12px var(--pixel); color:var(--gold); display:block; } .toast span { font-size:12px; color:var(--muted); }
+  .title-mock { background:var(--panel-sh); border-radius:10px; padding:18px 10px; text-align:center; }
+  .title-mock b { display:block; font:400 1.3rem var(--pixel); color:var(--purple); } .title-mock span { font:400 12px var(--pixel); color:var(--gold); }
+  .news { margin:0; padding-left:20px; } .news li { margin:6px 0; color:#d6d1f5; font-size:14px; }
+
   .reveal { opacity:0; transform:translateY(16px); transition:opacity .5s, transform .5s; }
   .reveal.in { opacity:1; transform:none; }
   @media (prefers-reduced-motion: reduce) { .reveal { opacity:1; transform:none; transition:none; } html { scroll-behavior:auto; } }
@@ -121,6 +168,11 @@
       <div class="hero-left">
         <h1><span>Realms</span><span class="l2">of Chaos</span></h1>
         <div class="bar"><b></b><b></b><b></b></div>
+        <div class="champs">
+          <a class="champ chunk c-gold hov" href="#gods"><span class="spr" style="--i:0"></span><b>Zeus</b><small>Olympian Heights</small></a>
+          <a class="champ chunk c-teal hov" href="#gods"><span class="spr" style="--i:15"></span><b>Poseidon</b><small>Abyssal Palace</small></a>
+          <a class="champ chunk c-purple hov" href="#gods"><span class="spr" style="--i:30"></span><b>Hades</b><small>The Underworld</small></a>
+        </div>
       </div>
       <aside class="info chunk c-panel">
         <span class="eyebrow chunk c-green" id="hero-ver">Loading release...</span>
@@ -137,7 +189,7 @@
     <div class="cta">
         <a class="btn chunk c-gold" id="cta-fabric" aria-disabled="true" href="#download">Download Fabric</a>
         <a class="btn chunk c-teal" id="cta-forge" aria-disabled="true" href="#download">Download Forge</a>
-        <a class="btn chunk" href="#install">How to install</a>
+        <a class="btn chunk" href="#gods">Meet the gods</a>
     </div>
 
     <section id="download" class="reveal">
@@ -174,12 +226,57 @@
     <section id="features" class="reveal">
       <div class="sh"><h2 class="chunk c-gold">Features</h2></div>
       <div class="feat">
-        <div class="chunk c-gold"><h3>Zeus</h3><p>Climb from Iris to the King of the Gods across the Olympian Heights. Lightning, wisdom and war.</p></div>
-        <div class="chunk c-teal"><h3>Poseidon</h3><p>From Galatea to the Lord of the Seas in the Abyssal Palace. Tidal waves and crushing currents.</p></div>
-        <div class="chunk c-purple"><h3>Hades</h3><p>From Charon to the Lord of the Underworld. Drain life, wither flesh, command the dead.</p></div>
+        <div class="chunk c-gold with-spr"><span class="spr" style="--i:14"></span><div><h3>Line of Zeus</h3><p>Start against Iris and climb to the King of the Gods in a marble temple above the clouds. Lightning, wisdom and war.</p></div></div>
+        <div class="chunk c-teal with-spr"><span class="spr" style="--i:29"></span><div><h3>Line of Poseidon</h3><p>From Galatea to the Lord of the Seas, in a prismarine arena ringed by water. Tidal waves and crushing currents.</p></div></div>
+        <div class="chunk c-purple with-spr"><span class="spr" style="--i:44"></span><div><h3>Line of Hades</h3><p>From Charon to the Lord of the Underworld, among basalt spikes and a river of lava. Drained life and risen dead.</p></div></div>
         <div class="chunk c-green"><h3>Hub of Realms</h3><p>One hub, three gates. Choose any path; every line is independent and saved per player.</p></div>
-        <div class="chunk c-gold"><h3>Relic weapons</h3><p>Every god drops a weapon scaled by rank with its own hit power and a right-click Divine Surge.</p></div>
-        <div class="chunk c-teal"><h3>Fabric and Forge</h3><p>One codebase, two loaders, same content and behaviour on both.</p></div>
+        <div class="chunk c-gold"><h3>Relic weapons</h3><p>Every god drops an animated relic weapon, scaled by rank, with its own hit power and a right-click Divine Surge.</p></div>
+        <div class="chunk c-teal"><h3>Fair fights</h3><p>Bosses telegraph their big attacks, arenas are flat and walled, and nobody - you or a god - can get stuck or fall out.</p></div>
+      </div>
+    </section>
+
+    <section id="gods" class="reveal">
+      <div class="sh"><h2 class="chunk c-gold">The Gods</h2><small>45 bosses, each with a relic weapon. Rank 15 is where you start.</small></div>
+      <div class="tabs" id="god-tabs">
+        <button class="chunk c-gold" data-l="zeus">Zeus</button>
+        <button class="chunk c-teal" data-l="poseidon">Poseidon</button>
+        <button class="chunk c-purple" data-l="hades">Hades</button>
+      </div>
+      <div class="lines3" id="god-lines">
+        <div class="chunk c-panel linecol on" data-l="zeus" style="--lc:var(--gold)"><h3>Line of Zeus</h3><p>Olympian Heights</p><div class="list"></div></div>
+        <div class="chunk c-panel linecol" data-l="poseidon" style="--lc:var(--teal)"><h3>Line of Poseidon</h3><p>The Abyssal Palace</p><div class="list"></div></div>
+        <div class="chunk c-panel linecol" data-l="hades" style="--lc:var(--purple)"><h3>Line of Hades</h3><p>The Underworld</p><div class="list"></div></div>
+      </div>
+    </section>
+
+    <section id="ingame" class="reveal">
+      <div class="sh"><h2 class="chunk c-gold">In game</h2><small>New in 1.1</small></div>
+      <div class="ingame">
+        <div class="chunk c-panel"><h3>Codex of Chaos</h3>
+          <p>An in-game menu for your whole journey: every line, every god, what is defeated, what is next, and one-click travel. Open it with the Codex item or <code>/roc menu</code>.</p>
+          <div class="mock" aria-hidden="true">
+            <i class="g"><span class="wpn" style="--i:14"></span></i><i class="g"><span class="wpn" style="--i:13"></span></i><i class="g"><span class="wpn" style="--i:12"></span></i><i class="n"><span class="wpn" style="--i:11"></span></i><i class="x"></i><i class="x"></i><i class="x"></i><i class="x"></i><i class="x"></i>
+            <i></i><i class="x"></i><i class="x"></i><i class="x"></i><i class="x"></i><i class="x"></i><i class="x"></i><i></i><i></i>
+          </div>
+        </div>
+        <div class="chunk c-panel"><h3>Advancements</h3>
+          <p>A Realms of Chaos tab tracks all three lines, with a toast for every god you bring down and a challenge for each final boss.</p>
+          <div class="toast"><span class="wpn" style="--i:0;--k:2"></span><div><b>Challenge Complete!</b><span>Zeus</span></div></div>
+          <div class="toast"><span class="wpn" style="--i:44;--k:2"></span><div><b>Advancement Made!</b><span>Charon</span></div></div>
+        </div>
+        <div class="chunk c-panel"><h3>A proper welcome</h3>
+          <p>The first time you enter a world you are greeted, handed the Codex and the Compass of Chaos, and pointed at the Hub.</p>
+          <div class="title-mock"><b>Realms of Chaos</b><span>Thank you for using our mod!</span></div>
+        </div>
+        <div class="chunk c-panel"><h3>What changed in 1.1</h3>
+          <ul class="news">
+            <li>Redrawn, animated weapons, gates and altars.</li>
+            <li>A unique look for every one of the 45 gods.</li>
+            <li>Rebuilt hub and arenas with themed moats and pillars.</li>
+            <li>Bosses wind up before big attacks and can no longer spawn or get stuck inside blocks.</li>
+            <li>Falling into the void puts you back on the arena pad.</li>
+          </ul>
+        </div>
       </div>
     </section>
 
@@ -191,7 +288,7 @@
             <li>Install Java 25 and your loader for Minecraft 26.3.</li>
             <li>Fabric only: add Fabric API.</li>
             <li>Put the downloaded <code>.jar</code> in your <code>mods</code> folder.</li>
-            <li>In game, right-click the Compass of Chaos or run <code>/roc hub</code>.</li>
+            <li>Join a world: you are given the Codex and Compass of Chaos. Open the Codex, or run <code>/roc menu</code> or <code>/roc hub</code>.</li>
           </ol>
         </div>
         <div class="chunk c-panel"><h3>Requirements</h3>
@@ -256,6 +353,21 @@
       for (const s of ["#cta-fabric", "#dl-fabric", "#cta-forge", "#dl-forge"]) $(s).textContent = "Unavailable";
       $("#rel-list").innerHTML = `<div class="row chunk c-panel"><small>Could not load releases right now. Please try again later.</small></div>`;
     });
+
+  // the gods: three columns built from roster.json (generated together with the mod's own roster)
+  fetch("roster.json").then(r => r.json()).then(roster => {
+    for (const col of $$(".linecol")) {
+      const gods = roster.filter(g => g.line === col.dataset.l).sort((a, b) => b.rank - a.rank);
+      col.querySelector(".list").innerHTML = gods.map(g => `
+        <div class="god${g.rank === 1 ? " final" : g.rank === 15 ? " starter" : ""}">
+          <span class="rk">${g.rank}</span><span class="spr" style="--i:${g.i};--k:2"></span>
+          <div><b>${g.name}</b><small>${g.title}</small><small>${g.weapon}</small></div>
+          <span class="wpn" style="--i:${g.i}" title="${g.weapon}"></span>
+        </div>`).join("");
+    }
+  }).catch(() => { $("#gods").style.display = "none"; });
+  for (const b of $$("#god-tabs button")) b.addEventListener("click", () =>
+    $$(".linecol").forEach(c => c.classList.toggle("on", c.dataset.l === b.dataset.l)));
 
   // scroll reveal
   const io = new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting) { e.target.classList.add("in"); io.unobserve(e.target); } }), { threshold: .08 });
