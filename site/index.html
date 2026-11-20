@@ -101,6 +101,7 @@
   .row:last-child { border:0; }
   .row b { font:400 13px var(--pixel); } .row small { color:var(--muted); }
   .row a { font-size:13px; color:var(--gold); text-decoration:none; } .row a:hover { text-decoration:underline; }
+  .dls { display:flex; gap:14px; }
   .tagl { font:11px var(--pixel); color:#0b0818; background:var(--green); border-radius:4px; padding:2px 7px; margin-left:8px; }
   @media (max-width:560px) { .row { grid-template-columns:1fr; } }
 
@@ -120,7 +121,6 @@
     <a class="brand" href="#top"><i></i>REALMS OF CHAOS</a>
     <nav class="links">
       <a href="#download">Download</a><a href="#features">Features</a><a href="#install">Install</a><a href="#releases">Releases</a>
-      <a class="gh" id="gh-link" href="#">GitHub</a>
     </nav>
   </div>
 </header>
@@ -210,7 +210,7 @@
     </section>
 
     <section id="releases" class="reveal">
-      <div class="sh"><h2>Releases</h2><small><a id="all-rel" href="#" style="color:var(--gold)">View all on GitHub</a></small></div>
+      <div class="sh"><h2>Releases</h2></div>
       <div class="panel rel" id="rel-list"><div class="row"><small>Loading...</small></div></div>
     </section>
   </div>
@@ -225,8 +225,6 @@
   // Repository that hosts the releases. Change this if releases move to another repo.
   const REPO = "TheFarawayDev/Realms-OF-Chaos-ROC-";
   const $ = s => document.querySelector(s), $$ = s => [...document.querySelectorAll(s)];
-  const repoUrl = `https://github.com/${REPO}`;
-  $("#gh-link").href = repoUrl; $("#all-rel").href = `${repoUrl}/releases`;
   const fmtSize = b => b > 1048576 ? (b / 1048576).toFixed(2) + " MB" : Math.round(b / 1024) + " KB";
   const ver = n => (n.match(/(\d+\.\d+\.\d+)/) || [])[1] || "-";
 
@@ -252,12 +250,12 @@
       $("#rel-list").innerHTML = list.map((r, i) => `
         <div class="row"><div><b>${r.name || r.tag_name}</b>${i === 0 ? '<span class="tagl">LATEST</span>' : ""}<br><small>${r.tag_name}</small></div>
         <small>${new Date(r.published_at).toLocaleDateString()} &middot; ${r.assets.reduce((n, a) => n + a.download_count, 0).toLocaleString()} downloads</small>
-        <a href="${r.html_url}">Details</a></div>`).join("");
+        <span class="dls">${["fabric", "forge"].map(k => { const a = r.assets.find(x => x.name.endsWith(".jar") && x.name.toLowerCase().includes(k)); return a ? `<a href="${a.browser_download_url}">${k[0].toUpperCase() + k.slice(1)}</a>` : ""; }).join("")}</span></div>`).join("");
     })
     .catch(() => {
       $("#hero-ver").textContent = "Release info unavailable";
-      for (const s of ["#cta-fabric", "#dl-fabric", "#cta-forge", "#dl-forge"]) { const el = $(s); el.textContent = "Open releases page"; el.href = `${repoUrl}/releases`; el.removeAttribute("aria-disabled"); }
-      $("#rel-list").innerHTML = `<div class="row"><small>Could not load releases. <a href="${repoUrl}/releases">Open on GitHub</a></small></div>`;
+      for (const s of ["#cta-fabric", "#dl-fabric", "#cta-forge", "#dl-forge"]) $(s).textContent = "Unavailable";
+      $("#rel-list").innerHTML = `<div class="row"><small>Could not load releases right now. Please try again later.</small></div>`;
     });
 
   // scroll reveal
