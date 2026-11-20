@@ -880,6 +880,50 @@ public final class SelfTest {
             Tarot.HERMIT.cast(level, hero);
         });
 
+        step("tarot: The Tower picks another tower - the one whose relics you hold fewest of", () -> {
+            // the tags: every relic is in its own tower's tag, in no other, and in the tag of all relics
+            var all = net.minecraft.tags.TagKey.create(net.minecraft.core.registries.Registries.ITEM, RealmsOfChaos.id("relics"));
+            for (God g : Gods.ALL) {
+                ItemStack relic = new ItemStack(ModContent.weaponItem(g));
+                for (Line line : Line.values()) {
+                    check(relic.is(line.relicTag()) == (line == g.line()), g.id() + " weapon and the tag of " + line);
+                }
+                check(relic.is(all), g.id() + " weapon is tagged as a relic");
+            }
+            check(!new ItemStack(ModContent.TAROT_DECK.get()).is(all), "only relic weapons are tagged");
+
+            ServerPlayer hero = fakePlayer(server, level, "RocPilgrim");
+            hero.setPos(0.5, ay, 0.5);
+            Realm.testAlias(Level.OVERWORLD, null);             // standing outside the realms: every tower is a candidate
+            try {
+                check(Realm.of(hero.level().dimension()) == null, "test setup: outside the realms");
+                Set<Line> seen = EnumSet.noneOf(Line.class);
+                for (int i = 0; i < 200; i++) seen.add(Tarot.towerFor(hero));
+                check(seen.size() == 3, "with no relics, any tower: " + seen);
+                hero.getInventory().add(new ItemStack(ModContent.weaponItem(Gods.byId("iris"))));
+                hero.getInventory().add(new ItemStack(ModContent.weaponItem(Gods.byId("nike"))));
+                hero.getInventory().add(new ItemStack(ModContent.weaponItem(Gods.byId("galatea"))));
+                check(Tarot.relicsHeld(hero, Line.ZEUS) == 2 && Tarot.relicsHeld(hero, Line.POSEIDON) == 1 && Tarot.relicsHeld(hero, Line.HADES) == 0, "relics counted by tag");
+                for (int i = 0; i < 50; i++) check(Tarot.towerFor(hero) == Line.HADES, "fewest relics: Hades");
+                // the off hand counts too
+                hero.setItemInHand(InteractionHand.OFF_HAND, new ItemStack(ModContent.weaponItem(Gods.byId("charon"))));
+                hero.getInventory().add(new ItemStack(ModContent.weaponItem(Gods.byId("oneiroi"))));
+                check(Tarot.relicsHeld(hero, Line.HADES) == 2, "off hand counted");
+                for (int i = 0; i < 50; i++) check(Tarot.towerFor(hero) == Line.POSEIDON, "fewest relics: Poseidon");
+
+                // inside a tower, that tower is never chosen - even when it is the one with the fewest
+                Realm.testAlias(Level.OVERWORLD, Realm.ABYSS);
+                seen.clear();
+                for (int i = 0; i < 200; i++) seen.add(Tarot.towerFor(hero));
+                check(seen.equals(EnumSet.of(Line.ZEUS, Line.HADES)), "in Poseidon's tower with a Zeus/Hades tie: " + seen);
+                hero.getInventory().add(new ItemStack(ModContent.weaponItem(Gods.byId("pan"))));
+                for (int i = 0; i < 50; i++) check(Tarot.towerFor(hero) == Line.HADES, "in Poseidon's tower: Hades has fewer than Zeus");
+                // (the journey itself needs a second tower's dimension, which the test server does not have)
+            } finally {
+                Realm.testAlias(Level.OVERWORLD, Realm.OLYMPUS);
+            }
+        });
+
         step("tarot: single cards are spent; the Deck of Fate is unlimited and never deals The Devil blind", () -> {
             ServerPlayer hero = fakePlayer(server, level, "RocDealer");
             hero.setPos(0.5, ay, 0.5);

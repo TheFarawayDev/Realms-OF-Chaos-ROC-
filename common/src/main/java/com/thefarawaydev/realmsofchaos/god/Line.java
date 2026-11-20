@@ -2,7 +2,10 @@ package com.thefarawaydev.realmsofchaos.god;
 
 import com.thefarawaydev.realmsofchaos.RealmsOfChaos;
 import net.minecraft.network.chat.Component;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.tags.TagKey;
 import net.minecraft.world.BossEvent;
+import net.minecraft.world.item.Item;
 
 /** The three Greek god lines. Each runs from rank 15 (starter boss) up to rank 1 (final boss). */
 public enum Line {
@@ -23,6 +26,11 @@ public enum Line {
     }
 
     public String id() { return id; }
+
+    /** The item tag holding the relic weapons won in this line's tower: {@code realms_of_chaos:relics/<id>}. */
+    public TagKey<Item> relicTag() {
+        return TagKey.create(Registries.ITEM, RealmsOfChaos.id("relics/" + id));
+    }
     public BossEvent.BossBarColor barColor() { return barColor; }
     public int color() { return color; }
 

@@ -135,6 +135,18 @@ public class Validate {
             check(lang.contains("\"move.realms_of_chaos.kind." + kind.name().toLowerCase() + "\""), "lang move kind " + kind);
         }
 
+        // 5b. relic tags: one per tower with its fifteen weapons
+        for (com.thefarawaydev.realmsofchaos.god.Line line : com.thefarawaydev.realmsofchaos.god.Line.values()) {
+            Path tag = res.resolve("data/realms_of_chaos/tags/item/relics/" + line.id() + ".json");
+            check(Files.exists(tag), "missing relic tag " + line.id());
+            if (!Files.exists(tag)) continue;
+            String listed = Files.readString(tag);
+            for (God g : Gods.ALL) {
+                check(listed.contains("\"realms_of_chaos:" + g.id() + "_weapon\"") == (g.line() == line), "relic tag " + line.id() + " and " + g.id());
+            }
+        }
+        check(Files.exists(res.resolve("data/realms_of_chaos/tags/item/relics.json")), "missing relic tag of all relics");
+
         // 6. block models load with the game's own model reader, and every texture they name exists
         for (ModContent.Def<Block> d : ModContent.BLOCK_DEFS) {
             Path model = res.resolve("assets/realms_of_chaos/models/block/" + d.id() + ".json");

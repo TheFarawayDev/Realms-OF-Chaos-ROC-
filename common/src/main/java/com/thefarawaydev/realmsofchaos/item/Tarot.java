@@ -55,6 +55,37 @@ public enum Tarot {
     TOWER("tower", 30), STAR("star", 120), MOON("moon", 90), SUN("sun", 45), JUDGEMENT("judgement", 180), WORLD("world", 120);
 
     public static final int ILLUSIONS = 5;
+
+    /** How many relics of this line's tower the player carries (inventory, armour and off hand), by item tag. */
+    public static int relicsHeld(ServerPlayer player, Line line) {
+        int n = 0;
+        for (int i = 0; i < player.getInventory().getContainerSize(); i++) {
+            ItemStack stack = player.getInventory().getItem(i);
+            if (stack.is(line.relicTag())) n += stack.getCount();
+        }
+        return n;
+    }
+
+    /**
+     * Where The Tower sends a player: always a different tower from the one they stand in, and of the others the
+     * one whose relics they hold fewest of - the tower they have the most left to win from. Ties fall at random.
+     */
+    public static Line towerFor(ServerPlayer player) {
+        com.thefarawaydev.realmsofchaos.world.Realm here = com.thefarawaydev.realmsofchaos.world.Realm.of(player.level().dimension());
+        Line current = here == null ? null : here.line();
+        java.util.List<Line> fewest = new java.util.ArrayList<>();
+        int least = Integer.MAX_VALUE;
+        for (Line line : Line.values()) {
+            if (line == current) continue;
+            int held = relicsHeld(player, line);
+            if (held < least) {
+                least = held;
+                fewest.clear();
+            }
+            if (held == least) fewest.add(line);
+        }
+        return fewest.get(player.getRandom().nextInt(fewest.size()));
+    }
     private static final String HUD = "hud." + RealmsOfChaos.MOD_ID + ".";
 
     private final String id;
@@ -177,7 +208,7 @@ public enum Tarot {
                 player.getFoodData().setSaturation(20.0F);
             }
             case DEVIL -> TarotEffects.devil(player, player.getOffhandItem().getItem(), 30);
-            case TOWER -> Teleports.enterTower(player, Line.values()[level.getRandom().nextInt(Line.values().length)]);
+            case TOWER -> Teleports.enterTower(player, towerFor(player));
             case STAR -> {
                 player.giveExperiencePoints(150);
                 give(player, MobEffects.LUCK, 120, 0);

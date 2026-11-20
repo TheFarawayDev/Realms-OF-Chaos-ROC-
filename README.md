@@ -97,12 +97,17 @@ The current build is an **Alpha**.
   | XIII Death | Hands you a Totem of Undying |
   | XIV Temperance | Full health, hunger and saturation |
   | XV The Devil | Burns your inventory; for 30 seconds everything you pick up becomes the item in your off hand |
-  | XVI The Tower | Carries you to a god tower |
+  | XVI The Tower | Carries you to another god tower: the one whose relics you hold fewest of |
   | XVII The Star | Experience and a little Luck |
   | XVIII The Moon | Summons five illusions that cannot hurt you; slay them all for a reward |
   | XIX The Sun | Burns nearby foes; Regeneration |
   | XX Judgement | Full health and a moment of Resistance |
   | XXI The World | Speed, Strength, Regeneration and Resistance |
+
+  The Tower reads item tags: every relic weapon is tagged with the tower it comes from
+  (`realms_of_chaos:relics/zeus`, `.../poseidon`, `.../hades`; `realms_of_chaos:relics` holds them all). The card
+  counts the relics you carry by tag, never picks the tower you are standing in, and of the rest sends you to the
+  one you hold fewest relics of (ties fall at random). A new mythology only needs a tag of its own to join in.
 
   The Devil spares worn armour, the Deck of Fate and the chosen item, refuses to be played with an empty off hand,
   and is never dealt by a blind draw from the Deck - you have to choose it.

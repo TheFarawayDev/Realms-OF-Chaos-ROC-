@@ -541,7 +541,7 @@ TAROT = [
     ("death", "XIII", "Death", "Hands you a Totem of Undying", [".######.", "########", "#++##++#", "#++##++#", "###..###", ".######.", ".#.##.#.", ".#.##.#."], (60, 50, 70)),
     ("temperance", "XIV", "Temperance", "Full health, full hunger", ["###..###", "#+#..#+#", ".#+..+#.", "..#++#..", "...++...", "..#++#..", ".#+..+#.", "###..###"], (110, 190, 210)),
     ("devil", "XV", "The Devil", "Burns your inventory; whatever you pick up becomes the item in your off hand", ["#......#", "##....##", ".######.", "#+#..#+#", "########", ".#.##.#.", "..####..", "...##..."], (150, 30, 40)),
-    ("tower", "XVI", "The Tower", "Carries you to a tower of the gods", ["..+..##.", ".+..####", "++..#..#", ".+..####", "..+.#..#", "....####", "....#..#", "..######"], (130, 120, 110)),
+    ("tower", "XVI", "The Tower", "Carries you to another god tower: the one whose relics you hold fewest of", ["..+..##.", ".+..####", "++..#..#", ".+..####", "..+.#..#", "....####", "....#..#", "..######"], (130, 120, 110)),
     ("star", "XVII", "The Star", "Experience, and a little luck", ["...#....", "...#....", ".#.#.#..", "..+++...", "###+###.", "..+++...", ".#.#.#..", "...#...."], (120, 170, 240)),
     ("moon", "XVIII", "The Moon", "Summons illusions: slay them all for a reward", ["..####..", ".###....", "###.....", "###.....", "###.....", ".###....", "..####..", ".+.+.+.."], (150, 150, 220)),
     ("sun", "XIX", "The Sun", "Set your foes ablaze", ["#..##..#", ".#.##.#.", "..####..", "###++###", "###++###", "..####..", ".#.##.#.", "#..##..#"], (245, 190, 60)),
@@ -1659,6 +1659,13 @@ def gen_recipes():
             "result": {"id": f"{MOD}:voodoo_doll_{did}"},
         })
 
+def gen_tags():
+    """Item tags: realms_of_chaos:relics/<tower> holds the relic weapons won in that tower, and realms_of_chaos:relics
+    holds them all. The Tower card reads these to send a player to the tower whose relics they hold fewest of."""
+    for line, gods in LINES.items():
+        wj(os.path.join(DATA, f"tags/item/relics/{line.lower()}.json"), {"values": [f"{MOD}:{g[0]}_weapon" for g in gods]})
+    wj(os.path.join(DATA, "tags/item/relics.json"), {"values": [f"#{MOD}:relics/{line.lower()}" for line in LINES]})
+
 # ----------------------------------------------------------------------------
 # Block textures (animated)
 # ----------------------------------------------------------------------------
@@ -2317,6 +2324,7 @@ if __name__ == "__main__":
     gen_concepts()
     gen_forge_textures()
     gen_recipes()
+    gen_tags()
     previews = gen_skins()
     gen_pack()
     gen_data()
