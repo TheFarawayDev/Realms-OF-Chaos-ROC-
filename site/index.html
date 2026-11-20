@@ -5,112 +5,118 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Realms of Chaos - Download</title>
 <meta name="description" content="Realms of Chaos by TheFarawayDev - a Minecraft mythology boss-rush mod for Fabric and Forge.">
-<meta name="theme-color" content="#07060f">
+<meta name="theme-color" content="#16122b">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%2307060f'/%3E%3Cpath d='M16 4l10 6v12l-10 6-10-6V10z' fill='none' stroke='%23f2c94c' stroke-width='3'/%3E%3C/svg%3E">
 <style>
   @font-face { font-family:"Monocraft"; src:url("Monocraft.ttf") format("truetype"); font-display:swap; }
   :root {
-    --bg:#07060f; --panel:rgba(16,13,34,.78); --panel-solid:#100d22; --line:rgba(150,130,255,.22); --line-strong:rgba(150,130,255,.45);
-    --text:#eeeaff; --muted:#9d97c4; --gold:#f2c94c; --teal:#35c4d8; --purple:#a55ad6; --green:#58d68d;
+    --bg:#16122b; --grid:#201b3d; --panel:#262050; --panel-sh:#110d26; --text:#f4f1ff; --muted:#aaa3d6;
+    --gold:#f5b82e; --gold-sh:#a9710a; --teal:#2bb7cc; --teal-sh:#14707f; --purple:#a55ad6; --purple-sh:#652d8f;
+    --green:#4cc97f; --green-sh:#27804d; --neutral:#40387c; --neutral-sh:#1e1944;
     --pixel:"Monocraft", ui-monospace, Menlo, Consolas, monospace;
     --sans:system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    --r:14px;
   }
   * { box-sizing:border-box; }
   html { scroll-behavior:smooth; }
-  body { margin:0; background:var(--bg); color:var(--text); font:15px/1.65 var(--sans); overflow-x:hidden; }
+  body { margin:0; background:var(--bg); color:var(--text); font:16px/1.6 var(--sans); overflow-x:hidden; }
   #bg { position:fixed; inset:0; width:100%; height:100%; z-index:-1; display:block; }
   a { color:inherit; }
-  .wrap { max-width:1040px; margin:0 auto; padding:0 20px; }
+  .wrap { max-width:1120px; margin:0 auto; padding:0 20px; }
+
+  /* the chunky "press" effect shared by every button-like surface */
+  .chunk { --c:var(--neutral); --s:var(--neutral-sh); background:var(--c); color:var(--text); border-radius:var(--r);
+           box-shadow:0 6px 0 var(--s); transition:transform .1s, box-shadow .1s; }
+  a.chunk, button.chunk, .chunk.hov { cursor:pointer; }
+  a.chunk:hover, .chunk.hov:hover { transform:translateY(-3px); box-shadow:0 9px 0 var(--s); }
+  a.chunk:active, .chunk.hov:active { transform:translateY(6px); box-shadow:0 0 0 var(--s); }
+  .c-gold { --c:var(--gold); --s:var(--gold-sh); color:#1b1300; }
+  .c-teal { --c:var(--teal); --s:var(--teal-sh); color:#03232a; }
+  .c-purple { --c:var(--purple); --s:var(--purple-sh); color:#1e0830; }
+  .c-green { --c:var(--green); --s:var(--green-sh); color:#06260f; }
+  .c-panel { --c:var(--panel); --s:var(--panel-sh); }
+  [aria-disabled=true] { filter:grayscale(1) brightness(.7); pointer-events:none; box-shadow:0 3px 0 var(--s); transform:translateY(3px); }
 
   /* header */
-  .nav { position:sticky; top:0; z-index:10; backdrop-filter:blur(10px); background:rgba(7,6,15,.72); border-bottom:1px solid var(--line); }
-  .nav .wrap { display:flex; align-items:center; justify-content:space-between; height:60px; gap:16px; }
-  .brand { font-family:var(--pixel); font-size:15px; letter-spacing:.5px; text-decoration:none; display:flex; align-items:center; gap:10px; }
-  .brand i { width:10px; height:10px; background:var(--gold); box-shadow:12px 0 0 var(--teal), 24px 0 0 var(--purple); margin-right:26px; }
-  .links { display:flex; gap:22px; font-size:13px; }
-  .links a { color:var(--muted); text-decoration:none; transition:color .15s; }
-  .links a:hover { color:#fff; }
-  .nav .gh { border:1px solid var(--line-strong); padding:6px 12px; border-radius:6px; color:var(--text); }
-  @media (max-width:640px) { .links a:not(.gh) { display:none; } }
+  .nav { position:sticky; top:0; z-index:10; background:var(--bg); border-bottom:4px solid var(--panel-sh); }
+  .nav .wrap { display:flex; align-items:center; justify-content:space-between; height:70px; gap:16px; }
+  .brand { font:400 16px var(--pixel); text-decoration:none; display:flex; align-items:center; gap:12px; }
+  .brand i { width:14px; height:14px; background:var(--gold); box-shadow:18px 0 0 var(--teal), 36px 0 0 var(--purple); margin-right:42px; }
+  .links { display:flex; gap:12px; }
+  .links a { font:13px var(--pixel); text-decoration:none; padding:9px 16px; }
+  @media (max-width:700px) { .links a { display:none; } }
 
   /* hero */
-  .hero { padding:96px 0 40px; text-align:center; }
-  .eyebrow { display:inline-flex; gap:8px; align-items:center; font:12px var(--pixel); color:var(--green); border:1px solid rgba(88,214,141,.35);
-             background:rgba(88,214,141,.08); padding:6px 12px; border-radius:999px; }
-  .eyebrow b { width:7px; height:7px; border-radius:50%; background:var(--green); animation:pulse 1.8s infinite; }
-  @keyframes pulse { 0%{box-shadow:0 0 0 0 rgba(88,214,141,.6)} 100%{box-shadow:0 0 0 9px rgba(88,214,141,0)} }
-  h1 { font:400 clamp(2.4rem,8vw,4.6rem)/1.05 var(--pixel); margin:22px 0 10px; letter-spacing:-1px;
-       background:linear-gradient(90deg,var(--gold),#fff 45%,var(--teal) 70%,var(--purple)); -webkit-background-clip:text; background-clip:text; color:transparent;
-       filter:drop-shadow(0 4px 0 rgba(0,0,0,.6)); }
-  .badges { display:flex; flex-wrap:wrap; gap:8px; justify-content:center; margin-top:22px; }
-  .badge { font:12px var(--pixel); padding:6px 11px; border:1px solid var(--line-strong); background:var(--panel); border-radius:6px; color:var(--text); }
-  .badge span { color:var(--muted); margin-right:6px; }
-  .cta { margin-top:30px; display:flex; gap:12px; justify-content:center; flex-wrap:wrap; }
+  .hero { padding:84px 0 20px; text-align:center; }
+  .eyebrow { display:inline-block; font:13px var(--pixel); padding:9px 18px; }
+  h1 { margin:34px 0 8px; font:400 clamp(2.6rem,10.5vw,6.4rem)/.98 var(--pixel); color:#fff; text-transform:uppercase; letter-spacing:-2px; }
+  h1 span { display:block; text-shadow:0 5px 0 #000, 5px 5px 0 var(--gold-sh), 0 8px 0 var(--gold-sh); }
+  h1 .l2 { color:var(--gold); text-shadow:0 5px 0 var(--gold-sh), 0 10px 0 #000; }
+  .bar { display:grid; grid-template-columns:repeat(3,1fr); height:12px; margin:30px auto 0; max-width:560px; border-radius:6px; overflow:hidden; box-shadow:0 5px 0 #000; }
+  .bar b:nth-child(1){background:var(--gold)} .bar b:nth-child(2){background:var(--teal)} .bar b:nth-child(3){background:var(--purple)}
+  .badges { display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:14px; margin-top:42px; }
+  .badge { font:13px var(--pixel); padding:14px 12px; display:flex; flex-direction:column; gap:2px; align-items:center; }
+  .badge span { font-size:11px; opacity:.8; }
+  .cta { margin-top:26px; display:grid; grid-template-columns:repeat(3,1fr); gap:16px; }
+  @media (max-width:700px) { .cta { grid-template-columns:1fr; } }
 
-  .btn { font:13px var(--pixel); text-decoration:none; display:inline-flex; align-items:center; justify-content:center; gap:10px; padding:13px 20px;
-         border-radius:8px; border:1px solid transparent; color:#0b0818; cursor:pointer; transition:transform .12s, box-shadow .12s, filter .12s; }
-  .btn:hover { transform:translateY(-2px); }
-  .btn.fabric { background:var(--gold); box-shadow:0 6px 24px -6px rgba(242,201,76,.55); }
-  .btn.forge { background:var(--teal); box-shadow:0 6px 24px -6px rgba(53,196,216,.55); }
-  .btn.ghost { background:transparent; color:var(--text); border-color:var(--line-strong); }
-  .btn[aria-disabled=true] { filter:grayscale(1) brightness(.6); pointer-events:none; box-shadow:none; }
-  .btn svg { width:18px; height:18px; }
+  .btn { font:400 15px var(--pixel); text-decoration:none; display:flex; align-items:center; justify-content:center; gap:10px; padding:20px 18px; text-align:center; width:100%; border:0; }
+  .btn svg { width:20px; height:20px; }
 
   /* sections */
-  section { padding:44px 0 8px; }
-  .sh { display:flex; align-items:baseline; justify-content:space-between; margin-bottom:18px; gap:12px; }
-  .sh h2 { font:400 1.35rem var(--pixel); margin:0; }
-  .sh small { color:var(--muted); font-size:13px; }
-  .panel { background:var(--panel); border:1px solid var(--line); border-radius:14px; backdrop-filter:blur(6px); }
+  section { padding:54px 0 8px; }
+  .sh { margin-bottom:22px; }
+  .sh h2 { display:inline-block; font:400 1.3rem var(--pixel); margin:0; padding:10px 20px; }
+  .sh small { float:right; margin-top:14px; color:var(--muted); font-size:13px; }
 
-  .dl { display:grid; grid-template-columns:repeat(auto-fit,minmax(310px,1fr)); gap:18px; }
-  .dlcard { padding:24px; position:relative; overflow:hidden; transition:border-color .2s, transform .2s; }
-  .dlcard:hover { border-color:var(--line-strong); transform:translateY(-3px); }
-  .dlcard::before { content:""; position:absolute; inset:0 0 auto 0; height:3px; background:var(--accent); }
-  .dlcard.fabric { --accent:var(--gold); } .dlcard.forge { --accent:var(--teal); }
-  .dltop { display:flex; align-items:center; gap:14px; margin-bottom:16px; }
-  .logo { width:52px; height:52px; border-radius:12px; display:grid; place-items:center; background:color-mix(in srgb, var(--accent) 14%, transparent); border:1px solid color-mix(in srgb, var(--accent) 45%, transparent); }
-  .logo svg { width:30px; height:30px; color:var(--accent); }
-  .dltop h3 { margin:0; font:400 1.25rem var(--pixel); }
-  .dltop p { margin:0; color:var(--muted); font-size:13px; }
-  dl.facts { display:grid; grid-template-columns:auto 1fr; gap:6px 18px; margin:0 0 20px; font-size:13px; }
-  dl.facts dt { color:var(--muted); } dl.facts dd { margin:0; text-align:right; font-family:var(--pixel); font-size:12px; }
-  .dlcard .btn { width:100%; }
+  .dl { display:grid; grid-template-columns:repeat(auto-fit,minmax(340px,1fr)); gap:22px; }
+  .dlcard { padding:26px; display:flex; flex-direction:column; }
+  .dltop { display:flex; align-items:center; gap:16px; margin-bottom:20px; }
+  .logo { width:64px; height:64px; border-radius:14px; display:grid; place-items:center; background:var(--c); box-shadow:0 5px 0 var(--s); }
+  .logo svg { width:36px; height:36px; color:var(--ink); }
+  .dlcard.fabric { --ink:#1b1300; --c:var(--gold); --s:var(--gold-sh); } .dlcard.forge { --ink:#03232a; --c:var(--teal); --s:var(--teal-sh); }
+  .dlcard { background:var(--panel); border-radius:var(--r); --pc:var(--c); --ps:var(--s); box-shadow:0 6px 0 var(--panel-sh); }
+  .dltop h3 { margin:0; font:400 1.5rem var(--pixel); color:var(--pc); }
+  .dltop p { margin:2px 0 0; color:var(--muted); font-size:13px; }
+  dl.facts { display:grid; grid-template-columns:auto 1fr; gap:0; margin:0 0 22px; font-size:13px; background:var(--panel-sh); border-radius:10px; padding:6px 16px; }
+  dl.facts dt, dl.facts dd { padding:9px 0; border-bottom:2px solid #1d1740; }
+  dl.facts dt:nth-last-of-type(1), dl.facts dd:last-of-type { border-bottom:0; }
+  dl.facts dt { color:var(--muted); } dl.facts dd { margin:0; text-align:right; font:12px var(--pixel); }
+  .dlcard .btn { margin-top:auto; }
 
-  .stats { display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:14px; }
-  .stat { padding:20px; text-align:center; }
-  .stat b { display:block; font:400 2rem var(--pixel); color:var(--accent,var(--gold)); }
-  .stat span { color:var(--muted); font-size:13px; }
+  .stats { display:grid; grid-template-columns:repeat(4,1fr); gap:18px; }
+  @media (max-width:700px) { .stats { grid-template-columns:repeat(2,1fr); } }
+  .stat { padding:24px 12px; text-align:center; }
+  .stat b { display:block; font:400 2.6rem/1.1 var(--pixel); }
+  .stat span { font-size:13px; font-weight:600; opacity:.85; }
 
-  .feat { display:grid; grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); gap:16px; }
-  .feat .panel { padding:22px; border-top:3px solid var(--accent); }
-  .feat h3 { margin:0 0 6px; font:400 1.05rem var(--pixel); color:var(--accent); }
-  .feat p { margin:0; color:var(--muted); font-size:14px; }
+  .feat { display:grid; grid-template-columns:repeat(auto-fit,minmax(300px,1fr)); gap:20px; }
+  .feat > div { padding:24px; }
+  .feat h3 { margin:0 0 8px; font:400 1.15rem var(--pixel); }
+  .feat p { margin:0; font-size:14px; font-weight:500; opacity:.9; }
 
-  .two { display:grid; grid-template-columns:repeat(auto-fit,minmax(320px,1fr)); gap:18px; }
-  .two .panel { padding:24px; }
-  .two h3 { margin:0 0 12px; font:400 1.05rem var(--pixel); color:var(--gold); }
-  ol, ul { margin:0; padding-left:20px; } li { margin:7px 0; color:#d6d1f5; }
-  code { font:12px var(--pixel); background:rgba(150,130,255,.15); border:1px solid var(--line); border-radius:5px; padding:2px 6px; }
+  .two { display:grid; grid-template-columns:repeat(auto-fit,minmax(340px,1fr)); gap:22px; }
+  .two .chunk { padding:26px; }
+  .two h3 { margin:0 0 14px; font:400 1.15rem var(--pixel); color:var(--gold); }
+  ol { margin:0; padding-left:22px; } li { margin:9px 0; }
+  code { font:12px var(--pixel); background:var(--panel-sh); border-radius:6px; padding:3px 8px; }
   table { width:100%; border-collapse:collapse; font-size:14px; }
-  td { padding:9px 0; border-bottom:1px solid var(--line); } tr:last-child td { border:0; }
-  td:first-child { color:var(--muted); width:42%; } td:last-child { text-align:right; font-family:var(--pixel); font-size:12px; }
+  td { padding:11px 0; border-bottom:2px solid var(--panel-sh); } tr:last-child td { border:0; }
+  td:first-child { color:var(--muted); } td:last-child { text-align:right; font:12px var(--pixel); }
 
-  .rel { padding:0; overflow:hidden; }
-  .row { display:grid; grid-template-columns:1.4fr 1fr auto; gap:12px; align-items:center; padding:14px 20px; border-bottom:1px solid var(--line); }
-  .row:last-child { border:0; }
-  .row b { font:400 13px var(--pixel); } .row small { color:var(--muted); }
-  .row a { font-size:13px; color:var(--gold); text-decoration:none; } .row a:hover { text-decoration:underline; }
-  .dls { display:flex; gap:14px; }
-  .tagl { font:11px var(--pixel); color:#0b0818; background:var(--green); border-radius:4px; padding:2px 7px; margin-left:8px; }
-  @media (max-width:560px) { .row { grid-template-columns:1fr; } }
+  #rel-list { display:grid; gap:18px; }
+  .row { display:grid; grid-template-columns:1.5fr 1fr auto; gap:14px; align-items:center; padding:18px 22px; }
+  .row b { font:400 14px var(--pixel); } .row small { color:var(--muted); font-size:13px; }
+  .dls { display:flex; gap:10px; }
+  .dls a { font:12px var(--pixel); padding:10px 16px; text-decoration:none; }
+  .tagl { font:11px var(--pixel); color:#06260f; background:var(--green); border-radius:6px; padding:3px 8px; margin-left:10px; }
+  @media (max-width:640px) { .row { grid-template-columns:1fr; } }
 
-  footer { margin-top:56px; border-top:1px solid var(--line); padding:26px 0 40px; color:var(--muted); font-size:13px; }
+  footer { margin-top:64px; background:var(--panel-sh); padding:28px 0 40px; color:var(--muted); font-size:13px; }
   footer .wrap { display:flex; justify-content:space-between; flex-wrap:wrap; gap:10px; }
-  footer a { color:var(--text); }
-  .reveal { opacity:0; transform:translateY(14px); transition:opacity .6s, transform .6s; }
+  .reveal { opacity:0; transform:translateY(16px); transition:opacity .5s, transform .5s; }
   .reveal.in { opacity:1; transform:none; }
-  @media (prefers-reduced-motion: reduce) { .reveal { opacity:1; transform:none; transition:none; } .eyebrow b { animation:none; } html { scroll-behavior:auto; } }
+  @media (prefers-reduced-motion: reduce) { .reveal { opacity:1; transform:none; transition:none; } html { scroll-behavior:auto; } }
 </style>
 </head>
 <body>
@@ -120,7 +126,7 @@
   <div class="wrap">
     <a class="brand" href="#top"><i></i>REALMS OF CHAOS</a>
     <nav class="links">
-      <a href="#download">Download</a><a href="#features">Features</a><a href="#install">Install</a><a href="#releases">Releases</a>
+      <a class="chunk" href="#download">Download</a><a class="chunk" href="#features">Features</a><a class="chunk" href="#install">Install</a><a class="chunk" href="#releases">Releases</a>
     </nav>
   </div>
 </header>
@@ -128,69 +134,70 @@
 <main id="top">
   <div class="wrap">
     <div class="hero">
-      <span class="eyebrow"><b></b><span id="hero-ver">Loading release...</span></span>
-      <h1>Realms of Chaos</h1>
+      <span class="eyebrow chunk c-green"><span id="hero-ver">Loading release...</span></span>
+      <h1><span>Realms</span><span class="l2">of Chaos</span></h1>
+      <div class="bar"><b></b><b></b><b></b></div>
       <div class="badges">
-        <span class="badge"><span>Minecraft</span>26.3</span>
-        <span class="badge"><span>Loaders</span>Fabric &middot; Forge</span>
-        <span class="badge"><span>Java</span>25</span>
-        <span class="badge"><span>License</span>MIT</span>
-        <span class="badge"><span>Author</span>TheFarawayDev</span>
+        <span class="badge chunk c-panel"><span>Minecraft</span>26.3</span>
+        <span class="badge chunk c-panel"><span>Loaders</span>Fabric &middot; Forge</span>
+        <span class="badge chunk c-panel"><span>Java</span>25</span>
+        <span class="badge chunk c-panel"><span>License</span>MIT</span>
+        <span class="badge chunk c-panel"><span>Author</span>TheFarawayDev</span>
       </div>
       <div class="cta">
-        <a class="btn fabric" id="cta-fabric" aria-disabled="true" href="#download">Download Fabric</a>
-        <a class="btn forge" id="cta-forge" aria-disabled="true" href="#download">Download Forge</a>
-        <a class="btn ghost" href="#install">How to install</a>
+        <a class="btn chunk c-gold" id="cta-fabric" aria-disabled="true" href="#download">Download Fabric</a>
+        <a class="btn chunk c-teal" id="cta-forge" aria-disabled="true" href="#download">Download Forge</a>
+        <a class="btn chunk" href="#install">How to install</a>
       </div>
     </div>
 
     <section id="download" class="reveal">
-      <div class="sh"><h2>Download</h2><small id="dl-note"></small></div>
+      <div class="sh"><h2 class="chunk c-gold">Download</h2><small id="dl-note"></small></div>
       <div class="dl">
-        <article class="panel dlcard fabric">
+        <article class="dlcard fabric">
           <div class="dltop">
             <div class="logo"><svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="square"><path d="M5 9h22M5 16h22M5 23h22M9 5v22M16 5v22M23 5v22"/><path d="M5 5h22v22H5z" stroke-width="3"/></svg></div>
             <div><h3>Fabric</h3><p>Lightweight loader</p></div>
           </div>
           <dl class="facts"><dt>Version</dt><dd data-f="ver">-</dd><dt>File</dt><dd data-f="name">-</dd><dt>Size</dt><dd data-f="size">-</dd><dt>Downloads</dt><dd data-f="count">-</dd><dt>Requires</dt><dd>Loader 0.20.1+ &amp; Fabric API</dd></dl>
-          <a class="btn fabric" id="dl-fabric" aria-disabled="true" href="#">Loading...</a>
+          <a class="btn chunk c-gold" id="dl-fabric" aria-disabled="true" href="#">Loading...</a>
         </article>
-        <article class="panel dlcard forge">
+        <article class="dlcard forge">
           <div class="dltop">
             <div class="logo"><svg viewBox="0 0 32 32" fill="currentColor"><path d="M4 8h24v4c0 3-3 5-7 5h-1l1 4h5v4H8v-4h5l1-4h-1c-4 0-7-2-7-5z"/></svg></div>
             <div><h3>Forge</h3><p>Established mod platform</p></div>
           </div>
           <dl class="facts"><dt>Version</dt><dd data-f="ver">-</dd><dt>File</dt><dd data-f="name">-</dd><dt>Size</dt><dd data-f="size">-</dd><dt>Downloads</dt><dd data-f="count">-</dd><dt>Requires</dt><dd>Forge 66.1.9+</dd></dl>
-          <a class="btn forge" id="dl-forge" aria-disabled="true" href="#">Loading...</a>
+          <a class="btn chunk c-teal" id="dl-forge" aria-disabled="true" href="#">Loading...</a>
         </article>
       </div>
     </section>
 
     <section class="reveal">
       <div class="stats">
-        <div class="panel stat"><b>45</b><span>Gods to defeat</span></div>
-        <div class="panel stat" style="--accent:var(--teal)"><b>45</b><span>Relic weapons</span></div>
-        <div class="panel stat" style="--accent:var(--purple)"><b>3</b><span>God lines</span></div>
-        <div class="panel stat"><b>4</b><span>Realms</span></div>
+        <div class="chunk c-gold stat"><b>45</b><span>Gods to defeat</span></div>
+        <div class="chunk c-teal stat"><b>45</b><span>Relic weapons</span></div>
+        <div class="chunk c-purple stat"><b>3</b><span>God lines</span></div>
+        <div class="chunk c-green stat"><b>4</b><span>Realms</span></div>
       </div>
     </section>
 
     <section id="features" class="reveal">
-      <div class="sh"><h2>Features</h2></div>
+      <div class="sh"><h2 class="chunk c-gold">Features</h2></div>
       <div class="feat">
-        <div class="panel" style="--accent:var(--gold)"><h3>Zeus</h3><p>Climb from Iris to the King of the Gods across the Olympian Heights. Lightning, wisdom and war.</p></div>
-        <div class="panel" style="--accent:var(--teal)"><h3>Poseidon</h3><p>From Galatea to the Lord of the Seas in the Abyssal Palace. Tidal waves and crushing currents.</p></div>
-        <div class="panel" style="--accent:var(--purple)"><h3>Hades</h3><p>From Charon to the Lord of the Underworld. Drain life, wither flesh, command the dead.</p></div>
-        <div class="panel" style="--accent:var(--green)"><h3>Hub of Realms</h3><p>One hub, three gates. Choose any path; every line is independent and saved per player.</p></div>
-        <div class="panel" style="--accent:var(--gold)"><h3>Relic weapons</h3><p>Every god drops a weapon scaled by rank with its own hit power and a right-click Divine Surge.</p></div>
-        <div class="panel" style="--accent:var(--teal)"><h3>Fabric and Forge</h3><p>One codebase, two loaders, same content and behaviour on both.</p></div>
+        <div class="chunk c-gold"><h3>Zeus</h3><p>Climb from Iris to the King of the Gods across the Olympian Heights. Lightning, wisdom and war.</p></div>
+        <div class="chunk c-teal"><h3>Poseidon</h3><p>From Galatea to the Lord of the Seas in the Abyssal Palace. Tidal waves and crushing currents.</p></div>
+        <div class="chunk c-purple"><h3>Hades</h3><p>From Charon to the Lord of the Underworld. Drain life, wither flesh, command the dead.</p></div>
+        <div class="chunk c-green"><h3>Hub of Realms</h3><p>One hub, three gates. Choose any path; every line is independent and saved per player.</p></div>
+        <div class="chunk c-gold"><h3>Relic weapons</h3><p>Every god drops a weapon scaled by rank with its own hit power and a right-click Divine Surge.</p></div>
+        <div class="chunk c-teal"><h3>Fabric and Forge</h3><p>One codebase, two loaders, same content and behaviour on both.</p></div>
       </div>
     </section>
 
     <section id="install" class="reveal">
-      <div class="sh"><h2>Install</h2></div>
+      <div class="sh"><h2 class="chunk c-gold">Install</h2></div>
       <div class="two">
-        <div class="panel"><h3>Steps</h3>
+        <div class="chunk c-panel"><h3>Steps</h3>
           <ol>
             <li>Install Java 25 and your loader for Minecraft 26.3.</li>
             <li>Fabric only: add Fabric API.</li>
@@ -198,7 +205,7 @@
             <li>In game, right-click the Compass of Chaos or run <code>/roc hub</code>.</li>
           </ol>
         </div>
-        <div class="panel"><h3>Requirements</h3>
+        <div class="chunk c-panel"><h3>Requirements</h3>
           <table>
             <tr><td>Minecraft</td><td>26.3</td></tr>
             <tr><td>Java</td><td>25+</td></tr>
@@ -210,8 +217,8 @@
     </section>
 
     <section id="releases" class="reveal">
-      <div class="sh"><h2>Releases</h2></div>
-      <div class="panel rel" id="rel-list"><div class="row"><small>Loading...</small></div></div>
+      <div class="sh"><h2 class="chunk c-gold">Releases</h2></div>
+      <div id="rel-list"><div class="row chunk c-panel"><small>Loading...</small></div></div>
     </section>
   </div>
 </main>
@@ -248,70 +255,54 @@
       $("#hero-ver").textContent = `Latest: ${latest.tag_name} - ${new Date(latest.published_at).toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric" })}`;
       $("#dl-note").textContent = `Released ${new Date(latest.published_at).toLocaleDateString()}`;
       $("#rel-list").innerHTML = list.map((r, i) => `
-        <div class="row"><div><b>${r.name || r.tag_name}</b>${i === 0 ? '<span class="tagl">LATEST</span>' : ""}<br><small>${r.tag_name}</small></div>
+        <div class="row chunk c-panel"><div><b>${r.name || r.tag_name}</b>${i === 0 ? '<span class="tagl">LATEST</span>' : ""}<br><small>${r.tag_name}</small></div>
         <small>${new Date(r.published_at).toLocaleDateString()} &middot; ${r.assets.reduce((n, a) => n + a.download_count, 0).toLocaleString()} downloads</small>
-        <span class="dls">${["fabric", "forge"].map(k => { const a = r.assets.find(x => x.name.endsWith(".jar") && x.name.toLowerCase().includes(k)); return a ? `<a href="${a.browser_download_url}">${k[0].toUpperCase() + k.slice(1)}</a>` : ""; }).join("")}</span></div>`).join("");
+        <span class="dls">${["fabric", "forge"].map(k => { const a = r.assets.find(x => x.name.endsWith(".jar") && x.name.toLowerCase().includes(k)); return a ? `<a class="chunk ${k === "fabric" ? "c-gold" : "c-teal"}" href="${a.browser_download_url}">${k[0].toUpperCase() + k.slice(1)}</a>` : ""; }).join("")}</span></div>`).join("");
     })
     .catch(() => {
       $("#hero-ver").textContent = "Release info unavailable";
       for (const s of ["#cta-fabric", "#dl-fabric", "#cta-forge", "#dl-forge"]) $(s).textContent = "Unavailable";
-      $("#rel-list").innerHTML = `<div class="row"><small>Could not load releases right now. Please try again later.</small></div>`;
+      $("#rel-list").innerHTML = `<div class="row chunk c-panel"><small>Could not load releases right now. Please try again later.</small></div>`;
     });
 
   // scroll reveal
   const io = new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting) { e.target.classList.add("in"); io.unobserve(e.target); } }), { threshold: .08 });
   $$(".reveal").forEach(el => io.observe(el));
 
-  // ---- background: scrolling neon grid (flat + perspective floor) with comets flying across ----
+  // ---- background: flat matte colour, flat scrolling grid, flat comets flying across now and then ----
   const cv = $("#bg"), cx = cv.getContext("2d");
   const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
-  let W, H, DPR, t = 0, comets = [], nextComet = 120;
+  let W, H, DPR, t = 0, comets = [], nextComet = 100;
   function size() { DPR = Math.min(devicePixelRatio || 1, 2); W = innerWidth; H = innerHeight; cv.width = W * DPR; cv.height = H * DPR; cx.setTransform(DPR, 0, 0, DPR, 0, 0); }
   addEventListener("resize", size); size();
-  const palette = [[242, 201, 76], [53, 196, 216], [165, 90, 214]];
+  const colors = ["#f5b82e", "#2bb7cc", "#a55ad6", "#4cc97f"];
   const rnd = (a, b) => a + Math.random() * (b - a);
   function spawn() {
-    const fromLeft = Math.random() < .5, c = palette[Math.random() * 3 | 0];
-    const sp = rnd(7, 12), ang = rnd(.12, .38);
-    comets.push({ x: fromLeft ? -80 : W + 80, y: rnd(30, H * .5), vx: (fromLeft ? 1 : -1) * sp, vy: sp * ang, c, life: 0, len: rnd(110, 200) });
+    const left = Math.random() < .5, sp = rnd(6, 11);
+    comets.push({ x: left ? -120 : W + 120, y: rnd(40, H * .8), vx: (left ? 1 : -1) * sp, vy: rnd(-.25, .25) * sp, c: colors[Math.random() * 4 | 0], len: rnd(90, 190), w: rnd(8, 14) | 0 });
   }
   function frame() {
     t += reduce ? 0 : 1;
-    const g = cx.createLinearGradient(0, 0, 0, H);
-    g.addColorStop(0, "#05040c"); g.addColorStop(.6, "#0d0a26"); g.addColorStop(1, "#1a0f3a");
-    cx.fillStyle = g; cx.fillRect(0, 0, W, H);
+    cx.fillStyle = "#16122b"; cx.fillRect(0, 0, W, H);
+    const cell = 64, ox = (t * .4) % cell, oy = (t * .4) % cell;
+    cx.fillStyle = "#201b3d";                       // flat grid lines, drifting diagonally
+    for (let x = -cell + ox; x < W + cell; x += cell) cx.fillRect(x | 0, 0, 2, H);
+    for (let y = -cell + oy; y < H + cell; y += cell) cx.fillRect(0, y | 0, W, 2);
+    cx.fillStyle = "#2a2450";                       // little squares riding the grid intersections
+    for (let x = -cell + ox; x < W + cell; x += cell * 3) for (let y = -cell + oy; y < H + cell; y += cell * 3) cx.fillRect((x - 4) | 0, (y - 4) | 0, 10, 10);
 
-    // faint flat grid drifting diagonally across the whole screen
-    const cell = 56, ox = (t * .25) % cell, oy = (t * .15) % cell;
-    cx.lineWidth = 1; cx.strokeStyle = "rgba(130,110,255,.07)"; cx.beginPath();
-    for (let x = -cell + ox; x < W + cell; x += cell) { cx.moveTo(x, 0); cx.lineTo(x, H); }
-    for (let y = -cell + oy; y < H + cell; y += cell) { cx.moveTo(0, y); cx.lineTo(W, y); }
-    cx.stroke();
-
-    // perspective floor: horizontal lines rush toward the viewer, verticals fan from the horizon
-    const hz = H * .62, vx = W / 2;
-    const fl = cx.createLinearGradient(0, hz, 0, H); fl.addColorStop(0, "rgba(165,90,214,0)"); fl.addColorStop(1, "rgba(165,90,214,.16)");
-    cx.fillStyle = fl; cx.fillRect(0, hz, W, H - hz);
-    cx.strokeStyle = "rgba(165,120,255,.38)"; cx.lineWidth = 1.2; cx.beginPath();
-    const f = (t * .012) % 1;
-    for (let i = 0; i < 18; i++) { const p = (i + f) / 18, y = hz + (H - hz) * p * p; cx.moveTo(0, y); cx.lineTo(W, y); }
-    for (let i = -22; i <= 22; i++) { cx.moveTo(vx + i * 14, hz); cx.lineTo(vx + i * (W / 14), H); }
-    cx.stroke();
-    // horizon glow
-    const hg = cx.createLinearGradient(0, hz - 70, 0, hz + 4); hg.addColorStop(0, "rgba(242,201,76,0)"); hg.addColorStop(1, "rgba(242,201,76,.16)");
-    cx.fillStyle = hg; cx.fillRect(0, hz - 70, W, 74);
-
-    // comets
-    if (!reduce && --nextComet <= 0) { spawn(); nextComet = rnd(260, 620); }
-    for (const m of comets) {
-      m.x += m.vx; m.y += m.vy; m.life++;
-      const mag = Math.hypot(m.vx, m.vy), tx = m.x - m.vx / mag * m.len, ty = m.y - m.vy / mag * m.len;
-      const tg = cx.createLinearGradient(m.x, m.y, tx, ty);
-      tg.addColorStop(0, `rgba(${m.c},.95)`); tg.addColorStop(1, `rgba(${m.c},0)`);
-      cx.strokeStyle = tg; cx.lineWidth = 2.5; cx.lineCap = "round"; cx.beginPath(); cx.moveTo(m.x, m.y); cx.lineTo(tx, ty); cx.stroke();
-      cx.fillStyle = "#fff"; cx.shadowColor = `rgb(${m.c})`; cx.shadowBlur = 16; cx.beginPath(); cx.arc(m.x, m.y, 2.6, 0, 7); cx.fill(); cx.shadowBlur = 0;
+    if (!reduce && --nextComet <= 0) { spawn(); nextComet = rnd(240, 560); }
+    for (const m of comets) {                        // flat blocky comets: a solid head with a stepped tail
+      m.x += m.vx; m.y += m.vy;
+      const dir = Math.sign(m.vx), steps = 7;
+      for (let i = 0; i < steps; i++) {
+        const k = i / steps, seg = m.len / steps;
+        cx.globalAlpha = 1 - k; cx.fillStyle = m.c;
+        cx.fillRect((m.x - dir * (i * seg + (dir > 0 ? seg : 0))) | 0, (m.y - m.vy * i * 2) | 0, seg + 1, m.w * (1 - k * .55));
+      }
+      cx.globalAlpha = 1; cx.fillStyle = "#fff"; cx.fillRect((m.x - (dir < 0 ? 0 : 3)) | 0, m.y | 0, m.w, m.w);
     }
-    comets = comets.filter(m => m.x > -300 && m.x < W + 300 && m.y < H + 100);
+    comets = comets.filter(m => m.x > -400 && m.x < W + 400 && m.y > -50 && m.y < H + 50);
     requestAnimationFrame(frame);
   }
   frame();
