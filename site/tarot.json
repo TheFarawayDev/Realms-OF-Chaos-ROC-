@@ -1,0 +1,134 @@
+[
+  {
+    "id": "fool",
+    "numeral": "0",
+    "name": "The Fool",
+    "does": "Leap forward and land softly"
+  },
+  {
+    "id": "magician",
+    "numeral": "I",
+    "name": "The Magician",
+    "does": "Hurl three bolts of force"
+  },
+  {
+    "id": "high_priestess",
+    "numeral": "II",
+    "name": "The High Priestess",
+    "does": "Reveal every creature nearby"
+  },
+  {
+    "id": "empress",
+    "numeral": "III",
+    "name": "The Empress",
+    "does": "Mend your wounds"
+  },
+  {
+    "id": "emperor",
+    "numeral": "IV",
+    "name": "The Emperor",
+    "does": "Stand firm and strike hard"
+  },
+  {
+    "id": "hierophant",
+    "numeral": "V",
+    "name": "The Hierophant",
+    "does": "Cleanse every ill effect"
+  },
+  {
+    "id": "lovers",
+    "numeral": "VI",
+    "name": "The Lovers",
+    "does": "Heal yourself and your allies"
+  },
+  {
+    "id": "chariot",
+    "numeral": "VII",
+    "name": "The Chariot",
+    "does": "Charge with great speed"
+  },
+  {
+    "id": "strength",
+    "numeral": "VIII",
+    "name": "Strength",
+    "does": "Gain great strength"
+  },
+  {
+    "id": "hermit",
+    "numeral": "IX",
+    "name": "The Hermit",
+    "does": "Vanish from sight"
+  },
+  {
+    "id": "wheel_of_fortune",
+    "numeral": "X",
+    "name": "Wheel of Fortune",
+    "does": "Invoke a card at random"
+  },
+  {
+    "id": "justice",
+    "numeral": "XI",
+    "name": "Justice",
+    "does": "Smite every foe around you"
+  },
+  {
+    "id": "hanged_man",
+    "numeral": "XII",
+    "name": "The Hanged Man",
+    "does": "Hang your foes in the air"
+  },
+  {
+    "id": "death",
+    "numeral": "XIII",
+    "name": "Death",
+    "does": "Wither the foe you face"
+  },
+  {
+    "id": "temperance",
+    "numeral": "XIV",
+    "name": "Temperance",
+    "does": "Endure fire and water"
+  },
+  {
+    "id": "devil",
+    "numeral": "XV",
+    "name": "The Devil",
+    "does": "Trade blood for terrible power"
+  },
+  {
+    "id": "tower",
+    "numeral": "XVI",
+    "name": "The Tower",
+    "does": "Call lightning on your foes"
+  },
+  {
+    "id": "star",
+    "numeral": "XVII",
+    "name": "The Star",
+    "does": "Shield yourself with starlight"
+  },
+  {
+    "id": "moon",
+    "numeral": "XVIII",
+    "name": "The Moon",
+    "does": "Drown your foes in darkness"
+  },
+  {
+    "id": "sun",
+    "numeral": "XIX",
+    "name": "The Sun",
+    "does": "Set your foes ablaze"
+  },
+  {
+    "id": "judgement",
+    "numeral": "XX",
+    "name": "Judgement",
+    "does": "Rise again at full health"
+  },
+  {
+    "id": "world",
+    "numeral": "XXI",
+    "name": "The World",
+    "does": "Receive every blessing at once"
+  }
+]

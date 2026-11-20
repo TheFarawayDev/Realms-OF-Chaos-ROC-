@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "key": {
+    "S": "minecraft:string",
+    "W": "minecraft:wheat",
+    "X": "minecraft:blaze_powder"
+  },
+  "pattern": [
+    " S ",
+    "WXW",
+    " W "
+  ],
+  "result": {
+    "id": "realms_of_chaos:voodoo_doll_embers"
+  }
+}

@@ -22,61 +22,62 @@ SITE = os.path.join(ROOT, "site")
 JAVA_DIR = os.path.join(ROOT, "common/src/main/java", *JAVA_PKG.split("."), "god")
 
 # ----------------------------------------------------------------------------
-# Roster: (id, display name, title, weapon name, shape, power, target effect, self effect)
+# Roster: (id, display name, title, weapon name, shape, power, target effect, self effect, weapon kind)
+# kinds: BLADE DAGGER POLEARM HAMMER SCYTHE STAFF BOW THROWN RELIC (the last four fight at range)
 # effects are "effect_id:seconds:amplifier" or "" ; powers: NONE LIGHTNING FIRE KNOCKBACK DRAIN FREEZE SWEEP
 # Ranks run 1 (strongest, the final boss of the line) .. 15 (weakest, the starter boss)
 # ----------------------------------------------------------------------------
 LINES = {
     "ZEUS": [
-        ("zeus", "Zeus", "King of the Gods", "Keraunos, the Thunderbolt", "bolt", "LIGHTNING", "glowing:6:0", "resistance:6:0"),
-        ("athena", "Athena", "Goddess of Wisdom and War", "Spear of the Grey-Eyed", "spear", "KNOCKBACK", "weakness:6:1", "resistance:6:1"),
-        ("apollo", "Apollo", "God of the Sun and Prophecy", "Helios Lance", "spear", "FIRE", "glowing:8:0", "speed:6:0"),
-        ("dionysus", "Dionysus", "God of Wine and Madness", "Thyrsus of Madness", "staff", "NONE", "nausea:8:0", "regeneration:5:0"),
-        ("artemis", "Artemis", "Goddess of the Hunt and Moon", "Crescent Fang", "dagger", "NONE", "slowness:5:1", "speed:6:1"),
-        ("ares", "Ares", "God of War", "Warblade of Ares", "sword", "KNOCKBACK", "", "strength:6:1"),
-        ("hermes", "Hermes", "Messenger of the Gods", "Winged Caduceus", "dagger", "NONE", "slowness:3:0", "speed:8:2"),
-        ("asclepius", "Asclepius", "God of Medicine", "Rod of Asclepius", "staff", "DRAIN", "", "regeneration:6:1"),
-        ("hebe", "Hebe", "Goddess of Youth", "Ambrosia Sabre", "sword", "NONE", "weakness:5:0", "regeneration:6:0"),
-        ("phobos", "Phobos", "God of Fear", "Terror Fang", "dagger", "NONE", "darkness:6:0", "speed:5:0"),
-        ("deimos", "Deimos", "God of Dread", "Dread Reaper", "scythe", "NONE", "blindness:3:0", "speed:5:0"),
-        ("hygeia", "Hygeia", "Goddess of Health", "Serpent Scalpel", "dagger", "DRAIN", "", "absorption:8:0"),
-        ("pan", "Pan", "God of Wild Nature", "Wildwood Cudgel", "staff", "NONE", "poison:4:0", "speed:6:0"),
-        ("nike", "Nike", "Goddess of Victory", "Victory Gladius", "sword", "NONE", "", "strength:6:0"),
-        ("iris", "Iris", "Divine Messenger of the Rainbow", "Rainbow Rapier", "sword", "NONE", "glowing:10:0", "speed:6:0"),
+        ("zeus", "Zeus", "King of the Gods", "Keraunos, the Thunderbolt", "bolt", "LIGHTNING", "glowing:6:0", "resistance:6:0", "THROWN"),
+        ("athena", "Athena", "Goddess of Wisdom and War", "Spear of the Grey-Eyed", "spear", "KNOCKBACK", "weakness:6:1", "resistance:6:1", "POLEARM"),
+        ("apollo", "Apollo", "God of the Sun and Prophecy", "Bow of the Sun", "bow", "FIRE", "glowing:8:0", "speed:6:0", "BOW"),
+        ("dionysus", "Dionysus", "God of Wine and Madness", "Thyrsus of Madness", "staff", "NONE", "nausea:8:0", "regeneration:5:0", "STAFF"),
+        ("artemis", "Artemis", "Goddess of the Hunt and Moon", "Moonlit Bow", "bow", "NONE", "slowness:5:1", "speed:6:1", "BOW"),
+        ("ares", "Ares", "God of War", "Warblade of Ares", "sword", "KNOCKBACK", "", "strength:6:1", "BLADE"),
+        ("hermes", "Hermes", "Messenger of the Gods", "Winged Caduceus", "staff", "NONE", "slowness:3:0", "speed:8:2", "STAFF"),
+        ("asclepius", "Asclepius", "God of Medicine", "Rod of Asclepius", "staff", "DRAIN", "", "regeneration:6:1", "STAFF"),
+        ("hebe", "Hebe", "Goddess of Youth", "Chalice of Ambrosia", "chalice", "NONE", "weakness:5:0", "regeneration:6:0", "RELIC"),
+        ("phobos", "Phobos", "God of Fear", "Terror Fang", "dagger", "NONE", "darkness:6:0", "speed:5:0", "DAGGER"),
+        ("deimos", "Deimos", "God of Dread", "Dread Reaper", "scythe", "NONE", "blindness:3:0", "speed:5:0", "SCYTHE"),
+        ("hygeia", "Hygeia", "Goddess of Health", "Bowl of Hygeia", "chalice", "DRAIN", "", "absorption:8:0", "RELIC"),
+        ("pan", "Pan", "God of Wild Nature", "Pan's Syrinx", "flute", "NONE", "poison:4:0", "speed:6:0", "RELIC"),
+        ("nike", "Nike", "Goddess of Victory", "Victory Gladius", "sword", "NONE", "", "strength:6:0", "BLADE"),
+        ("iris", "Iris", "Divine Messenger of the Rainbow", "Rainbow Rapier", "sword", "NONE", "glowing:10:0", "speed:6:0", "BLADE"),
     ],
     "POSEIDON": [
-        ("poseidon", "Poseidon", "Lord of the Seas", "Trident of the Deep", "trident", "SWEEP", "slowness:5:1", "resistance:6:0"),
-        ("amphitrite", "Amphitrite", "Queen of the Sea", "Queen's Coral Scepter", "staff", "FREEZE", "", "regeneration:6:0"),
-        ("triton", "Triton", "Herald of the Sea", "Conch Spear", "spear", "KNOCKBACK", "", "water_breathing:20:0"),
-        ("chrysaor", "Chrysaor", "Golden Blade of the Sea", "Golden Sword of Chrysaor", "sword", "SWEEP", "", "strength:6:0"),
-        ("cymopoleia", "Cymopoleia", "Goddess of Storm Waves", "Stormwave Maul", "hammer", "KNOCKBACK", "slowness:4:1", "resistance:6:0"),
-        ("rhode", "Rhode", "Nymph of Rhodes", "Roserain Blade", "sword", "NONE", "nausea:6:0", "speed:6:0"),
-        ("pegasus", "Pegasus", "The Winged Horse", "Wingbeat Saber", "sword", "NONE", "levitation:2:0", "jump_boost:8:2"),
-        ("benthesikyme", "Benthesikyme", "Goddess of the Deep Waves", "Deepcurrent Dirk", "dagger", "DRAIN", "", "water_breathing:20:0"),
-        ("halia", "Halia", "Sea Nymph of the Salt", "Seafoam Cutlass", "sword", "FREEZE", "", "regeneration:5:0"),
-        ("nereus", "Nereus", "Old Man of the Sea", "Elder's Tideblade", "sword", "NONE", "weakness:6:0", "resistance:6:0"),
-        ("proteus", "Proteus", "The Shapeshifter", "Shapeshifter's Kris", "dagger", "NONE", "nausea:6:0", "speed:6:0"),
-        ("palaemon", "Palaemon", "God of Harbours", "Anchor Pike", "spear", "NONE", "slowness:4:0", "jump_boost:6:1"),
-        ("thetis", "Thetis", "Silver-Footed Sea Nymph", "Silverfoot Rapier", "sword", "FREEZE", "", "absorption:8:0"),
-        ("galene", "Galene", "Goddess of Calm Seas", "Calmwater Foil", "sword", "NONE", "slowness:3:0", "regeneration:5:0"),
-        ("galatea", "Galatea", "Sea Nymph of the Pearl Shore", "Pearl Sea Dagger", "dagger", "FREEZE", "", "speed:5:0"),
+        ("poseidon", "Poseidon", "Lord of the Seas", "Trident of the Deep", "trident", "SWEEP", "slowness:5:1", "resistance:6:0", "POLEARM"),
+        ("amphitrite", "Amphitrite", "Queen of the Sea", "Queen's Coral Scepter", "staff", "FREEZE", "", "regeneration:6:0", "STAFF"),
+        ("triton", "Triton", "Herald of the Sea", "Triton's Conch", "conch", "KNOCKBACK", "", "water_breathing:20:0", "RELIC"),
+        ("chrysaor", "Chrysaor", "Golden Blade of the Sea", "Golden Sword of Chrysaor", "sword", "SWEEP", "", "strength:6:0", "BLADE"),
+        ("cymopoleia", "Cymopoleia", "Goddess of Storm Waves", "Stormwave Maul", "hammer", "KNOCKBACK", "slowness:4:1", "resistance:6:0", "HAMMER"),
+        ("rhode", "Rhode", "Nymph of Rhodes", "Roserain Bow", "bow", "NONE", "nausea:6:0", "speed:6:0", "BOW"),
+        ("pegasus", "Pegasus", "The Winged Horse", "Wingbeat Plume", "feather", "NONE", "levitation:2:0", "jump_boost:8:2", "RELIC"),
+        ("benthesikyme", "Benthesikyme", "Goddess of the Deep Waves", "Deepcurrent Dirk", "dagger", "DRAIN", "", "water_breathing:20:0", "DAGGER"),
+        ("halia", "Halia", "Sea Nymph of the Salt", "Seafoam Cutlass", "sword", "FREEZE", "", "regeneration:5:0", "BLADE"),
+        ("nereus", "Nereus", "Old Man of the Sea", "Elder's Tide Staff", "staff", "NONE", "weakness:6:0", "resistance:6:0", "STAFF"),
+        ("proteus", "Proteus", "The Shapeshifter", "Shapeshifter's Kris", "dagger", "NONE", "nausea:6:0", "speed:6:0", "DAGGER"),
+        ("palaemon", "Palaemon", "God of Harbours", "Harbour Anchor", "anchor", "NONE", "slowness:4:0", "jump_boost:6:1", "HAMMER"),
+        ("thetis", "Thetis", "Silver-Footed Sea Nymph", "Silverfoot Javelin", "spear", "FREEZE", "", "absorption:8:0", "THROWN"),
+        ("galene", "Galene", "Goddess of Calm Seas", "Calmwater Pearl", "orb", "NONE", "slowness:3:0", "regeneration:5:0", "RELIC"),
+        ("galatea", "Galatea", "Sea Nymph of the Pearl Shore", "Pearl Sea Dagger", "dagger", "FREEZE", "", "speed:5:0", "DAGGER"),
     ],
     "HADES": [
-        ("hades", "Hades", "Lord of the Underworld", "Bident of the Dead", "trident", "DRAIN", "wither:5:1", "resistance:6:0"),
-        ("persephone", "Persephone", "Queen of the Underworld", "Pomegranate Scythe", "scythe", "NONE", "poison:5:0", "regeneration:6:0"),
-        ("zagreus", "Zagreus", "The Hunter of the Dead", "Stygian Blade", "sword", "FIRE", "", "strength:6:0"),
-        ("thanatos", "Thanatos", "Death Incarnate", "Reaper's Sickle", "scythe", "DRAIN", "wither:4:2", ""),
-        ("hypnos", "Hypnos", "God of Sleep", "Slumber Staff", "staff", "NONE", "slowness:5:2", ""),
-        ("melinoe", "Melinoe", "Goddess of Ghosts", "Witchlight Knife", "dagger", "NONE", "darkness:6:0", "speed:6:0"),
-        ("macaria", "Macaria", "Goddess of Blessed Death", "Mercy's Edge", "dagger", "DRAIN", "", "regeneration:5:0"),
-        ("hecate", "Hecate", "Goddess of Witchcraft", "Hecate's Torchblade", "sword", "FIRE", "blindness:3:0", "speed:6:0"),
-        ("morpheus", "Morpheus", "God of Dreams", "Dreamshaper Blade", "sword", "NONE", "nausea:6:0", "speed:6:0"),
-        ("nyx", "Nyx", "Primordial Goddess of Night", "Midnight Shard", "dagger", "NONE", "darkness:10:0", "resistance:6:0"),
-        ("erinyes", "The Erinyes", "The Furies of Vengeance", "Furies' Lash Blade", "sword", "FIRE", "weakness:6:0", ""),
-        ("moirai", "The Moirai", "The Three Fates", "Shears of Fate", "dagger", "NONE", "mining_fatigue:8:1", ""),
-        ("keres", "The Keres", "Spirits of Violent Death", "Carrion Talon", "scythe", "DRAIN", "poison:4:0", ""),
-        ("oneiroi", "The Oneiroi", "Spirits of Dreams", "Nightmare Reed", "staff", "NONE", "nausea:7:0", "speed:5:0"),
-        ("charon", "Charon", "Ferryman of the Dead", "Ferryman's Oar", "staff", "KNOCKBACK", "slowness:4:0", "resistance:6:0"),
+        ("hades", "Hades", "Lord of the Underworld", "Bident of the Dead", "trident", "DRAIN", "wither:5:1", "resistance:6:0", "POLEARM"),
+        ("persephone", "Persephone", "Queen of the Underworld", "Pomegranate Scythe", "scythe", "NONE", "poison:5:0", "regeneration:6:0", "SCYTHE"),
+        ("zagreus", "Zagreus", "The Hunter of the Dead", "Stygian Blade", "sword", "FIRE", "", "strength:6:0", "BLADE"),
+        ("thanatos", "Thanatos", "Death Incarnate", "Reaper's Sickle", "scythe", "DRAIN", "wither:4:2", "", "SCYTHE"),
+        ("hypnos", "Hypnos", "God of Sleep", "Slumber Staff", "staff", "NONE", "slowness:5:2", "", "STAFF"),
+        ("melinoe", "Melinoe", "Goddess of Ghosts", "Witchlight Lantern", "lantern", "NONE", "darkness:6:0", "speed:6:0", "RELIC"),
+        ("macaria", "Macaria", "Goddess of Blessed Death", "Mercy's Edge", "dagger", "DRAIN", "", "regeneration:5:0", "DAGGER"),
+        ("hecate", "Hecate", "Goddess of Witchcraft", "Torch of the Crossroads", "torch", "FIRE", "blindness:3:0", "speed:6:0", "STAFF"),
+        ("morpheus", "Morpheus", "God of Dreams", "Dreamshaper Wand", "staff", "NONE", "nausea:6:0", "speed:6:0", "STAFF"),
+        ("nyx", "Nyx", "Primordial Goddess of Night", "Midnight Shards", "star", "NONE", "darkness:10:0", "resistance:6:0", "THROWN"),
+        ("erinyes", "The Erinyes", "The Furies of Vengeance", "Furies' Lash", "whip", "FIRE", "weakness:6:0", "", "POLEARM"),
+        ("moirai", "The Moirai", "The Three Fates", "Shears of Fate", "shears", "NONE", "mining_fatigue:8:1", "", "DAGGER"),
+        ("keres", "The Keres", "Spirits of Violent Death", "Carrion Talon", "scythe", "DRAIN", "poison:4:0", "", "SCYTHE"),
+        ("oneiroi", "The Oneiroi", "Spirits of Dreams", "Nightmare Reed", "staff", "NONE", "nausea:7:0", "speed:5:0", "STAFF"),
+        ("charon", "Charon", "Ferryman of the Dead", "Ferryman's Oar", "oar", "KNOCKBACK", "slowness:4:0", "resistance:6:0", "HAMMER"),
     ],
 }
 
@@ -191,10 +192,10 @@ def all_gods():
 def gen_java():
     rows = []
     for idx, line, rank, g in all_gods():
-        gid, name, title, wname, shape, power, teff, seff = g
+        gid, name, title, wname, shape, power, teff, seff, kind = g
         rows.append(
             f"        new God({idx}, Line.{line}, {rank}, {jstr(gid)}, {jstr(name)}, {jstr(title)}, "
-            f"{jstr(wname)}, Power.{power}, {jstr(teff)}, {jstr(seff)})"
+            f"{jstr(wname)}, WeaponKind.{kind}, Power.{power}, {jstr(teff)}, {jstr(seff)})"
         )
     src = f"""package {JAVA_PKG}.god;
 
@@ -251,7 +252,58 @@ def gen_lang():
         "block.realms_of_chaos.altar_poseidon": "Trial Altar of Poseidon",
         "block.realms_of_chaos.altar_hades": "Trial Altar of Hades",
         "entity.realms_of_chaos.god_boss": "God of the Realms",
+        "block.realms_of_chaos.chaos_forge": "Forge of Chaos",
         "block.realms_of_chaos.gate_ascend": "Gate of Ascent",
+        "kind.realms_of_chaos.blade": "Blade", "kind.realms_of_chaos.dagger": "Dagger",
+        "kind.realms_of_chaos.polearm": "Polearm", "kind.realms_of_chaos.hammer": "Heavy weapon",
+        "kind.realms_of_chaos.scythe": "Scythe", "kind.realms_of_chaos.staff": "Staff",
+        "kind.realms_of_chaos.bow": "Bow", "kind.realms_of_chaos.thrown": "Thrown weapon",
+        "kind.realms_of_chaos.relic": "Relic",
+        "kind.realms_of_chaos.blade.use": "Right-click: Divine Surge",
+        "kind.realms_of_chaos.dagger.use": "Fast strikes. Right-click: Divine Surge",
+        "kind.realms_of_chaos.polearm.use": "Long reach. Right-click: Divine Surge",
+        "kind.realms_of_chaos.hammer.use": "Slow, crushing blows. Right-click: Divine Surge",
+        "kind.realms_of_chaos.scythe.use": "Every hit sweeps. Right-click: Divine Surge",
+        "kind.realms_of_chaos.staff.use": "Right-click: cast a bolt. Sneak + right-click: Divine Surge",
+        "kind.realms_of_chaos.bow.use": "Right-click: loose an arrow. Sneak + right-click: Divine Surge",
+        "kind.realms_of_chaos.thrown.use": "Right-click: throw. Sneak + right-click: Divine Surge",
+        "kind.realms_of_chaos.relic.use": "Right-click: invoke its power around you. Sneak + right-click: Divine Surge",
+        "tooltip.realms_of_chaos.level": "Level %s of 10  (%s / %s XP)",
+        "tooltip.realms_of_chaos.level.max": "Level 10 (max)",
+        "tooltip.realms_of_chaos.stars": "Forged: %s of 5 stars",
+        "tooltip.realms_of_chaos.bonus": "+%s%% damage from level and forging",
+        "hud.realms_of_chaos.levelup": "%s reached level %s!",
+        "tarot.realms_of_chaos.single": "Right-click to play. The card is spent",
+        "item.realms_of_chaos.tarot_deck": "Deck of Fate",
+        "item.realms_of_chaos.tarot_deck.lore1": "Right-click: draw a card at random",
+        "item.realms_of_chaos.tarot_deck.lore2": "Sneak + right-click: choose a card",
+        "item.realms_of_chaos.tarot_deck.lore3": "A stack that never runs out",
+        "menu.realms_of_chaos.deck": "Deck of Fate",
+        "menu.realms_of_chaos.deck.rest": "The deck rests %s seconds after this card",
+        "hud.realms_of_chaos.tarot": "%s",
+        "doll.realms_of_chaos.unbound": "Right-click a creature to bind the doll to it",
+        "doll.realms_of_chaos.bound": "Bound to %s",
+        "doll.realms_of_chaos.use": "Right-click to stab. Sneak + right-click to unbind",
+        "hud.realms_of_chaos.doll.bound": "The doll is bound to %s",
+        "hud.realms_of_chaos.doll.unbound": "The doll is unbound",
+        "hud.realms_of_chaos.doll.lost": "The bond is broken: nothing answers the doll",
+        "hud.realms_of_chaos.doll.far": "%s is too far away to feel it",
+        "menu.realms_of_chaos.forge": "Forge of Chaos",
+        "menu.realms_of_chaos.forge.none": "Hold a god's relic weapon",
+        "menu.realms_of_chaos.forge.none.lore": "Put the weapon in your main hand, then open the forge",
+        "menu.realms_of_chaos.forge.level": "Level %s of 10",
+        "menu.realms_of_chaos.forge.xp": "%s / %s XP - earned by slaying with this weapon",
+        "menu.realms_of_chaos.forge.star": "Star %s",
+        "menu.realms_of_chaos.forge.star.owned": "Forged",
+        "menu.realms_of_chaos.forge.star.empty": "Not forged yet",
+        "menu.realms_of_chaos.forge.upgrade": "Forge star %s",
+        "menu.realms_of_chaos.forge.cost": "Costs %s x %s (you have %s)",
+        "menu.realms_of_chaos.forge.needlevel": "Needs weapon level %s",
+        "menu.realms_of_chaos.forge.effect": "Each star: +10% damage, faster recharge",
+        "menu.realms_of_chaos.forge.max": "Fully forged",
+        "menu.realms_of_chaos.forge.open": "Forge of Chaos",
+        "menu.realms_of_chaos.forge.open.lore": "Level up and forge your relic weapons",
+        "hud.realms_of_chaos.forged": "%s is now forged to %s stars!",
         "block.realms_of_chaos.gate_leave": "Gate to the Overworld",
         "hud.realms_of_chaos.hub": "Hub of Realms",
         "hud.realms_of_chaos.hub.sub": "Zeus north - Poseidon east - Hades west - Exit south",
@@ -332,6 +384,16 @@ def gen_lang():
         "advancement.realms_of_chaos.root.title": "Realms of Chaos",
         "advancement.realms_of_chaos.root.desc": "Thank you for using our mod! Open the Codex of Chaos to begin. - TheFarawayDev",
     }
+    for cid, numeral, cname, cdesc, _sym, _col in TAROT:
+        lang[f"item.realms_of_chaos.tarot_{cid}"] = f"{cname} ({numeral})"
+        lang[f"item.realms_of_chaos.tarot_{cid}.desc"] = cdesc
+    for did, dname, ddesc, _col in DOLLS:
+        lang[f"item.realms_of_chaos.voodoo_doll_{did}"] = dname
+        lang[f"item.realms_of_chaos.voodoo_doll_{did}.desc"] = ddesc
+    for line, (ename, _col) in ESSENCES.items():
+        lang[f"item.realms_of_chaos.essence_{line.lower()}"] = ename
+    for orb in ORBS:
+        lang[f"item.realms_of_chaos.orb_{orb}"] = "Divine Bolt"
     for line, gods in LINES.items():
         info = LINE_INFO[line]
         lang[f"line.realms_of_chaos.{line.lower()}"] = info["label"]
@@ -352,7 +414,44 @@ def gen_lang():
 # Item definitions / models
 # ----------------------------------------------------------------------------
 BLOCKS = ["gate_hub", "gate_zeus", "gate_poseidon", "gate_hades", "gate_ascend", "gate_leave",
-          "altar_zeus", "altar_poseidon", "altar_hades"]
+          "altar_zeus", "altar_poseidon", "altar_hades", "chaos_forge"]
+
+# The 22 Major Arcana: (id, numeral, name, what the card does, 8x8 symbol (# ink, + colour), colour)
+TAROT = [
+    ("fool", "0", "The Fool", "Leap forward and land softly", ["..#..#..", ".#+##+#.", "#++##++#", "########", ".######.", "..#++#..", "..####..", "........"], (120, 200, 120)),
+    ("magician", "I", "The Magician", "Hurl three bolts of force", [".##..##.", "#..##..#", ".##..##.", "...++...", "...++...", "...##...", "...##...", "...##..."], (200, 80, 80)),
+    ("high_priestess", "II", "The High Priestess", "Reveal every creature nearby", ["#......#", "#..##..#", "#.#+...#", "#.#+...#", "#.#+...#", "#..##..#", "#......#", "########"], (90, 110, 200)),
+    ("empress", "III", "The Empress", "Mend your wounds", [".##..##.", "#++##++#", "#++++++#", "#++++++#", ".#++++#.", "..#++#..", "...##...", "........"], (220, 110, 150)),
+    ("emperor", "IV", "The Emperor", "Stand firm and strike hard", ["#..##..#", "#..##..#", "##.##.##", "########", "#+#++#+#", "########", "........", "........"], (200, 60, 50)),
+    ("hierophant", "V", "The Hierophant", "Cleanse every ill effect", ["...##...", ".######.", "...##...", "..####..", "...##...", "...++...", "..++++..", "...++..."], (150, 120, 200)),
+    ("lovers", "VI", "The Lovers", "Heal yourself and your allies", [".##..##.", "#++##++#", "#++##++#", ".##..##.", "...##...", "..#++#..", "..#++#..", "...##..."], (230, 120, 170)),
+    ("chariot", "VII", "The Chariot", "Charge with great speed", ["..####..", ".#.##.#.", "#..##..#", "###++###", "###++###", "#..##..#", ".#.##.#.", "..####.."], (90, 170, 220)),
+    ("strength", "VIII", "Strength", "Gain great strength", ["#.####.#", "########", "#+#..#+#", "########", "##.++.##", ".######.", "..#..#..", "........"], (220, 150, 60)),
+    ("hermit", "IX", "The Hermit", "Vanish from sight", ["...##...", "..#..#..", ".######.", ".#.++.#.", ".#++++#.", ".#.++.#.", ".######.", "..####.."], (120, 130, 150)),
+    ("wheel_of_fortune", "X", "Wheel of Fortune", "Invoke a card at random", ["..####..", ".#+##+#.", "#+#..#+#", "##.++.##", "##.++.##", "#+#..#+#", ".#+##+#.", "..####.."], (220, 190, 70)),
+    ("justice", "XI", "Justice", "Smite every foe around you", ["...##...", "########", "#..##..#", "#..##..#", "+++##+++", ".+.##.+.", "...##...", "..####.."], (200, 200, 210)),
+    ("hanged_man", "XII", "The Hanged Man", "Hang your foes in the air", ["########", "...##...", "...##...", "..####..", ".#.##.#.", "...##...", "..#++#..", "...++..."], (90, 160, 150)),
+    ("death", "XIII", "Death", "Wither the foe you face", [".######.", "########", "#++##++#", "#++##++#", "###..###", ".######.", ".#.##.#.", ".#.##.#."], (60, 50, 70)),
+    ("temperance", "XIV", "Temperance", "Endure fire and water", ["###..###", "#+#..#+#", ".#+..+#.", "..#++#..", "...++...", "..#++#..", ".#+..+#.", "###..###"], (110, 190, 210)),
+    ("devil", "XV", "The Devil", "Trade blood for terrible power", ["#......#", "##....##", ".######.", "#+#..#+#", "########", ".#.##.#.", "..####..", "...##..."], (150, 30, 40)),
+    ("tower", "XVI", "The Tower", "Call lightning on your foes", ["..+..##.", ".+..####", "++..#..#", ".+..####", "..+.#..#", "....####", "....#..#", "..######"], (130, 120, 110)),
+    ("star", "XVII", "The Star", "Shield yourself with starlight", ["...#....", "...#....", ".#.#.#..", "..+++...", "###+###.", "..+++...", ".#.#.#..", "...#...."], (120, 170, 240)),
+    ("moon", "XVIII", "The Moon", "Drown your foes in darkness", ["..####..", ".###....", "###.....", "###.....", "###.....", ".###....", "..####..", ".+.+.+.."], (150, 150, 220)),
+    ("sun", "XIX", "The Sun", "Set your foes ablaze", ["#..##..#", ".#.##.#.", "..####..", "###++###", "###++###", "..####..", ".#.##.#.", "#..##..#"], (245, 190, 60)),
+    ("judgement", "XX", "Judgement", "Rise again at full health", [".......#", ".....###", "+..#####", "++######", "++######", "+..#####", ".....###", ".......#"], (230, 220, 190)),
+    ("world", "XXI", "The World", "Receive every blessing at once", ["..####..", ".#++++#.", "#++##++#", "#+####+#", "#+####+#", "#++##++#", ".#++++#.", "..####.."], (90, 180, 120)),
+]
+# Voodoo dolls: (id, name, what stabbing it does, pin colour)
+DOLLS = [
+    ("pain", "Voodoo Doll of Pain", "Stab it to wound the creature it is bound to", (200, 200, 210)),
+    ("binding", "Voodoo Doll of Binding", "Stab it to slow and weaken the creature it is bound to", (120, 200, 230)),
+    ("rot", "Voodoo Doll of Rot", "Stab it to wither the creature it is bound to", (120, 170, 80)),
+    ("embers", "Voodoo Doll of Embers", "Stab it to set the creature it is bound to ablaze", (245, 140, 50)),
+]
+DOLL_PINS = {"pain": "minecraft:iron_nugget", "binding": "minecraft:cobweb", "rot": "minecraft:rotten_flesh", "embers": "minecraft:blaze_powder"}
+ESSENCES = {"ZEUS": ("Spark of Olympus", (250, 215, 90)), "POSEIDON": ("Pearl of the Deep", (80, 200, 220)), "HADES": ("Ember of the Underworld", (180, 80, 230))}
+# Projectile sprites for staffs and gods, one per power
+ORBS = ["none", "lightning", "fire", "knockback", "drain", "freeze", "sweep"]
 
 def item_def(item_id, model_path):
     wj(os.path.join(ASSETS, f"items/{item_id}.json"),
@@ -362,15 +461,21 @@ def gen_models():
     for _, _, _, g in all_gods():
         iid = f"{g[0]}_weapon"
         item_def(iid, f"item/{iid}")
-        wj(os.path.join(ASSETS, f"models/item/{iid}.json"),
-           {"parent": "minecraft:item/handheld", "textures": {"layer0": f"{MOD}:item/{iid}"}})
-    for flat in ("chaos_compass", "chaos_codex"):
+        parent = "minecraft:item/generated" if g[4] in GENERATED_SHAPES else "minecraft:item/handheld"
+        wj(os.path.join(ASSETS, f"models/item/{iid}.json"), {"parent": parent, "textures": {"layer0": f"{MOD}:item/{iid}"}})
+    extra = ["chaos_compass", "chaos_codex", "tarot_deck"] + [f"tarot_{c[0]}" for c in TAROT] + [f"voodoo_doll_{d[0]}" for d in DOLLS] \
+        + [f"essence_{l.lower()}" for l in LINES] + [f"orb_{o}" for o in ORBS]
+    for flat in extra:
         item_def(flat, f"item/{flat}")
         wj(os.path.join(ASSETS, f"models/item/{flat}.json"),
            {"parent": "minecraft:item/generated", "textures": {"layer0": f"{MOD}:item/{flat}"}})
     for b in BLOCKS:
         wj(os.path.join(ASSETS, f"blockstates/{b}.json"), {"variants": {"": {"model": f"{MOD}:block/{b}"}}})
-        if b.startswith("altar"):
+        if b == "chaos_forge":
+            wj(os.path.join(ASSETS, f"models/block/{b}.json"),
+               {"parent": "minecraft:block/cube_bottom_top",
+                "textures": {"top": f"{MOD}:block/chaos_forge_top", "bottom": f"{MOD}:block/altar_base", "side": f"{MOD}:block/chaos_forge_side"}})
+        elif b.startswith("altar"):
             wj(os.path.join(ASSETS, f"models/block/{b}.json"),
                {"parent": "minecraft:block/cube_bottom_top",
                 "textures": {"top": f"{MOD}:block/{b}_top", "bottom": f"{MOD}:block/altar_base",
@@ -384,7 +489,230 @@ def gen_models():
 # Weapon textures: hand-drawn 16x16 templates, auto-outlined, shaded, with an animated glint
 #   h highlight  b blade  s blade shadow  g guard/accent  w wood  W dark wood  p gem (power colour)
 # ----------------------------------------------------------------------------
+GENERATED_SHAPES = {"chalice", "conch", "flute", "orb", "lantern", "star"}      # held flat, not like a tool
+
 SHAPES = {
+    "bow": """
+................
+.......ggwwwg...
+.....wwW.....h..
+....wW......h...
+...wW......h....
+...wW.....h.....
+..wW.....h......
+..pW....h.......
+..wW...h........
+..gW..h.........
+..gw.h..........
+...wh...........
+...g............
+................
+................
+................""",
+    "chalice": """
+................
+................
+...hbbbbbbbbs...
+...hppppppbbs...
+...hbbbbbbbbs...
+....hbbbbbbs....
+.....hbbbbs.....
+......hbbs......
+.......bs.......
+.......bs.......
+.......bs.......
+......hbbs......
+....ggggggggg...
+....gggggggg....
+................
+................""",
+    "conch": """
+................
+................
+.......hhh......
+.....hhbbbbb....
+....hbbsbbbbb...
+...hbbsbbsbbbs..
+...hbsbbsbbsbs..
+..hbbsbbsbbsbs..
+..hbbbsbbsbbs...
+...gbbbsbbss....
+....ggbbbss.....
+......ggpp......
+........p.......
+................
+................
+................""",
+    "flute": """
+................
+.wW.............
+.wWwW...........
+.wWwWwW.........
+.wWwWwWwW.......
+.wWwWwWwWwW.....
+.ggggggggggggp..
+.wWwWwWwWwWwW...
+.wWwWwWwWwWwW...
+.wWwWwWwWwW.....
+.wWwWwWwW.......
+.wWwWwW.........
+.wWwW...........
+.wW.............
+................
+................""",
+    "feather": """
+................
+............hh..
+..........hhbb..
+.........hbbbs..
+........hbbbs...
+.......hbbbs....
+......hbbbs.....
+.....hbbss......
+....hbbs........
+....gbs.........
+...gws..........
+...w............
+..w.............
+.p..............
+................
+................""",
+    "anchor": """
+................
+.......pp.......
+......p..p......
+.......pp.......
+.......bb.......
+....ggggggggg...
+.......bb.......
+.......bb.......
+.......bb.......
+..h....bb....s..
+..hb...bb...bs..
+...hb..bb..bs...
+....hbbbbbbs....
+.....hbbbbs.....
+................
+................""",
+    "orb": """
+................
+................
+................
+.....hhhhh......
+....hhhbbbb.....
+...hhhbbbbbb....
+...hhbbbbbbs....
+...hbbbbbbbs....
+...bbbbbbbss....
+...bbbbbbsss....
+....bbbssss.....
+.....sssss......
+....ggggggg.....
+................
+................
+................""",
+    "lantern": """
+................
+.......gg.......
+......g..g......
+.......gg.......
+.....ggggggg....
+.....gphhpg.....
+.....ghpphg.....
+.....gpphpg.....
+.....ghpphg.....
+.....gphhpg.....
+.....ggggggg....
+......ggggg.....
+................
+................
+................
+................""",
+    "torch": """
+................
+...........pp...
+..........phhp..
+..........phhp..
+.........gppg...
+.........ggg....
+........wWg.....
+.......wW.......
+......wW........
+.....wW.........
+....wW..........
+...wW...........
+..wW............
+.wW.............
+................
+................""",
+    "whip": """
+................
+.........bbbb...
+.......bbs..bb..
+......bs.....bb.
+......b.......b.
+......bs.....bs.
+.......bb...bs..
+....g...bbbbs...
+....gg..........
+.....gg.........
+....wWgg........
+...wW...........
+..wW............
+.pW.............
+................
+................""",
+    "shears": """
+................
+.............h..
+...........hhb..
+.........hhbb...
+........hbbs.h..
+.......hbs.hhb..
+......gpghbbs...
+.....gg.gbs.....
+....g..g.g......
+...g...g..g.....
+...g..g...g.....
+....gg.ggg......
+................
+................
+................
+................""",
+    "oar": """
+................
+............hb..
+...........hbbs.
+..........hbbbs.
+..........bbbs..
+.........wbss...
+........wW......
+.......wW.......
+......wW........
+.....wW.........
+....wW..........
+...wW...........
+..wW............
+.pW.............
+................
+................""",
+    "star": """
+................
+.......h........
+.......hb.......
+......hbb.......
+..hh..hbbs......
+...bbbbbbbbbbs..
+....hbbppbbs....
+.....hbppbs.....
+....hbbbbbbs....
+...hbbs.sbbs....
+...bs.....ss....
+..s.........s...
+................
+................
+................
+................""",
     "sword": """
 ................
 .............hh.
@@ -657,6 +985,201 @@ def gen_flat_items():
                     px[x, y] = c + (255,)
         frames.append(img)
     save_strip(frames, os.path.join(ASSETS, "textures/item/chaos_codex.png"), {"animation": {"frametime": 4}})
+
+def draw_template(rows, pal, outline=True):
+    """Paints a 16x16 ASCII template with a palette and (optionally) a dark one-pixel rim."""
+    rows = [(r + "." * 16)[:16] for r in rows]
+    rows += ["." * 16] * (16 - len(rows))
+    img = Image.new("RGBA", (16, 16), (0, 0, 0, 0))
+    px = img.load()
+    filled = {}
+    for y, row in enumerate(rows):
+        for x, ch in enumerate(row):
+            if ch in pal:
+                filled[(x, y)] = pal[ch]
+    if outline:
+        for (x, y), c in filled.items():
+            for dx, dy in ((1, 0), (-1, 0), (0, 1), (0, -1)):
+                q = (x + dx, y + dy)
+                if q not in filled and 0 <= q[0] < 16 and 0 <= q[1] < 16:
+                    px[q] = shade(c, 0.28) + (255,)
+    for q, c in filled.items():
+        px[q] = tuple(c) + (255,)
+    return img
+
+def tarot_card(col, sym, glow):
+    """One 16x16 frame: a full-height parchment card, gilt edge, coloured inner frame, and the 8x8 symbol."""
+    img = Image.new("RGBA", (16, 16), (0, 0, 0, 0))
+    px = img.load()
+    parchment, gilt, dark = (243, 233, 208), (218, 172, 68), (44, 28, 16)
+    for y in range(16):
+        for x in range(2, 14):
+            if (x in (2, 13)) and (y in (0, 15)):
+                continue                                             # clipped corners
+            edge = x in (2, 13) or y in (0, 15)
+            inner = x in (3, 12) or y in (1, 14)
+            c = dark if edge else gilt if inner else parchment
+            if not edge and not inner and (y in (2, 13)):
+                c = mix(parchment, col, 0.75)                        # coloured bands above and below the symbol
+            if not edge and not inner and y not in (2, 13) and (x + y) % 5 == 0:
+                c = shade(parchment, 0.95)                           # a little paper grain
+            px[x, y] = c + (255,)
+    ink = (52, 36, 30)
+    accent = mix(shade(col, 0.85), mix(col, (255, 255, 255), 0.25), glow)
+    for sy, row in enumerate(sym):
+        for sx, ch in enumerate(row):
+            if ch == "#":
+                px[4 + sx, 4 + sy] = ink + (255,)
+            elif ch == "+":
+                px[4 + sx, 4 + sy] = accent + (255,)
+    return img
+
+def gen_tarot():
+    for cid, numeral, cname, cdesc, sym, col in TAROT:
+        frames = [tarot_card(col, sym, 0.5 + 0.5 * math.sin(f / 6 * math.tau)) for f in range(6)]
+        save_strip(frames, os.path.join(ASSETS, f"textures/item/tarot_{cid}.png"), {"animation": {"frametime": 5, "interpolate": True}})
+    # the Deck of Fate: a stack of face-down cards, the top one shimmering
+    frames = []
+    back, gilt, dark = (92, 48, 142), (218, 172, 68), (36, 20, 52)
+    for f in range(6):
+        k = 0.5 + 0.5 * math.sin(f / 6 * math.tau)
+        img = Image.new("RGBA", (16, 16), (0, 0, 0, 0))
+        px = img.load()
+        for layer in range(3, -1, -1):                               # four cards, each offset up and left
+            ox, oy = 4 - layer, 1 + layer
+            for y in range(12):
+                for x in range(10):
+                    edge = x in (0, 9) or y in (0, 11)
+                    c = dark if edge else (shade(back, 0.6 + 0.1 * (3 - layer)) if layer else back)
+                    if layer == 0 and not edge:
+                        if x in (1, 8) or y in (1, 10):
+                            c = gilt
+                        d = abs(x - 4.5) + abs(y - 5.5)
+                        if d < 2.6:
+                            c = mix(gilt, (255, 255, 255), 0.6 * k)
+                        elif d < 3.6:
+                            c = shade(back, 1.35)
+                    px[ox + x, oy + y] = c + (255,)
+        frames.append(img)
+    save_strip(frames, os.path.join(ASSETS, "textures/item/tarot_deck.png"), {"animation": {"frametime": 4, "interpolate": True}})
+
+DOLL_SHAPE = [
+    "................",
+    "......bbbb......",
+    ".....bbbbbb...h.",
+    ".....bebbeb..h..",
+    ".....bbbbbb.h...",
+    "......bttb.h....",
+    "...bbbbbbbph....",
+    "...b.bbbppb.b...",
+    ".....bbbpbb.....",
+    ".....bbtbbb.....",
+    ".....bbbbbb.....",
+    ".....bb..bb.....",
+    ".....bb..bb.....",
+    "....bbb..bbb....",
+]
+
+def gen_dolls():
+    for did, dname, ddesc, pin in DOLLS:
+        burlap = (176, 142, 96)
+        pal = {"b": burlap, "e": (30, 22, 18), "t": shade(burlap, 0.6), "p": pin, "h": mix(pin, (255, 255, 255), 0.5)}
+        img = draw_template(DOLL_SHAPE, pal)
+        px = img.load()
+        rnd = random.Random(hsh("doll" + did))
+        for y in range(16):                              # a little weave in the cloth
+            for x in range(16):
+                if px[x, y][:3] == burlap and rnd.random() < 0.3:
+                    px[x, y] = shade(burlap, 0.86) + (255,)
+        path = os.path.join(ASSETS, f"textures/item/voodoo_doll_{did}.png")
+        os.makedirs(os.path.dirname(path), exist_ok=True)
+        img.save(path)
+
+GEM_SHAPE = ["................", "................", "......hhhh......", ".....hhbbbb.....", "....hhbbbbbb....", "...hhbbbbbbss...",
+             "...hbbbbbbbss...", "...bbbbbbbsss...", "....bbbbbsss....", ".....bbbsss.....", "......bsss......", ".......ss.......", "................"]
+
+def gen_essences_and_orbs():
+    for line, (ename, col) in ESSENCES.items():
+        frames = []
+        for f in range(6):
+            k = 0.5 + 0.5 * math.sin(f / 6 * math.tau)
+            pal = {"b": col, "h": mix(col, (255, 255, 255), 0.45 + 0.4 * k), "s": shade(col, 0.6)}
+            frames.append(draw_template(GEM_SHAPE, pal))
+        save_strip(frames, os.path.join(ASSETS, f"textures/item/essence_{line.lower()}.png"), {"animation": {"frametime": 4, "interpolate": True}})
+    for orb in ORBS:
+        col = POWER_COLOR[orb.upper()]
+        frames = []
+        for f in range(4):
+            img = Image.new("RGBA", (16, 16), (0, 0, 0, 0))
+            px = img.load()
+            rad = 4.2 + 0.9 * math.sin(f / 4 * math.tau)
+            for y in range(16):
+                for x in range(16):
+                    d = math.hypot(x - 7.5, y - 7.5)
+                    if d < rad - 2.2:
+                        px[x, y] = (255, 255, 255, 255)
+                    elif d < rad:
+                        px[x, y] = mix(col, (255, 255, 255), 0.3) + (255,)
+                    elif d < rad + 1.3:
+                        px[x, y] = shade(col, 0.75) + (255,)
+            for i in range(4):                              # sparks circling the core
+                a = f / 4 * math.tau + i * math.tau / 4
+                sx, sy = int(round(7.5 + math.cos(a) * 6.5)), int(round(7.5 + math.sin(a) * 6.5))
+                if 0 <= sx < 16 and 0 <= sy < 16:
+                    px[sx, sy] = col + (255,)
+            frames.append(img)
+        save_strip(frames, os.path.join(ASSETS, f"textures/item/orb_{orb}.png"), {"animation": {"frametime": 2}})
+
+def gen_forge_textures():
+    T = os.path.join(ASSETS, "textures/block")
+    rnd = random.Random(99)
+    noise = [[1 + rnd.uniform(-0.07, 0.07) for _ in range(16)] for _ in range(16)]
+    body, hot = (58, 52, 76), (255, 150, 60)
+    cols = [(245, 184, 46), (43, 183, 204), (165, 90, 214)]
+    side_frames, top_frames = [], []
+    for f in range(8):
+        k = 0.5 + 0.5 * math.sin(f / 8 * math.tau)
+        side = Image.new("RGBA", (16, 16))
+        for y in range(16):
+            for x in range(16):
+                c = shade(body, noise[y][x] * (1.15 if y < 2 else 0.8 if y > 13 else 1.0))
+                if x in (0, 15):
+                    c = shade(c, 0.75)
+                if y in (3, 12) and 1 <= x <= 14:
+                    c = shade(body, 0.55)                    # iron bands
+                if 5 <= y <= 10 and 3 <= x <= 12:              # the furnace mouth, glowing
+                    d = abs(x - 7.5) / 5 + abs(y - 7.5) / 3
+                    c = mix((30, 14, 10), mix(hot, (255, 240, 180), k * 0.6), max(0, 1 - d * 0.9))
+                side.putpixel((x, y), c + (255,))
+        side_frames.append(side)
+        top = Image.new("RGBA", (16, 16))
+        for y in range(16):
+            for x in range(16):
+                d = max(abs(x - 7.5), abs(y - 7.5))
+                c = shade((92, 92, 104), noise[y][x])
+                if d > 6.6:
+                    c = shade(body, 0.8)
+                r = math.hypot(x - 7.5, y - 7.5)
+                if 3.4 <= r < 4.6:                           # a ring in the three god colours
+                    a = (math.atan2(y - 7.5, x - 7.5) + math.pi) / math.tau
+                    c = mix(shade(cols[int(a * 3) % 3], 0.6), cols[int(a * 3) % 3], k)
+                if r < 1.6:
+                    c = mix(hot, (255, 255, 255), 0.5 * k)
+                top.putpixel((x, y), c + (255,))
+        top_frames.append(top)
+    save_strip(side_frames, os.path.join(T, "chaos_forge_side.png"), {"animation": {"frametime": 3, "interpolate": True}})
+    save_strip(top_frames, os.path.join(T, "chaos_forge_top.png"), {"animation": {"frametime": 3, "interpolate": True}})
+
+def gen_recipes():
+    """Voodoo dolls are stitched from wheat and string around a 'pin' that decides what the doll does."""
+    for did, *_ in DOLLS:
+        wj(os.path.join(DATA, f"recipe/voodoo_doll_{did}.json"), {
+            "type": "minecraft:crafting_shaped",
+            "category": "equipment",
+            "key": {"S": "minecraft:string", "W": "minecraft:wheat", "X": DOLL_PINS[did]},
+            "pattern": [" S ", "WXW", " W "],
+            "result": {"id": f"{MOD}:voodoo_doll_{did}"},
+        })
 
 # ----------------------------------------------------------------------------
 # Block textures (animated)
@@ -1142,13 +1665,22 @@ def gen_site(weapon_first, previews):
         atlas.paste(weapon_first[g[0]], (i * 16, 0))
         people.paste(previews[g[0]], (i * 16, 0))
     atlas.save(os.path.join(SITE, "weapons.png"))
+    # extras atlas: the Deck of Fate, the 22 cards, the 4 dolls, the 3 essences (first animation frame of each)
+    names = ["tarot_deck"] + [f"tarot_{c[0]}" for c in TAROT] + [f"voodoo_doll_{d[0]}" for d in DOLLS] + [f"essence_{l.lower()}" for l in LINES]
+    extras = Image.new("RGBA", (16 * len(names), 16), (0, 0, 0, 0))
+    for i, name in enumerate(names):
+        tile = Image.open(os.path.join(ASSETS, f"textures/item/{name}.png")).convert("RGBA").crop((0, 0, 16, 16))
+        extras.paste(tile, (i * 16, 0))
+    extras.save(os.path.join(SITE, "extras.png"))
+    wj(os.path.join(SITE, "tarot.json"), [{"id": c[0], "numeral": c[1], "name": c[2], "does": c[3]} for c in TAROT])
     people.save(os.path.join(SITE, "gods.png"))
     roster = []
     for idx, line, rank, g in all_gods():
         floor = 16 - rank
         tier = 0 if floor <= 5 else 1 if floor <= 10 else 2 if floor <= 14 else 3
         roster.append({"i": idx, "line": line.lower(), "rank": rank, "floor": floor, "tier": TIERS[line][1][tier],
-                       "id": g[0], "name": g[1], "title": g[2], "weapon": g[3], "power": g[5].lower()})
+                       "id": g[0], "name": g[1], "title": g[2], "weapon": g[3], "power": g[5].lower(),
+                       "kind": g[8].lower(), "ranged": g[8] in ("STAFF", "BOW", "THROWN", "RELIC")})
     wj(os.path.join(SITE, "roster.json"), roster)
     raw, number, channel = read_version()
     wj(os.path.join(SITE, "version.json"), {"version": raw, "number": number, "channel": channel})
@@ -1305,6 +1837,11 @@ if __name__ == "__main__":
     first = gen_weapons()
     gen_flat_items()
     gen_block_textures()
+    gen_tarot()
+    gen_dolls()
+    gen_essences_and_orbs()
+    gen_forge_textures()
+    gen_recipes()
     previews = gen_skins()
     gen_pack()
     gen_data()

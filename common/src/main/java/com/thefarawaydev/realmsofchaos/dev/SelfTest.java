@@ -8,7 +8,21 @@ import com.thefarawaydev.realmsofchaos.entity.GodBoss;
 import com.thefarawaydev.realmsofchaos.god.God;
 import com.thefarawaydev.realmsofchaos.god.Gods;
 import com.thefarawaydev.realmsofchaos.god.Line;
+import com.thefarawaydev.realmsofchaos.entity.RelicProjectile;
 import com.thefarawaydev.realmsofchaos.god.Power;
+import com.thefarawaydev.realmsofchaos.god.WeaponKind;
+import com.thefarawaydev.realmsofchaos.item.GodWeaponItem;
+import com.thefarawaydev.realmsofchaos.item.Tarot;
+import com.thefarawaydev.realmsofchaos.item.TarotDeckItem;
+import com.thefarawaydev.realmsofchaos.item.VoodooDollItem;
+import com.thefarawaydev.realmsofchaos.item.WeaponProgress;
+import com.thefarawaydev.realmsofchaos.ui.DeckMenu;
+import com.thefarawaydev.realmsofchaos.ui.ForgeMenu;
+import java.util.EnumSet;
+import net.minecraft.core.component.DataComponents;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.entity.projectile.Projectile;
+import net.minecraft.world.entity.projectile.arrow.Arrow;
 import com.thefarawaydev.realmsofchaos.ui.AltarMenu;
 import com.thefarawaydev.realmsofchaos.ui.CodexMenu;
 import com.thefarawaydev.realmsofchaos.world.FloorShifts;
@@ -96,6 +110,14 @@ public final class SelfTest {
         player.connection = new ServerGamePacketListenerImpl(server, new Connection(PacketFlow.SERVERBOUND), player,
                 CommonListenerCookie.createInitial(profile, false));
         player.setGameMode(GameType.SURVIVAL);
+        // a real client reports "loaded" after joining; until then vanilla treats the player as invulnerable
+        try {
+            var loaded = ServerGamePacketListenerImpl.class.getDeclaredMethod("markClientLoaded");
+            loaded.setAccessible(true);
+            loaded.invoke(player.connection);
+        } catch (ReflectiveOperationException e) {
+            throw new IllegalStateException(e);
+        }
         return player;
     }
 
@@ -174,6 +196,7 @@ public final class SelfTest {
             check(level.getBlockState(new BlockPos(18, 66, 0)).is(ModContent.GATE_POSEIDON.get()), "poseidon gate");
             check(level.getBlockState(new BlockPos(-18, 66, 0)).is(ModContent.GATE_HADES.get()), "hades gate");
             check(level.getBlockState(new BlockPos(0, 66, 18)).is(ModContent.GATE_LEAVE.get()), "exit gate");
+            check(level.getBlockState(new BlockPos(6, 65, 6)).is(ModContent.CHAOS_FORGE.get()), "forge of chaos");
             check(level.getBlockState(new BlockPos(0, 65, 0)).isAir() && level.getBlockState(new BlockPos(0, 66, 0)).isAir(), "hub spawn is free");
             check(solid(level, new BlockPos(0, 64, 0)), "hub floor");
             for (Realm r : Realm.values()) {
@@ -380,6 +403,16 @@ public final class SelfTest {
                     check(!boss.isAlive(), at + "boss died");
                     check(data.isDefeated(player.getUUID(), god), at + "progress saved");
                     check(!level.getEntitiesOfClass(ItemEntity.class, room, e -> e.getItem().is(ModContent.weaponItem(god))).isEmpty(), at + "relic dropped");
+                    check(level.getEntitiesOfClass(ItemEntity.class, room, e -> e.getItem().is(ModContent.essenceItem(line)))
+                            .stream().anyMatch(e -> e.getItem().getCount() == GodBoss.essenceDrop(god)), at + "essences dropped");
+                    for (Tarot card : Tarot.dropsFor(god)) {
+                        check(!level.getEntitiesOfClass(ItemEntity.class, room, e -> e.getItem().is(ModContent.tarotItem(card))).isEmpty(), at + "tarot card " + card.id() + " dropped");
+                    }
+                    if (god.id().equals("hades")) {
+                        check(!level.getEntitiesOfClass(ItemEntity.class, room, e -> e.getItem().is(ModContent.TAROT_DECK.get())).isEmpty(), at + "Deck of Fate dropped");
+                    }
+                    check(boss.fightsAtRange() == god.kind().ranged(), at + "attack style matches the weapon kind");
+                    for (ItemEntity drop : level.getEntitiesOfClass(ItemEntity.class, room, e -> true)) drop.discard();
                     check(player.getAdvancements().getOrStartProgress(server.getAdvancements().get(RocAdvancements.idOf(god))).isDone(), at + "advancement");
                     check(AltarBlock.state(level, player, altar, line) == AltarBlock.State.DEFEATED, at + "altar shows defeated");
 
@@ -398,6 +431,274 @@ public final class SelfTest {
                 clearBosses(level);
             });
         }
+
+        // ---- weapons: kinds, levelling, forging, ranged ---------------------------------------------------------
+        Realm.testAlias(Level.OVERWORLD, Realm.OLYMPUS);
+        final int arena = 5;
+        final double ay = Tower.floorY(arena) + 1;
+
+        step("weapon variety: nine kinds in use, swords are a minority, stats follow the kind", () -> {
+            EnumSet<WeaponKind> used = EnumSet.noneOf(WeaponKind.class);
+            int blades = 0, ranged = 0;
+            for (God g : Gods.ALL) {
+                used.add(g.kind());
+                if (g.kind() == WeaponKind.BLADE) blades++;
+                if (g.kind().ranged()) ranged++;
+                Item item = ModContent.weaponItem(g);
+                var mods = item.components().get(DataComponents.ATTRIBUTE_MODIFIERS);
+                check(mods != null, "attributes on " + g.id());
+                double dmg = mods.modifiers().stream().filter(m -> m.modifier().id().equals(Item.BASE_ATTACK_DAMAGE_ID)).findFirst().orElseThrow().modifier().amount();
+                check(Math.abs(dmg - g.baseDamage() * g.kind().meleeScale()) < 0.001, "melee damage of " + g.id());
+                boolean reach = mods.modifiers().stream().anyMatch(m -> m.modifier().id().equals(RealmsOfChaos.id("relic_reach")));
+                check(reach == (g.kind().reach() > 0), "reach of " + g.id());
+            }
+            check(used.size() == WeaponKind.values().length, "kinds used: " + used);
+            check(blades <= 8, "too many plain blades: " + blades);
+            check(ranged >= 12, "ranged gods: " + ranged);
+            RESULTS.add("        " + blades + " blades, " + ranged + " ranged gods, " + used.size() + " weapon kinds");
+        });
+
+        step("weapon levelling: kills give experience, levels raise damage, the name shows it", () -> {
+            ServerPlayer hero = fakePlayer(server, level, "RocHero");
+            hero.setPos(0.5, ay, 0.5);
+            ItemStack sword = new ItemStack(ModContent.weaponItem(Gods.byId("ares")));
+            hero.setItemInHand(InteractionHand.MAIN_HAND, sword);
+            check(WeaponProgress.level(sword) == 1 && WeaponProgress.stars(sword) == 0 && WeaponProgress.multiplier(sword) == 1.0, "fresh weapon");
+            LivingEntity zombie = EntityTypes.ZOMBIE.create(level, EntitySpawnReason.TRIGGERED);
+            zombie.setPos(2.5, ay, 2.5);
+            level.addFreshEntity(zombie);
+            GodWeaponItem.onKill(zombie, level.damageSources().playerAttack(hero));
+            check(WeaponProgress.xp(hero.getMainHandItem()) == WeaponProgress.xpFor(zombie), "xp from a kill: " + WeaponProgress.xp(hero.getMainHandItem()));
+            zombie.discard();
+            ItemStack held = hero.getMainHandItem();
+            check(WeaponProgress.addXp(held, WeaponProgress.xpNeeded(1)) == 1 && WeaponProgress.level(held) == 2, "level 2");
+            check(Math.abs(WeaponProgress.multiplier(held) - 1.08) < 1e-9, "level 2 multiplier");
+            check(held.getHoverName().getString().contains("+1"), "name shows the level: " + held.getHoverName().getString());
+            WeaponProgress.addXp(held, 100000);
+            check(WeaponProgress.level(held) == WeaponProgress.MAX_LEVEL && WeaponProgress.xp(held) == 0, "max level");
+            float bonus = ((GodWeaponItem) held.getItem()).getAttackDamageBonus(null, 10.0F, level.damageSources().playerAttack(hero));
+            check(Math.abs(bonus - 10.0F * (float) (WeaponProgress.multiplier(held) - 1.0)) < 0.01, "damage bonus " + bonus);
+            // a god is worth far more than a zombie
+            GodBoss b = ModContent.GOD_BOSS.get().create(level, EntitySpawnReason.TRIGGERED);
+            b.setGod(Gods.byId("zeus"));
+            check(WeaponProgress.xpFor(b) > 150, "god xp");
+            b.discard();
+        });
+
+        step("forge of chaos: stars cost essences and need levels; forging raises damage and the name", () -> {
+            ServerPlayer hero = fakePlayer(server, level, "RocSmith");
+            hero.setPos(0.5, ay, 0.5);
+            CodexMenu.open(hero);
+            check(hero.containerMenu instanceof CodexMenu c && !c.getSlot(CodexMenu.SLOT_FORGE).getItem().isEmpty(), "codex has a forge button");
+            hero.closeContainer();
+            ForgeMenu.open(hero);
+            check("none".equals(((ForgeMenu) hero.containerMenu).blocker()), "empty hand is refused");
+            hero.closeContainer();
+            ItemStack bow = new ItemStack(ModContent.weaponItem(Gods.byId("apollo")));
+            hero.setItemInHand(InteractionHand.MAIN_HAND, bow);
+            ForgeMenu.open(hero);
+            ForgeMenu forge = (ForgeMenu) hero.containerMenu;
+            check("level".equals(forge.blocker()), "level 1 weapon cannot take a star: " + forge.blocker());
+            WeaponProgress.setLevel(hero.getMainHandItem(), 2);
+            check("cost".equals(forge.blocker()), "no essences: " + forge.blocker());
+            hero.getInventory().add(new ItemStack(ModContent.essenceItem(Line.ZEUS), 5));
+            check(forge.blocker() == null, "ready to forge: " + forge.blocker());
+            forge.clicked(ForgeMenu.SLOT_FORGE, 0, ContainerInput.PICKUP, hero);
+            check(WeaponProgress.stars(hero.getMainHandItem()) == 1, "one star");
+            check(ForgeMenu.count(hero, ModContent.essenceItem(Line.ZEUS)) == 3, "two essences spent, left " + ForgeMenu.count(hero, ModContent.essenceItem(Line.ZEUS)));
+            check("level".equals(forge.blocker()), "second star needs level 4");
+            check(Math.abs(WeaponProgress.multiplier(hero.getMainHandItem()) - 1.08 * 1.10) < 1e-9, "multiplier with a star");
+            check(hero.getMainHandItem().getHoverName().getString().contains("\u2605"), "name shows a star");
+            check(forge.getCarried().isEmpty(), "forge moves no items");
+            int total = 0;
+            for (int star = 1; star <= WeaponProgress.MAX_STARS; star++) total += WeaponProgress.starCost(star);
+            int line15 = 0;
+            for (God g : Gods.ofLine(Line.ZEUS)) line15 += GodBoss.essenceDrop(g);
+            check(line15 >= total, "one tower yields enough essences (" + line15 + ") to fully forge a weapon (" + total + ")");
+            hero.closeContainer();
+        });
+
+        step("ranged weapons: bows loose arrows, staffs and thrown relics fire bolts, relics pulse, bolts hurt", () -> {
+            ServerPlayer hero = fakePlayer(server, level, "RocArcher");
+            hero.setPos(0.5, ay, 0.5);
+            AABB near = new AABB(-8, ay - 2, -8, 8, ay + 6, 8);
+            for (God g : Gods.ALL) {
+                if (!g.kind().ranged()) continue;
+                ItemStack stack = new ItemStack(ModContent.weaponItem(g));
+                hero.setItemInHand(InteractionHand.MAIN_HAND, stack);
+                LivingEntity zombie = EntityTypes.ZOMBIE.create(level, EntitySpawnReason.TRIGGERED);
+                zombie.setPos(2.5, ay, 2.5);
+                level.addFreshEntity(zombie);
+                float before = zombie.getHealth();
+                stack.getItem().use(level, hero, InteractionHand.MAIN_HAND);
+                List<Projectile> shots = level.getEntitiesOfClass(Projectile.class, near, e -> true);
+                if (g.kind() == WeaponKind.RELIC) {
+                    check(shots.isEmpty() && zombie.getHealth() < before, g.id() + ": relic pulse hurts what is near");
+                } else {
+                    check(shots.size() == 1, g.id() + ": one shot, got " + shots.size());
+                    check((shots.get(0) instanceof Arrow) == (g.kind() == WeaponKind.BOW), g.id() + ": projectile type");
+                    if (shots.get(0) instanceof RelicProjectile bolt) {
+                        check(!bolt.getItem().isEmpty(), g.id() + ": bolt has a sprite");
+                        bolt.impact(level, hero, zombie);
+                        check(zombie.getHealth() < before, g.id() + ": bolt hurts");
+                    }
+                }
+                check(hero.getCooldowns().isOnCooldown(stack), g.id() + ": shot starts a cooldown");
+                for (Projectile p : shots) p.discard();
+                zombie.discard();
+                hero.getCooldowns().removeCooldown(RealmsOfChaos.id(g.id() + "_weapon"));
+            }
+            // a bolt never hurts another player
+            ServerPlayer friend = fakePlayer(server, level, "RocFriend");
+            friend.setPos(2.5, ay, 2.5);
+            RelicProjectile bolt = new RelicProjectile(level, hero, new ItemStack(ModContent.orbItem(Power.FIRE)));
+            float hp = friend.getHealth();
+            bolt.impact(level, hero, friend);
+            check(friend.getHealth() == hp, "no friendly fire");
+        });
+
+        step("ranged gods shoot; melee gods do not; Hades throws tarot cards", () -> {
+            ServerPlayer target = fakePlayer(server, level, "RocTarget");
+            target.setPos(8.5, ay, 0.5);
+            AABB near = new AABB(-12, ay - 2, -12, 12, ay + 8, 12);
+            for (String id : new String[]{"apollo", "zeus", "hermes", "hebe", "nyx"}) {
+                GodBoss b = ModContent.GOD_BOSS.get().create(level, EntitySpawnReason.TRIGGERED);
+                b.setGod(Gods.byId(id));
+                b.setPos(0.5, ay, 0.5);
+                level.addFreshEntity(b);
+                check(b.fightsAtRange(), id + " fights at range");
+                b.performRangedAttack(target, 1.0F);
+                List<Projectile> shots = level.getEntitiesOfClass(Projectile.class, near, e -> true);
+                check(shots.size() == 1 && shots.get(0).getOwner() == b, id + " shot once");
+                check((shots.get(0) instanceof Arrow) == (Gods.byId(id).kind() == WeaponKind.BOW), id + " projectile type");
+                // standing off within range and sight is not "stuck"
+                Vec3 at = b.position();
+                b.setTarget(target);
+                for (int i = 0; i < 8; i++) b.keepUnstuck(level);
+                check(b.position().distanceTo(at) < 0.1, id + " holds its ground while shooting");
+                shots.forEach(Projectile::discard);
+                b.discard();
+            }
+            GodBoss melee = ModContent.GOD_BOSS.get().create(level, EntitySpawnReason.TRIGGERED);
+            melee.setGod(Gods.byId("ares"));
+            check(!melee.fightsAtRange(), "ares fights in melee");
+            melee.discard();
+            GodBoss hades = ModContent.GOD_BOSS.get().create(level, EntitySpawnReason.TRIGGERED);
+            hades.setGod(Gods.byId("hades"));
+            hades.setPos(0.5, ay, 0.5);
+            level.addFreshEntity(hades);
+            hades.throwCard(level, target);
+            List<RelicProjectile> cards = level.getEntitiesOfClass(RelicProjectile.class, near, e -> true);
+            check(cards.size() == 1 && cards.get(0).getItem().getItem() instanceof com.thefarawaydev.realmsofchaos.item.TarotCardItem, "hades throws a tarot card");
+            float hp = target.getHealth();
+            cards.get(0).impact(level, hades, target);
+            check(target.getHealth() < hp, "the card wounds (" + hp + " -> " + target.getHealth() + ")");
+            check(!target.getActiveEffects().isEmpty(), "and lays a curse");
+            cards.forEach(RelicProjectile::discard);
+            hades.discard();
+        });
+
+        step("tarot: Hades' tower drops all 22 cards; every card casts; single cards are spent; the deck is unlimited", () -> {
+            EnumSet<Tarot> dropped = EnumSet.noneOf(Tarot.class);
+            for (God g : Gods.ALL) {
+                List<Tarot> cards = Tarot.dropsFor(g);
+                check(g.line() == Line.HADES || cards.isEmpty(), g.id() + " should not drop cards");
+                check(g.line() != Line.HADES || !cards.isEmpty(), g.id() + " drops no card");
+                for (Tarot t : cards) check(dropped.add(t), t.id() + " dropped twice");
+            }
+            check(dropped.size() == 22, "cards dropped: " + dropped.size());
+            check(Tarot.dropsFor(Gods.byId("hades")).equals(List.of(Tarot.DEATH)), "Hades holds Death");
+
+            ServerPlayer hero = fakePlayer(server, level, "RocSeer");
+            hero.setPos(0.5, ay, 0.5);
+            hero.setYRot(-45);                                   // facing +x +z, towards the zombie
+            for (Tarot card : Tarot.values()) {
+                LivingEntity zombie = EntityTypes.ZOMBIE.create(level, EntitySpawnReason.TRIGGERED);
+                zombie.setPos(3.5, ay, 3.5);
+                level.addFreshEntity(zombie);
+                hero.setHealth(10.0F);
+                card.cast(level, hero);
+                zombie.discard();
+                hero.removeAllEffects();
+                hero.setDeltaMovement(Vec3.ZERO);
+                hero.setPos(0.5, ay, 0.5);
+            }
+            for (Projectile p : level.getEntitiesOfClass(Projectile.class, new AABB(-30, ay - 5, -30, 30, ay + 10, 30), e -> true)) p.discard();
+            hero.setHealth(6.0F);
+            Tarot.JUDGEMENT.cast(level, hero);
+            check(hero.getHealth() == hero.getMaxHealth(), "Judgement heals fully");
+            LivingEntity victim = EntityTypes.ZOMBIE.create(level, EntitySpawnReason.TRIGGERED);
+            victim.setPos(3.5, ay, 3.5);
+            level.addFreshEntity(victim);
+            float hp = victim.getHealth();
+            Tarot.DEATH.cast(level, hero);
+            check(victim.getHealth() < hp, "Death strikes the foe in front");
+            victim.discard();
+
+            ItemStack cards = new ItemStack(ModContent.tarotItem(Tarot.EMPRESS), 3);
+            hero.setItemInHand(InteractionHand.MAIN_HAND, cards);
+            cards.getItem().use(level, hero, InteractionHand.MAIN_HAND);
+            check(hero.getMainHandItem().getCount() == 2, "a single card is spent, left " + hero.getMainHandItem().getCount());
+            check(cards.getMaxStackSize() == 16, "cards stack");
+
+            ItemStack deck = new ItemStack(ModContent.TAROT_DECK.get());
+            hero.setItemInHand(InteractionHand.MAIN_HAND, deck);
+            deck.getItem().use(level, hero, InteractionHand.MAIN_HAND);
+            check(hero.getMainHandItem().getCount() == 1 && hero.getCooldowns().isOnCooldown(deck), "the deck is not used up and rests");
+            hero.getCooldowns().removeCooldown(RealmsOfChaos.id("tarot_deck"));
+            DeckMenu.open(hero, InteractionHand.MAIN_HAND);
+            check(hero.containerMenu instanceof DeckMenu, "deck menu opens");
+            DeckMenu menu = (DeckMenu) hero.containerMenu;
+            Set<Integer> slots = new HashSet<>();
+            for (Tarot card : Tarot.values()) {
+                check(slots.add(DeckMenu.slotOf(card)) && menu.getSlot(DeckMenu.slotOf(card)).getItem().is(ModContent.tarotItem(card)), "deck shows " + card.id());
+            }
+            hero.setHealth(4.0F);
+            menu.clicked(DeckMenu.slotOf(Tarot.JUDGEMENT), 0, ContainerInput.PICKUP, hero);
+            check(hero.getHealth() == hero.getMaxHealth() && !(hero.containerMenu instanceof DeckMenu), "choosing a card plays it and closes the deck");
+            check(hero.getMainHandItem().getCount() == 1 && hero.getCooldowns().isOnCooldown(deck), "still one deck, resting");
+        });
+
+        step("voodoo dolls: bind to a creature, stab from afar, each pin does its harm, the bond breaks on death", () -> {
+            ServerPlayer hero = fakePlayer(server, level, "RocWitch");
+            hero.setPos(0.5, ay, 0.5);
+            for (VoodooDollItem.Pin pin : VoodooDollItem.Pin.values()) {
+                LivingEntity zombie = EntityTypes.ZOMBIE.create(level, EntitySpawnReason.TRIGGERED);
+                zombie.setPos(12.5, ay, -9.5);                     // well out of reach, behind nothing in particular
+                level.addFreshEntity(zombie);
+                ItemStack doll = new ItemStack(ModContent.DOLLS.get(pin).get());
+                hero.setItemInHand(InteractionHand.MAIN_HAND, doll);
+                check(VoodooDollItem.boundTo(doll) == null, pin + ": new doll is unbound");
+                doll.getItem().interactLivingEntity(doll, hero, zombie, InteractionHand.MAIN_HAND);
+                ItemStack held = hero.getMainHandItem();
+                check(zombie.getUUID().equals(VoodooDollItem.boundTo(held)), pin + ": bound");
+                float hp = zombie.getHealth();
+                held.getItem().use(level, hero, InteractionHand.MAIN_HAND);
+                check(zombie.getHealth() < hp, pin + ": the stab is felt (" + hp + " -> " + zombie.getHealth() + ")");
+                if (pin == VoodooDollItem.Pin.BINDING) check(zombie.hasEffect(net.minecraft.world.effect.MobEffects.SLOWNESS), "binding slows");
+                if (pin == VoodooDollItem.Pin.ROT) check(zombie.hasEffect(net.minecraft.world.effect.MobEffects.WITHER), "rot withers");
+                if (pin == VoodooDollItem.Pin.EMBERS) check(zombie.getRemainingFireTicks() > 0, "embers burn");
+                check(hero.getCooldowns().isOnCooldown(held), pin + ": cooldown");
+                hero.getCooldowns().removeCooldown(RealmsOfChaos.id("voodoo_doll_" + pin.name().toLowerCase()));
+                zombie.discard();
+                held.getItem().use(level, hero, InteractionHand.MAIN_HAND);
+                check(VoodooDollItem.boundTo(hero.getMainHandItem()) == null, pin + ": bond breaks when the creature is gone");
+            }
+            // a god shrugs off half of it
+            GodBoss b = ModContent.GOD_BOSS.get().create(level, EntitySpawnReason.TRIGGERED);
+            b.setGod(Gods.byId("ares"));
+            b.setPos(6.5, ay, 6.5);
+            level.addFreshEntity(b);
+            float hp = b.getHealth();
+            ((VoodooDollItem) ModContent.DOLLS.get(VoodooDollItem.Pin.PAIN).get()).stab(level, hero, b);
+            float lost = hp - b.getHealth();
+            check(lost > 0 && lost <= 4.01F, "god takes half: " + lost);
+            b.discard();
+            for (VoodooDollItem.Pin pin : VoodooDollItem.Pin.values()) {
+                var key = ResourceKey.create(Registries.RECIPE, RealmsOfChaos.id("voodoo_doll_" + pin.name().toLowerCase()));
+                check(server.getRecipeManager().byKey(key).isPresent(), "recipe for the doll of " + pin);
+            }
+        });
 
         step("travel rules: you can revisit lower floors but not skip ahead", () -> {
             Realm.testAlias(Level.OVERWORLD, Realm.OLYMPUS);

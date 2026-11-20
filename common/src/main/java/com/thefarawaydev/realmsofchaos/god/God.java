@@ -14,12 +14,14 @@ public final class God {
     private final String name;
     private final String title;
     private final String weaponName;
+    private final WeaponKind kind;
     private final Power power;
     private final EffectSpec targetEffect;
     private final EffectSpec selfEffect;
 
     God(int index, Line line, int rank, String id, String name, String title, String weaponName,
-        Power power, String targetEffect, String selfEffect) {
+        WeaponKind kind, Power power, String targetEffect, String selfEffect) {
+        this.kind = kind;
         this.index = index;
         this.line = line;
         this.rank = rank;
@@ -40,6 +42,9 @@ public final class God {
     public String englishTitle() { return title; }
     public String englishWeaponName() { return weaponName; }
     public Power power() { return power; }
+    public WeaponKind kind() { return kind; }
+    /** The damage every kind of this god's weapon is scaled from: 5 for a starter up to 13.4 for a final god. */
+    public double baseDamage() { return 3.0 + weaponDamageBonus(); }
     public boolean isFinalBoss() { return rank == 1; }
     public boolean isStarter() { return rank == Line.RANKS; }
 
@@ -56,6 +61,8 @@ public final class God {
     public Component bossName() {
         return Component.translatable("boss." + RealmsOfChaos.MOD_ID + ".title", displayName(), displayTitle());
     }
+
+    EffectSpec targetEffect() { return targetEffect; }
 
     public void applyTargetEffect(LivingEntity target) {
         if (targetEffect != null) target.addEffect(targetEffect.instance(1.0));

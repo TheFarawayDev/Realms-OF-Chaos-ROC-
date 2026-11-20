@@ -16,5 +16,7 @@ public final class RealmsOfChaosForgeClient {
     @SubscribeEvent
     public static void registerRenderers(EntityRenderersEvent.RegisterRenderers event) {
         event.registerEntityRenderer(ModContent.GOD_BOSS.get(), GodBossRenderer::new);
+        // staff bolts, thrown relics and tarot cards are drawn as the item they carry
+        event.registerEntityRenderer(ModContent.RELIC_PROJECTILE.get(), net.minecraft.client.renderer.entity.ThrownItemRenderer::new);
     }
 }

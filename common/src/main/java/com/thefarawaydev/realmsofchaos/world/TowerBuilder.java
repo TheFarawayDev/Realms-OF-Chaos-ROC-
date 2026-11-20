@@ -16,7 +16,7 @@ import net.minecraft.world.level.block.state.BlockState;
  * solid stands inside the fight ring, the entrance and exit corridors are flat, and the whole floor is enclosed.
  */
 public final class TowerBuilder {
-    public static final int LAYOUT_VERSION = 4;
+    public static final int LAYOUT_VERSION = 5;
 
     public enum Layout { FLAT, MOUNDS, PILLARS, PIT, DAIS, WAVES, MOAT, TERRACES, SPLIT, ZIGGURAT, SUMMIT }
 

@@ -5,6 +5,11 @@ import com.thefarawaydev.realmsofchaos.RealmsOfChaos;
 import com.thefarawaydev.realmsofchaos.god.God;
 import com.thefarawaydev.realmsofchaos.god.Gods;
 import com.thefarawaydev.realmsofchaos.god.Line;
+import com.thefarawaydev.realmsofchaos.god.Ranged;
+import com.thefarawaydev.realmsofchaos.item.Tarot;
+import net.minecraft.world.entity.ai.goal.Goal;
+import net.minecraft.world.entity.ai.goal.RangedAttackGoal;
+import net.minecraft.world.entity.monster.RangedAttackMob;
 import com.thefarawaydev.realmsofchaos.world.ProgressData;
 import com.thefarawaydev.realmsofchaos.world.Realm;
 import com.thefarawaydev.realmsofchaos.world.FloorShifts;
@@ -59,7 +64,7 @@ import net.minecraft.world.phys.Vec3;
  * One entity type for all 45 gods: which god it is lives in a synced data field. Health, armour, weapon, boss bar
  * and special ability all derive from the god's line and rank.
  */
-public class GodBoss extends Monster {
+public class GodBoss extends Monster implements RangedAttackMob {
     private static final EntityDataAccessor<Integer> DATA_GOD = SynchedEntityData.defineId(GodBoss.class, EntityDataSerializers.INT);
     private static final EntityDataAccessor<Boolean> DATA_CASTING = SynchedEntityData.defineId(GodBoss.class, EntityDataSerializers.BOOLEAN);
     private static final String MINION_TAG = "realms_of_chaos_minion";
@@ -75,6 +80,8 @@ public class GodBoss extends Monster {
     private Vec3 lastProgressPos = Vec3.ZERO;
     private int stuckSeconds;
     private int shiftStage;
+    // the attack goal follows the god's weapon: melee for blades and the like, ranged for bows, staffs and relics
+    private Goal attackGoal;
 
     public GodBoss(EntityType<? extends GodBoss> type, Level level) {
         super(type, level);
@@ -94,7 +101,8 @@ public class GodBoss extends Monster {
     @Override
     protected void registerGoals() {
         this.goalSelector.addGoal(0, new FloatGoal(this));
-        this.goalSelector.addGoal(2, new MeleeAttackGoal(this, 1.05, true));
+        this.attackGoal = new MeleeAttackGoal(this, 1.05, true);
+        this.goalSelector.addGoal(2, this.attackGoal);
         this.goalSelector.addGoal(5, new WaterAvoidingRandomStrollGoal(this, 0.8));
         this.goalSelector.addGoal(6, new LookAtPlayerGoal(this, Player.class, 24.0F));
         this.goalSelector.addGoal(7, new RandomLookAroundGoal(this));
@@ -186,7 +194,9 @@ public class GodBoss extends Monster {
             stuckSeconds = 0;
             return;
         }
-        boolean noProgress = position().distanceToSqr(lastProgressPos) < 1.0 && distanceToSqr(target) > 36.0;
+        // a god that fights at range is meant to stand off and shoot: it is only stuck if it cannot see or reach
+        boolean engaged = fightsAtRange() && distanceToSqr(target) <= 14.0 * 14.0 && hasLineOfSight(target);
+        boolean noProgress = !engaged && position().distanceToSqr(lastProgressPos) < 1.0 && distanceToSqr(target) > 36.0;
         lastProgressPos = position();
         stuckSeconds = noProgress ? stuckSeconds + 1 : 0;
         if (stuckSeconds >= 5) {
@@ -215,7 +225,54 @@ public class GodBoss extends Monster {
         configure(god, true);
     }
 
+    /** Gods with a ranged weapon keep their distance and shoot; the rest close in. */
+    private void chooseAttack(God god) {
+        if (attackGoal != null) this.goalSelector.removeGoal(attackGoal);
+        if (god.kind().ranged()) {
+            int interval = 50 - (Line.RANKS - god.rank());            // 50 ticks for a starter down to 36 for a final god
+            attackGoal = new RangedAttackGoal(this, 1.0, interval, 14.0F);
+        } else {
+            attackGoal = new MeleeAttackGoal(this, 1.05, true);
+        }
+        this.goalSelector.addGoal(2, attackGoal);
+    }
+
+    public boolean fightsAtRange() {
+        return attackGoal instanceof RangedAttackGoal;
+    }
+
+    /** Damage of one of this god's ranged shots (gods also have their line ability, so shots hit softer than a player's). */
+    public float shotDamage() {
+        God god = god();
+        return (float) (god.baseDamage() * god.kind().rangedScale() * 0.5);
+    }
+
+    @Override
+    public void performRangedAttack(LivingEntity target, float power) {
+        if (level() instanceof ServerLevel level) {
+            Ranged.fire(level, this, god(), getMainHandItem(), shotDamage(), target);
+        }
+    }
+
+    /** Hades deals from the tarot: a thrown card that wounds and lays a curse. */
+    public void throwCard(ServerLevel level, LivingEntity target) {
+        Tarot card = Tarot.values()[random.nextInt(Tarot.values().length)];
+        RelicProjectile thrown = new RelicProjectile(level, this, new ItemStack(ModContent.tarotItem(card)));
+        thrown.setDamage(6.0F);
+        thrown.setCurse(switch (random.nextInt(4)) {
+            case 0 -> MobEffects.WITHER;
+            case 1 -> MobEffects.SLOWNESS;
+            case 2 -> MobEffects.BLINDNESS;
+            default -> MobEffects.WEAKNESS;
+        });
+        double dx = target.getX() - getX(), dz = target.getZ() - getZ(), dy = target.getY(0.5) - thrown.getY();
+        thrown.shoot(dx, dy, dz, 1.5F, 3.0F);
+        level.addFreshEntity(thrown);
+        level.playSound(null, blockPosition(), SoundEvents.BOOK_PAGE_TURN, SoundSource.HOSTILE, 1.5F, 0.7F);
+    }
+
     private void configure(God god, boolean heal) {
+        chooseAttack(god);
         getAttribute(Attributes.MAX_HEALTH).setBaseValue(god.bossHealth());
         getAttribute(Attributes.ARMOR).setBaseValue(god.bossArmor());
         getAttribute(Attributes.SCALE).setBaseValue(1.0 + (Line.RANKS - god.rank()) * 0.03);
@@ -284,6 +341,10 @@ public class GodBoss extends Monster {
         if (target == null || !target.isAlive()) {
             if (isCasting()) this.entityData.set(DATA_CASTING, false);
             return;
+        }
+
+        if (god.id().equals("hades") && tickCount % 45 == 0 && distanceToSqr(target) > 9.0) {
+            throwCard(level, target);
         }
 
         if (abilityCooldown > 0) {
@@ -432,10 +493,24 @@ public class GodBoss extends Monster {
     @Override
     protected void dropCustomDeathLoot(ServerLevel level, DamageSource source, boolean killedByPlayer) {
         super.dropCustomDeathLoot(level, source, killedByPlayer);
-        var weapon = ModContent.weaponItem(god());
+        God god = god();
+        var weapon = ModContent.weaponItem(god);
         if (weapon != null) {
             spawnAtLocation(level, new ItemStack(weapon));
         }
+        // essences for the Forge of Chaos: one from a starter, five from a final god
+        spawnAtLocation(level, new ItemStack(ModContent.essenceItem(god.line()), essenceDrop(god)));
+        // Hades' tower gives up the tarot: three copies of each card a god holds, and the Deck of Fate from Hades
+        for (Tarot card : Tarot.dropsFor(god)) {
+            spawnAtLocation(level, new ItemStack(ModContent.tarotItem(card), 3));
+        }
+        if (god.id().equals("hades")) {
+            spawnAtLocation(level, new ItemStack(ModContent.TAROT_DECK.get()));
+        }
+    }
+
+    public static int essenceDrop(God god) {
+        return 1 + (Line.RANKS - god.rank()) / 3;
     }
 
     @Override

@@ -53,6 +53,12 @@ public final class RealmsOfChaosForge {
             EntityType<GodBoss> type = (EntityType<GodBoss>) boss.get();
             return type;
         });
+        RegistryObject<EntityType<?>> projectile = ENTITIES.register("relic_projectile", () -> ModContent.createProjectileType(ENTITIES.key("relic_projectile")));
+        ModContent.RELIC_PROJECTILE.bind(() -> {
+            @SuppressWarnings("unchecked")
+            EntityType<com.thefarawaydev.realmsofchaos.entity.RelicProjectile> type = (EntityType<com.thefarawaydev.realmsofchaos.entity.RelicProjectile>) projectile.get();
+            return type;
+        });
         RegistryObject<CreativeModeTab> tab = TABS.register("main", () -> CreativeModeTab.builder()
                 .title(ModContent.tabTitle())
                 .icon(ModContent::tabIcon)
@@ -73,6 +79,11 @@ public final class RealmsOfChaosForge {
             if (event.getEntity() instanceof ServerPlayer player) Welcome.onJoin(player);
         });
         TickEvent.ServerTickEvent.Post.BUS.addListener(event -> RealmSafety.tick(event.server()));
+        // kills made with a relic weapon in hand give that weapon experience
+        net.minecraftforge.event.entity.living.LivingDeathEvent.BUS.addListener(event -> {
+            com.thefarawaydev.realmsofchaos.item.GodWeaponItem.onKill(event.getEntity(), event.getSource());
+            return false;
+        });
         if (SelfTest.enabled()) {
             ServerStartedEvent.BUS.addListener(event -> SelfTest.run(event.getServer()));
         }

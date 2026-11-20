@@ -60,7 +60,7 @@ public enum Power {
         god.applySelfEffect(user);
     }
 
-    static boolean canHurt(LivingEntity user, LivingEntity other) {
+    public static boolean canHurt(LivingEntity user, LivingEntity other) {
         if (other == user || !other.isAlive()) return false;
         if (user instanceof Player && other instanceof Player) return false;
         if (user instanceof com.thefarawaydev.realmsofchaos.entity.GodBoss && !(other instanceof Player)) return false;
@@ -73,7 +73,7 @@ public enum Power {
         }
     }
 
-    static DamageSource source(ServerLevel level, LivingEntity attacker) {
+    public static DamageSource source(ServerLevel level, LivingEntity attacker) {
         return attacker instanceof Player p ? level.damageSources().playerAttack(p) : level.damageSources().mobAttack(attacker);
     }
 }

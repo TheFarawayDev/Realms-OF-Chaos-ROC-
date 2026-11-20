@@ -38,6 +38,23 @@ The current build is an **Alpha**.
 * **Furnished rooms.** Every floor has engaged columns between its windows, a ribbed ceiling with hanging lights, a
   processional path from the gates, and props that match its tier (azaleas and lanterns in the foothills, braziers
   of soul fire in Tartarus, sculk and soul lanterns in the Trench...).
+* **Nine kinds of weapon** instead of 45 swords: blades, daggers (fast), polearms (long reach), heavy weapons (slow,
+  crushing), scythes (every hit sweeps), and four ranged kinds - staffs (cast bolts), bows (loose arrows), thrown
+  weapons (thunderbolts, javelins, shards) and relics such as a chalice, a conch or pan pipes (pulse their power
+  around you). Right-click attacks with ranged kinds; sneak + right-click is their Divine Surge.
+* **Ranged gods.** A god fights the way its weapon does: gods with a ranged kind keep their distance and shoot.
+  Hades also throws tarot cards.
+* **Weapon levelling and forging.** A relic gains experience from every kill made with it (level 1-10, +8% damage a
+  level). Gods drop essences of their tower; at a **Forge of Chaos** (two stand in the hub; also `/roc forge` and the
+  Codex) those forge up to five stars onto a relic (+10% damage and faster recharge each; star N costs 2N essences
+  and needs weapon level 2N). One tower yields enough essences to fully forge one weapon.
+* **Tarot.** The gods of Hades' tower drop the 22 Major Arcana (three copies of each of their cards). A card is
+  played with right-click and spent. Hades drops Death and the **Deck of Fate**: a stack that never runs out -
+  right-click draws a random card, sneak + right-click lets you choose one (the deck then rests longer).
+* **Voodoo dolls** (crafted: string over wheat-pin-wheat over wheat; the pin is an iron nugget, cobweb, rotten flesh
+  or blaze powder). Right-click a creature to bind the doll, then right-click to stab: the creature is hurt from up
+  to 64 blocks away. Pain wounds, Binding slows and weakens, Rot withers, Embers burns. Gods take half and ignore
+  the curses.
 * **45 gods** - each is a boss with its own look *and* an animated relic weapon:
 
 | Floor | Rank | Zeus line | Poseidon line | Hades line |

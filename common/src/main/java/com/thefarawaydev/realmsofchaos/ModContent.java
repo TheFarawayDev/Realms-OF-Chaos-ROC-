@@ -1,7 +1,14 @@
 package com.thefarawaydev.realmsofchaos;
 
 import com.thefarawaydev.realmsofchaos.block.AltarBlock;
+import com.thefarawaydev.realmsofchaos.block.ForgeBlock;
 import com.thefarawaydev.realmsofchaos.block.GateBlock;
+import com.thefarawaydev.realmsofchaos.entity.RelicProjectile;
+import com.thefarawaydev.realmsofchaos.god.Power;
+import com.thefarawaydev.realmsofchaos.item.Tarot;
+import com.thefarawaydev.realmsofchaos.item.TarotCardItem;
+import com.thefarawaydev.realmsofchaos.item.TarotDeckItem;
+import com.thefarawaydev.realmsofchaos.item.VoodooDollItem;
 import com.thefarawaydev.realmsofchaos.entity.GodBoss;
 import com.thefarawaydev.realmsofchaos.god.God;
 import com.thefarawaydev.realmsofchaos.god.Gods;
@@ -61,6 +68,7 @@ public final class ModContent {
     public static final Ref<Block> ALTAR_ZEUS = new Ref<>();
     public static final Ref<Block> ALTAR_POSEIDON = new Ref<>();
     public static final Ref<Block> ALTAR_HADES = new Ref<>();
+    public static final Ref<Block> CHAOS_FORGE = new Ref<>();
 
     public static final List<Def<Block>> BLOCK_DEFS = new ArrayList<>();
 
@@ -69,11 +77,18 @@ public final class ModContent {
     public static final Ref<Item> CHAOS_CODEX = new Ref<>();
     public static final Map<String, Ref<Item>> WEAPONS = new HashMap<>();
     public static final Map<String, Ref<Item>> BLOCK_ITEMS = new HashMap<>();
+    public static final Ref<Item> TAROT_DECK = new Ref<>();
+    public static final Map<Tarot, Ref<Item>> TAROT = new HashMap<>();
+    public static final Map<VoodooDollItem.Pin, Ref<Item>> DOLLS = new HashMap<>();
+    public static final Map<Line, Ref<Item>> ESSENCES = new HashMap<>();
+    /** Not obtainable: the sprites staff bolts and god projectiles are drawn with, one per power. */
+    public static final Map<Power, Ref<Item>> ORBS = new HashMap<>();
 
     public static final List<Def<Item>> ITEM_DEFS = new ArrayList<>();
 
     // ---- entity / tab -------------------------------------------------------------------------
     public static final Ref<EntityType<GodBoss>> GOD_BOSS = new Ref<>();
+    public static final Ref<EntityType<RelicProjectile>> RELIC_PROJECTILE = new Ref<>();
     public static final Ref<CreativeModeTab> TAB = new Ref<>();
 
     static {
@@ -87,6 +102,7 @@ public final class ModContent {
         block("altar_zeus", ALTAR_ZEUS, key -> altar(Line.ZEUS, key));
         block("altar_poseidon", ALTAR_POSEIDON, key -> altar(Line.POSEIDON, key));
         block("altar_hades", ALTAR_HADES, key -> altar(Line.HADES, key));
+        block("chaos_forge", CHAOS_FORGE, key -> new ForgeBlock(unbreakable(key).mapColor(MapColor.COLOR_ORANGE).lightLevel(s -> 12).sound(SoundType.ANVIL)));
 
         // items: codex, compass, 45 god weapons (ordered by line, rank 1 -> 15), then the block items
         item("chaos_codex", CHAOS_CODEX, key -> new CodexItem(new Item.Properties().setId(key).stacksTo(1)));
@@ -97,6 +113,29 @@ public final class ModContent {
                 WEAPONS.put(god.id(), ref);
                 item(god.id() + "_weapon", ref, key -> new GodWeaponItem(god, GodWeaponItem.properties(god, key)));
             }
+        }
+        // tarot: the Deck of Fate and the 22 single cards
+        item("tarot_deck", TAROT_DECK, key -> new TarotDeckItem(new Item.Properties().setId(key).stacksTo(1).rarity(net.minecraft.world.item.Rarity.EPIC).fireResistant()));
+        for (Tarot card : Tarot.values()) {
+            Ref<Item> ref = new Ref<>();
+            TAROT.put(card, ref);
+            item(card.itemId(), ref, key -> new TarotCardItem(card, new Item.Properties().setId(key).stacksTo(16).rarity(net.minecraft.world.item.Rarity.UNCOMMON)));
+        }
+        // voodoo dolls, forging essences and the projectile sprites
+        for (VoodooDollItem.Pin pin : VoodooDollItem.Pin.values()) {
+            Ref<Item> ref = new Ref<>();
+            DOLLS.put(pin, ref);
+            item("voodoo_doll_" + pin.name().toLowerCase(), ref, key -> new VoodooDollItem(pin, new Item.Properties().setId(key).stacksTo(1)));
+        }
+        for (Line line : Line.values()) {
+            Ref<Item> ref = new Ref<>();
+            ESSENCES.put(line, ref);
+            item("essence_" + line.id(), ref, key -> new Item(new Item.Properties().setId(key).rarity(net.minecraft.world.item.Rarity.RARE).fireResistant()));
+        }
+        for (Power power : Power.values()) {
+            Ref<Item> ref = new Ref<>();
+            ORBS.put(power, ref);
+            item("orb_" + power.name().toLowerCase(), ref, key -> new Item(new Item.Properties().setId(key)));
         }
         for (Def<Block> b : BLOCK_DEFS) {
             Ref<Item> ref = new Ref<>();
@@ -136,6 +175,30 @@ public final class ModContent {
                 .build(key);
     }
 
+    public static EntityType<RelicProjectile> createProjectileType(ResourceKey<EntityType<?>> key) {
+        return EntityType.Builder.<RelicProjectile>of(RelicProjectile::new, MobCategory.MISC)
+                .sized(0.3F, 0.3F)
+                .clientTrackingRange(6)
+                .updateInterval(10)
+                .build(key);
+    }
+
+    public static ResourceKey<EntityType<?>> projectileKey() {
+        return ResourceKey.create(Registries.ENTITY_TYPE, RealmsOfChaos.id("relic_projectile"));
+    }
+
+    public static Item orbItem(Power power) {
+        return ORBS.get(power).get();
+    }
+
+    public static Item tarotItem(Tarot card) {
+        return TAROT.get(card).get();
+    }
+
+    public static Item essenceItem(Line line) {
+        return ESSENCES.get(line).get();
+    }
+
     public static ResourceKey<EntityType<?>> godBossKey() {
         return ResourceKey.create(Registries.ENTITY_TYPE, RealmsOfChaos.id("god_boss"));
     }
@@ -169,6 +232,10 @@ public final class ModContent {
                 out.add(WEAPONS.get(god.id()).get());
             }
         }
+        for (Line line : Line.values()) out.add(ESSENCES.get(line).get());
+        out.add(TAROT_DECK.get());
+        for (Tarot card : Tarot.values()) out.add(TAROT.get(card).get());
+        for (VoodooDollItem.Pin pin : VoodooDollItem.Pin.values()) out.add(DOLLS.get(pin).get());
         for (Def<Block> b : BLOCK_DEFS) {
             out.add(BLOCK_ITEMS.get(b.id()).get());
         }

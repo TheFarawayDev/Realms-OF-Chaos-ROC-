@@ -1,0 +1,8 @@
+{
+  "parent": "minecraft:block/cube_bottom_top",
+  "textures": {
+    "top": "realms_of_chaos:block/chaos_forge_top",
+    "bottom": "realms_of_chaos:block/altar_base",
+    "side": "realms_of_chaos:block/chaos_forge_side"
+  }
+}

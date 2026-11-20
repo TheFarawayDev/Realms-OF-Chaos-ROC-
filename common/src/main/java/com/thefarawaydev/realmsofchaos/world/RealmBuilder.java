@@ -168,6 +168,9 @@ public final class RealmBuilder {
             column(level, 5 * side, 15, Y + 1, 4, Blocks.MOSSY_STONE_BRICKS);
             set(level, 5 * side, Y + 5, 15, Blocks.VERDANT_FROGLIGHT);
         }
+        // two Forges of Chaos beside the central medallion
+        set(level, 6, Y + 1, 6, ModContent.CHAOS_FORGE.get().defaultBlockState());
+        set(level, -6, Y + 1, 6, ModContent.CHAOS_FORGE.get().defaultBlockState());
         makeSafe(level, 0.5, Y + 1, 0.5);
     }
 }

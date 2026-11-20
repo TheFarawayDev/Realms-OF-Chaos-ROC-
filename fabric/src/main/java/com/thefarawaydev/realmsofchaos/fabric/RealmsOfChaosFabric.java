@@ -48,6 +48,10 @@ public class RealmsOfChaosFabric implements ModInitializer {
         ModContent.GOD_BOSS.bind(() -> bossType);
         FabricDefaultAttributeRegistry.register(bossType, GodBoss.createAttributes());
 
+        var projectileType = ModContent.createProjectileType(ModContent.projectileKey());
+        Registry.register(BuiltInRegistries.ENTITY_TYPE, RealmsOfChaos.id("relic_projectile"), projectileType);
+        ModContent.RELIC_PROJECTILE.bind(() -> projectileType);
+
         CreativeModeTab tab = FabricCreativeModeTab.builder()
                 .title(ModContent.tabTitle())
                 .icon(ModContent::tabIcon)
@@ -61,6 +65,9 @@ public class RealmsOfChaosFabric implements ModInitializer {
         // first-join thank-you, and the once-a-second void / stuck rescue inside the realms
         ServerPlayConnectionEvents.JOIN.register((handler, sender, server) -> Welcome.onJoin(handler.getPlayer()));
         ServerTickEvents.END_SERVER_TICK.register(RealmSafety::tick);
+        // kills made with a relic weapon in hand give that weapon experience
+        net.fabricmc.fabric.api.entity.event.v1.ServerLivingEntityEvents.AFTER_DEATH.register(
+                com.thefarawaydev.realmsofchaos.item.GodWeaponItem::onKill);
         if (SelfTest.enabled()) {
             ServerLifecycleEvents.SERVER_STARTED.register(SelfTest::run);
         }

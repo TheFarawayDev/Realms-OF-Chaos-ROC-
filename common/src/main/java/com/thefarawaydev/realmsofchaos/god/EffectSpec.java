@@ -20,6 +20,12 @@ public record EffectSpec(Holder<MobEffect> effect, int seconds, int amplifier) {
         return new EffectSpec(holder, Integer.parseInt(p[1]), Integer.parseInt(p[2]));
     }
 
+    /** Tips an arrow with a god's target effect, so bows carry their god's curse like every other relic. */
+    public static void addTo(net.minecraft.world.entity.projectile.arrow.Arrow arrow, God god) {
+        EffectSpec spec = god.targetEffect();
+        if (spec != null) arrow.addEffect(spec.instance(1.0));
+    }
+
     public MobEffectInstance instance(double durationScale) {
         return new MobEffectInstance(effect, (int) (seconds * 20 * durationScale), amplifier);
     }

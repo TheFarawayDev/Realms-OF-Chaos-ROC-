@@ -32,7 +32,7 @@ import net.minecraft.world.item.Items;
 public class CodexMenu extends ButtonMenu {
     public static final int SLOT_ABOUT = slot(0, 4);
     public static final int SLOT_ZEUS = slot(1, 2), SLOT_POSEIDON = slot(1, 4), SLOT_HADES = slot(1, 6);
-    public static final int SLOT_HUB = slot(5, 2), SLOT_LEAVE = slot(5, 6);
+    public static final int SLOT_HUB = slot(5, 2), SLOT_FORGE = slot(5, 4), SLOT_LEAVE = slot(5, 6);
     public static final int SLOT_BACK = slot(5, 0), SLOT_TRAVEL = slot(5, 4), SLOT_SUMMARY = slot(0, 4);
     private static final String NS = "menu." + RealmsOfChaos.MOD_ID + ".";
 
@@ -68,6 +68,7 @@ public class CodexMenu extends ButtonMenu {
         if (page == null) {
             if (slot == SLOT_HUB) { close(); Teleports.toHub(viewer); return; }
             if (slot == SLOT_LEAVE) { close(); Teleports.leave(viewer); return; }
+            if (slot == SLOT_FORGE) { clickSound(); ForgeMenu.open(viewer); return; }
             // a tower icon or any segment of its meter opens that tower
             int row = slot / 9, col = slot % 9;
             for (Line line : Line.values()) {
@@ -154,6 +155,8 @@ public class CodexMenu extends ButtonMenu {
         }
         view.setItem(SLOT_HUB, icon(ModContent.CHAOS_COMPASS.get(), text(NS + "hub", 0xFFFFFF), false,
                 List.of(text(NS + "click", 0xAAAAAA))));
+        view.setItem(SLOT_FORGE, icon(ModContent.BLOCK_ITEMS.get("chaos_forge").get(), text(NS + "forge.open", 0xFFAA00), false,
+                List.of(text(NS + "forge.open.lore", 0xAAAAAA))));
         view.setItem(SLOT_LEAVE, icon(Items.OAK_DOOR, text(NS + "leave", 0x55FF55), false,
                 List.of(text(NS + "leave.lore", 0xAAAAAA), text(NS + "click", 0xAAAAAA))));
     }
