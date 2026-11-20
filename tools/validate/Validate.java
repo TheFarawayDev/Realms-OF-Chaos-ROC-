@@ -78,7 +78,7 @@ public class Validate {
         @SuppressWarnings("unchecked") EntityType<com.thefarawaydev.realmsofchaos.entity.GodBoss> bt = (EntityType<com.thefarawaydev.realmsofchaos.entity.GodBoss>) boss;
         ModContent.GOD_BOSS.bind(() -> bt);
         check(boss != null, "boss type");
-        check(ModContent.tabItems().size() == 2 + 45 + 12 + 6 + 1 + 22 + 4 + 14, "tab item count " + ModContent.tabItems().size());
+        check(ModContent.tabItems().size() == 2 + 45 + 12 + 6 + 1 + 22 + 4 + 15, "tab item count " + ModContent.tabItems().size());
 
         // 3. dimension types + dimensions parse with vanilla codecs
         HolderLookup.Provider lookup = VanillaRegistries.createWorldLookup();
@@ -143,6 +143,11 @@ public class Validate {
         for (com.thefarawaydev.realmsofchaos.god.Line line : com.thefarawaydev.realmsofchaos.god.Line.values()) {
             check(lang.contains("\"item.realms_of_chaos.keystone_" + line.id() + "\"") && lang.contains("\"item.realms_of_chaos.seeker_" + line.id() + "\"")
                     && lang.contains("\"ruin.realms_of_chaos." + line.id() + "\""), "lang keystone/seeker/shrine " + line.id());
+        }
+
+        for (com.thefarawaydev.realmsofchaos.entity.Sentinel.Kind kind : com.thefarawaydev.realmsofchaos.entity.Sentinel.Kind.values()) {
+            check(Files.exists(res.resolve("assets/realms_of_chaos/textures/entity/sentinel/" + kind.id() + ".png")), "missing sentinel skin " + kind.id());
+            check(lang.contains("\"entity.realms_of_chaos.sentinel." + kind.id() + "\""), "lang sentinel " + kind.id());
         }
 
         // 5b. relic tags: one per tower with its fifteen weapons

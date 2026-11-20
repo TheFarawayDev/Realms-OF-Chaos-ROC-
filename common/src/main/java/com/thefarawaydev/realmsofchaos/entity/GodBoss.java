@@ -86,6 +86,8 @@ public class GodBoss extends Monster implements RangedAttackMob {
     private boolean rematch;
     /** An echo in the hub: it has the god's look and relic but only stands and watches. */
     private boolean statue;
+    /** How many players this trial was raised against, and how many times the god had already beaten its summoner. */
+    private int challengers = 1, mercy;
     // the attack goal follows the god's weapon: melee for blades and the like, ranged for bows, staffs and relics
     private Goal attackGoal;
 
@@ -204,6 +206,38 @@ public class GodBoss extends Monster implements RangedAttackMob {
         if (!statue) super.checkDespawn();
     }
 
+    /** Sets how hard this trial is: scaled up for a group, eased for a player the god keeps beating. */
+    public void setTrial(int challengers, int mercy) {
+        this.challengers = Math.max(1, Math.min(com.thefarawaydev.realmsofchaos.world.Adapt.MAX_CHALLENGERS, challengers));
+        this.mercy = Math.max(0, Math.min(com.thefarawaydev.realmsofchaos.world.Adapt.MAX_MERCY, mercy));
+        getAttribute(Attributes.MAX_HEALTH).setBaseValue(trialHealth(god()));
+        setHealth(getMaxHealth());
+    }
+
+    public int challengers() {
+        return challengers;
+    }
+
+    public int mercy() {
+        return mercy;
+    }
+
+    private double trialHealth(God god) {
+        return god.bossHealth() * com.thefarawaydev.realmsofchaos.world.Adapt.healthScale(challengers) * com.thefarawaydev.realmsofchaos.world.Adapt.mercyScale(mercy);
+    }
+
+    /** How much harder this god's moves and shots hit because of the size of the group it faces. */
+    public float damageScale() {
+        return com.thefarawaydev.realmsofchaos.world.Adapt.damageScale(challengers);
+    }
+
+    /** A god that fells a player remembers it: the next trial that player calls is a little gentler. */
+    @Override
+    public boolean killedEntity(ServerLevel level, LivingEntity entity, DamageSource source) {
+        if (!statue && entity instanceof ServerPlayer player) com.thefarawaydev.realmsofchaos.world.Adapt.recordLoss(player.getUUID(), god());
+        return super.killedEntity(level, entity, source);
+    }
+
     public void setRematch(boolean rematch) {
         this.rematch = rematch;
     }
@@ -292,7 +326,7 @@ public class GodBoss extends Monster implements RangedAttackMob {
     /** Damage of one of this god's ranged shots (gods also have their line ability, so shots hit softer than a player's). */
     public float shotDamage() {
         God god = god();
-        return (float) (god.baseDamage() * god.kind().rangedScale() * 0.5);
+        return (float) (god.baseDamage() * god.kind().rangedScale() * 0.5) * damageScale();
     }
 
     @Override
@@ -321,7 +355,7 @@ public class GodBoss extends Monster implements RangedAttackMob {
 
     private void configure(God god, boolean heal) {
         chooseAttack(god);
-        getAttribute(Attributes.MAX_HEALTH).setBaseValue(god.bossHealth());
+        getAttribute(Attributes.MAX_HEALTH).setBaseValue(trialHealth(god));
         getAttribute(Attributes.ARMOR).setBaseValue(god.bossArmor());
         getAttribute(Attributes.SCALE).setBaseValue(1.0 + (Line.RANKS - god.rank()) * 0.03);
         if (heal) {
@@ -434,7 +468,7 @@ public class GodBoss extends Monster implements RangedAttackMob {
     public boolean castSignature(ServerLevel level) {
         God god = god();
         float s = (Line.RANKS + 1 - god.rank()) / (float) Line.RANKS;
-        return god.signature().perform(level, this, god, 3.0F + 6.0F * s);
+        return god.signature().perform(level, this, god, (3.0F + 6.0F * s) * damageScale());
     }
 
     /** Below half health a god is enraged: it glows, moves faster, casts sooner - and answers at once. */
@@ -516,7 +550,7 @@ public class GodBoss extends Monster implements RangedAttackMob {
 
     /** Each god line has its own signature attack, strengthened by the god's rank. */
     public void castAbility(ServerLevel level, God god) {
-        float s = (Line.RANKS + 1 - god.rank()) / (float) Line.RANKS;
+        float s = (Line.RANKS + 1 - god.rank()) / (float) Line.RANKS, m = damageScale();
         switch (god.line()) {
             case ZEUS -> {
                 for (Player p : nearbyPlayers(level, 28)) {
@@ -526,7 +560,7 @@ public class GodBoss extends Monster implements RangedAttackMob {
                         bolt.setVisualOnly(true);
                         level.addFreshEntity(bolt);
                     }
-                    p.hurtServer(level, damageSources().indirectMagic(this, this), 4.0F + 8.0F * s);
+                    p.hurtServer(level, damageSources().indirectMagic(this, this), (4.0F + 8.0F * s) * m);
                     god.applyTargetEffect(p);
                 }
             }
@@ -538,7 +572,7 @@ public class GodBoss extends Monster implements RangedAttackMob {
                     double dist = d.length();
                     Vec3 dir = new Vec3(d.x, 0, d.z).normalize();
                     // hurt first: a hit knocks its victim back by itself, which would undo the pull
-                    p.hurtServer(level, damageSources().mobAttack(this), 3.0F + 6.0F * s);
+                    p.hurtServer(level, damageSources().mobAttack(this), (3.0F + 6.0F * s) * m);
                     if (dist > 9.0) {
                         // tidal pull: drag distant targets in
                         p.setDeltaMovement(-dir.x * 1.1, 0.25, -dir.z * 1.1);
@@ -553,7 +587,7 @@ public class GodBoss extends Monster implements RangedAttackMob {
                 level.playSound(null, blockPosition(), SoundEvents.WITHER_SHOOT, SoundSource.HOSTILE, 1.5F, 0.5F);
                 level.sendParticles(ParticleTypes.SOUL_FIRE_FLAME, getX(), getY() + 1, getZ(), 80, 2.0, 1.0, 2.0, 0.08);
                 for (Player p : nearbyPlayers(level, 20)) {
-                    p.hurtServer(level, damageSources().indirectMagic(this, this), 3.0F + 5.0F * s);
+                    p.hurtServer(level, damageSources().indirectMagic(this, this), (3.0F + 5.0F * s) * m);
                     p.addEffect(new MobEffectInstance(MobEffects.WITHER, 80, 0));
                     heal(2.0F + 4.0F * s);
                 }
@@ -605,6 +639,8 @@ public class GodBoss extends Monster implements RangedAttackMob {
             boolean first = data.markDefeated(player.getUUID(), god);
             RocAdvancements.awardGod(player, god);
             if (first) com.thefarawaydev.realmsofchaos.story.Story.onDefeated(player, god);
+            com.thefarawaydev.realmsofchaos.world.Adapt.clearLosses(player.getUUID(), god);
+            dropFor(level, player, god, first);
             if (god.isFinalBoss()) {
                 Hud.title(player, Hud.colored(Component.translatable(hud + "line_complete"), god.line().color()),
                         Hud.colored(Component.translatable(hud + "line_complete.sub", god.line().displayName()), 0xFFFFFF), 10, 100, 30);
@@ -625,21 +661,27 @@ public class GodBoss extends Monster implements RangedAttackMob {
     @Override
     protected void dropCustomDeathLoot(ServerLevel level, DamageSource source, boolean killedByPlayer) {
         super.dropCustomDeathLoot(level, source, killedByPlayer);
-        if (statue) return;
-        God god = god();
-        // forge materials: each tier of a tower drops its own, and the summit's god drops the essence
-        spawnAtLocation(level, new ItemStack(ModContent.materialItem(god.line(), Tower.tier(Tower.floorOf(god))), materialDrop(god)));
-        if (rematch) return;                    // the relic, the cards and the deck are won once
-        var weapon = ModContent.weaponItem(god);
-        if (weapon != null) {
-            spawnAtLocation(level, new ItemStack(weapon));
+    }
+
+    /**
+     * Everyone who shared a victory gets loot of their own, which only they can pick up: the floor's forge material
+     * every time, and - the first time that player beats this god - its relic, its tarot cards and (from Hades) the
+     * Deck of Fate.
+     */
+    private void dropFor(ServerLevel level, ServerPlayer player, God god, boolean first) {
+        List<ItemStack> loot = new java.util.ArrayList<>();
+        loot.add(new ItemStack(ModContent.materialItem(god.line(), Tower.tier(Tower.floorOf(god))), materialDrop(god)));
+        if (first) {
+            var weapon = ModContent.weaponItem(god);
+            if (weapon != null) loot.add(new ItemStack(weapon));
+            for (Tarot card : Tarot.dropsFor(god)) loot.add(new ItemStack(ModContent.tarotItem(card), 3));
+            if (god.id().equals("hades")) loot.add(new ItemStack(ModContent.TAROT_DECK.get()));
         }
-        // Hades' tower gives up the tarot: three copies of each card a god holds, and the Deck of Fate from Hades
-        for (Tarot card : Tarot.dropsFor(god)) {
-            spawnAtLocation(level, new ItemStack(ModContent.tarotItem(card), 3));
-        }
-        if (god.id().equals("hades")) {
-            spawnAtLocation(level, new ItemStack(ModContent.TAROT_DECK.get()));
+        for (ItemStack stack : loot) {
+            net.minecraft.world.entity.item.ItemEntity drop = new net.minecraft.world.entity.item.ItemEntity(level, getX(), getY() + 0.5, getZ(), stack);
+            drop.setTarget(player.getUUID());
+            drop.setDefaultPickUpDelay();
+            level.addFreshEntity(drop);
         }
     }
 
@@ -663,6 +705,8 @@ public class GodBoss extends Monster implements RangedAttackMob {
         output.putInt("Casts", casts);
         output.putBoolean("Rematch", rematch);
         output.putBoolean("Statue", statue);
+        output.putInt("Challengers", challengers);
+        output.putInt("Mercy", mercy);
         Vec3 h = home();
         output.putDouble("HomeX", h.x);
         output.putDouble("HomeY", h.y);
@@ -677,6 +721,8 @@ public class GodBoss extends Monster implements RangedAttackMob {
         this.shiftStage = input.getIntOr("ShiftStage", 0);
         this.casts = input.getIntOr("Casts", 0);
         this.rematch = input.getBooleanOr("Rematch", false);
+        this.challengers = Math.max(1, input.getIntOr("Challengers", 1));
+        this.mercy = input.getIntOr("Mercy", 0);
         double hy = input.getDoubleOr("HomeY", Double.NaN);
         if (!Double.isNaN(hy)) {
             this.home = new Vec3(input.getDoubleOr("HomeX", getX()), hy, input.getDoubleOr("HomeZ", getZ()));

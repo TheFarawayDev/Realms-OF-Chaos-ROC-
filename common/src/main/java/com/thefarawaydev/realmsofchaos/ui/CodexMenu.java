@@ -32,7 +32,7 @@ import net.minecraft.world.item.Items;
 public class CodexMenu extends ButtonMenu {
     public static final int SLOT_ABOUT = slot(0, 4);
     public static final int SLOT_ZEUS = slot(1, 2), SLOT_POSEIDON = slot(1, 4), SLOT_HADES = slot(1, 6);
-    public static final int SLOT_HUB = slot(5, 2), SLOT_FORGE = slot(5, 4), SLOT_LEAVE = slot(5, 6), SLOT_STORY = slot(5, 8);
+    public static final int SLOT_HUB = slot(5, 2), SLOT_FORGE = slot(5, 4), SLOT_LEAVE = slot(5, 6), SLOT_STORY = slot(5, 8), SLOT_PARTY = slot(5, 0);
     public static final int SLOT_BACK = slot(5, 0), SLOT_TRAVEL = slot(5, 4), SLOT_SUMMARY = slot(0, 4);
     private static final String NS = "menu." + RealmsOfChaos.MOD_ID + ".";
 
@@ -70,6 +70,7 @@ public class CodexMenu extends ButtonMenu {
             if (slot == SLOT_LEAVE) { close(); Teleports.leave(viewer); return; }
             if (slot == SLOT_FORGE) { clickSound(); ForgeMenu.open(viewer); return; }
             if (slot == SLOT_STORY) { clickSound(); StoryMenu.open(viewer); return; }
+            if (slot == SLOT_PARTY) { clickSound(); PartyMenu.open(viewer); return; }
             // a tower icon or any segment of its meter opens that tower
             int row = slot / 9, col = slot % 9;
             for (Line line : Line.values()) {
@@ -86,7 +87,7 @@ public class CodexMenu extends ButtonMenu {
         } else {
             ProgressData data = ProgressData.get(viewer.level().getServer());
             for (int floor = 1; floor <= Tower.FLOORS; floor++) {
-                if (slotOfFloor(floor) == slot && floor <= Tower.currentFloor(data, viewer.getUUID(), page)) {
+                if (slotOfFloor(floor) == slot && Teleports.canTravel(viewer, page, floor)) {
                     Line line = page;
                     close();
                     Teleports.toFloor(viewer, line, floor);
@@ -164,6 +165,10 @@ public class CodexMenu extends ButtonMenu {
                 com.thefarawaydev.realmsofchaos.story.Story.Chapter.values().length));
         story.addAll(StoryMenu.guidance(viewer));
         view.setItem(SLOT_STORY, icon(Items.WRITABLE_BOOK, text(NS + "story.open", 0xA55AD6), true, story));
+        boolean inParty = com.thefarawaydev.realmsofchaos.world.Parties.inParty(viewer.getUUID());
+        view.setItem(SLOT_PARTY, icon(Items.PLAYER_HEAD, text(NS + "party.open", 0x55FFFF), inParty, List.of(
+                text(NS + "party.open.lore", 0xAAAAAA),
+                inParty ? text(NS + "party.size", 0x55FF55, com.thefarawaydev.realmsofchaos.world.Parties.members(viewer.getUUID()).size()) : text(NS + "party.solo", 0xAAAAAA))));
         view.setItem(SLOT_LEAVE, icon(Items.OAK_DOOR, text(NS + "leave", 0x55FF55), false,
                 List.of(text(NS + "leave.lore", 0xAAAAAA), text(NS + "click", 0xAAAAAA))));
     }

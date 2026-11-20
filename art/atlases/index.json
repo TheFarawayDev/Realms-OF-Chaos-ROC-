@@ -1,0 +1,1432 @@
+{
+  "items": {
+    "tile": [
+      16,
+      16
+    ],
+    "columns": 16,
+    "count": 99,
+    "source": "assets/realms_of_chaos/textures/item",
+    "tiles": {
+      "amphitrite_weapon": [
+        0,
+        0
+      ],
+      "apollo_weapon": [
+        1,
+        0
+      ],
+      "ares_weapon": [
+        2,
+        0
+      ],
+      "artemis_weapon": [
+        3,
+        0
+      ],
+      "asclepius_weapon": [
+        4,
+        0
+      ],
+      "athena_weapon": [
+        5,
+        0
+      ],
+      "benthesikyme_weapon": [
+        6,
+        0
+      ],
+      "chaos_codex": [
+        7,
+        0
+      ],
+      "chaos_compass": [
+        8,
+        0
+      ],
+      "charon_weapon": [
+        9,
+        0
+      ],
+      "chrysaor_weapon": [
+        10,
+        0
+      ],
+      "cymopoleia_weapon": [
+        11,
+        0
+      ],
+      "deimos_weapon": [
+        12,
+        0
+      ],
+      "dionysus_weapon": [
+        13,
+        0
+      ],
+      "erinyes_weapon": [
+        14,
+        0
+      ],
+      "essence_hades": [
+        15,
+        0
+      ],
+      "essence_poseidon": [
+        0,
+        1
+      ],
+      "essence_zeus": [
+        1,
+        1
+      ],
+      "galatea_weapon": [
+        2,
+        1
+      ],
+      "galene_weapon": [
+        3,
+        1
+      ],
+      "hades_weapon": [
+        4,
+        1
+      ],
+      "halia_weapon": [
+        5,
+        1
+      ],
+      "hebe_weapon": [
+        6,
+        1
+      ],
+      "hecate_weapon": [
+        7,
+        1
+      ],
+      "hermes_weapon": [
+        8,
+        1
+      ],
+      "hygeia_weapon": [
+        9,
+        1
+      ],
+      "hypnos_weapon": [
+        10,
+        1
+      ],
+      "iris_weapon": [
+        11,
+        1
+      ],
+      "keres_weapon": [
+        12,
+        1
+      ],
+      "keystone_hades": [
+        13,
+        1
+      ],
+      "keystone_poseidon": [
+        14,
+        1
+      ],
+      "keystone_zeus": [
+        15,
+        1
+      ],
+      "macaria_weapon": [
+        0,
+        2
+      ],
+      "material_hades_1": [
+        1,
+        2
+      ],
+      "material_hades_2": [
+        2,
+        2
+      ],
+      "material_hades_3": [
+        3,
+        2
+      ],
+      "material_poseidon_1": [
+        4,
+        2
+      ],
+      "material_poseidon_2": [
+        5,
+        2
+      ],
+      "material_poseidon_3": [
+        6,
+        2
+      ],
+      "material_zeus_1": [
+        7,
+        2
+      ],
+      "material_zeus_2": [
+        8,
+        2
+      ],
+      "material_zeus_3": [
+        9,
+        2
+      ],
+      "melinoe_weapon": [
+        10,
+        2
+      ],
+      "moirai_weapon": [
+        11,
+        2
+      ],
+      "morpheus_weapon": [
+        12,
+        2
+      ],
+      "nereus_weapon": [
+        13,
+        2
+      ],
+      "nike_weapon": [
+        14,
+        2
+      ],
+      "nyx_weapon": [
+        15,
+        2
+      ],
+      "oneiroi_weapon": [
+        0,
+        3
+      ],
+      "orb_drain": [
+        1,
+        3
+      ],
+      "orb_fire": [
+        2,
+        3
+      ],
+      "orb_freeze": [
+        3,
+        3
+      ],
+      "orb_knockback": [
+        4,
+        3
+      ],
+      "orb_lightning": [
+        5,
+        3
+      ],
+      "orb_none": [
+        6,
+        3
+      ],
+      "orb_sweep": [
+        7,
+        3
+      ],
+      "palaemon_weapon": [
+        8,
+        3
+      ],
+      "pan_weapon": [
+        9,
+        3
+      ],
+      "pegasus_weapon": [
+        10,
+        3
+      ],
+      "persephone_weapon": [
+        11,
+        3
+      ],
+      "phobos_weapon": [
+        12,
+        3
+      ],
+      "poseidon_weapon": [
+        13,
+        3
+      ],
+      "proteus_weapon": [
+        14,
+        3
+      ],
+      "rhode_weapon": [
+        15,
+        3
+      ],
+      "seeker_hades": [
+        0,
+        4
+      ],
+      "seeker_poseidon": [
+        1,
+        4
+      ],
+      "seeker_zeus": [
+        2,
+        4
+      ],
+      "tarot_chariot": [
+        3,
+        4
+      ],
+      "tarot_death": [
+        4,
+        4
+      ],
+      "tarot_deck": [
+        5,
+        4
+      ],
+      "tarot_devil": [
+        6,
+        4
+      ],
+      "tarot_emperor": [
+        7,
+        4
+      ],
+      "tarot_empress": [
+        8,
+        4
+      ],
+      "tarot_fool": [
+        9,
+        4
+      ],
+      "tarot_hanged_man": [
+        10,
+        4
+      ],
+      "tarot_hermit": [
+        11,
+        4
+      ],
+      "tarot_hierophant": [
+        12,
+        4
+      ],
+      "tarot_high_priestess": [
+        13,
+        4
+      ],
+      "tarot_judgement": [
+        14,
+        4
+      ],
+      "tarot_justice": [
+        15,
+        4
+      ],
+      "tarot_lovers": [
+        0,
+        5
+      ],
+      "tarot_magician": [
+        1,
+        5
+      ],
+      "tarot_moon": [
+        2,
+        5
+      ],
+      "tarot_star": [
+        3,
+        5
+      ],
+      "tarot_strength": [
+        4,
+        5
+      ],
+      "tarot_sun": [
+        5,
+        5
+      ],
+      "tarot_temperance": [
+        6,
+        5
+      ],
+      "tarot_tower": [
+        7,
+        5
+      ],
+      "tarot_wheel_of_fortune": [
+        8,
+        5
+      ],
+      "tarot_world": [
+        9,
+        5
+      ],
+      "thanatos_weapon": [
+        10,
+        5
+      ],
+      "thetis_weapon": [
+        11,
+        5
+      ],
+      "triton_weapon": [
+        12,
+        5
+      ],
+      "voodoo_doll_binding": [
+        13,
+        5
+      ],
+      "voodoo_doll_embers": [
+        14,
+        5
+      ],
+      "voodoo_doll_pain": [
+        15,
+        5
+      ],
+      "voodoo_doll_rot": [
+        0,
+        6
+      ],
+      "zagreus_weapon": [
+        1,
+        6
+      ],
+      "zeus_weapon": [
+        2,
+        6
+      ]
+    }
+  },
+  "weapon-designs": {
+    "tile": [
+      16,
+      16
+    ],
+    "columns": 8,
+    "count": 21,
+    "source": "assets/realms_of_chaos/textures/item/design",
+    "tiles": {
+      "battleaxe": [
+        0,
+        0
+      ],
+      "claymore": [
+        1,
+        0
+      ],
+      "crossbow": [
+        2,
+        0
+      ],
+      "halberd": [
+        3,
+        0
+      ],
+      "kanabo": [
+        4,
+        0
+      ],
+      "katana": [
+        5,
+        0
+      ],
+      "khopesh": [
+        6,
+        0
+      ],
+      "kunai": [
+        7,
+        0
+      ],
+      "kusarigama": [
+        0,
+        1
+      ],
+      "mace": [
+        1,
+        1
+      ],
+      "mjolnir": [
+        2,
+        1
+      ],
+      "naginata": [
+        3,
+        1
+      ],
+      "nodachi": [
+        4,
+        1
+      ],
+      "nunchaku": [
+        5,
+        1
+      ],
+      "sai": [
+        6,
+        1
+      ],
+      "shuriken": [
+        7,
+        1
+      ],
+      "tanto": [
+        0,
+        2
+      ],
+      "tessen": [
+        1,
+        2
+      ],
+      "wakizashi": [
+        2,
+        2
+      ],
+      "yari": [
+        3,
+        2
+      ],
+      "yumi": [
+        4,
+        2
+      ]
+    }
+  },
+  "blocks": {
+    "tile": [
+      16,
+      16
+    ],
+    "columns": 8,
+    "count": 22,
+    "source": "assets/realms_of_chaos/textures/block",
+    "tiles": {
+      "altar_base": [
+        0,
+        0
+      ],
+      "altar_hades_side": [
+        1,
+        0
+      ],
+      "altar_hades_top": [
+        2,
+        0
+      ],
+      "altar_poseidon_side": [
+        3,
+        0
+      ],
+      "altar_poseidon_top": [
+        4,
+        0
+      ],
+      "altar_zeus_side": [
+        5,
+        0
+      ],
+      "altar_zeus_top": [
+        6,
+        0
+      ],
+      "chaos_forge_side": [
+        7,
+        0
+      ],
+      "chaos_forge_top": [
+        0,
+        1
+      ],
+      "gate_ascend": [
+        1,
+        1
+      ],
+      "gate_hades": [
+        2,
+        1
+      ],
+      "gate_hub": [
+        3,
+        1
+      ],
+      "gate_leave": [
+        4,
+        1
+      ],
+      "gate_pedestal_side": [
+        5,
+        1
+      ],
+      "gate_pedestal_top": [
+        6,
+        1
+      ],
+      "gate_poseidon": [
+        7,
+        1
+      ],
+      "gate_zeus": [
+        0,
+        2
+      ],
+      "oracle_side": [
+        1,
+        2
+      ],
+      "oracle_top": [
+        2,
+        2
+      ],
+      "passage_cache": [
+        3,
+        2
+      ],
+      "passage_seal": [
+        4,
+        2
+      ],
+      "passage_shrine": [
+        5,
+        2
+      ]
+    }
+  },
+  "skins": {
+    "tile": [
+      64,
+      64
+    ],
+    "columns": 9,
+    "count": 57,
+    "source": "assets/realms_of_chaos/textures/entity",
+    "tiles": {
+      "god/amphitrite": [
+        0,
+        0
+      ],
+      "god/apollo": [
+        1,
+        0
+      ],
+      "god/ares": [
+        2,
+        0
+      ],
+      "god/artemis": [
+        3,
+        0
+      ],
+      "god/asclepius": [
+        4,
+        0
+      ],
+      "god/athena": [
+        5,
+        0
+      ],
+      "god/benthesikyme": [
+        6,
+        0
+      ],
+      "god/charon": [
+        7,
+        0
+      ],
+      "god/chrysaor": [
+        8,
+        0
+      ],
+      "god/cymopoleia": [
+        0,
+        1
+      ],
+      "god/deimos": [
+        1,
+        1
+      ],
+      "god/dionysus": [
+        2,
+        1
+      ],
+      "god/erinyes": [
+        3,
+        1
+      ],
+      "god/galatea": [
+        4,
+        1
+      ],
+      "god/galene": [
+        5,
+        1
+      ],
+      "god/hades": [
+        6,
+        1
+      ],
+      "god/halia": [
+        7,
+        1
+      ],
+      "god/hebe": [
+        8,
+        1
+      ],
+      "god/hecate": [
+        0,
+        2
+      ],
+      "god/hermes": [
+        1,
+        2
+      ],
+      "god/hygeia": [
+        2,
+        2
+      ],
+      "god/hypnos": [
+        3,
+        2
+      ],
+      "god/iris": [
+        4,
+        2
+      ],
+      "god/keres": [
+        5,
+        2
+      ],
+      "god/macaria": [
+        6,
+        2
+      ],
+      "god/melinoe": [
+        7,
+        2
+      ],
+      "god/moirai": [
+        8,
+        2
+      ],
+      "god/morpheus": [
+        0,
+        3
+      ],
+      "god/nereus": [
+        1,
+        3
+      ],
+      "god/nike": [
+        2,
+        3
+      ],
+      "god/nyx": [
+        3,
+        3
+      ],
+      "god/oneiroi": [
+        4,
+        3
+      ],
+      "god/palaemon": [
+        5,
+        3
+      ],
+      "god/pan": [
+        6,
+        3
+      ],
+      "god/pegasus": [
+        7,
+        3
+      ],
+      "god/persephone": [
+        8,
+        3
+      ],
+      "god/phobos": [
+        0,
+        4
+      ],
+      "god/poseidon": [
+        1,
+        4
+      ],
+      "god/proteus": [
+        2,
+        4
+      ],
+      "god/rhode": [
+        3,
+        4
+      ],
+      "god/thanatos": [
+        4,
+        4
+      ],
+      "god/thetis": [
+        5,
+        4
+      ],
+      "god/triton": [
+        6,
+        4
+      ],
+      "god/zagreus": [
+        7,
+        4
+      ],
+      "god/zeus": [
+        8,
+        4
+      ],
+      "sentinel/keeper_shades": [
+        0,
+        5
+      ],
+      "sentinel/keeper_sky": [
+        1,
+        5
+      ],
+      "sentinel/keeper_tides": [
+        2,
+        5
+      ],
+      "sentinel/lampad": [
+        3,
+        5
+      ],
+      "sentinel/reef_brute": [
+        4,
+        5
+      ],
+      "sentinel/shade": [
+        5,
+        5
+      ],
+      "sentinel/siren": [
+        6,
+        5
+      ],
+      "sentinel/sky_archer": [
+        7,
+        5
+      ],
+      "sentinel/storm_hoplite": [
+        8,
+        5
+      ],
+      "sentinel/tartarus_brute": [
+        0,
+        6
+      ],
+      "sentinel/thunder_brute": [
+        1,
+        6
+      ],
+      "sentinel/tide_hoplite": [
+        2,
+        6
+      ]
+    }
+  },
+  "items-animated": {
+    "tile": [
+      16,
+      16
+    ],
+    "rows": {
+      "amphitrite_weapon": {
+        "row": 0,
+        "frames": 7
+      },
+      "apollo_weapon": {
+        "row": 1,
+        "frames": 7
+      },
+      "ares_weapon": {
+        "row": 2,
+        "frames": 7
+      },
+      "artemis_weapon": {
+        "row": 3,
+        "frames": 7
+      },
+      "asclepius_weapon": {
+        "row": 4,
+        "frames": 7
+      },
+      "athena_weapon": {
+        "row": 5,
+        "frames": 7
+      },
+      "benthesikyme_weapon": {
+        "row": 6,
+        "frames": 7
+      },
+      "chaos_codex": {
+        "row": 7,
+        "frames": 6
+      },
+      "chaos_compass": {
+        "row": 8,
+        "frames": 8
+      },
+      "charon_weapon": {
+        "row": 9,
+        "frames": 7
+      },
+      "chrysaor_weapon": {
+        "row": 10,
+        "frames": 7
+      },
+      "cymopoleia_weapon": {
+        "row": 11,
+        "frames": 7
+      },
+      "deimos_weapon": {
+        "row": 12,
+        "frames": 7
+      },
+      "dionysus_weapon": {
+        "row": 13,
+        "frames": 7
+      },
+      "erinyes_weapon": {
+        "row": 14,
+        "frames": 7
+      },
+      "essence_hades": {
+        "row": 15,
+        "frames": 6
+      },
+      "essence_poseidon": {
+        "row": 16,
+        "frames": 6
+      },
+      "essence_zeus": {
+        "row": 17,
+        "frames": 6
+      },
+      "galatea_weapon": {
+        "row": 18,
+        "frames": 7
+      },
+      "galene_weapon": {
+        "row": 19,
+        "frames": 7
+      },
+      "hades_weapon": {
+        "row": 20,
+        "frames": 7
+      },
+      "halia_weapon": {
+        "row": 21,
+        "frames": 7
+      },
+      "hebe_weapon": {
+        "row": 22,
+        "frames": 7
+      },
+      "hecate_weapon": {
+        "row": 23,
+        "frames": 7
+      },
+      "hermes_weapon": {
+        "row": 24,
+        "frames": 7
+      },
+      "hygeia_weapon": {
+        "row": 25,
+        "frames": 7
+      },
+      "hypnos_weapon": {
+        "row": 26,
+        "frames": 7
+      },
+      "iris_weapon": {
+        "row": 27,
+        "frames": 7
+      },
+      "keres_weapon": {
+        "row": 28,
+        "frames": 7
+      },
+      "keystone_hades": {
+        "row": 29,
+        "frames": 6
+      },
+      "keystone_poseidon": {
+        "row": 30,
+        "frames": 6
+      },
+      "keystone_zeus": {
+        "row": 31,
+        "frames": 6
+      },
+      "macaria_weapon": {
+        "row": 32,
+        "frames": 7
+      },
+      "melinoe_weapon": {
+        "row": 33,
+        "frames": 7
+      },
+      "moirai_weapon": {
+        "row": 34,
+        "frames": 7
+      },
+      "morpheus_weapon": {
+        "row": 35,
+        "frames": 7
+      },
+      "nereus_weapon": {
+        "row": 36,
+        "frames": 7
+      },
+      "nike_weapon": {
+        "row": 37,
+        "frames": 7
+      },
+      "nyx_weapon": {
+        "row": 38,
+        "frames": 7
+      },
+      "oneiroi_weapon": {
+        "row": 39,
+        "frames": 7
+      },
+      "orb_drain": {
+        "row": 40,
+        "frames": 4
+      },
+      "orb_fire": {
+        "row": 41,
+        "frames": 4
+      },
+      "orb_freeze": {
+        "row": 42,
+        "frames": 4
+      },
+      "orb_knockback": {
+        "row": 43,
+        "frames": 4
+      },
+      "orb_lightning": {
+        "row": 44,
+        "frames": 4
+      },
+      "orb_none": {
+        "row": 45,
+        "frames": 4
+      },
+      "orb_sweep": {
+        "row": 46,
+        "frames": 4
+      },
+      "palaemon_weapon": {
+        "row": 47,
+        "frames": 7
+      },
+      "pan_weapon": {
+        "row": 48,
+        "frames": 7
+      },
+      "pegasus_weapon": {
+        "row": 49,
+        "frames": 7
+      },
+      "persephone_weapon": {
+        "row": 50,
+        "frames": 7
+      },
+      "phobos_weapon": {
+        "row": 51,
+        "frames": 7
+      },
+      "poseidon_weapon": {
+        "row": 52,
+        "frames": 7
+      },
+      "proteus_weapon": {
+        "row": 53,
+        "frames": 7
+      },
+      "rhode_weapon": {
+        "row": 54,
+        "frames": 7
+      },
+      "seeker_hades": {
+        "row": 55,
+        "frames": 8
+      },
+      "seeker_poseidon": {
+        "row": 56,
+        "frames": 8
+      },
+      "seeker_zeus": {
+        "row": 57,
+        "frames": 8
+      },
+      "tarot_chariot": {
+        "row": 58,
+        "frames": 6
+      },
+      "tarot_death": {
+        "row": 59,
+        "frames": 6
+      },
+      "tarot_deck": {
+        "row": 60,
+        "frames": 6
+      },
+      "tarot_devil": {
+        "row": 61,
+        "frames": 6
+      },
+      "tarot_emperor": {
+        "row": 62,
+        "frames": 6
+      },
+      "tarot_empress": {
+        "row": 63,
+        "frames": 6
+      },
+      "tarot_fool": {
+        "row": 64,
+        "frames": 6
+      },
+      "tarot_hanged_man": {
+        "row": 65,
+        "frames": 6
+      },
+      "tarot_hermit": {
+        "row": 66,
+        "frames": 6
+      },
+      "tarot_hierophant": {
+        "row": 67,
+        "frames": 6
+      },
+      "tarot_high_priestess": {
+        "row": 68,
+        "frames": 6
+      },
+      "tarot_judgement": {
+        "row": 69,
+        "frames": 6
+      },
+      "tarot_justice": {
+        "row": 70,
+        "frames": 6
+      },
+      "tarot_lovers": {
+        "row": 71,
+        "frames": 6
+      },
+      "tarot_magician": {
+        "row": 72,
+        "frames": 6
+      },
+      "tarot_moon": {
+        "row": 73,
+        "frames": 6
+      },
+      "tarot_star": {
+        "row": 74,
+        "frames": 6
+      },
+      "tarot_strength": {
+        "row": 75,
+        "frames": 6
+      },
+      "tarot_sun": {
+        "row": 76,
+        "frames": 6
+      },
+      "tarot_temperance": {
+        "row": 77,
+        "frames": 6
+      },
+      "tarot_tower": {
+        "row": 78,
+        "frames": 6
+      },
+      "tarot_wheel_of_fortune": {
+        "row": 79,
+        "frames": 6
+      },
+      "tarot_world": {
+        "row": 80,
+        "frames": 6
+      },
+      "thanatos_weapon": {
+        "row": 81,
+        "frames": 7
+      },
+      "thetis_weapon": {
+        "row": 82,
+        "frames": 7
+      },
+      "triton_weapon": {
+        "row": 83,
+        "frames": 7
+      },
+      "zagreus_weapon": {
+        "row": 84,
+        "frames": 7
+      },
+      "zeus_weapon": {
+        "row": 85,
+        "frames": 7
+      }
+    }
+  },
+  "portraits": {
+    "tile": [
+      16,
+      32
+    ],
+    "columns": 15,
+    "count": 57,
+    "tiles": {
+      "zeus": [
+        0,
+        0
+      ],
+      "athena": [
+        1,
+        0
+      ],
+      "apollo": [
+        2,
+        0
+      ],
+      "dionysus": [
+        3,
+        0
+      ],
+      "artemis": [
+        4,
+        0
+      ],
+      "ares": [
+        5,
+        0
+      ],
+      "hermes": [
+        6,
+        0
+      ],
+      "asclepius": [
+        7,
+        0
+      ],
+      "hebe": [
+        8,
+        0
+      ],
+      "phobos": [
+        9,
+        0
+      ],
+      "deimos": [
+        10,
+        0
+      ],
+      "hygeia": [
+        11,
+        0
+      ],
+      "pan": [
+        12,
+        0
+      ],
+      "nike": [
+        13,
+        0
+      ],
+      "iris": [
+        14,
+        0
+      ],
+      "poseidon": [
+        0,
+        1
+      ],
+      "amphitrite": [
+        1,
+        1
+      ],
+      "triton": [
+        2,
+        1
+      ],
+      "chrysaor": [
+        3,
+        1
+      ],
+      "cymopoleia": [
+        4,
+        1
+      ],
+      "rhode": [
+        5,
+        1
+      ],
+      "pegasus": [
+        6,
+        1
+      ],
+      "benthesikyme": [
+        7,
+        1
+      ],
+      "halia": [
+        8,
+        1
+      ],
+      "nereus": [
+        9,
+        1
+      ],
+      "proteus": [
+        10,
+        1
+      ],
+      "palaemon": [
+        11,
+        1
+      ],
+      "thetis": [
+        12,
+        1
+      ],
+      "galene": [
+        13,
+        1
+      ],
+      "galatea": [
+        14,
+        1
+      ],
+      "hades": [
+        0,
+        2
+      ],
+      "persephone": [
+        1,
+        2
+      ],
+      "zagreus": [
+        2,
+        2
+      ],
+      "thanatos": [
+        3,
+        2
+      ],
+      "hypnos": [
+        4,
+        2
+      ],
+      "melinoe": [
+        5,
+        2
+      ],
+      "macaria": [
+        6,
+        2
+      ],
+      "hecate": [
+        7,
+        2
+      ],
+      "morpheus": [
+        8,
+        2
+      ],
+      "nyx": [
+        9,
+        2
+      ],
+      "erinyes": [
+        10,
+        2
+      ],
+      "moirai": [
+        11,
+        2
+      ],
+      "keres": [
+        12,
+        2
+      ],
+      "oneiroi": [
+        13,
+        2
+      ],
+      "charon": [
+        14,
+        2
+      ],
+      "storm_hoplite": [
+        0,
+        3
+      ],
+      "sky_archer": [
+        1,
+        3
+      ],
+      "thunder_brute": [
+        2,
+        3
+      ],
+      "keeper_sky": [
+        3,
+        3
+      ],
+      "tide_hoplite": [
+        4,
+        3
+      ],
+      "siren": [
+        5,
+        3
+      ],
+      "reef_brute": [
+        6,
+        3
+      ],
+      "keeper_tides": [
+        7,
+        3
+      ],
+      "shade": [
+        8,
+        3
+      ],
+      "lampad": [
+        9,
+        3
+      ],
+      "tartarus_brute": [
+        10,
+        3
+      ],
+      "keeper_shades": [
+        11,
+        3
+      ]
+    }
+  }
+}

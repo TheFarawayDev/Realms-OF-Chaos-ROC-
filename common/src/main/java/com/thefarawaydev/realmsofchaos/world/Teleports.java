@@ -48,6 +48,7 @@ public final class Teleports {
         player.setDeltaMovement(Vec3.ZERO);
         player.resetFallDistance();
         player.teleportTo(dest, pos.x, pos.y, pos.z, Set.of(), yaw, 0.0F, true);
+        Wards.service(player);
     }
 
     /** For the passages: put a player somewhere in a realm, with the same care as every other journey here. */
@@ -92,7 +93,22 @@ public final class Teleports {
     public static void enterTower(ServerPlayer player, Line line) {
         MinecraftServer server = player.level().getServer();
         if (server == null) return;
-        toFloor(player, line, Tower.currentFloor(ProgressData.get(server), player.getUUID(), line));
+        // a party enters on the floor of its highest member; alone, on your own
+        int own = Tower.currentFloor(ProgressData.get(server), player.getUUID(), line), party = Parties.floor(player, line);
+        toFloor(player, line, party);
+        if (party > own && Realm.of(player.level().dimension()) != null) {
+            Hud.actionBar(player, Hud.colored(Component.translatable(HUD + "party.floor", party), 0x55FFFF));
+        }
+    }
+
+    /**
+     * May this player travel to this floor? Yes if it is theirs to stand on (see {@link Tower#canStand}), or if
+     * their party has got that far.
+     */
+    public static boolean canTravel(ServerPlayer player, Line line, int floor) {
+        MinecraftServer server = player.level().getServer();
+        if (server == null) return false;
+        return Tower.canStand(ProgressData.get(server), player.getUUID(), line, floor) || Tower.clampFloor(floor) <= Parties.floor(player, line);
     }
 
     /** Travel to a floor the player has reached. Floors above their progress are refused. */
@@ -100,7 +116,8 @@ public final class Teleports {
         MinecraftServer server = player.level().getServer();
         if (server == null || !Access.check(player)) return;
         ProgressData data = ProgressData.get(server);
-        floor = Math.min(Tower.clampFloor(floor), Tower.currentFloor(data, player.getUUID(), line));
+        floor = Tower.clampFloor(floor);
+        if (!canTravel(player, line, floor)) floor = Math.max(Tower.currentFloor(data, player.getUUID(), line), Parties.floor(player, line));
         if (throttled(LAST_TRAVEL, player, server)) return;
         ServerLevel dest = realmLevel(player, server, Realm.ofLine(line));
         if (dest == null) return;

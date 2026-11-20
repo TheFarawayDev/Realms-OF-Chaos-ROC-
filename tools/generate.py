@@ -318,6 +318,23 @@ def shade(c, f):
 def mix(a, b, t):
     return tuple(clamp(a[i] * (1 - t) + b[i] * t) for i in range(3))
 
+SENTINELS = [
+    ("storm_hoplite", "Storm Hoplite", "ZEUS", ("armor", BRONZE, GOLD, (60, 44, 30), TAN, "helmet", GOLD, False, False)),
+    ("sky_archer", "Sky Archer", "ZEUS", ("toga", (150, 192, 232), SILVER, (190, 150, 90), LIGHT, "circlet", SILVER, False, True)),
+    ("thunder_brute", "Thunder Brute", "ZEUS", ("armor", IRON, (250, 205, 70), (40, 34, 30), TAN, "horns", (250, 205, 70), True, False)),
+    ("keeper_sky", "Keeper of the Sky", "ZEUS", ("robe", WHITE, GOLD, (236, 236, 242), LIGHT, "crown", GOLD, True, False)),
+    ("tide_hoplite", "Tide Hoplite", "POSEIDON", ("armor", (60, 130, 140), (120, 240, 250), (24, 70, 84), (150, 200, 200), "helmet", (120, 240, 250), False, False)),
+    ("siren", "Siren", "POSEIDON", ("dress", (70, 170, 190), (220, 250, 255), (30, 90, 110), (170, 215, 210), "circlet", (220, 250, 255), False, True)),
+    ("reef_brute", "Reef Brute", "POSEIDON", ("wild", (40, 90, 100), (230, 120, 110), (30, 70, 70), (120, 170, 160), "horns", (230, 120, 110), True, False)),
+    ("keeper_tides", "Keeper of the Tides", "POSEIDON", ("robe", (30, 80, 110), (120, 240, 250), (200, 235, 240), (150, 200, 200), "crown", (120, 240, 250), True, False)),
+    ("shade", "Shade", "HADES", ("robe", (40, 36, 54), (120, 80, 170), (20, 18, 28), (150, 150, 170), "hood", (40, 36, 54), False, False)),
+    ("lampad", "Lampad", "HADES", ("dress", (60, 30, 80), (255, 140, 40), (30, 20, 40), (190, 170, 200), "circlet", (255, 140, 40), False, True)),
+    ("tartarus_brute", "Tartarus Brute", "HADES", ("armor", (50, 40, 50), (200, 60, 40), (20, 16, 20), (120, 110, 120), "horns", (200, 60, 40), True, False)),
+    ("keeper_shades", "Keeper of the Shades", "HADES", ("robe", (24, 20, 32), (190, 80, 250), (210, 210, 225), (200, 200, 215), "crown", (190, 80, 250), True, False)),
+]
+for _sid, _name, _line, _look in SENTINELS:
+    LOOKS[_sid] = _look
+
 def all_gods():
     idx = 0
     for line, gods in LINES.items():
@@ -352,6 +369,90 @@ final class GodRoster {{
 }}
 """
     w(os.path.join(JAVA_DIR, "GodRoster.java"), src)
+
+def gen_atlases():
+    """
+    Every texture the mod ships, gathered into atlases under art/atlases/: one sheet per kind, each at its own pixel
+    size and again four times larger, with index.json saying which tile is which. Animated textures show their
+    first frame; items-animated.png keeps every frame of the animated items in a row each.
+    """
+    out = os.path.join(ROOT, "art/atlases")
+    os.makedirs(out, exist_ok=True)
+    index = {}
+
+    def sheet(name, folder, tile_w, tile_h, columns, recursive=False):
+        base = os.path.join(ASSETS, "textures", folder)
+        files = []
+        for root, _dirs, names in os.walk(base):
+            for n in sorted(names):
+                if n.endswith(".png"):
+                    files.append(os.path.join(root, n))
+            if not recursive:
+                break
+        files.sort(key=lambda f: os.path.relpath(f, base))
+        rows = (len(files) + columns - 1) // columns
+        img = Image.new("RGBA", (columns * tile_w, max(1, rows) * tile_h), (0, 0, 0, 0))
+        cells = {}
+        for i, f in enumerate(files):
+            tile = Image.open(f).convert("RGBA").crop((0, 0, tile_w, tile_h))
+            img.paste(tile, ((i % columns) * tile_w, (i // columns) * tile_h))
+            cells[os.path.relpath(f, base)[:-4].replace(os.sep, "/")] = [i % columns, i // columns]
+        img.save(os.path.join(out, f"{name}.png"))
+        img.resize((img.width * 4, img.height * 4), Image.NEAREST).save(os.path.join(out, f"{name}@4x.png"))
+        index[name] = {"tile": [tile_w, tile_h], "columns": columns, "count": len(files), "source": f"assets/{MOD}/textures/{folder}", "tiles": cells}
+        return files
+
+    item_files = sheet("items", "item", 16, 16, 16)
+    sheet("weapon-designs", "item/design", 16, 16, 8)
+    sheet("blocks", "block", 16, 16, 8)
+    sheet("skins", "entity", 64, 64, 9, recursive=True)
+
+    # every frame of every animated item, a row per item
+    animated = []
+    for f in item_files:
+        im = Image.open(f).convert("RGBA")
+        if im.height > 16:
+            animated.append((os.path.basename(f)[:-4], im))
+    if animated:
+        widest = max(im.height // 16 for _n, im in animated)
+        strip = Image.new("RGBA", (widest * 16, len(animated) * 16), (0, 0, 0, 0))
+        rows = {}
+        for r, (n, im) in enumerate(animated):
+            for fr in range(im.height // 16):
+                strip.paste(im.crop((0, fr * 16, 16, fr * 16 + 16)), (fr * 16, r * 16))
+            rows[n] = {"row": r, "frames": im.height // 16}
+        strip.save(os.path.join(out, "items-animated.png"))
+        strip.resize((strip.width * 4, strip.height * 4), Image.NEAREST).save(os.path.join(out, "items-animated@4x.png"))
+        index["items-animated"] = {"tile": [16, 16], "rows": rows}
+
+    # the gods and sentinels as they look in game: front views cut from the skins
+    people = []
+    for _, _line, _rank, g in all_gods():
+        people.append((g[0], os.path.join(ASSETS, f"textures/entity/god/{g[0]}.png")))
+    for sid, _name, _line, _look in SENTINELS:
+        people.append((sid, os.path.join(ASSETS, f"textures/entity/sentinel/{sid}.png")))
+    cols = 15
+    portraits = Image.new("RGBA", (cols * 16, ((len(people) + cols - 1) // cols) * 32), (0, 0, 0, 0))
+    cells = {}
+    for i, (n, f) in enumerate(people):
+        portraits.paste(skin_preview(Image.open(f).convert("RGBA"), 1), ((i % cols) * 16, (i // cols) * 32))
+        cells[n] = [i % cols, i // cols]
+    portraits.save(os.path.join(out, "portraits.png"))
+    portraits.resize((portraits.width * 4, portraits.height * 4), Image.NEAREST).save(os.path.join(out, "portraits@4x.png"))
+    index["portraits"] = {"tile": [16, 32], "columns": cols, "count": len(people), "tiles": cells}
+
+    wj(os.path.join(out, "index.json"), index)
+    lines = ["# Texture atlases", "", "Generated by `tools/generate.py` from the textures the mod ships. Each sheet comes at its own pixel size and",
+             "again four times larger (`@4x`). `index.json` maps every texture name to its column and row.", "",
+             "| Atlas | Tiles | Tile size | What |", "| --- | --- | --- | --- |"]
+    what = {"items": "every item texture (first frame of animated ones)", "weapon-designs": "weapon designs drawn ahead for future mythologies",
+            "blocks": "every block texture (first frame)", "skins": "the raw 64x64 skins of the gods and the passage sentinels",
+            "portraits": "the gods and sentinels as they look from the front"}
+    for name in ("items", "weapon-designs", "blocks", "skins", "portraits"):
+        e = index[name]
+        lines.append(f"| `{name}.png` | {e['count']} | {e['tile'][0]} x {e['tile'][1]} | {what[name]} |")
+    lines.append(f"| `items-animated.png` | {len(animated)} rows | 16 x 16 | every frame of every animated item, one item per row |")
+    w(os.path.join(out, "README.md"), "\n".join(lines) + "\n")
 
 def gen_story_java():
     rows = [f"        new Entry({jstr(sid)}, {jstr(title)}, {len(pages)})" for sid, title, _blurb, pages in STORY]
@@ -413,6 +514,40 @@ def gen_lang():
         "block.realms_of_chaos.altar_hades": "Trial Altar of Hades",
         "entity.realms_of_chaos.god_boss": "God of the Realms",
         "block.realms_of_chaos.chaos_forge": "Forge of Chaos",
+        "block.realms_of_chaos.passage_cache": "Treasure Cache",
+        "hud.realms_of_chaos.cache.taken": "You have already taken your share of this cache",
+        "hud.realms_of_chaos.cache.loot": "Your share of the treasure: %s stacks",
+        "hud.realms_of_chaos.cache.empty": "This cache holds nothing here",
+        "hud.realms_of_chaos.passage.rearmed": "The passage has sealed itself again for you",
+        "hud.realms_of_chaos.adapt.party": "The trial rises to meet %s challengers",
+        "hud.realms_of_chaos.adapt.mercy": "The tower relents: %s is weakened",
+        "hud.realms_of_chaos.party.invited": "%s invites you to their party. Open the Codex and choose Party, or run /roc party accept",
+        "hud.realms_of_chaos.party.sent": "Invitation sent to %s",
+        "hud.realms_of_chaos.party.joined": "%s joined the party",
+        "hud.realms_of_chaos.party.left": "%s left the party",
+        "hud.realms_of_chaos.party.full": "The party is full (4)",
+        "hud.realms_of_chaos.party.none": "Nobody has invited you",
+        "hud.realms_of_chaos.party.self": "You cannot invite yourself",
+        "hud.realms_of_chaos.party.already": "%s is already in your party",
+        "hud.realms_of_chaos.party.alone": "You are not in a party",
+        "hud.realms_of_chaos.party.floor": "Travelling with your party: floor %s",
+        "menu.realms_of_chaos.party": "Party",
+        "menu.realms_of_chaos.party.open": "Party",
+        "menu.realms_of_chaos.party.open.lore": "Climb together: invite friends and travel as one",
+        "menu.realms_of_chaos.party.size": "%s of 4 in your party",
+        "menu.realms_of_chaos.party.solo": "You are climbing alone",
+        "menu.realms_of_chaos.party.member": "In your party",
+        "menu.realms_of_chaos.party.you": "You",
+        "menu.realms_of_chaos.party.progress": "%s: floor %s",
+        "menu.realms_of_chaos.party.invite": "Click to invite",
+        "menu.realms_of_chaos.party.pending": "%s has invited you",
+        "menu.realms_of_chaos.party.accept": "Accept the invitation",
+        "menu.realms_of_chaos.party.decline": "Decline",
+        "menu.realms_of_chaos.party.leave": "Leave the party",
+        "menu.realms_of_chaos.party.rule1": "A party enters a tower on its highest member's floor",
+        "menu.realms_of_chaos.party.rule2": "Everyone keeps their own progress: you climb past a floor",
+        "menu.realms_of_chaos.party.rule3": "only once you have beaten its god - with or without help",
+        "menu.realms_of_chaos.party.rule4": "Everyone who fights gets their own loot",
         "block.realms_of_chaos.gate_pedestal": "Keystone Pedestal",
         "block.realms_of_chaos.oracle": "The Oracle's Flame",
         "ruin.realms_of_chaos.gate": "Ruined Gate",
@@ -725,6 +860,9 @@ def gen_lang():
         "advancement.realms_of_chaos.root.title": "Realms of Chaos",
         "advancement.realms_of_chaos.root.desc": "Thank you for using our mod! Open the Codex of Chaos to begin. - TheFarawayDev",
     }
+    lang["entity.realms_of_chaos.sentinel"] = "Sentinel"
+    for sid, sname, _line, _look in SENTINELS:
+        lang[f"entity.realms_of_chaos.sentinel.{sid}"] = sname
     for sid, title, blurb, pages in STORY:
         assert len(title) <= 32, title
         lang[f"story.realms_of_chaos.{sid}.title"] = title
@@ -780,7 +918,7 @@ KEYSTONES = {
 }
 
 BLOCKS = ["gate_hub", "gate_zeus", "gate_poseidon", "gate_hades", "gate_ascend", "gate_leave",
-          "altar_zeus", "altar_poseidon", "altar_hades", "chaos_forge", "passage_seal", "passage_shrine", "gate_pedestal", "oracle"]
+          "altar_zeus", "altar_poseidon", "altar_hades", "chaos_forge", "passage_seal", "passage_shrine", "gate_pedestal", "oracle", "passage_cache"]
 
 # The 22 Major Arcana: (id, numeral, name, what the card does, 8x8 symbol (# ink, + colour), colour)
 TAROT = [
@@ -2265,6 +2403,21 @@ def gen_block_textures():
     save_strip(ora_top, os.path.join(T, "oracle_top.png"), {"animation": {"frametime": 2, "interpolate": True}})
     save_strip(ora_side, os.path.join(T, "oracle_side.png"), {"animation": {"frametime": 3, "interpolate": True}})
 
+    cache_frames = []
+    for f in range(8):
+        k = 0.5 + 0.5 * math.sin(f / 8 * math.tau)
+        img = Image.new("RGBA", (16, 16))
+        for y in range(16):
+            for x in range(16):
+                c = shade((92, 60, 38), grain[y][x] * (0.8 if x in (0, 15) or y in (0, 15) else 1.0))
+                if y in (4, 5) or x in (3, 12):
+                    c = shade((214, 170, 74), 1.1 if (x + y) % 3 else 0.85)                  # gold bands
+                if 6 <= x <= 9 and 6 <= y <= 10:
+                    c = mix((150, 110, 40), (255, 240, 170), k) if (x in (7, 8) and y in (7, 8, 9)) else (60, 44, 30)   # the lock
+                img.putpixel((x, y), c + (255,))
+        cache_frames.append(img)
+    save_strip(cache_frames, os.path.join(T, "passage_cache.png"), {"animation": {"frametime": 4, "interpolate": True}})
+
     stone = {"altar_zeus": ((232, 232, 240), (250, 205, 70)), "altar_poseidon": ((74, 150, 150), (120, 240, 250)),
              "altar_hades": ((44, 38, 58), (190, 80, 250))}
     base = Image.new("RGBA", (16, 16))
@@ -2592,6 +2745,13 @@ def skin_preview(img, scale=6):
     blit("rleg", "front", 4, 20); blit("lleg", "front", 8, 20)
     return out.resize((16 * scale, 32 * scale), Image.NEAREST)
 
+def gen_sentinel_skins():
+    for sid, _name, line, _look in SENTINELS:
+        img = make_skin(sid, line, 8)
+        path = os.path.join(ASSETS, f"textures/entity/sentinel/{sid}.png")
+        os.makedirs(os.path.dirname(path), exist_ok=True)
+        img.save(path)
+
 def gen_skins():
     previews = {}
     for _, line, rank, g in all_gods():
@@ -2884,6 +3044,7 @@ if __name__ == "__main__":
     gen_tarot()
     gen_dolls()
     gen_essences_and_orbs()
+    gen_sentinel_skins()
     gen_keystones_and_seekers()
     gen_materials()
     gen_concepts()
@@ -2898,4 +3059,5 @@ if __name__ == "__main__":
     gen_icon(previews)
     gen_site(first, previews)
     gen_promo(first, {k: v for k, v in previews.items()})
+    gen_atlases()
     print("generated", sum(len(v) for v in LINES.values()), "gods")

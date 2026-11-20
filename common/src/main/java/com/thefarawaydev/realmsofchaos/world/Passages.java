@@ -56,7 +56,7 @@ public final class Passages {
     public static final int CELL = 12, ROOM = 9, CENTRE = 5;
     public static final int HEADROOM = 5;
     public static final int X0 = 600, PITCH = 160;
-    public static final int LAYOUT_VERSION = 1;
+    public static final int LAYOUT_VERSION = 2;
     public static final String GUARDIAN_TAG = "realms_of_chaos_guardian";
     private static final String HUD = "hud." + RealmsOfChaos.MOD_ID + ".passage.";
 
@@ -81,6 +81,8 @@ public final class Passages {
         private final boolean[][] east, south;
         public Cell start, exit;
         public final List<Cell> seals = new ArrayList<>();
+        /** Ordinary rooms and corridors that a patrol of sentinels walks. */
+        public final java.util.Set<Cell> patrols = new java.util.LinkedHashSet<>();
 
         Plan(long worldSeed, Line line, int index) {
             this.line = line;
@@ -201,6 +203,10 @@ public final class Passages {
             for (Cell c : free) {
                 float roll = random.nextFloat();
                 kinds[c.x][c.z] = roll < 0.40F ? Kind.HALL : roll < 0.75F ? Kind.ROOM : Kind.TRAP;
+            }
+            // about a third of the ordinary rooms have a patrol in them
+            for (Cell c : free) {
+                if (random.nextFloat() < 0.35F) patrols.add(c);
             }
         }
 
@@ -431,8 +437,7 @@ public final class Passages {
             }
             case TREASURE -> {
                 for (int dx = -1; dx <= 1; dx++) for (int dz = -1; dz <= 1; dz++) set(level, m.offset(dx, 0, dz), p.inlay());
-                set(level, plan.featurePos(c), Blocks.CHEST);
-                if (level.getBlockEntity(plan.featurePos(c)) instanceof ChestBlockEntity chest) fillChest(chest, plan, random);
+                set(level, plan.featurePos(c), ModContent.PASSAGE_CACHE.get());
                 for (int[] k : new int[][]{{-3, -3}, {3, -3}, {-3, 3}, {3, 3}}) {
                     set(level, m.offset(k[0], 1, k[1]), p.trim());
                     set(level, m.offset(k[0], 2, k[1]), p.light());
@@ -489,8 +494,9 @@ public final class Passages {
         }
     }
 
-    /** What a passage's treasure chest holds: always some of this tier's forge material, then a mixed handful. */
-    private static void fillChest(ChestBlockEntity chest, Plan plan, Random random) {
+    /** One player's share of a passage's treasure: always some of this tier's forge material, then a mixed handful. */
+    public static List<ItemStack> lootFor(Plan plan, Cell cell, UUID player) {
+        Random random = new Random(plan.seed ^ player.getLeastSignificantBits() ^ (cell.x * 131L + cell.z * 17L + 5));
         List<ItemStack> loot = new ArrayList<>();
         loot.add(new ItemStack(ModContent.materialItem(plan.line, plan.tier), 1 + random.nextInt(2)));
         loot.add(new ItemStack(Items.EXPERIENCE_BOTTLE, 2 + random.nextInt(3) + plan.tier));
@@ -505,10 +511,46 @@ public final class Passages {
             Tarot card = Tarot.values()[random.nextInt(Tarot.values().length)];
             if (card != Tarot.DEVIL) loot.add(new ItemStack(ModContent.tarotItem(card)));
         }
-        List<Integer> slots = new ArrayList<>();
-        for (int i = 0; i < chest.getContainerSize(); i++) slots.add(i);
-        Collections.shuffle(slots, random);
-        for (int i = 0; i < loot.size(); i++) chest.setItem(slots.get(i), loot.get(i));
+        return loot;
+    }
+
+    private static String lootKey(Plan plan, Cell cell, UUID player) {
+        return "looted/" + player + "/" + plan.line.id() + "/" + plan.index + "/" + cell.x + "/" + cell.z;
+    }
+
+    public static boolean hasLooted(ServerLevel level, Plan plan, Cell cell, UUID player) {
+        return ProgressData.get(level.getServer()).isBuilt(lootKey(plan, cell, player));
+    }
+
+    /**
+     * Right-clicking a treasure cache: the player takes their own share, once. Everybody gets one, whoever came
+     * first. @return true if a share was handed over.
+     */
+    public static boolean loot(ServerLevel level, BlockPos pos, ServerPlayer player) {
+        String hud = "hud." + RealmsOfChaos.MOD_ID + ".cache.";
+        Plan plan = planAt(level, pos);
+        Cell cell = plan == null ? null : plan.cellAt(pos);
+        if (cell == null || plan.kind(cell) != Kind.TREASURE) {
+            Hud.actionBar(player, Hud.colored(Component.translatable(hud + "empty"), 0xAAAAAA));
+            return false;
+        }
+        ProgressData data = ProgressData.get(level.getServer());
+        String key = lootKey(plan, cell, player.getUUID());
+        if (data.isBuilt(key)) {
+            Hud.actionBar(player, Hud.colored(Component.translatable(hud + "taken"), 0xAAAAAA));
+            return false;
+        }
+        data.markBuilt(key);
+        List<ItemStack> loot = lootFor(plan, cell, player.getUUID());
+        int stacks = loot.size();
+        for (ItemStack stack : loot) {
+            if (!player.getInventory().add(stack) && !stack.isEmpty()) player.drop(stack, false, net.minecraft.util.Prediction.SERVER_ONLY);
+        }
+        level.playSound(null, pos, SoundEvents.CHEST_OPEN, SoundSource.BLOCKS, 0.8F, 1.0F);
+        level.playSound(null, pos, SoundEvents.PLAYER_LEVELUP, SoundSource.BLOCKS, 0.4F, 1.6F);
+        level.sendParticles(ParticleTypes.HAPPY_VILLAGER, pos.getX() + 0.5, pos.getY() + 1.2, pos.getZ() + 0.5, 16, 0.4, 0.3, 0.4, 0.0);
+        Hud.actionBar(player, Hud.colored(Component.translatable(hud + "loot", stacks), 0xF5B82E));
+        return true;
     }
 
     // ---- seals and guardians ---------------------------------------------------------------------------------
@@ -519,46 +561,64 @@ public final class Passages {
         return n;
     }
 
-    private static List<EntityType<? extends Mob>> guardianTypes(Line line, int tier) {
-        return switch (line) {
-            case ZEUS -> tier == 1 ? List.of(EntityTypes.SKELETON, EntityTypes.ZOMBIE)
-                    : tier == 2 ? List.of(EntityTypes.SKELETON, EntityTypes.STRAY, EntityTypes.VINDICATOR)
-                    : List.of(EntityTypes.VINDICATOR, EntityTypes.STRAY, EntityTypes.BREEZE);
-            case POSEIDON -> tier == 1 ? List.of(EntityTypes.DROWNED, EntityTypes.ZOMBIE)
-                    : tier == 2 ? List.of(EntityTypes.DROWNED, EntityTypes.BOGGED)
-                    : List.of(EntityTypes.DROWNED, EntityTypes.BOGGED, EntityTypes.WITCH);
-            case HADES -> tier == 1 ? List.of(EntityTypes.ZOMBIE, EntityTypes.HUSK)
-                    : tier == 2 ? List.of(EntityTypes.HUSK, EntityTypes.WITHER_SKELETON)
-                    : List.of(EntityTypes.WITHER_SKELETON, EntityTypes.BLAZE);
-        };
-    }
-
+    /** How many sentinels guard a seal when one player comes: a Keeper and one more for each tier. */
     public static int guardianCount(int tier) {
         return 2 + tier;
     }
 
-    /** The guardians of a sealed chamber that are still standing. */
+    /** The sentinels of a room that are still standing. */
     public static List<Mob> guardians(ServerLevel level, Plan plan, Cell c) {
         return level.getEntitiesOfClass(Mob.class, plan.cellBox(c).inflate(6, 2, 6), m -> m.isAlive() && m.entityTags().contains(GUARDIAN_TAG + "/" + c.x + "/" + c.z));
     }
 
-    /** Wakes the guardians of a sealed chamber. Happens once per chamber; nothing wakes on Peaceful. */
+    private static String wokenKey(Plan plan) {
+        return builtKey(plan.line, plan.index) + "/woken/";
+    }
+
+    /** Who a room holds: a Keeper and its guard for a sealed chamber, one or two sentinels for a patrol. */
+    public static List<com.thefarawaydev.realmsofchaos.entity.Sentinel.Kind> garrison(Plan plan, Cell c, int players) {
+        List<com.thefarawaydev.realmsofchaos.entity.Sentinel.Kind> out = new ArrayList<>();
+        Random random = new Random(plan.seed + c.x * 131L + c.z * 17L);
+        var roles = new ArrayList<>(List.of(com.thefarawaydev.realmsofchaos.entity.Sentinel.Role.SOLDIER, com.thefarawaydev.realmsofchaos.entity.Sentinel.Role.CASTER));
+        if (plan.tier >= 2) roles.add(com.thefarawaydev.realmsofchaos.entity.Sentinel.Role.BRUTE);
+        int others;
+        if (plan.kind(c) == Kind.SEAL) {
+            out.add(com.thefarawaydev.realmsofchaos.entity.Sentinel.Kind.of(plan.line, com.thefarawaydev.realmsofchaos.entity.Sentinel.Role.KEEPER));
+            others = guardianCount(plan.tier) - 1 + Adapt.extraGuardians(players);
+        } else {
+            others = (plan.tier >= 3 ? 2 : 1) + Adapt.extraGuardians(players);
+        }
+        for (int i = 0; i < others; i++) out.add(com.thefarawaydev.realmsofchaos.entity.Sentinel.Kind.of(plan.line, roles.get(random.nextInt(roles.size()))));
+        return out;
+    }
+
+    /** True for rooms that have sentinels to wake: sealed chambers and patrolled rooms. */
+    public static boolean garrisoned(Plan plan, Cell c) {
+        return plan.kind(c) == Kind.SEAL || plan.patrols.contains(c);
+    }
+
+    /**
+     * Wakes the sentinels of a room. Happens once per room (until the passage re-seals itself); more of them wake
+     * for a group. Nothing wakes on Peaceful. @return how many woke.
+     */
     public static int wake(ServerLevel level, Plan plan, Cell c) {
         ProgressData data = ProgressData.get(level.getServer());
-        String key = builtKey(plan.line, plan.index) + "/woken/" + c.x + "/" + c.z;
-        if (data.isBuilt(key) || level.getDifficulty() == Difficulty.PEACEFUL) return 0;
+        String key = wokenKey(plan) + c.x + "/" + c.z;
+        if (!garrisoned(plan, c) || data.isBuilt(key) || level.getDifficulty() == Difficulty.PEACEFUL) return 0;
         data.markBuilt(key);
-        List<EntityType<? extends Mob>> types = guardianTypes(plan.line, plan.tier);
-        Random random = new Random(plan.seed + c.x * 131L + c.z * 17L);
+        int players = Math.max(1, level.getEntitiesOfClass(ServerPlayer.class, plan.box(), p -> p.isAlive() && !p.isSpectator()).size());
         BlockPos m = plan.centre(c);
-        int[][] spots = {{-2, -2}, {2, 2}, {2, -2}, {-2, 2}, {-3, 0}, {3, 0}, {0, -3}, {0, 3}};
+        // a corridor is only three wide: its sentinels stand in the crossing;
+        // and in a room they stand on the lanes that run door to door, which nothing is ever built on
+        int[][] spots = plan.kind(c) == Kind.HALL ? new int[][]{{1, 1}, {-1, -1}, {1, -1}, {-1, 1}, {0, 1}, {1, 0}, {0, -1}, {-1, 0}}
+                : new int[][]{{2, 0}, {-2, 0}, {0, 2}, {0, -2}, {3, 1}, {-3, -1}, {1, -3}, {-1, 3}};
         int woken = 0;
-        for (int i = 0; i < guardianCount(plan.tier); i++) {
-            Mob mob = types.get(random.nextInt(types.size())).create(level, EntitySpawnReason.TRIGGERED);
+        for (com.thefarawaydev.realmsofchaos.entity.Sentinel.Kind kind : garrison(plan, c, players)) {
+            com.thefarawaydev.realmsofchaos.entity.Sentinel mob = ModContent.SENTINEL.get().create(level, EntitySpawnReason.TRIGGERED);
             if (mob == null) continue;
-            BlockPos at = m.offset(spots[i % spots.length][0], 1, spots[i % spots.length][1]);
-            mob.snapTo(at.getX() + 0.5, at.getY(), at.getZ() + 0.5, random.nextFloat() * 360.0F, 0.0F);
-            mob.finalizeSpawn(level, level.getCurrentDifficultyAt(at), EntitySpawnReason.TRIGGERED, null);
+            BlockPos at = m.offset(spots[woken % spots.length][0], 1, spots[woken % spots.length][1]);
+            mob.setUp(kind, plan.tier);
+            mob.snapTo(at.getX() + 0.5, at.getY(), at.getZ() + 0.5, woken * 90.0F, 0.0F);
             mob.setPersistenceRequired();
             mob.addTag(GUARDIAN_TAG);
             mob.addTag(GUARDIAN_TAG + "/" + c.x + "/" + c.z);
@@ -568,6 +628,16 @@ public final class Passages {
         }
         if (woken > 0) level.playSound(null, m.above(), SoundEvents.WARDEN_HEARTBEAT, SoundSource.HOSTILE, 2.0F, 0.8F);
         return woken;
+    }
+
+    /**
+     * The passage seals itself again: every seal is restored and every room's sentinels will wake afresh. This is
+     * how a passage adapts to a player who has not walked it yet arriving after others broke it open.
+     */
+    public static void rearm(ServerLevel level, Plan plan) {
+        for (Mob m : level.getEntitiesOfClass(Mob.class, plan.box().inflate(2), e -> e.entityTags().contains(GUARDIAN_TAG))) m.discard();
+        for (Cell c : plan.seals) set(level, plan.sealPos(c), ModContent.PASSAGE_SEAL.get());
+        ProgressData.get(level.getServer()).unmarkPrefix(wokenKey(plan));
     }
 
     /** The passage a block belongs to, with its plan - or null if it is not in one. */
@@ -615,11 +685,20 @@ public final class Passages {
         if (level == null) return;
         ensure(level, line, index);
         Plan plan = plan(level, line, index);
+        // someone who has not walked this passage finds it sealed, even if others broke it open before - unless
+        // those others are still inside, in which case they are simply joined
+        boolean others = !level.getEntitiesOfClass(ServerPlayer.class, plan.box(), p -> p != player && p.isAlive() && !p.isSpectator()).isEmpty();
+        boolean rearmed = false;
+        if (!ProgressData.get(server).hasPassed(player.getUUID(), line, index) && sealsLeft(level, plan) == 0 && !others) {
+            rearm(level, plan);
+            rearmed = true;
+        }
         Teleports.moveTo(player, level, plan.arrival(), 0.0F);
         visited(player, plan).add(plan.start);
         int left = sealsLeft(level, plan);
         Hud.title(player, Hud.colored(Component.translatable(HUD + "title", index + 1), line.color()),
                 Hud.colored(left > 0 ? Component.translatable(HUD + "sub", left) : Component.translatable(HUD + "sub.open"), 0xCCCCCC));
+        if (rearmed) Hud.actionBar(player, Hud.colored(Component.translatable("hud." + RealmsOfChaos.MOD_ID + ".passage.rearmed"), 0xFFAA00));
     }
 
     private static final Map<UUID, Long> LAST_NOTICE = new HashMap<>();
@@ -668,7 +747,7 @@ public final class Passages {
             visited(player, plan).add(cell);
             Kind kind = plan.kind(cell);
             boolean sealed = kind == Kind.SEAL && level.getBlockState(plan.sealPos(cell)).is(ModContent.PASSAGE_SEAL.get());
-            if (sealed && !player.isSpectator() && !player.isCreative()) wake(level, plan, cell);
+            if ((sealed || plan.patrols.contains(cell)) && !player.isSpectator() && !player.isCreative()) wake(level, plan, cell);
             String here = spot.line().id() + "/" + spot.index() + "/" + cell.x + "/" + cell.z;
             if (!here.equals(LAST_CELL.put(player.getUUID(), here))) {
                 String hint = switch (kind) {

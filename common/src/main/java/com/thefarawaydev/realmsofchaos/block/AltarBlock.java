@@ -87,6 +87,10 @@ public class AltarBlock extends Block {
         if (data.isDefeated(player.getUUID(), god)) return State.DEFEATED;
         if (level.getDifficulty() == Difficulty.PEACEFUL) return State.PEACEFUL;
         if (!level.getEntitiesOfClass(GodBoss.class, fightArea(level, altar, line), GodBoss::isAlive).isEmpty()) return State.UNDERWAY;
+        if (inTower(level, line)) {
+            // inside a tower a trial is open to anyone who may be on this floor - their own floor, or their party's
+            return com.thefarawaydev.realmsofchaos.world.Teleports.canTravel(player, line, Tower.floorAt(altar.getY())) ? State.READY : State.LOCKED;
+        }
         if (god.rank() != data.nextRank(player.getUUID(), line)) return State.LOCKED;
         return State.READY;
     }
@@ -120,6 +124,10 @@ public class AltarBlock extends Block {
         Vec3 spawn = inTower(level, line) ? Tower.centre(level, Tower.floorAt(altar.getY())) : findSpawn(level, boss, altar);
         boss.setGod(god);
         boss.setRematch(rematch);
+        // the trial adapts: harder for every extra challenger on the floor, a little easier for someone it keeps beating
+        int challengers = Math.max(1, level.getEntitiesOfClass(ServerPlayer.class, fightArea(level, altar, line), p -> p.isAlive() && !p.isSpectator()).size());
+        int mercy = rematch ? 0 : Math.min(com.thefarawaydev.realmsofchaos.world.Adapt.MAX_MERCY, com.thefarawaydev.realmsofchaos.world.Adapt.losses(player.getUUID(), god));
+        boss.setTrial(challengers, mercy);
         boss.setPos(spawn.x, spawn.y, spawn.z);
         boss.setHome(spawn);
         level.addFreshEntity(boss);
@@ -137,6 +145,10 @@ public class AltarBlock extends Block {
             announce(witness, god, hud, rematch);
         }
         if (!fightArea(level, altar, line).contains(player.position())) announce(player, god, hud, rematch);
+        for (ServerPlayer witness : level.getEntitiesOfClass(ServerPlayer.class, fightArea(level, altar, line), Player::isAlive)) {
+            if (challengers > 1) Hud.actionBar(witness, Hud.colored(Component.translatable(hud + "adapt.party", challengers), 0xFFAA00));
+        }
+        if (mercy > 0) Hud.actionBar(player, Hud.colored(Component.translatable(hud + "adapt.mercy", god.displayName()), 0x55FF55));
         return boss;
     }
 

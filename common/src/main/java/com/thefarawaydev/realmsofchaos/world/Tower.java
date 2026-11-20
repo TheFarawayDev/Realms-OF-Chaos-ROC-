@@ -75,6 +75,17 @@ public final class Tower {
         return floor > 1 && !data.hasPassed(player, line, floor - 1) ? floor - 1 : floor;
     }
 
+    /**
+     * May this player be on this floor by their own right? Yes for every floor up to the one they are working on,
+     * and for a floor above that if they have beaten the god of the floor below it and walked the passage up - as
+     * happens when a party carries someone past floors they have not done themselves.
+     */
+    public static boolean canStand(ProgressData data, UUID player, Line line, int floor) {
+        floor = clampFloor(floor);
+        if (floor <= currentFloor(data, player, line)) return true;
+        return data.isDefeated(player, god(line, floor - 1)) && data.hasPassed(player, line, floor - 1);
+    }
+
     /** Where players appear on a floor: a flat pad by the south gate, facing the altar. */
     public static Vec3 arrival(int floor) {
         return new Vec3(0.5, floorY(floor) + 1, 15.5);

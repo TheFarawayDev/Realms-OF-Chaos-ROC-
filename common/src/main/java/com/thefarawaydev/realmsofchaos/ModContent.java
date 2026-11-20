@@ -73,6 +73,7 @@ public final class ModContent {
     public static final Ref<Block> PASSAGE_SHRINE = new Ref<>();
     public static final Ref<Block> GATE_PEDESTAL = new Ref<>();
     public static final Ref<Block> ORACLE = new Ref<>();
+    public static final Ref<Block> PASSAGE_CACHE = new Ref<>();
 
     public static final List<Def<Block>> BLOCK_DEFS = new ArrayList<>();
 
@@ -97,6 +98,7 @@ public final class ModContent {
     // ---- entity / tab -------------------------------------------------------------------------
     public static final Ref<EntityType<GodBoss>> GOD_BOSS = new Ref<>();
     public static final Ref<EntityType<RelicProjectile>> RELIC_PROJECTILE = new Ref<>();
+    public static final Ref<EntityType<com.thefarawaydev.realmsofchaos.entity.Sentinel>> SENTINEL = new Ref<>();
     public static final Ref<CreativeModeTab> TAB = new Ref<>();
 
     static {
@@ -121,6 +123,9 @@ public final class ModContent {
                 unbreakable(key).mapColor(MapColor.STONE).lightLevel(s -> 8).noOcclusion().sound(SoundType.STONE)));
         block("oracle", ORACLE, key -> new com.thefarawaydev.realmsofchaos.block.OracleBlock(
                 unbreakable(key).mapColor(MapColor.COLOR_PURPLE).lightLevel(s -> 15).noOcclusion().sound(SoundType.AMETHYST)));
+
+        block("passage_cache", PASSAGE_CACHE, key -> new com.thefarawaydev.realmsofchaos.block.CacheBlock(
+                unbreakable(key).mapColor(MapColor.WOOD).lightLevel(s -> 6).sound(SoundType.WOOD)));
 
         // items: codex, compass, 45 god weapons (ordered by line, rank 1 -> 15), then the block items
         item("chaos_codex", CHAOS_CODEX, key -> new CodexItem(new Item.Properties().setId(key).stacksTo(1)));
@@ -245,6 +250,17 @@ public final class ModContent {
     /** What the gods of a tower's tier drop for the forge: tiers 1-3 their own material, tier 4 (the summit) the essence. */
     public static Item materialItem(Line line, int tier) {
         return tier >= 4 ? essenceItem(line) : MATERIALS.get(line.id() + "/" + tier).get();
+    }
+
+    public static EntityType<com.thefarawaydev.realmsofchaos.entity.Sentinel> createSentinelType(ResourceKey<EntityType<?>> key) {
+        return EntityType.Builder.<com.thefarawaydev.realmsofchaos.entity.Sentinel>of(com.thefarawaydev.realmsofchaos.entity.Sentinel::new, MobCategory.MONSTER)
+                .sized(0.6F, 1.95F)
+                .clientTrackingRange(10)
+                .build(key);
+    }
+
+    public static ResourceKey<EntityType<?>> sentinelKey() {
+        return ResourceKey.create(Registries.ENTITY_TYPE, RealmsOfChaos.id("sentinel"));
     }
 
     public static ResourceKey<EntityType<?>> godBossKey() {

@@ -16,6 +16,35 @@ The current build is an **Alpha**.
 
 ## What's in 1.2.0
 
+* **Climb together.** Up to four players can form a **party** (Codex -> Party, or `/roc party invite <player>`,
+  `/roc party accept`, `/roc party leave`).
+  * A party enters a tower on the floor of its **highest member**, and anyone in it may begin that floor's trial.
+  * Progress is always each player's own. Everyone on the floor when a god falls is credited, but nobody goes up
+    past a floor until they have beaten its god themselves - with help or without - and walked its passage. A
+    friend who got ahead while you were away can come back down and help you through yours.
+  * Floors you were carried past are still yours to do: alone, you enter on your own floor, and can also return to
+    any floor you earned with the party.
+  * **Everyone gets their own loot.** Each victor's drops can only be picked up by them: the floor's forge material
+    every time, and the god's relic (and its cards) the first time *they* beat it. Passage treasure is a **cache**
+    that gives every player their own share, once.
+* **The tower adapts.** A trial faced by a group is harder: +60% health and +15% damage for each challenger after
+  the first (up to four), and each sealed chamber wakes an extra sentinel per extra player (up to two). A god that
+  keeps beating you relents: 8% less health for each defeat, up to three, wiped by a victory. A passage that others
+  broke open **seals itself again** for a player who has not walked it yet.
+* **The walls hold.** Inside the hub, the towers and the passages, survival players are in adventure mode - they
+  can fight, open and use everything, but not break or place blocks - and get survival back the moment they leave.
+  Creative players are not restricted.
+* **Sentinels: the passages' own enemies.** Twelve kinds, four to a tower, each with its own look, growing
+  stronger higher up:
+
+  | | Soldier | Caster | Brute (floors 6+) | Keeper |
+  | --- | --- | --- | --- | --- |
+  | Zeus | Storm Hoplite | Sky Archer (arrows) | Thunder Brute | Keeper of the Sky (calls lightning) |
+  | Poseidon | Tide Hoplite | Siren (slowing bolts) | Reef Brute | Keeper of the Tides (drags you in) |
+  | Hades | Shade (steps behind you) | Lampad (weakening bolts) | Tartarus Brute | Keeper of the Shades (hexes) |
+
+  One Keeper and its guard hold every seal; brutes hit slowly and throw you back; about a third of the ordinary
+  rooms have a **patrol**. A Keeper always drops a piece of the tier's forge material.
 * **A story.** Chaos, the oldest thing there is, has woken and is unmaking the world one story at a time. The
   gods of the sky, the sea and the dead shut themselves in three towers to hold it off - and have forgotten why.
   You do not slay them: every trial wakes a god, and a relic is its thanks. The story is told by the **Oracle** in
@@ -62,19 +91,19 @@ The current build is an **Alpha**.
   * **Procedural.** Each passage is laid out from the world seed - which rooms connect, where the way in, the gate
     and the seals are, what every room is - so every world's towers are different, and every passage in a tower
     is different from the last. Passages grow with the tower: 4 x 4 rooms on the lower floors, 5 x 5 above.
-  * **Rooms.** Sealed chambers, treasure rooms (a chest with this tier's forge material, experience bottles, food
-    and metal; in Hades' tower sometimes a tarot card), one **shrine** (right-click: full health, harmful effects
+  * **Rooms.** Sealed chambers, treasure rooms (a cache with a share for every player: this tier's forge material,
+    experience bottles, food and metal; in Hades' tower sometimes a tarot card), one **shrine** (right-click: full health, harmful effects
     cleared and three minutes of the tower's favour, once every ten minutes per player), trapped rooms (scorching
     tiles and webs), plain rooms and corridors.
-  * **Seals and guardians.** Walking into a sealed chamber wakes its guardians (three to five, by tier, themed to
-    the tower). While any stand the seal is warded. Then right-click the seal and **strike it apart** - a
+  * **Seals and guardians.** Walking into a sealed chamber wakes its sentinels (a Keeper and two to four more, by
+    tier; more for a group). While any stand the seal is warded. Then right-click the seal and **strike it apart** - a
     quick-time bar: click when the hammer is on the mark. A perfect strike cracks it twice, a good one once, a miss
     stings.
   * **Finding your way.** The Codex opens the **passage map** while you are in one: one slot per room, filled in as
     you explore, with unexplored rooms hinted where a door leads on. The Compass of Chaos points to the nearest
     unbroken seal, then to the gate (sneak + right-click still travels to the hub). A bar at the top counts seals.
-  * A passage you have walked is remembered: next time the Gate of Ascent takes you straight up. Passages are
-    shared by everyone in the world - seals stay broken and chests stay opened.
+  * A passage you have walked is remembered: next time the Gate of Ascent takes you straight up. Players inside
+    together share its seals; a player who arrives later, not having walked it, finds it sealed again.
 * **Living floors.** Floors change during a trial: when the god drops below two thirds health the terrain shifts,
   one block at a time, into a second shape (a pit rises into a dais, a hall folds into terraces), and shifts back
   below one third; the upper floors also keep shifting on a timer. Anything standing on rising ground is carried up,
@@ -263,6 +292,8 @@ JAVA_HOME=/path/to/jdk-25 ./build.sh
 * `tools/generate.py` - the god roster (single source of truth) plus the generator for textures, skins, models,
   lang, advancements and the website's roster
 * `site/` - the download page (GitHub Pages)
+* `art/atlases/` - every texture the mod ships, gathered into atlases (items, animated item frames, blocks, skins,
+  portraits, weapon designs), each also at 4x, with an `index.json` naming every tile
 * `art/weapon-designs/` - a sheet of every weapon silhouette, including designs for mythologies that are not in the
   mod yet. Japanese, planned next: a curved katana, wakizashi, tanto, nodachi, naginata, yari, kusarigama, sai,
   kanabo, nunchaku, yumi, kunai, shuriken and tessen. Others: battleaxe, Mjolnir, khopesh, claymore, halberd, mace,
@@ -274,7 +305,7 @@ JAVA_HOME=/path/to/jdk-25 ./build.sh
 The mod contains a developer self-test that only runs when the JVM has `-Droc.selftest=true`. It exercises the mod
 on a real server: data loading, the hub, building and walking every floor of every tower, a full climb of all three
 towers through the altar menu (with rematches) and all 42 passages, the Ruined Gate and its keystones, the story's
-chapters, the hub's residents (built, checked room by room for reachability,
+chapters, the hub's residents, the sentinels, parties, group scaling and per-player loot, the wall protection (built, checked room by room for reachability,
 seals struck, guardians, shrine, map), every god's signature move, the relic moves, the forging quick-time rounds,
 tier materials, each tarot card, the Codex, leaving the realms, the welcome and the anti-stuck safeguards.
 

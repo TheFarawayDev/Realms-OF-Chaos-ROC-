@@ -34,6 +34,24 @@ public final class RocCommands {
                     Teleports.leave(ctx.getSource().getPlayerOrException());
                     return 1;
                 }))
+                .then(Commands.literal("party")
+                        .executes(ctx -> {
+                            com.thefarawaydev.realmsofchaos.ui.PartyMenu.open(ctx.getSource().getPlayerOrException());
+                            return 1;
+                        })
+                        .then(Commands.literal("invite").then(Commands.argument("player", net.minecraft.commands.arguments.EntityArgument.player()).executes(ctx -> {
+                            com.thefarawaydev.realmsofchaos.world.Parties.invite(ctx.getSource().getPlayerOrException(),
+                                    net.minecraft.commands.arguments.EntityArgument.getPlayer(ctx, "player"));
+                            return 1;
+                        })))
+                        .then(Commands.literal("accept").executes(ctx -> {
+                            com.thefarawaydev.realmsofchaos.world.Parties.accept(ctx.getSource().getPlayerOrException());
+                            return 1;
+                        }))
+                        .then(Commands.literal("leave").executes(ctx -> {
+                            com.thefarawaydev.realmsofchaos.world.Parties.leave(ctx.getSource().getPlayerOrException());
+                            return 1;
+                        })))
                 .then(Commands.literal("progress").executes(ctx -> {
                     CodexMenu.open(ctx.getSource().getPlayerOrException());
                     return 1;

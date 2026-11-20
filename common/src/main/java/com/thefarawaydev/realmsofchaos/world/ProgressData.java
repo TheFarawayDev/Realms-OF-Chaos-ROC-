@@ -151,6 +151,15 @@ public class ProgressData extends SavedData {
         return null;
     }
 
+    public void unmarkBuilt(String key) {
+        if (built.remove(key)) setDirty();
+    }
+
+    /** Forgets every build key that starts with {@code prefix}. */
+    public void unmarkPrefix(String prefix) {
+        if (built.removeIf(key -> key.startsWith(prefix))) setDirty();
+    }
+
     public void markBuilt(String key) {
         if (built.add(key)) setDirty();
     }

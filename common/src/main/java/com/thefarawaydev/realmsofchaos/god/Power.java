@@ -75,7 +75,7 @@ public enum Power {
             // never other players, and never the wielder's own pets
             return !(other instanceof Player) && !(other instanceof TamableAnimal pet && pet.isOwnedBy(user));
         }
-        if (user instanceof com.thefarawaydev.realmsofchaos.entity.GodBoss) {
+        if (user instanceof com.thefarawaydev.realmsofchaos.entity.GodBoss || user instanceof com.thefarawaydev.realmsofchaos.entity.Sentinel) {
             return other instanceof Player p && !p.isCreative() && !p.isSpectator();
         }
         return true;

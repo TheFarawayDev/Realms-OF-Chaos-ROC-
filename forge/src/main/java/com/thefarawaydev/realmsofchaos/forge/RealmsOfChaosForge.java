@@ -53,6 +53,12 @@ public final class RealmsOfChaosForge {
             EntityType<GodBoss> type = (EntityType<GodBoss>) boss.get();
             return type;
         });
+        RegistryObject<EntityType<?>> sentinel = ENTITIES.register("sentinel", () -> ModContent.createSentinelType(ENTITIES.key("sentinel")));
+        ModContent.SENTINEL.bind(() -> {
+            @SuppressWarnings("unchecked")
+            EntityType<com.thefarawaydev.realmsofchaos.entity.Sentinel> type = (EntityType<com.thefarawaydev.realmsofchaos.entity.Sentinel>) sentinel.get();
+            return type;
+        });
         RegistryObject<EntityType<?>> projectile = ENTITIES.register("relic_projectile", () -> ModContent.createProjectileType(ENTITIES.key("relic_projectile")));
         ModContent.RELIC_PROJECTILE.bind(() -> {
             @SuppressWarnings("unchecked")
@@ -71,7 +77,10 @@ public final class RealmsOfChaosForge {
         ENTITIES.register(modBus);
         TABS.register(modBus);
 
-        EntityAttributeCreationEvent.BUS.addListener(event -> event.put(ModContent.GOD_BOSS.get(), GodBoss.createAttributes().build()));
+        EntityAttributeCreationEvent.BUS.addListener(event -> {
+            event.put(ModContent.GOD_BOSS.get(), GodBoss.createAttributes().build());
+            event.put(ModContent.SENTINEL.get(), com.thefarawaydev.realmsofchaos.entity.Sentinel.createAttributes().build());
+        });
         RegisterCommandsEvent.BUS.addListener(event -> RocCommands.register(event.getDispatcher()));
 
         // first-join thank-you, and the once-a-second void / stuck rescue inside the realms

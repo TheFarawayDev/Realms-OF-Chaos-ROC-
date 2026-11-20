@@ -36,6 +36,7 @@ public final class RealmSafety {
         com.thefarawaydev.realmsofchaos.item.TarotEffects.tick(server);
         if (++ticker % 20 != 0) return;
         for (ServerPlayer player : server.getPlayerList().getPlayers()) {
+            Wards.service(player);
             Realm realm = Realm.of(player.level().dimension());
             if (realm == null || !(player.level() instanceof ServerLevel level)) {
                 STUCK_SECONDS.remove(player.getUUID());
