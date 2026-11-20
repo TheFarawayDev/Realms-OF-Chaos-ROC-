@@ -38,14 +38,21 @@
   [aria-disabled=true] { filter:grayscale(1) brightness(.7); pointer-events:none; box-shadow:0 3px 0 var(--s); transform:translateY(3px); }
 
   /* hero */
-  .hero { padding:64px 0 8px; display:grid; grid-template-columns:1.15fr 1fr; gap:36px; align-items:center; }
-  .hero-left { text-align:left; }
-  h1 { margin:0 0 8px; font:400 clamp(2.6rem,9vw,6.2rem)/.98 var(--pixel); color:#fff; text-transform:uppercase; letter-spacing:-2px; }
+  /* Hero: two columns that share their top and bottom edges. Everything in the left column spans its full width. */
+  .hero { padding:64px 0 8px; display:grid; grid-template-columns:1.15fr 1fr; gap:36px; align-items:stretch; }
+  .hero-left { text-align:left; display:flex; flex-direction:column; min-width:0; container-type:inline-size; }
+  /* "OF CHAOS" is 5.2267em of ink wide in Monocraft, so this font size makes it span the column edge to edge;
+     the small negative top margin puts the cap height on the column's top edge (the font has 0.095em above caps). */
+  h1 { margin:-.095em 0 0; font:400 clamp(2.4rem,8.6vw,6rem)/.98 var(--pixel); color:#fff; text-transform:uppercase; white-space:nowrap; }
+  @supports (width:1cqw) { h1 { font-size:calc(100cqw / 5.2267); } }
   h1 span { display:block; text-shadow:0 5px 0 #000, 5px 5px 0 var(--gold-sh), 0 8px 0 var(--gold-sh); }
   h1 .l2 { color:var(--gold); text-shadow:0 5px 0 var(--gold-sh), 0 10px 0 #000; }
-  .bar { display:grid; grid-template-columns:repeat(3,1fr); height:12px; margin:30px 0 0; max-width:100%; border-radius:6px; overflow:hidden; box-shadow:0 5px 0 #000; }
+  .rule { display:flex; align-items:center; gap:14px; margin:26px 0 0; }
+  .bar { flex:1; display:grid; grid-template-columns:repeat(3,1fr); height:12px; border-radius:6px; overflow:hidden; box-shadow:0 5px 0 #000; }
+  .rule .chan { font-size:13px; padding:7px 14px; letter-spacing:1px; border-radius:8px; box-shadow:0 5px 0 #000; }
   .bar b:nth-child(1){background:var(--gold)} .bar b:nth-child(2){background:var(--teal)} .bar b:nth-child(3){background:var(--purple)}
-  .info { padding:22px 24px; text-align:right; }
+  .info { padding:22px 24px; text-align:right; display:flex; flex-direction:column; }
+  .info .irow { flex:1; align-items:center; }
   .eyebrow { display:block; font:13px var(--pixel); line-height:1.5; padding:11px 16px; margin:0 0 14px; width:100%; text-align:center; }
   .eyebrow small { display:block; font-size:11px; opacity:.8; }
   .irow { display:flex; justify-content:space-between; gap:16px; padding:9px 0; border-bottom:2px solid var(--panel-sh); font-size:14px; }
@@ -59,9 +66,9 @@
 
   /* sections */
   section { padding:54px 0 8px; }
-  .sh { margin-bottom:22px; }
+  .sh { margin-bottom:22px; display:flex; align-items:center; justify-content:space-between; gap:10px 16px; flex-wrap:wrap; }
   .sh h2 { display:inline-block; font:400 1.3rem var(--pixel); margin:0; padding:10px 20px; }
-  .sh small { float:right; margin-top:14px; color:var(--muted); font-size:13px; }
+  .sh small { color:var(--muted); font-size:13px; text-align:right; margin-left:auto; }
 
   .dl { display:grid; grid-template-columns:repeat(auto-fit,minmax(340px,1fr)); gap:22px; }
   .dlcard { padding:26px; display:flex; flex-direction:column; }
@@ -75,7 +82,8 @@
   dl.facts { display:grid; grid-template-columns:auto 1fr; gap:0; margin:0 0 22px; font-size:13px; background:var(--panel-sh); border-radius:10px; padding:6px 16px; }
   dl.facts dt, dl.facts dd { padding:9px 0; border-bottom:2px solid #1d1740; }
   dl.facts dt:nth-last-of-type(1), dl.facts dd:last-of-type { border-bottom:0; }
-  dl.facts dt { color:var(--muted); } dl.facts dd { margin:0; text-align:right; font:12px var(--pixel); }
+  dl.facts dd[data-f] { min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  dl.facts dt { color:var(--muted); white-space:nowrap; padding-right:16px; } dl.facts dd { margin:0; text-align:right; font:12px var(--pixel); }
   .dlcard .btn { margin-top:auto; }
 
   .stats { display:grid; grid-template-columns:repeat(4,1fr); gap:18px; }
@@ -115,8 +123,8 @@
   .wpn { width:calc(16px*var(--k)); height:calc(16px*var(--k)); background-image:url(weapons.png);
          background-size:calc(720px*var(--k)) calc(16px*var(--k)); background-position:calc(-16px*var(--i)*var(--k)) 0; }
 
-  .champs { display:grid; grid-template-columns:repeat(3,1fr); gap:14px; margin-top:34px; }
-  .champ { padding:14px 10px 10px; text-align:center; text-decoration:none; }
+  .champs { flex:1; display:grid; grid-template-columns:repeat(3,1fr); gap:14px; margin-top:30px; }
+  .champ { padding:14px 10px 10px; text-align:center; text-decoration:none; display:flex; flex-direction:column; align-items:center; justify-content:center; }
   .champ .spr { --k:4; filter:drop-shadow(0 4px 0 rgba(0,0,0,.35)); }
   .champ b { display:block; font:400 13px var(--pixel); margin-top:6px; }
   .champ small { font-size:11px; font-weight:600; opacity:.8; }
@@ -158,7 +166,6 @@
   .chan { display:inline-block; font:400 12px var(--pixel); padding:4px 10px; border-radius:7px; color:#16122b; background:var(--green); vertical-align:middle; }
   .chan.alpha { background:var(--purple); color:#fff; } .chan.beta { background:var(--teal); }
   .chan[hidden] { display:none; }
-  h1 .chan { font-size:clamp(.8rem,2vw,1.1rem); padding:6px 14px; letter-spacing:1px; text-shadow:none; box-shadow:0 4px 0 #000; margin-left:10px; position:relative; top:-.6em; }
   .tierh { font:400 11px var(--pixel); color:var(--lc); padding:12px 8px 5px; letter-spacing:.5px; text-transform:uppercase; }
 
   .reveal { opacity:0; transform:translateY(16px); transition:opacity .5s, transform .5s; }
@@ -173,8 +180,8 @@
   <div class="wrap">
     <div class="hero">
       <div class="hero-left">
-        <h1><span>Realms</span><span class="l2">of Chaos<b class="chan" id="chan-hero" hidden></b></span></h1>
-        <div class="bar"><b></b><b></b><b></b></div>
+        <h1><span>Realms</span><span class="l2">of Chaos</span></h1>
+        <div class="rule"><div class="bar"><b></b><b></b><b></b></div><b class="chan" id="chan-hero" hidden></b></div>
         <div class="champs">
           <a class="champ chunk c-gold hov" href="#gods"><span class="spr" style="--i:0"></span><b>Zeus</b><small>15 floors</small></a>
           <a class="champ chunk c-teal hov" href="#gods"><span class="spr" style="--i:15"></span><b>Poseidon</b><small>15 floors</small></a>
@@ -184,6 +191,7 @@
       <aside class="info chunk c-panel">
         <span class="eyebrow chunk c-green" id="hero-ver">Loading release...</span>
         <div class="irow"><span>Version</span><b id="i-ver">-</b></div>
+        <div class="irow"><span>Build</span><b id="i-build">-</b></div>
         <div class="irow"><span>Channel</span><b><span class="chan" id="i-chan">-</span></b></div>
         <div class="irow"><span>Released</span><b id="i-date">-</b></div>
         <div class="irow"><span>Release time</span><b id="i-time">-</b></div>
@@ -344,7 +352,8 @@
     const set = (k, v) => card_.querySelector(`[data-f=${k}]`).textContent = v;
     for (const sel of [ctaSel, btnSel]) { const el = $(sel); if (asset) { el.href = asset.browser_download_url; el.textContent = sel === btnSel ? `Download ${label}` : `Download ${label}`; el.removeAttribute("aria-disabled"); } else { el.textContent = "Not available"; } }
     if (!asset) return;
-    set("ver", `${ver(asset.name)} (${tag})`); set("name", asset.name.length > 26 ? asset.name.slice(0, 24) + "..." : asset.name);
+    set("ver", ver(asset.name)); set("name", asset.name);
+    card_.querySelector("[data-f=name]").title = asset.name;
     set("size", fmtSize(asset.size)); set("count", asset.download_count.toLocaleString());
   }
 
@@ -357,7 +366,8 @@
       fill(0, jars.find(a => /fabric/i.test(a.name)), latest.tag_name, "#cta-fabric", "#dl-fabric", "Fabric");
       fill(1, jars.find(a => /forge/i.test(a.name)), latest.tag_name, "#cta-forge", "#dl-forge", "Forge");
       $("#hero-ver").innerHTML = `Latest: ${latest.tag_name}<small>${when(latest.published_at)} &middot; ${ago(latest.published_at)}</small>`;
-      $("#i-ver").textContent = ver((jars[0] || {}).name || "") + " (" + latest.tag_name + ")";
+      $("#i-ver").textContent = ver((jars[0] || {}).name || "");
+      $("#i-build").textContent = latest.tag_name;
       $("#i-date").textContent = new Date(latest.published_at).toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric" });
       $("#i-time").textContent = clock(latest.published_at);
       $("#i-dl").textContent = list.reduce((n, r) => n + r.assets.reduce((m, a) => m + a.download_count, 0), 0).toLocaleString();
