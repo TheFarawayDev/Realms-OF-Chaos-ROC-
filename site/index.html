@@ -1,0 +1,169 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Realms of Chaos - Download</title>
+<meta name="description" content="Realms of Chaos by TheFarawayDev: a Minecraft mythology boss-rush mod for Fabric and Forge.">
+<link rel="icon" href="icon.png">
+<style>
+  @font-face { font-family:"Monocraft"; src:url("Monocraft.ttf") format("truetype"); font-display:swap; }
+  :root { --bg:#0b0718; --card:rgba(24,17,52,.82); --line:#4a3a8c; --text:#f1edff; --muted:#b4acdc;
+          --gold:#f2c94c; --teal:#2fb5c8; --purple:#a55ad6; }
+  * { box-sizing:border-box; }
+  html { image-rendering:pixelated; }
+  body { margin:0; min-height:100vh; background:var(--bg); color:var(--text);
+         font-family:"Monocraft", ui-monospace, Menlo, Consolas, monospace; font-size:15px; line-height:1.7; overflow-x:hidden; }
+  #bg { position:fixed; inset:0; width:100%; height:100%; z-index:-1; display:block; }
+  main { max-width:900px; margin:0 auto; padding:56px 16px 72px; position:relative; }
+
+  header { text-align:center; }
+  .logo { width:112px; height:112px; image-rendering:pixelated; border:4px solid var(--gold); box-shadow:0 0 0 4px #000, 0 0 40px rgba(242,201,76,.45);
+          animation:float 4s ease-in-out infinite; }
+  @keyframes float { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-10px)} }
+  h1 { margin:26px 0 6px; font-size:clamp(1.8rem,7vw,3.2rem); line-height:1.15; color:#fff; letter-spacing:1px;
+       text-shadow:4px 4px 0 #3b2a7a, 8px 8px 0 #000; animation:glow 3s ease-in-out infinite alternate; }
+  @keyframes glow { from{text-shadow:4px 4px 0 #3b2a7a, 8px 8px 0 #000, 0 0 10px rgba(242,201,76,.0)}
+                    to  {text-shadow:4px 4px 0 #3b2a7a, 8px 8px 0 #000, 0 0 28px rgba(242,201,76,.65)} }
+  .tag { color:var(--muted); margin:0 auto; max-width:620px; }
+  .by { color:var(--gold); }
+
+  .grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(270px,1fr)); gap:22px; margin:40px 0 14px; }
+  .card { background:var(--card); backdrop-filter:blur(4px); padding:24px; border:4px solid #000;
+          box-shadow:inset 0 0 0 4px var(--line), 6px 6px 0 #000; transition:transform .15s; }
+  .card:hover { transform:translate(-3px,-3px); }
+  .card h2 { margin:0 0 6px; font-size:1.4rem; }
+  .fabric h2 { color:var(--gold); } .forge h2 { color:var(--teal); }
+  .card p { color:var(--muted); margin:0 0 18px; font-size:.85rem; }
+
+  .btn { display:block; text-align:center; text-decoration:none; font-family:inherit; font-size:1rem; padding:14px 12px; color:#fff;
+         border:4px solid #000; text-shadow:2px 2px 0 rgba(0,0,0,.55); cursor:pointer;
+         box-shadow:inset 0 -6px 0 rgba(0,0,0,.28), inset 0 6px 0 rgba(255,255,255,.28); transition:transform .08s; }
+  .btn:hover { filter:brightness(1.12); } .btn:active { transform:translateY(3px); }
+  .fabric .btn { background:#d9971f; } .forge .btn { background:#1f9db0; }
+  .btn[aria-disabled=true] { filter:grayscale(1) brightness(.7); pointer-events:none; }
+
+  .meta { text-align:center; color:var(--muted); font-size:.85rem; min-height:1.6em; }
+  .meta a, footer a { color:var(--gold); }
+
+  .panel { margin-top:36px; background:var(--card); border:4px solid #000; box-shadow:inset 0 0 0 4px var(--line), 6px 6px 0 #000; padding:22px 24px; }
+  h3 { margin:0 0 8px; color:var(--gold); font-size:1.15rem; }
+  ul { padding-left:22px; margin:8px 0; } li { margin:6px 0; }
+  code { background:#2b2058; padding:1px 7px; border:2px solid #000; }
+  .lines { display:flex; gap:10px; flex-wrap:wrap; margin-top:12px; }
+  .chip { padding:4px 12px; border:3px solid #000; font-size:.8rem; color:#111; }
+  footer { margin-top:44px; text-align:center; color:var(--muted); font-size:.75rem; }
+  @media (prefers-reduced-motion: reduce) { .logo, h1 { animation:none; } }
+</style>
+</head>
+<body>
+<canvas id="bg" aria-hidden="true"></canvas>
+<main>
+  <header>
+    <img class="logo" src="icon.png" alt="Realms of Chaos icon">
+    <h1>Realms of Chaos</h1>
+    <p class="tag">Mythologies forged into weapons. Climb the god lines of Zeus, Poseidon and Hades: 45 bosses, 45 relic weapons.<br>
+      Minecraft 26.3 &middot; by <span class="by">TheFarawayDev</span></p>
+  </header>
+
+  <div class="grid">
+    <div class="card fabric">
+      <h2>Fabric</h2>
+      <p>Needs Fabric Loader 0.20.1+ and Fabric API for 26.3.</p>
+      <a id="dl-fabric" class="btn" aria-disabled="true" href="#">Loading...</a>
+    </div>
+    <div class="card forge">
+      <h2>Forge</h2>
+      <p>Needs Forge 66.1.9+ for 26.3.</p>
+      <a id="dl-forge" class="btn" aria-disabled="true" href="#">Loading...</a>
+    </div>
+  </div>
+  <p class="meta" id="meta"></p>
+
+  <div class="panel">
+    <h3>Install</h3>
+    <ul>
+      <li>Install Java 25 and your loader for Minecraft 26.3.</li>
+      <li>Drop the <code>.jar</code> into your <code>mods</code> folder.</li>
+      <li>Right-click the <b>Compass of Chaos</b> or run <code>/roc hub</code> to reach the Hub of Realms.</li>
+    </ul>
+  </div>
+
+  <div class="panel">
+    <h3>What's inside</h3>
+    <ul>
+      <li>A hub with three gates to the Olympian Heights, the Abyssal Palace and the Underworld.</li>
+      <li>Ranked god lines, from the starters Iris, Galatea and Charon up to Zeus, Poseidon and Hades.</li>
+      <li>Every god drops a relic weapon with its own power and a right-click Divine Surge.</li>
+    </ul>
+    <div class="lines">
+      <span class="chip" style="background:#f2c94c">Zeus</span>
+      <span class="chip" style="background:#2fb5c8">Poseidon</span>
+      <span class="chip" style="background:#a55ad6">Hades</span>
+    </div>
+  </div>
+
+  <footer>Realms of Chaos &copy; TheFarawayDev &middot; MIT licensed &middot; Font: Monocraft (SIL OFL)</footer>
+</main>
+
+<script>
+  // ---- downloads: point REPO at the repository that hosts your releases ----
+  const REPO = "TheFarawayDev/Realms-OF-Chaos-ROC-";
+  const fab = document.getElementById("dl-fabric"), frg = document.getElementById("dl-forge"), meta = document.getElementById("meta");
+  const releasesUrl = `https://github.com/${REPO}/releases`;
+  const enable = (el, label, a) => { el.textContent = label; el.href = a.browser_download_url; el.removeAttribute("aria-disabled"); };
+  const fallback = msg => { for (const el of [fab, frg]) { el.textContent = "Open releases page"; el.href = releasesUrl; el.removeAttribute("aria-disabled"); } meta.innerHTML = msg; };
+  fetch(`https://api.github.com/repos/${REPO}/releases/latest`, { headers: { Accept: "application/vnd.github+json" } })
+    .then(r => { if (!r.ok) throw new Error(r.status); return r.json(); })
+    .then(rel => {
+      const jars = (rel.assets || []).filter(a => a.name.endsWith(".jar"));
+      const fabric = jars.find(a => /fabric/i.test(a.name)), forge = jars.find(a => /forge/i.test(a.name));
+      if (!fabric && !forge) return fallback("No files found yet. See the releases page.");
+      fabric ? enable(fab, "Download for Fabric", fabric) : (fab.textContent = "Not available");
+      forge ? enable(frg, "Download for Forge", forge) : (frg.textContent = "Not available");
+      meta.innerHTML = `Latest: <b>${rel.name || rel.tag_name}</b> &middot; ${new Date(rel.published_at).toLocaleDateString()} &middot; <a href="${rel.html_url}">release notes</a>`;
+    })
+    .catch(() => fallback(`Could not load the latest release. <a href="${releasesUrl}">Open releases page</a>.`));
+
+  // ---- animated pixel background: sky gradient, drifting pixel clouds, rising embers, lightning flashes ----
+  const cv = document.getElementById("bg"), cx = cv.getContext("2d");
+  const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const PX = 6; let W, H, clouds = [], motes = [], flash = 0, nextFlash = 200, t = 0;
+  const cols = ["#f2c94c", "#2fb5c8", "#a55ad6"];
+  const rnd = (a, b) => a + Math.random() * (b - a);
+  function resize() {
+    W = cv.width = Math.ceil(innerWidth / PX); H = cv.height = Math.ceil(innerHeight / PX);
+    cv.style.imageRendering = "pixelated";
+    clouds = Array.from({ length: Math.max(6, W / 18 | 0) }, () => ({ x: rnd(0, W), y: rnd(2, H * .5), w: rnd(10, 26), s: rnd(.03, .1), a: rnd(.08, .22) }));
+    motes = Array.from({ length: Math.max(40, W / 2 | 0) }, () => ({ x: rnd(0, W), y: rnd(0, H), s: rnd(.05, .3), c: cols[Math.random() * 3 | 0], p: rnd(0, 6.28) }));
+  }
+  addEventListener("resize", resize); resize();
+  function frame() {
+    t++;
+    const g = cx.createLinearGradient(0, 0, 0, H);
+    g.addColorStop(0, "#0a0620"); g.addColorStop(.55, "#1d1245"); g.addColorStop(1, "#3a1d5c");
+    cx.fillStyle = g; cx.fillRect(0, 0, W, H);
+    for (const c of clouds) {                       // blocky pixel clouds
+      c.x += c.s; if (c.x > W + 5) c.x = -c.w - 5;
+      cx.fillStyle = `rgba(190,170,255,${c.a})`;
+      cx.fillRect(c.x | 0, c.y | 0, c.w | 0, 3); cx.fillRect((c.x + 3) | 0, (c.y - 2) | 0, (c.w - 8) | 0, 2); cx.fillRect((c.x + 6) | 0, (c.y + 3) | 0, (c.w - 12) | 0, 2);
+    }
+    for (const m of motes) {                        // embers/stars in the three god colours
+      m.y -= m.s; m.x += Math.sin(t / 60 + m.p) * .08; if (m.y < -2) { m.y = H + 2; m.x = rnd(0, W); }
+      cx.globalAlpha = .35 + .65 * Math.abs(Math.sin(t / 40 + m.p)); cx.fillStyle = m.c; cx.fillRect(m.x | 0, m.y | 0, 1, 1);
+    }
+    cx.globalAlpha = 1;
+    if (!reduce) {                                   // occasional Zeus lightning flash + bolt
+      if (--nextFlash <= 0) { flash = 12; nextFlash = rnd(240, 620); boltX = rnd(W * .1, W * .9); }
+      if (flash > 0) {
+        cx.fillStyle = `rgba(255,240,170,${flash / 40})`; cx.fillRect(0, 0, W, H);
+        if (flash > 6) { cx.fillStyle = "#fff6c0"; let x = boltX; for (let y = 0; y < H * .7; y += 2) { x += (Math.random() - .5) * 3; cx.fillRect(x | 0, y, 1, 2); } }
+        flash--;
+      }
+    }
+    requestAnimationFrame(frame);
+  }
+  let boltX = 0; frame();
+</script>
+</body>
+</html>
