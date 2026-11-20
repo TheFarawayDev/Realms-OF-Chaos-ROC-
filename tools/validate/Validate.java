@@ -128,6 +128,29 @@ public class Validate {
         for (ModContent.Def<Block> d : ModContent.BLOCK_DEFS) {
             check(lang.contains("\"block.realms_of_chaos." + d.id() + "\""), "lang block " + d.id());
         }
+        for (God g : Gods.ALL) {
+            check(lang.contains("\"move.realms_of_chaos." + g.id() + "\""), "lang move " + g.id());
+        }
+        for (com.thefarawaydev.realmsofchaos.god.Signature kind : com.thefarawaydev.realmsofchaos.god.Signature.values()) {
+            check(lang.contains("\"move.realms_of_chaos.kind." + kind.name().toLowerCase() + "\""), "lang move kind " + kind);
+        }
+
+        // 6. block models load with the game's own model reader, and every texture they name exists
+        for (ModContent.Def<Block> d : ModContent.BLOCK_DEFS) {
+            Path model = res.resolve("assets/realms_of_chaos/models/block/" + d.id() + ".json");
+            try (var reader = Files.newBufferedReader(model)) {
+                net.minecraft.client.resources.model.cuboid.CuboidModel.fromStream(reader);
+            } catch (RuntimeException e) {
+                check(false, "block model " + d.id() + ": " + e);
+            }
+            var textures = JsonParser.parseString(Files.readString(model)).getAsJsonObject().getAsJsonObject("textures");
+            for (var entry : textures.entrySet()) {
+                String ref = entry.getValue().getAsString();
+                if (!ref.startsWith("realms_of_chaos:")) continue;
+                check(Files.exists(res.resolve("assets/realms_of_chaos/textures/" + ref.substring("realms_of_chaos:".length()) + ".png")),
+                        "block model " + d.id() + " names a missing texture " + ref);
+            }
+        }
 
         System.out.println(failures == 0 ? "ALL CHECKS PASSED" : failures + " FAILURE(S)");
         System.exit(failures == 0 ? 0 : 1);

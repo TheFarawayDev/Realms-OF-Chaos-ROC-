@@ -44,9 +44,24 @@ The current build is an **Alpha**.
   around you). Right-click attacks with ranged kinds; sneak + right-click is their Divine Surge.
 * **Ranged gods.** A god fights the way its weapon does: gods with a ranged kind keep their distance and shoot.
   Hades also throws tarot cards.
+* **Signature moves.** Every god has a move of its own, named on screen as it winds up (*"Zeus readies Wrath of
+  Olympus!"*), and alternates it with its line's ability. There are fourteen kinds of move - storm, charge, volley,
+  vortex, shockwave, blink, mend, slumber, reap, hex, frost, gale, ward and eruption - and each also carries the
+  god's own hit power and curse. Eruptions and hexes land a moment late, so they can be stepped out of.
+* **Livelier gods.** Melee gods lunge at a target that keeps its distance; ranged gods hop away when crowded (and
+  back towards the middle if cornered). At half health a god is **enraged**: it glows, roars everyone back a step,
+  moves faster and casts sooner.
+* **Rematches.** A god you have beaten can be called back from its altar for another fight. A rematch drops the
+  floor's forge material again - but no second relic, cards or deck.
+* **The relic casts its god's move.** Right-click with a melee relic (sneak + right-click with a ranged one) casts
+  the same signature move, on a 12-second recharge. Forging matters to it: **three stars empower** the move (+50%
+  damage) and **five stars awaken** the relic so the move echoes a second time. Every fourth hit in a row with any
+  relic is a **flourish** (+50%). Moves never hurt other players or your own pets.
 * **Weapon levelling and forging.** A relic gains experience from every kill made with it (level 1-10, +8% damage a
   level). At a **Forge of Chaos** (two stand in the hub; also `/roc forge` and the Codex) you forge up to five stars
-  onto it (+10% damage and faster recharge each; star N needs weapon level 2N). Stars are paid for with what the
+  onto it (+10% damage and faster recharge each; star N needs weapon level 2N). The forge screen shows the star
+  track, what the next star changes in numbers, the signature move and its perks, where each material drops, and
+  an **Infuse** button that pours your own experience levels into the relic (30 weapon XP a level). Stars are paid for with what the
   gods of the weapon's own tower drop - every tier of a tower has its own material, so the higher stars send you
   higher up:
 
@@ -115,6 +130,26 @@ The current build is an **Alpha**.
 | 2 | 14 | Nike | Galene | Oneiroi |
 | 1 (start) | 15 | **Iris** | **Galatea** | **Charon** |
 
+Signature moves, floor by floor:
+
+| Floor | Zeus line | Poseidon line | Hades line |
+|---|---|---|---|
+| 15 | Zeus: *Wrath of Olympus* | Poseidon: *Earthshaker* | Hades: *Gates of Tartarus* |
+| 14 | Athena: *Aegis* | Amphitrite: *Queen's Tide* | Persephone: *Winter's Harvest* |
+| 13 | Apollo: *Sunburst Volley* | Triton: *Call of the Deep* | Zagreus: *Stygian Dash* |
+| 12 | Dionysus: *Bacchic Revel* | Chrysaor: *Golden Rush* | Thanatos: *Final Harvest* |
+| 11 | Artemis: *Hunter's Moon* | Cymopoleia: *Stormwave* | Hypnos: *Lullaby* |
+| 10 | Ares: *Warpath* | Rhode: *Rain of Roses* | Melinoe: *Ghostlight* |
+| 9 | Hermes: *Windstep* | Pegasus: *Skyward Gale* | Macaria: *Blessed End* |
+| 8 | Asclepius: *Panacea* | Benthesikyme: *Undertow* | Hecate: *Crossroads Hex* |
+| 7 | Hebe: *Cup of Youth* | Halia: *Seafoam Chill* | Morpheus: *Waking Dream* |
+| 6 | Phobos: *Terror Strike* | Nereus: *Old Man of the Sea* | Nyx: *Starfall* |
+| 5 | Deimos: *Dread Harvest* | Proteus: *Shapeshift* | The Erinyes: *Vengeance* |
+| 4 | Hygeia: *Cleansing Ward* | Palaemon: *Anchor Drop* | The Moirai: *Severed Thread* |
+| 3 | Pan: *Panic* | Thetis: *Silver Rain* | The Keres: *Carrion Feast* |
+| 2 | Nike: *Victory Rush* | Galene: *Stillwater* | The Oneiroi: *Nightmare* |
+| 1 | Iris: *Prism Gust* | Galatea: *Pearl Frost* | Charon: *Ferryman's Toll* |
+
 * **In-game UI instead of chat** - nothing the mod tells you goes to chat:
   * **Codex of Chaos** (item or `/roc`), a double-chest screen: the three towers side by side with climb meters,
     and a page per tower that draws it floor by floor with tier labels. Click any floor you have reached to travel
@@ -175,8 +210,8 @@ JAVA_HOME=/path/to/jdk-25 ./build.sh
 
 The mod contains a developer self-test that only runs when the JVM has `-Droc.selftest=true`. It exercises the mod
 on a real server: data loading, the hub, building and walking every floor of every tower, a full climb of all three
-towers through the altar menu, every weapon power, forging with tier materials, each tarot card, the Codex, leaving
-the realms, the welcome and the anti-stuck safeguards.
+towers through the altar menu (with rematches), every god's signature move, the relic moves, forging with tier
+materials, each tarot card, the Codex, leaving the realms, the welcome and the anti-stuck safeguards.
 
 ```bash
 cd forge && ./gradlew runGameTestServer && cat run/roc-selftest.txt

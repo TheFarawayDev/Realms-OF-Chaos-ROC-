@@ -18,10 +18,12 @@ public final class God {
     private final Power power;
     private final EffectSpec targetEffect;
     private final EffectSpec selfEffect;
+    private final Signature signature;
 
     God(int index, Line line, int rank, String id, String name, String title, String weaponName,
-        WeaponKind kind, Power power, String targetEffect, String selfEffect) {
+        WeaponKind kind, Power power, String targetEffect, String selfEffect, Signature signature) {
         this.kind = kind;
+        this.signature = signature;
         this.index = index;
         this.line = line;
         this.rank = rank;
@@ -43,6 +45,12 @@ public final class God {
     public String englishWeaponName() { return weaponName; }
     public Power power() { return power; }
     public WeaponKind kind() { return kind; }
+    /** The kind of signature move this god - and its relic - casts. */
+    public Signature signature() { return signature; }
+    /** The god's own name for its signature move. */
+    public Component moveName() {
+        return Component.translatable("move." + RealmsOfChaos.MOD_ID + "." + id);
+    }
     /** The damage every kind of this god's weapon is scaled from: 5 for a starter up to 13.4 for a final god. */
     public double baseDamage() { return 3.0 + weaponDamageBonus(); }
     public boolean isFinalBoss() { return rank == 1; }

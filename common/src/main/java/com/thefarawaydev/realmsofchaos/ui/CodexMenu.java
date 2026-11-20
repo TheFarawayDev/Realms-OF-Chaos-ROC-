@@ -211,6 +211,7 @@ public class CodexMenu extends ButtonMenu {
         lore.add(god.displayTitle().copy().withStyle(plain(0xAAAAAA)));
         lore.add(text(NS + "god.floor", 0xAAAAAA, floor, Tower.tierName(god.line(), floor)));
         lore.add(text(NS + "god.rank", 0xAAAAAA, god.rank()));
+        lore.add(text(NS + "god.move", 0xF5B82E, god.moveName()));
         if (defeated) {
             lore.add(text(NS + "god.defeated", 0x55FF55));
             lore.add(text(NS + "god.relic", 0x55FFFF, Component.translatable("item." + RealmsOfChaos.MOD_ID + "." + god.id() + "_weapon")));

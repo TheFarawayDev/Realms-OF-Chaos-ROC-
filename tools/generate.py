@@ -81,6 +81,42 @@ LINES = {
     ],
 }
 
+# Every god's signature move: its own name, and which of the fourteen kinds of move it is.
+# The god casts it in a fight; the god's relic weapon casts the same move for the player.
+SIGNATURES = {
+    "zeus": ("Wrath of Olympus", "STORM"), "athena": ("Aegis", "WARD"), "apollo": ("Sunburst Volley", "VOLLEY"),
+    "dionysus": ("Bacchic Revel", "SLUMBER"), "artemis": ("Hunter's Moon", "VOLLEY"), "ares": ("Warpath", "CHARGE"),
+    "hermes": ("Windstep", "BLINK"), "asclepius": ("Panacea", "MEND"), "hebe": ("Cup of Youth", "MEND"),
+    "phobos": ("Terror Strike", "BLINK"), "deimos": ("Dread Harvest", "REAP"), "hygeia": ("Cleansing Ward", "WARD"),
+    "pan": ("Panic", "NOVA"), "nike": ("Victory Rush", "CHARGE"), "iris": ("Prism Gust", "GALE"),
+    "poseidon": ("Earthshaker", "ERUPTION"), "amphitrite": ("Queen's Tide", "FROST"), "triton": ("Call of the Deep", "VORTEX"),
+    "chrysaor": ("Golden Rush", "CHARGE"), "cymopoleia": ("Stormwave", "NOVA"), "rhode": ("Rain of Roses", "VOLLEY"),
+    "pegasus": ("Skyward Gale", "GALE"), "benthesikyme": ("Undertow", "VORTEX"), "halia": ("Seafoam Chill", "FROST"),
+    "nereus": ("Old Man of the Sea", "WARD"), "proteus": ("Shapeshift", "BLINK"), "palaemon": ("Anchor Drop", "NOVA"),
+    "thetis": ("Silver Rain", "VOLLEY"), "galene": ("Stillwater", "MEND"), "galatea": ("Pearl Frost", "FROST"),
+    "hades": ("Gates of Tartarus", "ERUPTION"), "persephone": ("Winter's Harvest", "REAP"), "zagreus": ("Stygian Dash", "CHARGE"),
+    "thanatos": ("Final Harvest", "REAP"), "hypnos": ("Lullaby", "SLUMBER"), "melinoe": ("Ghostlight", "CURSE"),
+    "macaria": ("Blessed End", "BLINK"), "hecate": ("Crossroads Hex", "CURSE"), "morpheus": ("Waking Dream", "SLUMBER"),
+    "nyx": ("Starfall", "VOLLEY"), "erinyes": ("Vengeance", "CURSE"), "moirai": ("Severed Thread", "CURSE"),
+    "keres": ("Carrion Feast", "REAP"), "oneiroi": ("Nightmare", "SLUMBER"), "charon": ("Ferryman's Toll", "NOVA"),
+}
+MOVE_KINDS = {
+    "STORM": "Lightning strikes every foe around you",
+    "CHARGE": "Dash forward, cutting through everything in the way",
+    "VOLLEY": "Looses a fan of five shots",
+    "VORTEX": "Drags foes in, then bursts",
+    "NOVA": "A shockwave that hurls every foe away",
+    "BLINK": "Step behind your foe and strike hard",
+    "MEND": "Heals you, cures what ails you, and weakens foes",
+    "SLUMBER": "Dazes foes: they slow, weaken and lose their way",
+    "REAP": "A wide arc that heals you for every foe it cuts",
+    "CURSE": "A hex that withers foes, then bursts",
+    "FROST": "A ring of frost that freezes and slows",
+    "GALE": "A gust that throws foes into the air",
+    "WARD": "A shield for you, and foes are pushed back",
+    "ERUPTION": "The ground erupts under every foe a moment later",
+}
+
 LINE_INFO = {
     "ZEUS":     dict(label="Zeus", zone="Olympian Heights", metals=[(236, 196, 84), (206, 212, 224), (196, 142, 84)]),
     "POSEIDON": dict(label="Poseidon", zone="The Abyssal Palace", metals=[(86, 196, 206), (200, 214, 226), (232, 150, 120)]),
@@ -190,12 +226,14 @@ def all_gods():
 # Java roster
 # ----------------------------------------------------------------------------
 def gen_java():
+    assert set(SIGNATURES) == {g[0] for _, _, _, g in all_gods()}, "every god needs a signature move"
+    assert all(k in MOVE_KINDS for _, k in SIGNATURES.values())
     rows = []
     for idx, line, rank, g in all_gods():
         gid, name, title, wname, shape, power, teff, seff, kind = g
         rows.append(
             f"        new God({idx}, Line.{line}, {rank}, {jstr(gid)}, {jstr(name)}, {jstr(title)}, "
-            f"{jstr(wname)}, WeaponKind.{kind}, Power.{power}, {jstr(teff)}, {jstr(seff)})"
+            f"{jstr(wname)}, WeaponKind.{kind}, Power.{power}, {jstr(teff)}, {jstr(seff)}, Signature.{SIGNATURES[gid][1]})"
         )
     src = f"""package {JAVA_PKG}.god;
 
@@ -259,19 +297,67 @@ def gen_lang():
         "kind.realms_of_chaos.scythe": "Scythe", "kind.realms_of_chaos.staff": "Staff",
         "kind.realms_of_chaos.bow": "Bow", "kind.realms_of_chaos.thrown": "Thrown weapon",
         "kind.realms_of_chaos.relic": "Relic",
-        "kind.realms_of_chaos.blade.use": "Right-click: Divine Surge",
-        "kind.realms_of_chaos.dagger.use": "Fast strikes. Right-click: Divine Surge",
-        "kind.realms_of_chaos.polearm.use": "Long reach. Right-click: Divine Surge",
-        "kind.realms_of_chaos.hammer.use": "Slow, crushing blows. Right-click: Divine Surge",
-        "kind.realms_of_chaos.scythe.use": "Every hit sweeps. Right-click: Divine Surge",
-        "kind.realms_of_chaos.staff.use": "Right-click: cast a bolt. Sneak + right-click: Divine Surge",
-        "kind.realms_of_chaos.bow.use": "Right-click: loose an arrow. Sneak + right-click: Divine Surge",
-        "kind.realms_of_chaos.thrown.use": "Right-click: throw. Sneak + right-click: Divine Surge",
-        "kind.realms_of_chaos.relic.use": "Right-click: invoke its power around you. Sneak + right-click: Divine Surge",
-        "tooltip.realms_of_chaos.level": "Level %s of 10  (%s / %s XP)",
+        "kind.realms_of_chaos.blade.use": "A balanced blade",
+        "kind.realms_of_chaos.dagger.use": "Fast strikes",
+        "kind.realms_of_chaos.polearm.use": "Long reach",
+        "kind.realms_of_chaos.hammer.use": "Slow, crushing blows",
+        "kind.realms_of_chaos.scythe.use": "Every hit sweeps",
+        "kind.realms_of_chaos.staff.use": "Right-click: cast a bolt",
+        "kind.realms_of_chaos.bow.use": "Right-click: loose an arrow",
+        "kind.realms_of_chaos.thrown.use": "Right-click: throw",
+        "kind.realms_of_chaos.relic.use": "Right-click: invoke its power around you",
+        "tooltip.realms_of_chaos.level": "Level %s of 10  %s  %s / %s XP",
         "tooltip.realms_of_chaos.level.max": "Level 10 (max)",
-        "tooltip.realms_of_chaos.stars": "Forged: %s of 5 stars",
+        "tooltip.realms_of_chaos.stars": "Forged %s",
         "tooltip.realms_of_chaos.bonus": "+%s%% damage from level and forging",
+        "tooltip.realms_of_chaos.hit": "On hit: %s",
+        "tooltip.realms_of_chaos.flourish": "Every fourth hit in a row is a flourish (+50%)",
+        "tooltip.realms_of_chaos.move": "Right-click: %s",
+        "tooltip.realms_of_chaos.move.sneak": "Sneak + right-click: %s",
+        "tooltip.realms_of_chaos.perk.empowered": "Empowered: the move hits 50% harder",
+        "tooltip.realms_of_chaos.perk.awakened": "Awakened: the move echoes a second time",
+        "tooltip.realms_of_chaos.perk.locked": "(forge %s stars)",
+        "hud.realms_of_chaos.move.cast": "%s",
+        "hud.realms_of_chaos.move.echo": "%s echoes",
+        "hud.realms_of_chaos.move.wait": "%s is ready in %s s",
+        "hud.realms_of_chaos.move.notarget": "%s needs a foe in sight",
+        "hud.realms_of_chaos.move.windup": "%s readies %s!",
+        "hud.realms_of_chaos.flourish": "Flourish!",
+        "hud.realms_of_chaos.enraged": "%s is enraged",
+        "hud.realms_of_chaos.rematch": "Rematch",
+        "hud.realms_of_chaos.rematch.sub": "%s rises again",
+        "hud.realms_of_chaos.infused": "%s drinks your experience: +%s XP",
+        "hud.realms_of_chaos.infuse.none": "You have no experience levels to give",
+        "hud.realms_of_chaos.forged.empowered": "Empowered: %s hits 50%% harder",
+        "hud.realms_of_chaos.forged.awakened": "Awakened: %s now echoes",
+        "hud.realms_of_chaos.forged.star": "+10%% damage, faster recharge",
+        "menu.realms_of_chaos.forge.stars": "%s",
+        "menu.realms_of_chaos.forge.star.next": "Next to forge",
+        "menu.realms_of_chaos.forge.move": "Signature move: %s",
+        "menu.realms_of_chaos.forge.preview": "What the next star gives",
+        "menu.realms_of_chaos.forge.preview.damage": "Damage bonus: +%s%% -> +%s%%",
+        "menu.realms_of_chaos.forge.preview.recharge": "Recharge: %s s -> %s s",
+        "menu.realms_of_chaos.forge.preview.max": "Nothing left to forge: this relic is complete",
+        "menu.realms_of_chaos.forge.guide": "Forge materials",
+        "menu.realms_of_chaos.forge.guide.line": "%s x %s - %s (floors %s)",
+        "menu.realms_of_chaos.forge.guide.rematch": "Rematch a fallen god at its altar for more",
+        "menu.realms_of_chaos.forge.guide.cost": "%s x %s",
+        "menu.realms_of_chaos.forge.move.damage": "%s damage - recharges in %s s",
+        "menu.realms_of_chaos.forge.infuse": "Infuse experience",
+        "menu.realms_of_chaos.forge.infuse.lore": "Click: give 1 of your levels (+%s weapon XP)",
+        "menu.realms_of_chaos.forge.infuse.lore2": "Shift-click: give 5 levels",
+        "menu.realms_of_chaos.forge.infuse.have": "You have %s levels",
+        "menu.realms_of_chaos.forge.infuse.max": "This relic has reached level 10",
+        "menu.realms_of_chaos.forge.close": "Step back",
+        "menu.realms_of_chaos.forge.blocked.level": "The relic must reach level %s first",
+        "menu.realms_of_chaos.forge.blocked.cost": "You do not have the materials yet",
+        "menu.realms_of_chaos.god.move": "Signature move: %s",
+        "menu.realms_of_chaos.god.drops": "Drops",
+        "menu.realms_of_chaos.god.drops.relic": "%s (first victory)",
+        "menu.realms_of_chaos.god.drops.material": "%s x %s",
+        "menu.realms_of_chaos.altar.rematch": "Rematch",
+        "menu.realms_of_chaos.altar.rematch.lore": "Fight %s again for forge materials",
+        "menu.realms_of_chaos.altar.rematch.busy": "A trial is already underway on this floor",
         "hud.realms_of_chaos.levelup": "%s reached level %s!",
         "tarot.realms_of_chaos.single": "Right-click to play. The card is spent",
         "tarot.realms_of_chaos.devil.warn": "Clears your inventory! Hold the chosen item in your off hand",
@@ -387,7 +473,6 @@ def gen_lang():
         "menu.realms_of_chaos.altar.close": "Step back",
         "tooltip.realms_of_chaos.rank": "Rank %s of 15",
         "tooltip.realms_of_chaos.line": "Line of %s",
-        "tooltip.realms_of_chaos.ability": "Right-click: Divine Surge (%s)",
         "power.realms_of_chaos.none": "empowering strike",
         "power.realms_of_chaos.lightning": "calls lightning",
         "power.realms_of_chaos.fire": "sets foes ablaze",
@@ -399,6 +484,10 @@ def gen_lang():
         "advancement.realms_of_chaos.root.title": "Realms of Chaos",
         "advancement.realms_of_chaos.root.desc": "Thank you for using our mod! Open the Codex of Chaos to begin. - TheFarawayDev",
     }
+    for gid, (mname, mkind) in SIGNATURES.items():
+        lang[f"move.realms_of_chaos.{gid}"] = mname
+    for mkind, mdesc in MOVE_KINDS.items():
+        lang[f"move.realms_of_chaos.kind.{mkind.lower()}"] = mdesc
     for cid, numeral, cname, cdesc, _sym, _col in TAROT:
         lang[f"item.realms_of_chaos.tarot_{cid}"] = f"{cname} ({numeral})"
         lang[f"item.realms_of_chaos.tarot_{cid}.desc"] = cdesc
@@ -500,6 +589,23 @@ def item_def(item_id, model_path):
     wj(os.path.join(ASSETS, f"items/{item_id}.json"),
        {"model": {"type": "minecraft:model", "model": f"{MOD}:{model_path}"}})
 
+def station_model(top, bottom, side, boxes):
+    """A block model built from stacked boxes (x1, y1, z1, x2, y2, z2): a plinth, a waist and a table, not a cube.
+    Side faces take the matching strip of the side texture, so the art lines up from box to box."""
+    elements = []
+    for x1, y1, z1, x2, y2, z2 in boxes:
+        faces = {
+            "north": {"uv": [16 - x2, 16 - y2, 16 - x1, 16 - y1], "texture": "#side"},
+            "south": {"uv": [x1, 16 - y2, x2, 16 - y1], "texture": "#side"},
+            "west": {"uv": [z1, 16 - y2, z2, 16 - y1], "texture": "#side"},
+            "east": {"uv": [16 - z2, 16 - y2, 16 - z1, 16 - y1], "texture": "#side"},
+            "up": {"uv": [x1, z1, x2, z2], "texture": "#top"},
+            "down": {"uv": [x1, 16 - z2, x2, 16 - z1], "texture": "#bottom"},
+        }
+        elements.append({"from": [x1, y1, z1], "to": [x2, y2, z2], "faces": faces})
+    return {"parent": "minecraft:block/block", "textures": {"particle": side, "top": top, "bottom": bottom, "side": side},
+            "elements": elements}
+
 def gen_models():
     for _, _, _, g in all_gods():
         iid = f"{g[0]}_weapon"
@@ -517,13 +623,12 @@ def gen_models():
         wj(os.path.join(ASSETS, f"blockstates/{b}.json"), {"variants": {"": {"model": f"{MOD}:block/{b}"}}})
         if b == "chaos_forge":
             wj(os.path.join(ASSETS, f"models/block/{b}.json"),
-               {"parent": "minecraft:block/cube_bottom_top",
-                "textures": {"top": f"{MOD}:block/chaos_forge_top", "bottom": f"{MOD}:block/altar_base", "side": f"{MOD}:block/chaos_forge_side"}})
+               station_model(f"{MOD}:block/chaos_forge_top", f"{MOD}:block/altar_base", f"{MOD}:block/chaos_forge_side",
+                             [(1, 0, 1, 15, 4, 15), (3, 4, 3, 13, 9, 13), (0, 9, 0, 16, 16, 16)]))
         elif b.startswith("altar"):
             wj(os.path.join(ASSETS, f"models/block/{b}.json"),
-               {"parent": "minecraft:block/cube_bottom_top",
-                "textures": {"top": f"{MOD}:block/{b}_top", "bottom": f"{MOD}:block/altar_base",
-                             "side": f"{MOD}:block/{b}_side"}})
+               station_model(f"{MOD}:block/{b}_top", f"{MOD}:block/altar_base", f"{MOD}:block/{b}_side",
+                             [(0, 0, 0, 16, 3, 16), (2, 3, 2, 14, 5, 14), (4, 5, 4, 12, 12, 12), (1, 12, 1, 15, 16, 15)]))
         else:
             wj(os.path.join(ASSETS, f"models/block/{b}.json"),
                {"parent": "minecraft:block/cube_all", "textures": {"all": f"{MOD}:block/{b}"}})
@@ -2048,7 +2153,7 @@ def gen_site(weapon_first, previews):
         floor = 16 - rank
         tier = 0 if floor <= 5 else 1 if floor <= 10 else 2 if floor <= 14 else 3
         roster.append({"i": idx, "line": line.lower(), "rank": rank, "floor": floor, "tier": TIERS[line][1][tier],
-                       "id": g[0], "name": g[1], "title": g[2]})
+                       "id": g[0], "name": g[1], "title": g[2], "move": SIGNATURES[g[0]][0]})
     wj(os.path.join(SITE, "roster.json"), roster)
     raw, number, channel = read_version()
     wj(os.path.join(SITE, "version.json"), {"version": raw, "number": number, "channel": channel})

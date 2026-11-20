@@ -104,7 +104,7 @@ public final class ModContent {
         block("altar_zeus", ALTAR_ZEUS, key -> altar(Line.ZEUS, key));
         block("altar_poseidon", ALTAR_POSEIDON, key -> altar(Line.POSEIDON, key));
         block("altar_hades", ALTAR_HADES, key -> altar(Line.HADES, key));
-        block("chaos_forge", CHAOS_FORGE, key -> new ForgeBlock(unbreakable(key).mapColor(MapColor.COLOR_ORANGE).lightLevel(s -> 12).sound(SoundType.ANVIL)));
+        block("chaos_forge", CHAOS_FORGE, key -> new ForgeBlock(unbreakable(key).mapColor(MapColor.COLOR_ORANGE).lightLevel(s -> 14).noOcclusion().sound(SoundType.ANVIL)));
 
         // items: codex, compass, 45 god weapons (ordered by line, rank 1 -> 15), then the block items
         item("chaos_codex", CHAOS_CODEX, key -> new CodexItem(new Item.Properties().setId(key).stacksTo(1)));
@@ -171,7 +171,7 @@ public final class ModContent {
     }
 
     private static Block altar(Line line, ResourceKey<Block> key) {
-        return new AltarBlock(line, unbreakable(key).mapColor(MapColor.STONE).lightLevel(s -> 10).sound(SoundType.STONE));
+        return new AltarBlock(line, unbreakable(key).mapColor(MapColor.STONE).lightLevel(s -> 10).noOcclusion().sound(SoundType.STONE));
     }
 
     // ---- entity -------------------------------------------------------------------------------

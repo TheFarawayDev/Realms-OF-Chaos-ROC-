@@ -3,11 +3,16 @@ package com.thefarawaydev.realmsofchaos.ui;
 import com.thefarawaydev.realmsofchaos.ModContent;
 import com.thefarawaydev.realmsofchaos.RealmsOfChaos;
 import com.thefarawaydev.realmsofchaos.god.God;
+import com.thefarawaydev.realmsofchaos.god.Signature;
 import com.thefarawaydev.realmsofchaos.item.GodWeaponItem;
 import com.thefarawaydev.realmsofchaos.item.WeaponProgress;
+import com.thefarawaydev.realmsofchaos.world.Tower;
 import java.util.ArrayList;
 import java.util.List;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
@@ -17,23 +22,43 @@ import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.phys.Vec3;
 
 /**
- * The Forge of Chaos screen, for the relic weapon in the player's main hand. The top row shows its five stars, the
- * middle row the weapon, its level, the price of the next star and the forge button, and the bottom row is an
- * experience bar towards the next level.
+ * The Forge of Chaos screen, for the relic weapon in the player's main hand.
+ *
+ * <pre>
+ *   row 0   . . . . W . . . X      the weapon; step back
+ *   row 1   . . * * * * * . .      its five stars: forged, next, still to come
+ *   row 2   . L . M . P . G .      level - signature move and perks - what the next star gives - materials guide
+ *   row 3   . I . c F c . . .      infuse experience - the price either side of the forge button
+ *   row 4   . = = = = = = = .      experience towards the next level
+ * </pre>
  */
 public class ForgeMenu extends ButtonMenu {
-    public static final int SLOT_WEAPON = slot(1, 1), SLOT_LEVEL = slot(1, 2), SLOT_COST = slot(1, 4), SLOT_COST_2 = slot(1, 5), SLOT_FORGE = slot(1, 7);
+    public static final int SLOT_WEAPON = slot(0, 4), SLOT_CLOSE = slot(0, 8), STAR_ROW = 1, STAR_COLUMN = 2,
+            SLOT_LEVEL = slot(2, 1), SLOT_MOVE = slot(2, 3), SLOT_PREVIEW = slot(2, 5), SLOT_GUIDE = slot(2, 7),
+            SLOT_INFUSE = slot(3, 1), SLOT_COST = slot(3, 3), SLOT_FORGE = slot(3, 4), SLOT_COST_2 = slot(3, 5), XP_ROW = 4;
+    /** Weapon experience one of the player's own levels is worth when infused. */
+    public static final int INFUSE_XP = 30;
     private static final String NS = "menu." + RealmsOfChaos.MOD_ID + ".forge.";
+    private static final String TIP = "tooltip." + RealmsOfChaos.MOD_ID + ".";
+
+    /** The forge block this screen was opened at, or null when it was opened from the Codex or a command. */
+    private final BlockPos forge;
 
     public static void open(ServerPlayer player) {
-        player.openMenu(new SimpleMenuProvider((id, inventory, p) -> new ForgeMenu(id, inventory, (ServerPlayer) p),
+        open(player, null);
+    }
+
+    public static void open(ServerPlayer player, BlockPos forge) {
+        player.openMenu(new SimpleMenuProvider((id, inventory, p) -> new ForgeMenu(id, inventory, (ServerPlayer) p, forge),
                 Component.translatable("menu." + RealmsOfChaos.MOD_ID + ".forge")));
     }
 
-    private ForgeMenu(int id, Inventory inventory, ServerPlayer viewer) {
-        super(id, inventory, viewer, 3);
+    private ForgeMenu(int id, Inventory inventory, ServerPlayer viewer, BlockPos forge) {
+        super(id, inventory, viewer, 6);
+        this.forge = forge;
         render();
     }
 
@@ -41,7 +66,6 @@ public class ForgeMenu extends ButtonMenu {
         ItemStack held = viewer.getMainHandItem();
         return held.getItem() instanceof GodWeaponItem ? held : ItemStack.EMPTY;
     }
-
 
     public static int count(ServerPlayer player, Item item) {
         int n = 0;
@@ -81,8 +105,53 @@ public class ForgeMenu extends ButtonMenu {
 
     @Override
     protected void press(int slot) {
-        if (slot != SLOT_FORGE) return;
-        if (blocker() != null) {
+        if (slot == SLOT_CLOSE) {
+            clickSound();
+            viewer.closeContainer();
+        } else if (slot == SLOT_INFUSE) {
+            infuse(shiftClick ? 5 : 1);
+        } else if (slot == SLOT_FORGE) {
+            forgeStar();
+        }
+    }
+
+    /** Pours the player's own experience levels into the weapon. */
+    private void infuse(int levels) {
+        ItemStack weapon = weapon();
+        if (weapon.isEmpty()) return;
+        if (WeaponProgress.level(weapon) >= WeaponProgress.MAX_LEVEL) {
+            render();
+            return;
+        }
+        boolean free = viewer.hasInfiniteMaterials();
+        int given = free ? levels : Math.min(levels, viewer.experienceLevel);
+        if (given <= 0) {
+            Hud.actionBar(viewer, Hud.colored(Component.translatable("hud." + RealmsOfChaos.MOD_ID + ".infuse.none"), 0xFF5555));
+            viewer.level().playSound(null, viewer.blockPosition(), SoundEvents.VILLAGER_NO, SoundSource.PLAYERS, 0.6F, 1.0F);
+            return;
+        }
+        if (!free) viewer.giveExperienceLevels(-given);
+        int before = WeaponProgress.level(weapon);
+        WeaponProgress.addXp(weapon, given * INFUSE_XP);
+        boolean levelled = WeaponProgress.level(weapon) > before;
+        viewer.level().playSound(null, viewer.blockPosition(), levelled ? SoundEvents.PLAYER_LEVELUP : SoundEvents.EXPERIENCE_ORB_PICKUP,
+                SoundSource.PLAYERS, 0.7F, levelled ? 1.2F : 0.8F);
+        effects(ParticleTypes.ENCHANT, 30);
+        Hud.actionBar(viewer, Hud.colored(Component.translatable("hud." + RealmsOfChaos.MOD_ID + ".infused", weapon.getHoverName(), given * INFUSE_XP), 0x55FF55));
+        render();
+    }
+
+    private void forgeStar() {
+        String blocker = blocker();
+        if (blocker != null) {
+            ItemStack weapon = weapon();
+            if (!weapon.isEmpty() && ("level".equals(blocker) || "cost".equals(blocker))) {
+                Component why = "level".equals(blocker)
+                        ? Component.translatable(NS + "blocked.level", WeaponProgress.starLevel(WeaponProgress.stars(weapon) + 1))
+                        : Component.translatable(NS + "blocked.cost");
+                Hud.actionBar(viewer, Hud.colored(why, 0xFF5555));
+                viewer.level().playSound(null, viewer.blockPosition(), SoundEvents.VILLAGER_NO, SoundSource.PLAYERS, 0.6F, 1.0F);
+            }
             render();
             return;
         }
@@ -93,48 +162,126 @@ public class ForgeMenu extends ButtonMenu {
             for (WeaponProgress.Cost cost : WeaponProgress.starCost(next)) take(viewer, ModContent.materialItem(god.line(), cost.tier()), cost.count());
         }
         WeaponProgress.setStars(weapon, next);
+
+        String hud = "hud." + RealmsOfChaos.MOD_ID + ".";
+        boolean milestone = next == GodWeaponItem.EMPOWERED_STARS || next == GodWeaponItem.AWAKENED_STARS;
         viewer.level().playSound(null, viewer.blockPosition(), SoundEvents.ANVIL_USE, SoundSource.PLAYERS, 0.8F, 1.1F);
-        viewer.level().playSound(null, viewer.blockPosition(), SoundEvents.PLAYER_LEVELUP, SoundSource.PLAYERS, 0.6F, 0.8F);
-        Hud.actionBar(viewer, Hud.colored(Component.translatable("hud." + RealmsOfChaos.MOD_ID + ".forged", weapon.getHoverName(), next), 0xF5B82E));
+        viewer.level().playSound(null, viewer.blockPosition(), milestone ? SoundEvents.UI_TOAST_CHALLENGE_COMPLETE : SoundEvents.PLAYER_LEVELUP,
+                SoundSource.PLAYERS, 0.7F, milestone ? 1.2F : 0.8F);
+        effects(ParticleTypes.LAVA, 12);
+        effects(ParticleTypes.FLAME, 30);
+        effects(Signature.spark(god.line()), 20 * next);
+        if (milestone) effects(ParticleTypes.END_ROD, 40);
+        Component what = next == GodWeaponItem.AWAKENED_STARS ? Component.translatable(hud + "forged.awakened", god.moveName())
+                : next == GodWeaponItem.EMPOWERED_STARS ? Component.translatable(hud + "forged.empowered", god.moveName())
+                : Component.translatable(hud + "forged.star");
+        Hud.title(viewer, GodWeaponItem.starRow(next), Hud.colored(what, milestone ? 0xF5B82E : 0xFFFFFF), 5, 40, 15);
+        Hud.actionBar(viewer, Hud.colored(Component.translatable(hud + "forged", weapon.getHoverName(), next), 0xF5B82E));
         render();
+    }
+
+    /** Sparks at the forge block if there is one, otherwise around the player. */
+    private void effects(net.minecraft.core.particles.ParticleOptions particle, int count) {
+        if (!(viewer.level() instanceof ServerLevel level)) return;
+        Vec3 at = forge != null ? new Vec3(forge.getX() + 0.5, forge.getY() + 1.2, forge.getZ() + 0.5) : viewer.position().add(0, 1.0, 0);
+        level.sendParticles(particle, at.x, at.y, at.z, count, 0.35, 0.35, 0.35, 0.05);
     }
 
     @Override
     protected void render() {
         frame(DyeColor.ORANGE, DyeColor.BLACK);
+        view.setItem(SLOT_CLOSE, icon(Items.ARROW, text(NS + "close", 0xFFFFFF), false, List.of()));
         ItemStack weapon = weapon();
         if (weapon.isEmpty()) {
-            view.setItem(slot(1, 4), icon(Items.BARRIER, text(NS + "none", 0xFF5555), false, List.of(text(NS + "none.lore", 0xAAAAAA))));
+            view.setItem(slot(2, 4), icon(Items.BARRIER, text(NS + "none", 0xFF5555), false, List.of(text(NS + "none.lore", 0xAAAAAA))));
             broadcastChanges();
             return;
         }
-        God god = ((GodWeaponItem) weapon.getItem()).god();
+        GodWeaponItem item = (GodWeaponItem) weapon.getItem();
+        God god = item.god();
         int level = WeaponProgress.level(weapon), xp = WeaponProgress.xp(weapon), stars = WeaponProgress.stars(weapon);
         int need = WeaponProgress.xpNeeded(level);
         boolean maxLevel = level >= WeaponProgress.MAX_LEVEL;
-
-        // top row: the five stars
-        for (int i = 1; i <= WeaponProgress.MAX_STARS; i++) {
-            boolean owned = i <= stars;
-            view.setItem(slot(0, 1 + i), owned
-                    ? icon(Items.NETHER_STAR, text(NS + "star", 0xF5B82E, i), true, List.of(text(NS + "star.owned", 0x55FF55)))
-                    : pane(DyeColor.GRAY, text(NS + "star", 0x888888, i), List.of(text(NS + "star.empty", 0xAAAAAA),
-                            text(NS + "needlevel", 0xAAAAAA, WeaponProgress.starLevel(i)))));
-        }
-
-        view.setItem(SLOT_WEAPON, weapon.copy());
-        view.setItem(SLOT_LEVEL, icon(Items.EXPERIENCE_BOTTLE, text(NS + "level", 0x55FF55, level), maxLevel,
-                List.of(maxLevel ? text("tooltip." + RealmsOfChaos.MOD_ID + ".level.max", 0x55FF55) : text(NS + "xp", 0xAAAAAA, xp, need),
-                        text("tooltip." + RealmsOfChaos.MOD_ID + ".bonus", 0xF5B82E, (int) Math.round((WeaponProgress.multiplier(weapon) - 1.0) * 100)))));
-
         String blocker = blocker();
         int next = stars + 1;
+
+        view.setItem(SLOT_WEAPON, weapon.copy());
+
+        // the five stars: forged ones shine, the next one is marked, the rest wait
+        for (int i = 1; i <= WeaponProgress.MAX_STARS; i++) {
+            List<Component> lore = new ArrayList<>();
+            if (i == GodWeaponItem.EMPOWERED_STARS) lore.add(text(TIP + "perk.empowered", 0xF5B82E));
+            if (i == GodWeaponItem.AWAKENED_STARS) lore.add(text(TIP + "perk.awakened", 0xF5B82E));
+            ItemStack star;
+            if (i <= stars) {
+                lore.add(0, text(NS + "star.owned", 0x55FF55));
+                star = icon(Items.NETHER_STAR, text(NS + "star", 0xF5B82E, i), true, lore);
+            } else {
+                lore.add(0, text(NS + (i == next ? "star.next" : "star.empty"), i == next ? 0xFFFF55 : 0xAAAAAA));
+                lore.add(text(NS + "needlevel", level >= WeaponProgress.starLevel(i) ? 0x55FF55 : 0xFF5555, WeaponProgress.starLevel(i)));
+                for (WeaponProgress.Cost cost : WeaponProgress.starCost(i)) {
+                    lore.add(text(NS + "guide.cost", 0xAAAAAA, cost.count(), new ItemStack(ModContent.materialItem(god.line(), cost.tier())).getHoverName()));
+                }
+                star = pane(i == next ? DyeColor.YELLOW : DyeColor.GRAY, text(NS + "star", i == next ? 0xFFFF55 : 0x888888, i), lore);
+            }
+            view.setItem(slot(STAR_ROW, STAR_COLUMN + i - 1), star);
+        }
+
+        int bonus = (int) Math.round((WeaponProgress.multiplier(weapon) - 1.0) * 100);
+        view.setItem(SLOT_LEVEL, icon(Items.EXPERIENCE_BOTTLE, text(NS + "level", 0x55FF55, level), maxLevel,
+                List.of(maxLevel ? text(TIP + "level.max", 0x55FF55) : text(NS + "xp", 0xAAAAAA, xp, need),
+                        text(TIP + "bonus", 0xF5B82E, bonus))));
+
+        // the signature move and what forging does to it
+        List<Component> moveLore = new ArrayList<>();
+        moveLore.add(god.signature().description().copy().withStyle(plain(0xAAAAAA)));
+        moveLore.add(text(NS + "move.damage", 0xAAAAAA, String.format("%.1f", item.moveDamage(weapon)),
+                String.format("%.1f", GodWeaponItem.moveCooldown(weapon) / 20.0)));
+        GodWeaponItem.perkLines(weapon, moveLore::add);
+        view.setItem(SLOT_MOVE, icon(Items.BLAZE_POWDER, text(NS + "move", god.line().color(), god.moveName()), stars >= GodWeaponItem.EMPOWERED_STARS, moveLore));
+
+        // what the next star changes, in numbers
+        List<Component> preview = new ArrayList<>();
         if ("max".equals(blocker)) {
-            view.setItem(SLOT_FORGE, icon(Items.NETHER_STAR, text(NS + "max", 0x55FF55), true, List.of()));
+            preview.add(text(NS + "preview.max", 0x55FF55));
+        } else {
+            ItemStack after = weapon.copy();
+            WeaponProgress.setStars(after, next);
+            preview.add(text(NS + "preview.damage", 0xFFFFFF, bonus, (int) Math.round((WeaponProgress.multiplier(after) - 1.0) * 100)));
+            preview.add(text(NS + "preview.recharge", 0xFFFFFF, String.format("%.1f", GodWeaponItem.moveCooldown(weapon) / 20.0),
+                    String.format("%.1f", GodWeaponItem.moveCooldown(after) / 20.0)));
+            if (next == GodWeaponItem.EMPOWERED_STARS) preview.add(text(TIP + "perk.empowered", 0xF5B82E));
+            if (next == GodWeaponItem.AWAKENED_STARS) preview.add(text(TIP + "perk.awakened", 0xF5B82E));
+        }
+        view.setItem(SLOT_PREVIEW, icon(Items.SPYGLASS, text(NS + "preview", 0x55FFFF), false, preview));
+
+        // where each material of this weapon's tower comes from, and how many the player holds
+        List<Component> guide = new ArrayList<>();
+        String[] floors = {"1-5", "6-10", "11-14", "15"};
+        for (int tier = 1; tier <= 4; tier++) {
+            Item material = ModContent.materialItem(god.line(), tier);
+            int have = count(viewer, material);
+            guide.add(text(NS + "guide.line", have > 0 ? 0x55FF55 : 0xAAAAAA, have, new ItemStack(material).getHoverName(),
+                    Tower.tierName(god.line(), tier == 1 ? 1 : tier == 2 ? 6 : tier == 3 ? 11 : 15), floors[tier - 1]));
+        }
+        guide.add(text(NS + "guide.rematch", 0x55FFFF));
+        view.setItem(SLOT_GUIDE, icon(ModContent.CHAOS_CODEX.get(), text(NS + "guide", god.line().color()), false, guide));
+
+        // infusing: the player's own levels become weapon experience
+        view.setItem(SLOT_INFUSE, maxLevel
+                ? icon(Items.GLASS_BOTTLE, text(NS + "infuse", 0x888888), false, List.of(text(NS + "infuse.max", 0xAAAAAA)))
+                : icon(Items.ENCHANTED_BOOK, text(NS + "infuse", 0x55FF55), false, List.of(
+                        text(NS + "infuse.lore", 0xAAAAAA, INFUSE_XP), text(NS + "infuse.lore2", 0xAAAAAA),
+                        text(NS + "infuse.have", viewer.experienceLevel > 0 ? 0x55FF55 : 0xFF5555, viewer.experienceLevel))));
+
+        // the price, either side of the forge button
+        if ("max".equals(blocker)) {
+            view.setItem(SLOT_FORGE, icon(Items.NETHER_STAR, text(NS + "max", 0x55FF55), true, List.of(text(NS + "awakened", 0xF5B82E))));
         } else {
             List<Component> lore = new ArrayList<>();
             lore.add(text(NS + "effect", 0xAAAAAA));
-            if (next == WeaponProgress.MAX_STARS) lore.add(text(NS + "awakened", 0xF5B82E));
+            if (next == GodWeaponItem.EMPOWERED_STARS) lore.add(text(TIP + "perk.empowered", 0xF5B82E));
+            if (next == GodWeaponItem.AWAKENED_STARS) lore.add(text(TIP + "perk.awakened", 0xF5B82E));
             lore.add(text(NS + "needlevel", "level".equals(blocker) ? 0xFF5555 : 0x55FF55, WeaponProgress.starLevel(next)));
             int priceSlot = SLOT_COST;
             for (WeaponProgress.Cost cost : WeaponProgress.starCost(next)) {
@@ -142,8 +289,8 @@ public class ForgeMenu extends ButtonMenu {
                 int have = count(viewer, material);
                 boolean enough = have >= cost.count() || viewer.hasInfiniteMaterials();
                 Component line = text(NS + "cost", enough ? 0x55FF55 : 0xFF5555, cost.count(), new ItemStack(material).getHoverName(), have);
-                ItemStack price = icon(material, line, false, List.of(text(NS + "from", 0xAAAAAA,
-                        com.thefarawaydev.realmsofchaos.world.Tower.tierName(god.line(), cost.tier() == 1 ? 1 : cost.tier() == 2 ? 6 : cost.tier() == 3 ? 11 : 15))));
+                ItemStack price = icon(material, line, enough, List.of(text(NS + "from", 0xAAAAAA,
+                        Tower.tierName(god.line(), cost.tier() == 1 ? 1 : cost.tier() == 2 ? 6 : cost.tier() == 3 ? 11 : 15))));
                 price.setCount(Math.max(1, Math.min(64, cost.count())));
                 view.setItem(priceSlot, price);
                 priceSlot = SLOT_COST_2;
@@ -152,11 +299,11 @@ public class ForgeMenu extends ButtonMenu {
             view.setItem(SLOT_FORGE, icon(Items.ANVIL, text(NS + "upgrade", blocker == null ? 0x55FF55 : 0xFF5555, next), blocker == null, lore));
         }
 
-        // bottom row: experience towards the next level
-        int filled = maxLevel ? 9 : Math.min(9, (int) Math.floor(9.0 * xp / need));
-        for (int i = 0; i < 9; i++) {
-            view.setItem(slot(2, i), pane(i < filled ? DyeColor.LIME : DyeColor.GRAY, text(NS + "level", 0x55FF55, level),
-                    List.of(maxLevel ? text("tooltip." + RealmsOfChaos.MOD_ID + ".level.max", 0x55FF55) : text(NS + "xp", 0xAAAAAA, xp, need))));
+        // experience towards the next level
+        int filled = maxLevel ? 7 : Math.min(7, (int) Math.floor(7.0 * xp / need));
+        for (int i = 0; i < 7; i++) {
+            view.setItem(slot(XP_ROW, 1 + i), pane(i < filled ? DyeColor.LIME : DyeColor.GRAY, text(NS + "level", 0x55FF55, level),
+                    List.of(maxLevel ? text(TIP + "level.max", 0x55FF55) : text(NS + "xp", 0xAAAAAA, xp, need))));
         }
         broadcastChanges();
     }

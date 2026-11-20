@@ -16,6 +16,8 @@ import com.thefarawaydev.realmsofchaos.item.Tarot;
 import com.thefarawaydev.realmsofchaos.item.TarotDeckItem;
 import com.thefarawaydev.realmsofchaos.item.TarotEffects;
 import com.thefarawaydev.realmsofchaos.world.Hermitage;
+import com.thefarawaydev.realmsofchaos.world.Scheduler;
+import com.thefarawaydev.realmsofchaos.god.Signature;
 import com.thefarawaydev.realmsofchaos.item.VoodooDollItem;
 import com.thefarawaydev.realmsofchaos.item.WeaponProgress;
 import com.thefarawaydev.realmsofchaos.ui.DeckMenu;
@@ -126,6 +128,15 @@ public final class SelfTest {
 
     private static boolean solid(ServerLevel level, BlockPos p) {
         return !level.getBlockState(p).getCollisionShape(level, p).isEmpty();
+    }
+
+    /** The height to stand at on this tower floor at x/z: floors are not flat, so tests must find the ground. */
+    private static double ground(ServerLevel level, int floor, double x, double z) {
+        int y0 = Tower.floorY(floor);
+        for (int y = y0 + 4; y >= y0 - Tower.DEPTH; y--) {
+            if (solid(level, BlockPos.containing(x, y, z))) return y + 1;
+        }
+        return y0 + 1;
     }
 
     private static void clearBosses(ServerLevel level) {
@@ -365,6 +376,9 @@ public final class SelfTest {
                     check(player.containerMenu instanceof AltarMenu, at + "altar menu opened");
                     AltarMenu menu = (AltarMenu) player.containerMenu;
                     check(!menu.getSlot(AltarMenu.SLOT_GOD).getItem().isEmpty() && !menu.getSlot(AltarMenu.SLOT_ACTION).getItem().isEmpty(), at + "menu icons");
+                    check(menu.getSlot(AltarMenu.SLOT_MOVE).getItem().is(net.minecraft.world.item.Items.BLAZE_POWDER), at + "altar names the god's move");
+                    check(menu.getSlot(AltarMenu.SLOT_DROPS).getItem().is(ModContent.materialItem(line, Tower.tier(floor))), at + "altar shows the drops");
+                    check(!AltarBlock.canRematch(level, player, altar, line), at + "no rematch before the first victory");
                     menu.clicked(AltarMenu.SLOT_ACTION, 0, ContainerInput.PICKUP, player);
                     check(!(player.containerMenu instanceof AltarMenu), at + "menu closed after starting");
 
@@ -419,6 +433,28 @@ public final class SelfTest {
                     for (ItemEntity drop : level.getEntitiesOfClass(ItemEntity.class, room, e -> true)) drop.discard();
                     check(player.getAdvancements().getOrStartProgress(server.getAdvancements().get(RocAdvancements.idOf(god))).isDone(), at + "advancement");
                     check(AltarBlock.state(level, player, altar, line) == AltarBlock.State.DEFEATED, at + "altar shows defeated");
+
+                    if (floor == 1 || floor == 8 || floor == 15) {
+                        // rematch: the fallen god rises again from the altar menu and gives up materials, but no second relic
+                        check(AltarBlock.canRematch(level, player, altar, line), at + "rematch offered");
+                        AltarMenu.open(player, line, altar);
+                        AltarMenu again = (AltarMenu) player.containerMenu;
+                        check(again.getSlot(AltarMenu.SLOT_REMATCH).getItem().is(net.minecraft.world.item.Items.IRON_SWORD), at + "rematch button");
+                        again.clicked(AltarMenu.SLOT_REMATCH, 0, ContainerInput.PICKUP, player);
+                        check(!(player.containerMenu instanceof AltarMenu), at + "menu closed after the rematch began");
+                        List<GodBoss> risen = level.getEntitiesOfClass(GodBoss.class, room, GodBoss::isAlive);
+                        check(risen.size() == 1 && risen.get(0).isRematch() && risen.get(0).god() == god, at + "the god rises again");
+                        check(!AltarBlock.canRematch(level, player, altar, line) && AltarBlock.rematch(level, player, altar, line) == null, at + "one rematch at a time");
+                        risen.get(0).hurtServer(level, level.damageSources().playerAttack(player), 100000.0F);
+                        check(!risen.get(0).isAlive(), at + "rematch won");
+                        check(level.getEntitiesOfClass(ItemEntity.class, room, e -> e.getItem().is(material))
+                                .stream().anyMatch(e -> e.getItem().getCount() == GodBoss.materialDrop(god)), at + "rematch drops forge material");
+                        check(level.getEntitiesOfClass(ItemEntity.class, room, e -> e.getItem().is(ModContent.weaponItem(god))
+                                || e.getItem().is(ModContent.TAROT_DECK.get()) || e.getItem().getItem() instanceof com.thefarawaydev.realmsofchaos.item.TarotCardItem).isEmpty(),
+                                at + "rematch drops no second relic, cards or deck");
+                        for (ItemEntity drop : level.getEntitiesOfClass(ItemEntity.class, room, e -> true)) drop.discard();
+                        check(AltarBlock.canRematch(level, player, altar, line), at + "and can be fought again");
+                    }
 
                     if (floor < Tower.FLOORS) {
                         // walk through the gate of ascent (travel has a 2 s cooldown, so move the clock by hand)
@@ -518,6 +554,17 @@ public final class SelfTest {
             check(Math.abs(WeaponProgress.multiplier(hero.getMainHandItem()) - 1.08 * 1.10) < 1e-9, "multiplier with a star");
             check(hero.getMainHandItem().getHoverName().getString().contains("\u2605"), "name shows a star");
             check(forge.getCarried().isEmpty(), "forge moves no items");
+            // the screen: the weapon, a five-star track with the next star marked, the move, a preview, a guide, the price
+            check(forge.getSlot(ForgeMenu.SLOT_WEAPON).getItem().is(ModContent.weaponItem(Gods.byId("apollo"))), "forge shows the weapon");
+            check(forge.getSlot(ForgeMenu.slot(ForgeMenu.STAR_ROW, ForgeMenu.STAR_COLUMN)).getItem().is(net.minecraft.world.item.Items.NETHER_STAR), "first star lit");
+            check(!forge.getSlot(ForgeMenu.slot(ForgeMenu.STAR_ROW, ForgeMenu.STAR_COLUMN + 1)).getItem().is(net.minecraft.world.item.Items.NETHER_STAR), "second star not yet");
+            for (int slot : new int[]{ForgeMenu.SLOT_LEVEL, ForgeMenu.SLOT_MOVE, ForgeMenu.SLOT_PREVIEW, ForgeMenu.SLOT_GUIDE, ForgeMenu.SLOT_INFUSE,
+                    ForgeMenu.SLOT_COST, ForgeMenu.SLOT_COST_2, ForgeMenu.SLOT_FORGE, ForgeMenu.SLOT_CLOSE}) {
+                check(!forge.getSlot(slot).getItem().is(net.minecraft.world.item.Items.STAINED_GLASS_PANE.pick(net.minecraft.world.item.DyeColor.BLACK))
+                        && !forge.getSlot(slot).getItem().is(net.minecraft.world.item.Items.STAINED_GLASS_PANE.pick(net.minecraft.world.item.DyeColor.ORANGE)), "forge slot " + slot + " is filled in");
+            }
+            check(forge.getSlot(ForgeMenu.SLOT_COST).getItem().is(ModContent.materialItem(Line.ZEUS, 1))
+                    && forge.getSlot(ForgeMenu.SLOT_COST_2).getItem().is(ModContent.materialItem(Line.ZEUS, 2)), "price of star two shown");
 
             // forge the rest: every star, each tier's material, the summit essence last
             WeaponProgress.setLevel(hero.getMainHandItem(), 10);
@@ -542,6 +589,33 @@ public final class SelfTest {
             RESULTS.add("        a tower drops " + drops[1] + "/" + drops[2] + "/" + drops[3] + "/" + drops[4] + " materials; one weapon needs "
                     + need[1] + "/" + need[2] + "/" + need[3] + "/" + need[4]);
             hero.closeContainer();
+        });
+
+        step("forge of chaos: your own experience levels can be poured into a relic", () -> {
+            ServerPlayer hero = fakePlayer(server, level, "RocScholar");
+            hero.setPos(0.5, ay, 0.5);
+            hero.setItemInHand(InteractionHand.MAIN_HAND, new ItemStack(ModContent.weaponItem(Gods.byId("nike"))));
+            ForgeMenu.open(hero);
+            ForgeMenu forge = (ForgeMenu) hero.containerMenu;
+            forge.clicked(ForgeMenu.SLOT_INFUSE, 0, ContainerInput.PICKUP, hero);
+            check(WeaponProgress.xp(hero.getMainHandItem()) == 0 && WeaponProgress.level(hero.getMainHandItem()) == 1, "nothing to give, nothing gained");
+            hero.giveExperienceLevels(8);
+            forge.clicked(ForgeMenu.SLOT_INFUSE, 0, ContainerInput.PICKUP, hero);
+            check(hero.experienceLevel == 7, "one level spent, has " + hero.experienceLevel);
+            // 30 experience is exactly what level 1 needs
+            check(WeaponProgress.level(hero.getMainHandItem()) == 2 && WeaponProgress.xp(hero.getMainHandItem()) == ForgeMenu.INFUSE_XP - WeaponProgress.xpNeeded(1),
+                    "weapon gained " + ForgeMenu.INFUSE_XP + " xp");
+            forge.clicked(ForgeMenu.SLOT_INFUSE, 0, ContainerInput.QUICK_MOVE, hero);
+            check(hero.experienceLevel == 2, "shift-click spends five, has " + hero.experienceLevel);
+            check(WeaponProgress.level(hero.getMainHandItem()) == 3 && WeaponProgress.xp(hero.getMainHandItem()) == 6 * ForgeMenu.INFUSE_XP - 30 - 80, "five levels of xp");
+            forge.clicked(ForgeMenu.SLOT_INFUSE, 0, ContainerInput.QUICK_MOVE, hero);
+            check(hero.experienceLevel == 0, "shift-click with fewer than five gives what is left");
+            WeaponProgress.setLevel(hero.getMainHandItem(), WeaponProgress.MAX_LEVEL);
+            hero.giveExperienceLevels(3);
+            forge.clicked(ForgeMenu.SLOT_INFUSE, 0, ContainerInput.PICKUP, hero);
+            check(hero.experienceLevel == 3, "a level 10 relic takes no more");
+            forge.clicked(ForgeMenu.SLOT_CLOSE, 0, ContainerInput.PICKUP, hero);
+            check(!(hero.containerMenu instanceof ForgeMenu), "step back closes the forge");
         });
 
         step("ranged weapons: bows loose arrows, staffs and thrown relics fire bolts, relics pulse, bolts hurt", () -> {
@@ -969,27 +1043,247 @@ public final class SelfTest {
             b.discard();
         });
 
-        step("boss abilities for every line run without error", () -> {
-            ServerPlayer target = fakePlayer(server, level, "RocTarget");
-            target.setPos(4.5, Tower.floorY(5) + 1, 4.5);
-            for (Line line : Line.values()) {
-                for (int rank : new int[]{1, 8, 15}) {
-                    GodBoss b = ModContent.GOD_BOSS.get().create(level, EntitySpawnReason.TRIGGERED);
-                    b.setGod(Gods.get(line, rank));
-                    Vec3 home = Tower.centre(level, 5);
-                    b.setPos(home.x, home.y, home.z);
-                    b.setHome(home);
-                    level.addFreshEntity(b);
-                    b.setTarget(target);
-                    b.castAbility(level, b.god());
-                    b.discard();
+        step("signature moves: every god has one; each of the fourteen kinds does its work for a relic's wielder", () -> {
+            Set<Signature> used = EnumSet.noneOf(Signature.class);
+            for (God g : Gods.ALL) {
+                check(g.signature() != null, g.id() + " has no signature move");
+                used.add(g.signature());
+            }
+            check(used.size() == Signature.values().length, "kinds of move in use: " + used.size());
+            ServerPlayer hero = fakePlayer(server, level, "RocAdept");
+            AABB near = new AABB(-20, ay - 4, -20, 20, ay + 10, 20);
+            for (Signature kind : Signature.values()) {
+                God god = Gods.ALL.stream().filter(g -> g.signature() == kind).findFirst().orElseThrow();
+                hero.setPos(0.5, ground(level, arena, 0.5, 0.5), 0.5);
+                hero.setHealth(8.0F);
+                hero.removeAllEffects();
+                hero.setItemInHand(InteractionHand.MAIN_HAND, new ItemStack(ModContent.weaponItem(god)));
+                // one foe ahead, one behind
+                LivingEntity ahead = EntityTypes.ZOMBIE.create(level, EntitySpawnReason.TRIGGERED);
+                ahead.setPos(3.5, ground(level, arena, 3.5, 3.5), 3.5);
+                level.addFreshEntity(ahead);
+                LivingEntity behind = EntityTypes.ZOMBIE.create(level, EntitySpawnReason.TRIGGERED);
+                behind.setPos(-2.5, ground(level, arena, -2.5, -2.5), -2.5);
+                level.addFreshEntity(behind);
+                hero.lookAt(net.minecraft.commands.arguments.EntityAnchorArgument.Anchor.EYES, ahead.getEyePosition());
+                check(Signature.aim(level, hero, 18) == ahead, kind + ": aims at the foe in view");
+                float before = ahead.getHealth(), beforeBehind = behind.getHealth();
+                Vec3 from = hero.position();
+                check(kind.perform(level, hero, god, 6.0F), kind + ": performed");
+                switch (kind) {
+                    case CHARGE -> check(hero.position().distanceTo(from) > 1.0 && hero.position().distanceTo(ahead.position()) < 3.0,
+                            "CHARGE: dashed to the foe, moved " + hero.position().distanceTo(from));
+                    case BLINK -> check(hero.position().distanceTo(ahead.position()) < 2.2 && level.noCollision(hero), "BLINK: stands beside the foe in free space");
+                    case VOLLEY -> check(level.getEntitiesOfClass(Projectile.class, near, e -> true).size() == 5, "VOLLEY: five shots");
+                    case MEND -> check(hero.getHealth() > 8.0F && hero.hasEffect(net.minecraft.world.effect.MobEffects.REGENERATION), "MEND: healed");
+                    case WARD -> check(hero.hasEffect(net.minecraft.world.effect.MobEffects.ABSORPTION) && hero.hasEffect(net.minecraft.world.effect.MobEffects.RESISTANCE), "WARD: shielded");
+                    case GALE -> check(ahead.getDeltaMovement().y > 0.8, "GALE: thrown upward");
+                    case NOVA -> check(ahead.getDeltaMovement().x > 0.5 && ahead.getDeltaMovement().z > 0.5, "NOVA: hurled away");
+                    case VORTEX -> check(ahead.getDeltaMovement().x < -0.5 && ahead.getDeltaMovement().z < -0.5, "VORTEX: dragged in");
+                    case FROST -> check(ahead.getTicksFrozen() >= 200, "FROST: frozen");
+                    case SLUMBER -> check(ahead.hasEffect(net.minecraft.world.effect.MobEffects.SLOWNESS) && ahead.hasEffect(net.minecraft.world.effect.MobEffects.WEAKNESS), "SLUMBER: dazed");
+                    case CURSE -> check(ahead.hasEffect(net.minecraft.world.effect.MobEffects.WITHER) && Scheduler.pending() > 0, "CURSE: hexed, burst pending");
+                    case REAP -> check(behind.getHealth() == beforeBehind && hero.getHealth() > 8.0F, "REAP: spares what is behind, heals the reaper");
+                    case ERUPTION -> check(ahead.getHealth() == before && Scheduler.pending() > 0, "ERUPTION: warns before it strikes");
+                    case STORM -> check(behind.getHealth() < beforeBehind, "STORM: strikes all around");
                 }
+                // let the delayed halves happen (vortex burst, hex, eruption)
+                advance(server, 45);
+                Scheduler.tick(server);
+                check(Scheduler.pending() == 0, kind + ": nothing left waiting");
+                if (kind != Signature.VOLLEY) check(ahead.getHealth() < before, kind + ": the foe in front was hurt (" + before + " -> " + ahead.getHealth() + ")");
+                for (Projectile shot : level.getEntitiesOfClass(Projectile.class, near, e -> true)) shot.discard();
+                for (var bolt : level.getEntitiesOfClass(net.minecraft.world.entity.LightningBolt.class, near, e -> true)) bolt.discard();
+                ahead.discard();
+                behind.discard();
+            }
+            // a blink needs somebody to blink to
+            Vec3 spot = new Vec3(0.5, ground(level, arena, 0.5, 0.5), 0.5);
+            hero.setPos(spot.x, spot.y, spot.z);
+            check(!Signature.BLINK.perform(level, hero, Gods.byId("hermes"), 6.0F) && hero.position().distanceTo(spot) < 0.01, "BLINK: nothing happens with no foe");
+            // moves never turn on other players or the wielder's own pets
+            ServerPlayer friend = fakePlayer(server, level, "RocAlly");
+            level.addNewPlayer(friend);                         // really in the world, so the move could find them
+            try {
+                friend.setPos(2.5, ground(level, arena, 2.5, 0.5), 0.5);
+                float hp = friend.getHealth();
+                check(level.getEntitiesOfClass(ServerPlayer.class, near, e -> e == friend).size() == 1, "test setup: the other player is in the world");
+                Signature.NOVA.perform(level, hero, Gods.byId("pan"), 6.0F);
+                check(friend.getHealth() == hp && friend.getDeltaMovement().horizontalDistance() < 0.01, "moves spare other players");
+            } finally {
+                friend.remove(net.minecraft.world.entity.Entity.RemovalReason.DISCARDED);
+            }
+            net.minecraft.world.entity.animal.wolf.Wolf wolf = EntityTypes.WOLF.create(level, EntitySpawnReason.TRIGGERED);
+            wolf.setPos(2.5, ground(level, arena, 2.5, 2.5), 2.5);
+            level.addFreshEntity(wolf);
+            wolf.tame(hero);
+            check(!Power.canHurt(hero, wolf), "moves spare the wielder's pets");
+            wolf.discard();
+        });
+
+        step("relic weapons: right-click casts the god's move, it recharges, three stars empower it, five make it echo", () -> {
+            ServerPlayer hero = fakePlayer(server, level, "RocChampion");
+            advance(server, 100);
+            Scheduler.tick(server);                             // nothing left over from an earlier step
+            AABB near = new AABB(-20, ay - 4, -20, 20, ay + 10, 20);
+            Vec3 start = new Vec3(0.5, ground(level, arena, 0.5, 0.5), 0.5);
+            hero.setPos(start.x, start.y, start.z);
+            // a blade: right-click is the move (Ares: Warpath, a charge)
+            ItemStack blade = new ItemStack(ModContent.weaponItem(Gods.byId("ares")));
+            GodWeaponItem ares = (GodWeaponItem) blade.getItem();
+            hero.setItemInHand(InteractionHand.MAIN_HAND, blade);
+            ares.resetMove(hero);
+            LivingEntity zombie = EntityTypes.ZOMBIE.create(level, EntitySpawnReason.TRIGGERED);
+            zombie.setPos(3.5, ground(level, arena, 3.5, 3.5), 3.5);
+            level.addFreshEntity(zombie);
+            hero.lookAt(net.minecraft.commands.arguments.EntityAnchorArgument.Anchor.EYES, zombie.getEyePosition());
+            float before = zombie.getHealth();
+            check(blade.getItem().use(level, hero, InteractionHand.MAIN_HAND) == net.minecraft.world.InteractionResult.SUCCESS, "right-click casts");
+            check(zombie.getHealth() < before && hero.position().distanceTo(start) > 1.0, "Warpath charged through the foe");
+            check(hero.getCooldowns().isOnCooldown(blade) && ares.moveWait(hero, server.getTickCount()) == GodWeaponItem.MOVE_COOLDOWN_TICKS, "the move recharges for twelve seconds");
+            check(!ares.castMove(level, hero, blade), "not again while recharging");
+            advance(server, GodWeaponItem.MOVE_COOLDOWN_TICKS + 1);
+            check(ares.moveWait(hero, server.getTickCount()) == 0 && ares.castMove(level, hero, blade), "ready again after the recharge");
+            zombie.discard();
+
+            // forging: each star shortens the recharge, three stars empower the move
+            ItemStack fresh = new ItemStack(ModContent.weaponItem(Gods.byId("ares"))), three = fresh.copy(), five = fresh.copy();
+            WeaponProgress.setStars(three, 3);
+            WeaponProgress.setStars(five, 5);
+            check(Math.abs(ares.moveDamage(three) - ares.moveDamage(fresh) * 1.3F * 1.5F) < 0.01, "three stars: +30% and empowered");
+            check(GodWeaponItem.moveCooldown(five) < GodWeaponItem.moveCooldown(three) && GodWeaponItem.moveCooldown(three) < GodWeaponItem.moveCooldown(fresh), "stars shorten the recharge");
+
+            // a bow: right-click shoots, sneak + right-click is the move (Apollo: Sunburst Volley), and five stars make it echo
+            hero.setPos(start.x, start.y, start.z);
+            ItemStack bow = new ItemStack(ModContent.weaponItem(Gods.byId("apollo")));
+            GodWeaponItem apollo = (GodWeaponItem) bow.getItem();
+            WeaponProgress.setStars(bow, 5);
+            hero.setItemInHand(InteractionHand.MAIN_HAND, bow);
+            apollo.resetMove(hero);
+            bow.getItem().use(level, hero, InteractionHand.MAIN_HAND);
+            check(level.getEntitiesOfClass(Projectile.class, near, e -> true).size() == 1, "right-click looses one arrow");
+            for (Projectile shot : level.getEntitiesOfClass(Projectile.class, near, e -> true)) shot.discard();
+            hero.setShiftKeyDown(true);
+            bow.getItem().use(level, hero, InteractionHand.MAIN_HAND);
+            check(level.getEntitiesOfClass(Projectile.class, near, e -> true).size() == 5, "sneak + right-click looses the volley");
+            check(Scheduler.pending() == 1, "an awakened relic has an echo waiting");
+            advance(server, 20);
+            Scheduler.tick(server);
+            check(level.getEntitiesOfClass(Projectile.class, near, e -> true).size() == 10, "the echo looses a second volley");
+            hero.setShiftKeyDown(false);
+            for (Projectile shot : level.getEntitiesOfClass(Projectile.class, near, e -> true)) shot.discard();
+
+            // a move that cannot be made costs nothing
+            ItemStack caduceus = new ItemStack(ModContent.weaponItem(Gods.byId("phobos")));
+            GodWeaponItem phobos = (GodWeaponItem) caduceus.getItem();
+            hero.setItemInHand(InteractionHand.MAIN_HAND, caduceus);
+            phobos.resetMove(hero);
+            check(!phobos.castMove(level, hero, caduceus) && phobos.moveWait(hero, server.getTickCount()) == 0, "no foe: Terror Strike does not go on recharge");
+
+            // flourish: the fourth hit in a row lands a bonus
+            ItemStack gladius = new ItemStack(ModContent.weaponItem(Gods.byId("nike")));
+            hero.setItemInHand(InteractionHand.MAIN_HAND, gladius);
+            LivingEntity dummy = EntityTypes.ZOMBIE.create(level, EntitySpawnReason.TRIGGERED);
+            dummy.setPos(2.5, ground(level, arena, 2.5, 0.5), 0.5);
+            level.addFreshEntity(dummy);
+            advance(server, 100);
+            // as in a real fight, the blow itself lands first and starts the victim's hit cooldown
+            dummy.hurtServer(level, level.damageSources().playerAttack(hero), 4.0F);
+            check(dummy.damageCooldownTime > 10, "test setup: the dummy is in its hit cooldown");
+            float hp = dummy.getHealth();
+            for (int i = 0; i < 3; i++) gladius.getItem().hurtEnemy(gladius, dummy, hero);
+            check(dummy.getHealth() == hp, "three hits: no flourish yet");
+            gladius.getItem().hurtEnemy(gladius, dummy, hero);
+            float bonus = (float) (Gods.byId("nike").baseDamage() * WeaponKind.BLADE.meleeScale() * 0.5);
+            // (a zombie's two points of armour take a little off)
+            check(hp - dummy.getHealth() > bonus * 0.8F && hp - dummy.getHealth() <= bonus + 0.01F,
+                    "the fourth hit in a row is a flourish worth " + bonus + ", took " + (hp - dummy.getHealth()));
+            dummy.setHealth(dummy.getMaxHealth());
+            hp = dummy.getHealth();
+            advance(server, 100);
+            for (int i = 0; i < 3; i++) gladius.getItem().hurtEnemy(gladius, dummy, hero);
+            check(dummy.getHealth() == hp, "a pause breaks the chain");
+            dummy.discard();
+        });
+
+        step("gods: all 45 cast their signature move at a player; it alternates with the line's ability; footwork", () -> {
+            ServerPlayer target = fakePlayer(server, level, "RocQuarry");
+            Vec3 home = Tower.centre(level, 5);
+            AABB near = new AABB(-24, home.y - 4, -24, 24, home.y + 12, 24);
+            level.addNewPlayer(target);                         // really in the world, so the gods can find them
+            try {
+            for (God god : Gods.ALL) {
+                target.setPos(home.x + 3.0, ground(level, 5, home.x + 3.0, home.z + 3.0), home.z + 3.0);
+                target.setHealth(target.getMaxHealth());
+                target.removeAllEffects();
+                target.damageCooldownTime = 0;
+                target.setDeltaMovement(Vec3.ZERO);
+                GodBoss b = ModContent.GOD_BOSS.get().create(level, EntitySpawnReason.TRIGGERED);
+                b.setGod(god);
+                b.setPos(home.x, home.y, home.z);
+                b.setHome(home);
+                level.addFreshEntity(b);
+                b.setTarget(target);
+                b.setHealth(b.getMaxHealth() * 0.5F);
+                check(b.nextIsSignature(), god.id() + " opens with its signature move");
+                float before = target.getHealth();
+                check(b.castSignature(level), god.id() + " cast " + god.signature());
+                advance(server, 45);
+                Scheduler.tick(server);
+                boolean shots = !level.getEntitiesOfClass(Projectile.class, near, e -> true).isEmpty();
+                check(target.getHealth() < before || shots, god.id() + ": " + god.signature() + " reached the player");
+                check(target.isAlive(), god.id() + ": one move does not kill a full-health player");
+                check(god.signature() != Signature.MEND || b.getHealth() > b.getMaxHealth() * 0.5F, god.id() + " healed itself");
+                check(level.noCollision(b) && !b.isInWall(), god.id() + " ended its move in free space");
+                b.keepUnstuck(level);
+                for (Projectile shot : level.getEntitiesOfClass(Projectile.class, near, e -> true)) shot.discard();
+                for (var bolt : level.getEntitiesOfClass(net.minecraft.world.entity.LightningBolt.class, near, e -> true)) bolt.discard();
+                b.castAbility(level, god);
+                b.discard();
             }
             for (var m : level.getEntitiesOfClass(net.minecraft.world.entity.Mob.class, new AABB(-64, -64, -64, 64, 400, 64),
                     e -> e.entityTags().contains("realms_of_chaos_minion"))) m.discard();
+            for (var bolt : level.getEntitiesOfClass(net.minecraft.world.entity.LightningBolt.class, near, e -> true)) bolt.discard();
+
+            // footwork: a melee god lunges at a target that keeps away; a ranged god hops back when crowded
+            target.setHealth(target.getMaxHealth());
+            GodBoss ares = ModContent.GOD_BOSS.get().create(level, EntitySpawnReason.TRIGGERED);
+            ares.setGod(Gods.byId("ares"));
+            ares.setPos(home.x, home.y, home.z);
+            ares.setHome(home);
+            level.addFreshEntity(ares);
+            ares.setOnGround(true);
+            target.setPos(home.x + 8.0, ground(level, 5, home.x + 8.0, home.z), home.z);
+            boolean lunged = false;
+            for (int i = 0; i < 60 && !lunged; i++) lunged = ares.maneuver(level, target);
+            check(lunged && ares.getDeltaMovement().x > 0.5 && ares.getDeltaMovement().y > 0.3, "a melee god lunges at a distant target");
+            target.setPos(home.x + 2.0, ground(level, 5, home.x + 2.0, home.z), home.z);
+            ares.setDeltaMovement(Vec3.ZERO);
+            for (int i = 0; i < 60; i++) check(!ares.maneuver(level, target), "a melee god does not hop about at close quarters");
+            ares.discard();
+            GodBoss apollo = ModContent.GOD_BOSS.get().create(level, EntitySpawnReason.TRIGGERED);
+            apollo.setGod(Gods.byId("apollo"));
+            apollo.setPos(home.x, home.y, home.z);
+            apollo.setHome(home);
+            level.addFreshEntity(apollo);
+            apollo.setOnGround(true);
+            boolean hopped = false;
+            for (int i = 0; i < 60 && !hopped; i++) hopped = apollo.maneuver(level, target);
+            check(hopped && apollo.getDeltaMovement().x < -0.5, "a ranged god hops away when crowded");
+            // with its back to the wall it hops inward instead of into the wall
+            apollo.setPos(home.x + Tower.FIGHT_RADIUS - 1.0, ground(level, 5, home.x + Tower.FIGHT_RADIUS - 1.0, home.z), home.z);
+            target.setPos(home.x + Tower.FIGHT_RADIUS - 3.0, ground(level, 5, home.x + Tower.FIGHT_RADIUS - 3.0, home.z), home.z);
+            apollo.setDeltaMovement(Vec3.ZERO);
+            hopped = false;
+            for (int i = 0; i < 60 && !hopped; i++) hopped = apollo.maneuver(level, target);
+            check(hopped && apollo.getDeltaMovement().x < -0.5, "a cornered ranged god hops back towards the middle");
+            apollo.discard();
+            } finally {
+                target.remove(net.minecraft.world.entity.Entity.RemovalReason.DISCARDED);
+            }
         });
 
-        step("every god's weapon power and Divine Surge run without error", () -> {
+        step("every god's weapon hit power runs without error", () -> {
             ServerPlayer wielder = fakePlayer(server, level, "RocWielder");
             wielder.setPos(0.5, Tower.floorY(5) + 1, 0.5);
             for (God god : Gods.ALL) {
@@ -999,9 +1293,9 @@ public final class SelfTest {
                 god.power().hit(level, dummy, wielder, god);
                 god.applyTargetEffect(dummy);
                 god.applySelfEffect(wielder);
-                Power.surge(level, wielder, god);
                 dummy.discard();
             }
+            for (var bolt : level.getEntitiesOfClass(net.minecraft.world.entity.LightningBolt.class, new AABB(-24, 0, -24, 24, 400, 24), e -> true)) bolt.discard();
         });
 
         step("live ticking: bosses of every line are left in the world mid-ability for the server to tick", () -> {
@@ -1018,6 +1312,7 @@ public final class SelfTest {
                     level.addFreshEntity(b);
                     b.setTarget(target);
                     b.primeAbility(prime);
+                    if (prime == 26) b.setHealth(b.getMaxHealth() * 0.4F);
                 }
             }
         });

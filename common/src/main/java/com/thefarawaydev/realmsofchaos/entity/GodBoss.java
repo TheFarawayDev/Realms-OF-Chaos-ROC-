@@ -80,6 +80,10 @@ public class GodBoss extends Monster implements RangedAttackMob {
     private Vec3 lastProgressPos = Vec3.ZERO;
     private int stuckSeconds;
     private int shiftStage;
+    /** How many moves this god has made: it alternates its signature move with its line's ability. */
+    private int casts;
+    /** A rematch against a god already beaten: it gives up forge materials, but not its relic a second time. */
+    private boolean rematch;
     // the attack goal follows the god's weapon: melee for blades and the like, ranged for bows, staffs and relics
     private Goal attackGoal;
 
@@ -161,11 +165,19 @@ public class GodBoss extends Monster implements RangedAttackMob {
     }
 
     private ParticleOptions lineParticle() {
-        return switch (god().line()) {
-            case ZEUS -> ParticleTypes.ELECTRIC_SPARK;
-            case POSEIDON -> ParticleTypes.SPLASH;
-            case HADES -> ParticleTypes.SOUL_FIRE_FLAME;
-        };
+        return com.thefarawaydev.realmsofchaos.god.Signature.spark(god().line());
+    }
+
+    public void setRematch(boolean rematch) {
+        this.rematch = rematch;
+    }
+
+    public boolean isRematch() {
+        return rematch;
+    }
+
+    public boolean isEnraged() {
+        return enraged;
     }
 
     /** Puts the boss back somewhere it can fight from. Called when it is out of bounds, inside a block or stuck. */
@@ -325,11 +337,7 @@ public class GodBoss extends Monster implements RangedAttackMob {
             return;
         }
 
-        if (!enraged && getHealth() < getMaxHealth() * 0.5F) {
-            enraged = true;
-            addEffect(new MobEffectInstance(MobEffects.SPEED, 20 * 600, 0));
-            level.playSound(null, blockPosition(), SoundEvents.WITHER_AMBIENT, SoundSource.HOSTILE, 1.5F, 0.6F);
-        }
+        if (!enraged && getHealth() < getMaxHealth() * 0.5F) enrage(level, god);
 
         if (tickCount % 20 == 0) keepUnstuck(level);
         if (tickCount % 10 == 0) updateFloorShift(level);
@@ -346,6 +354,7 @@ public class GodBoss extends Monster implements RangedAttackMob {
         if (god.id().equals("hades") && tickCount % 45 == 0 && distanceToSqr(target) > 9.0) {
             throwCard(level, target);
         }
+        if (tickCount % 20 == 0 && !isCasting()) maneuver(level, target);
 
         if (abilityCooldown > 0) {
             abilityCooldown--;
@@ -353,6 +362,15 @@ public class GodBoss extends Monster implements RangedAttackMob {
                 // telegraph: arms go up, a ring of particles gathers, and players get a moment to react
                 this.entityData.set(DATA_CASTING, true);
                 level.playSound(null, blockPosition(), SoundEvents.EVOKER_PREPARE_ATTACK, SoundSource.HOSTILE, 1.6F, 0.8F);
+                if (nextIsSignature()) {
+                    // name the move on screen so it can be learned and answered
+                    for (Player p : nearbyPlayers(level, 40)) {
+                        if (p instanceof ServerPlayer sp) {
+                            Hud.actionBar(sp, Hud.colored(Component.translatable("hud." + RealmsOfChaos.MOD_ID + ".move.windup",
+                                    god.displayName(), god.moveName()), god.line().color()));
+                        }
+                    }
+                }
             }
             if (isCasting() && abilityCooldown % 4 == 0) {
                 for (int i = 0; i < 12; i++) {
@@ -365,8 +383,77 @@ public class GodBoss extends Monster implements RangedAttackMob {
         }
         double base = 220.0 - (Line.RANKS - god.rank()) * 8.0;
         abilityCooldown = (int) Math.max(70.0, enraged ? base * 0.6 : base);
-        castAbility(level, god);
+        if (!nextIsSignature() || !castSignature(level)) castAbility(level, god);
+        casts++;
         this.entityData.set(DATA_CASTING, false);
+    }
+
+    /** Gods open with their signature move, then alternate it with their line's ability. */
+    public boolean nextIsSignature() {
+        return casts % 2 == 0;
+    }
+
+    /** The god's own move, as hard as its rank allows. @return false if it could not be made right now. */
+    public boolean castSignature(ServerLevel level) {
+        God god = god();
+        float s = (Line.RANKS + 1 - god.rank()) / (float) Line.RANKS;
+        return god.signature().perform(level, this, god, 3.0F + 6.0F * s);
+    }
+
+    /** Below half health a god is enraged: it glows, moves faster, casts sooner - and answers at once. */
+    private void enrage(ServerLevel level, God god) {
+        enraged = true;
+        setGlowingTag(true);
+        addEffect(new MobEffectInstance(MobEffects.SPEED, 20 * 600, 0));
+        abilityCooldown = Math.min(abilityCooldown, WINDUP_TICKS + 10);
+        level.playSound(null, blockPosition(), SoundEvents.WITHER_AMBIENT, SoundSource.HOSTILE, 1.5F, 0.6F);
+        level.playSound(null, blockPosition(), SoundEvents.RAVAGER_ROAR, SoundSource.HOSTILE, 1.5F, 0.8F);
+        level.sendParticles(lineParticle(), getX(), getY() + 1.2, getZ(), 120, 0.8, 1.2, 0.8, 0.25);
+        level.sendParticles(ParticleTypes.ANGRY_VILLAGER, getX(), getY() + getBbHeight() + 0.3, getZ(), 6, 0.4, 0.2, 0.4, 0.0);
+        for (Player p : nearbyPlayers(level, 40)) {
+            // the roar shoves everyone back a step: a breath before the second half of the fight
+            Vec3 away = p.position().subtract(position());
+            double d = Math.sqrt(away.x * away.x + away.z * away.z);
+            if (d > 0.01 && d < 7.0) {
+                p.setDeltaMovement(p.getDeltaMovement().add(away.x / d * 0.9, 0.35, away.z / d * 0.9));
+                p.needsSync = true;
+            }
+            if (p instanceof ServerPlayer sp) {
+                Hud.actionBar(sp, Hud.colored(Component.translatable("hud." + RealmsOfChaos.MOD_ID + ".enraged", god.displayName()), 0xFF5555));
+            }
+        }
+    }
+
+    /**
+     * Footwork, once a second. A god that fights hand to hand lunges at a target that keeps its distance; one that
+     * fights at range hops away when crowded - towards the middle of the floor if its back is to the wall.
+     */
+    public boolean maneuver(ServerLevel level, LivingEntity target) {
+        if (!onGround() || !hasLineOfSight(target)) return false;
+        double d2 = distanceToSqr(target);
+        Vec3 dir;
+        if (!fightsAtRange() && d2 > 36.0 && d2 < 144.0 && random.nextInt(3) == 0) {
+            Vec3 to = target.position().subtract(position());
+            dir = new Vec3(to.x, 0, to.z).normalize();
+        } else if (fightsAtRange() && d2 < 16.0 && random.nextInt(2) == 0) {
+            Vec3 away = position().subtract(target.position());
+            dir = away.x * away.x + away.z * away.z < 0.01 ? new Vec3(1, 0, 0) : new Vec3(away.x, 0, away.z).normalize();
+            Vec3 h = home();
+            Vec3 landing = position().add(dir.scale(4.0));
+            double lx = landing.x - h.x, lz = landing.z - h.z, r = leashRadius() - 5.0;
+            if (lx * lx + lz * lz > r * r) {
+                Vec3 inward = h.subtract(position());
+                if (inward.x * inward.x + inward.z * inward.z < 0.01) return false;
+                dir = new Vec3(inward.x, 0, inward.z).normalize();
+            }
+        } else {
+            return false;
+        }
+        setDeltaMovement(dir.x * 0.85, 0.42, dir.z * 0.85);
+        needsSync = true;
+        level.sendParticles(ParticleTypes.CLOUD, getX(), getY() + 0.1, getZ(), 8, 0.3, 0.05, 0.3, 0.02);
+        level.playSound(null, blockPosition(), SoundEvents.PLAYER_ATTACK_STRONG, SoundSource.HOSTILE, 1.0F, 0.6F);
+        return true;
     }
 
     /** Gods cannot be cheesed with fall damage or pushed around by the arena moats. */
@@ -413,14 +500,15 @@ public class GodBoss extends Monster implements RangedAttackMob {
                     Vec3 d = p.position().subtract(position());
                     double dist = d.length();
                     Vec3 dir = new Vec3(d.x, 0, d.z).normalize();
+                    // hurt first: a hit knocks its victim back by itself, which would undo the pull
+                    p.hurtServer(level, damageSources().mobAttack(this), 3.0F + 6.0F * s);
                     if (dist > 9.0) {
                         // tidal pull: drag distant targets in
-                        p.setDeltaMovement(p.getDeltaMovement().add(-dir.x * 1.1, 0.25, -dir.z * 1.1));
+                        p.setDeltaMovement(-dir.x * 1.1, 0.25, -dir.z * 1.1);
                     } else {
-                        p.setDeltaMovement(p.getDeltaMovement().add(dir.x * (1.0 + s), 0.5, dir.z * (1.0 + s)));
+                        p.setDeltaMovement(dir.x * (1.0 + s), 0.5, dir.z * (1.0 + s));
                     }
                     p.needsSync = true;
-                    p.hurtServer(level, damageSources().mobAttack(this), 3.0F + 6.0F * s);
                     p.addEffect(new MobEffectInstance(MobEffects.SLOWNESS, 80, 1));
                 }
             }
@@ -488,18 +576,24 @@ public class GodBoss extends Monster implements RangedAttackMob {
             }
         }
         level.playSound(null, blockPosition(), SoundEvents.UI_TOAST_CHALLENGE_COMPLETE, SoundSource.HOSTILE, 2.0F, 1.0F);
+        // the god comes apart in its line's light
+        level.sendParticles(lineParticle(), getX(), getY() + 1.2, getZ(), 160, 0.6, 1.0, 0.6, 0.35);
+        level.sendParticles(ParticleTypes.END_ROD, getX(), getY() + 1.2, getZ(), 60, 0.4, 0.9, 0.4, 0.12);
+        level.sendParticles(ParticleTypes.TOTEM_OF_UNDYING, getX(), getY() + 1.5, getZ(), 50, 0.5, 0.8, 0.5, 0.4);
+        level.playSound(null, blockPosition(), SoundEvents.TRIDENT_THUNDER.value(), SoundSource.HOSTILE, 1.2F, 1.4F);
     }
 
     @Override
     protected void dropCustomDeathLoot(ServerLevel level, DamageSource source, boolean killedByPlayer) {
         super.dropCustomDeathLoot(level, source, killedByPlayer);
         God god = god();
+        // forge materials: each tier of a tower drops its own, and the summit's god drops the essence
+        spawnAtLocation(level, new ItemStack(ModContent.materialItem(god.line(), Tower.tier(Tower.floorOf(god))), materialDrop(god)));
+        if (rematch) return;                    // the relic, the cards and the deck are won once
         var weapon = ModContent.weaponItem(god);
         if (weapon != null) {
             spawnAtLocation(level, new ItemStack(weapon));
         }
-        // forge materials: each tier of a tower drops its own, and the summit's god drops the essence
-        spawnAtLocation(level, new ItemStack(ModContent.materialItem(god.line(), Tower.tier(Tower.floorOf(god))), materialDrop(god)));
         // Hades' tower gives up the tarot: three copies of each card a god holds, and the Deck of Fate from Hades
         for (Tarot card : Tarot.dropsFor(god)) {
             spawnAtLocation(level, new ItemStack(ModContent.tarotItem(card), 3));
@@ -526,6 +620,8 @@ public class GodBoss extends Monster implements RangedAttackMob {
         output.putInt("God", godIndex());
         output.putBoolean("Enraged", enraged);
         output.putInt("ShiftStage", shiftStage);
+        output.putInt("Casts", casts);
+        output.putBoolean("Rematch", rematch);
         Vec3 h = home();
         output.putDouble("HomeX", h.x);
         output.putDouble("HomeY", h.y);
@@ -538,6 +634,8 @@ public class GodBoss extends Monster implements RangedAttackMob {
         this.entityData.set(DATA_GOD, input.getIntOr("God", 0));
         this.enraged = input.getBooleanOr("Enraged", false);
         this.shiftStage = input.getIntOr("ShiftStage", 0);
+        this.casts = input.getIntOr("Casts", 0);
+        this.rematch = input.getBooleanOr("Rematch", false);
         double hy = input.getDoubleOr("HomeY", Double.NaN);
         if (!Double.isNaN(hy)) {
             this.home = new Vec3(input.getDoubleOr("HomeX", getX()), hy, input.getDoubleOr("HomeZ", getZ()));

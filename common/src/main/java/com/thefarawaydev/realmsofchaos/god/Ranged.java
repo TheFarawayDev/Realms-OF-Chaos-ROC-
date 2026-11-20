@@ -21,6 +21,11 @@ public final class Ranged {
      * where the shooter is looking (players).
      */
     public static Projectile fire(ServerLevel level, LivingEntity shooter, God god, ItemStack weapon, float damage, LivingEntity target) {
+        return fire(level, shooter, god, weapon, damage, target, 0.0F);
+    }
+
+    /** As above, turned {@code yawOffset} degrees to the side: several of these make a fan. */
+    public static Projectile fire(ServerLevel level, LivingEntity shooter, God god, ItemStack weapon, float damage, LivingEntity target, float yawOffset) {
         Projectile projectile;
         SoundEvent sound;
         float speed;
@@ -42,12 +47,14 @@ public final class Ranged {
             speed = 1.8F;
         }
         if (target == null) {
-            projectile.shootFromRotation(shooter, shooter.getXRot(), shooter.getYRot(), 0.0F, speed, 1.0F);
+            projectile.shootFromRotation(shooter, shooter.getXRot(), shooter.getYRot() + yawOffset, 0.0F, speed, 1.0F);
         } else {
-            double dx = target.getX() - shooter.getX(), dz = target.getZ() - shooter.getZ();
+            double tx = target.getX() - shooter.getX(), tz = target.getZ() - shooter.getZ();
+            double turn = Math.toRadians(yawOffset), cos = Math.cos(turn), sin = Math.sin(turn);
+            double dx = tx * cos - tz * sin, dz = tx * sin + tz * cos;
             double dy = target.getY(0.5) - projectile.getY();
             double lift = projectile instanceof Arrow ? Math.sqrt(dx * dx + dz * dz) * 0.12 : 0.0;
-            projectile.shoot(dx, dy + lift, dz, speed * 0.85F, 4.0F);
+            projectile.shoot(dx, dy + lift, dz, speed * 0.85F, yawOffset == 0.0F ? 4.0F : 1.0F);
         }
         level.addFreshEntity(projectile);
         level.playSound(null, shooter.blockPosition(), sound, SoundSource.NEUTRAL, 1.0F, 1.1F);

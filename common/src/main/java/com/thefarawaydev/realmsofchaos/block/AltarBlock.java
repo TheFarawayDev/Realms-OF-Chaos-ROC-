@@ -94,12 +94,32 @@ public class AltarBlock extends Block {
     /** Starts the trial if the altar is {@link State#READY}. @return the summoned boss, or null. */
     public static GodBoss begin(ServerLevel level, ServerPlayer player, BlockPos altar, Line line) {
         if (state(level, player, altar, line) != State.READY) return null;
-        God god = godFor(level, player, altar, line);
+        return summon(level, player, altar, line, godFor(level, player, altar, line), false);
+    }
+
+    public static boolean fightUnderway(ServerLevel level, BlockPos altar, Line line) {
+        return !level.getEntitiesOfClass(GodBoss.class, fightArea(level, altar, line), GodBoss::isAlive).isEmpty();
+    }
+
+    /** A god this player has already beaten can be called back for another fight - for its forge materials. */
+    public static boolean canRematch(ServerLevel level, ServerPlayer player, BlockPos altar, Line line) {
+        return state(level, player, altar, line) == State.DEFEATED && level.getDifficulty() != Difficulty.PEACEFUL
+                && !fightUnderway(level, altar, line);
+    }
+
+    /** @return the summoned boss, or null if a rematch is not possible right now. */
+    public static GodBoss rematch(ServerLevel level, ServerPlayer player, BlockPos altar, Line line) {
+        if (!canRematch(level, player, altar, line)) return null;
+        return summon(level, player, altar, line, godFor(level, player, altar, line), true);
+    }
+
+    private static GodBoss summon(ServerLevel level, ServerPlayer player, BlockPos altar, Line line, God god, boolean rematch) {
         GodBoss boss = ModContent.GOD_BOSS.get().create(level, EntitySpawnReason.TRIGGERED);
         if (boss == null) return null;
         // In a tower the god appears on the floor's centre; an altar placed elsewhere summons a few blocks away.
         Vec3 spawn = inTower(level, line) ? Tower.centre(level, Tower.floorAt(altar.getY())) : findSpawn(level, boss, altar);
         boss.setGod(god);
+        boss.setRematch(rematch);
         boss.setPos(spawn.x, spawn.y, spawn.z);
         boss.setHome(spawn);
         level.addFreshEntity(boss);
@@ -114,13 +134,18 @@ public class AltarBlock extends Block {
         level.playSound(null, boss.blockPosition(), SoundEvents.WITHER_SPAWN, SoundSource.HOSTILE, 0.8F, 1.3F);
         String hud = "hud." + RealmsOfChaos.MOD_ID + ".";
         for (ServerPlayer witness : level.getEntitiesOfClass(ServerPlayer.class, fightArea(level, altar, line), Player::isAlive)) {
-            announce(witness, god, hud);
+            announce(witness, god, hud, rematch);
         }
-        if (!fightArea(level, altar, line).contains(player.position())) announce(player, god, hud);
+        if (!fightArea(level, altar, line).contains(player.position())) announce(player, god, hud, rematch);
         return boss;
     }
 
-    private static void announce(ServerPlayer player, God god, String hud) {
+    private static void announce(ServerPlayer player, God god, String hud, boolean rematch) {
+        if (rematch) {
+            Hud.title(player, Hud.colored(Component.translatable(hud + "rematch"), god.line().color()),
+                    Hud.colored(Component.translatable(hud + "rematch.sub", god.displayName()), 0xCCCCCC));
+            return;
+        }
         Hud.title(player, Hud.colored(Component.translatable(hud + "trial", god.displayName()), god.line().color()),
                 Hud.colored(Component.translatable(hud + "trial.sub", god.displayTitle(), god.rank()), 0xCCCCCC));
     }
@@ -144,6 +169,14 @@ public class AltarBlock extends Block {
         if (random.nextInt(2) == 0) {
             level.addParticle(ParticleTypes.ENCHANT, pos.getX() + 0.5 + (random.nextDouble() - 0.5) * 1.6, pos.getY() + 1.6,
                     pos.getZ() + 0.5 + (random.nextDouble() - 0.5) * 1.6, 0, -0.6, 0);
+        }
+        if (random.nextInt(4) == 0) {
+            // a mote of the line's own light lifts off the altar top
+            level.addParticle(com.thefarawaydev.realmsofchaos.god.Signature.spark(line), pos.getX() + 0.25 + random.nextDouble() * 0.5,
+                    pos.getY() + 1.05, pos.getZ() + 0.25 + random.nextDouble() * 0.5, 0, 0.04, 0);
+        }
+        if (random.nextInt(60) == 0) {
+            level.playLocalSound(pos, SoundEvents.AMETHYST_BLOCK_CHIME, SoundSource.BLOCKS, 0.5F, 0.6F + random.nextFloat() * 0.4F, false);
         }
     }
 }

@@ -140,6 +140,7 @@
   .god.final .rk, .god.starter .rk { color:#16122b; background:var(--lc); border-radius:6px; padding:3px 0; }
   .god b { display:block; font:400 13px var(--pixel); line-height:1.3; }
   .god small { display:block; color:var(--muted); font-size:11.5px; line-height:1.3; }
+  .god small.mv { color:var(--lc); font:400 10.5px var(--pixel); margin-top:2px; }
   .tabs { display:none; gap:10px; margin-bottom:16px; }
   .tabs button { flex:1; font:400 13px var(--pixel); border:0; padding:12px 6px; }
   @media (max-width:720px) { .tabs { display:flex; } .linecol { display:none; } .linecol.on { display:block; } }
@@ -240,13 +241,13 @@
         <div class="chunk c-teal with-spr"><span class="spr" style="--i:29"></span><div><h3>Tower of Poseidon</h3><p>From sunlit sandstone shallows down through prismarine halls and the black trench to the Throne of the Deep.</p></div></div>
         <div class="chunk c-purple with-spr"><span class="spr" style="--i:44"></span><div><h3>Tower of Hades</h3><p>Past the Fields of Asphodel and the fires of Tartarus, through the Halls of the Dead, to the throne of the Underworld.</p></div></div>
         <div class="chunk c-green"><h3>Living floors</h3><p>Every floor has its own terrain - and it moves. Wound a god and the ground shifts under you: pits rise into daises, halls fold into terraces, then settle back.</p></div>
-        <div class="chunk c-gold"><h3>One hub, three gates</h3><p>Every climb starts in the hub: a gate to each tower, and a gate home. Leave whenever you like and pick up on the floor you reached.</p></div>
-        <div class="chunk c-teal"><h3>Fair fights</h3><p>Bosses telegraph their big attacks, no step is ever taller than one block, and nobody - you or a god - can get stuck or fall out.</p></div>
+        <div class="chunk c-gold"><h3>Signature moves</h3><p>Every god has a move of its own - Zeus calls down the Wrath of Olympus, Hermes windsteps behind you, Hades opens the Gates of Tartarus. Each is named on screen before it lands.</p></div>
+        <div class="chunk c-teal"><h3>Fair fights</h3><p>Big attacks are telegraphed, gods grow enraged at half health, and nobody - you or a god - can get stuck or fall out. Beaten a god? Call a rematch at its altar.</p></div>
       </div>
     </section>
 
     <section id="gods" class="reveal">
-      <div class="sh"><h2 class="chunk c-gold">The Gods</h2><small>One god per floor. Floor 1 is where you start; floor 15 is the summit.</small></div>
+      <div class="sh"><h2 class="chunk c-gold">The Gods</h2><small>One god per floor, each with its own signature move. Floor 1 is where you start; floor 15 is the summit.</small></div>
       <div class="tabs" id="god-tabs">
         <button class="chunk c-gold" data-l="zeus">Zeus</button>
         <button class="chunk c-teal" data-l="poseidon">Poseidon</button>
@@ -283,7 +284,9 @@
             <li>Each god line is now a 15-floor tower you climb one god at a time.</li>
             <li>Every floor has its own terrain and materials, and reshapes itself mid-fight.</li>
             <li>Rooms have columns, ribbed ceilings, hanging lights and themed props.</li>
-            <li>Some gods now keep their distance and fight at range.</li>
+            <li>Every god has a named signature move, lunges or hops away, and enrages at half health.</li>
+            <li>Some gods keep their distance and fight at range.</li>
+            <li>Fallen gods can be called back for a rematch.</li>
             <li>A bigger Codex that draws each tower floor by floor.</li>
             <li>The hub has an exit gate; the Codex and <code>/roc leave</code> take you out too.</li>
             <li>Chat messages are gone: menus, titles and a tower bar instead.</li>
@@ -391,7 +394,7 @@
         return head + `
         <div class="god${n++ % 2 ? "" : " alt"}${g.rank === 1 ? " final" : g.rank === 15 ? " starter" : ""}">
           <span class="rk" title="Floor ${g.floor}">${g.floor}</span><span class="spr" style="--i:${g.i};--k:2"></span>
-          <div><b>${g.name}</b><small>${g.title}</small></div>
+          <div><b>${g.name}</b><small>${g.title}</small><small class="mv">${g.move}</small></div>
         </div>`; }).join("");
     }
   }).catch(() => { $("#gods").style.display = "none"; });

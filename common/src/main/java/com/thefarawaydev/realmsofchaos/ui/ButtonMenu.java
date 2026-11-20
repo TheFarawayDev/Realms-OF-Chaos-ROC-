@@ -29,6 +29,8 @@ public abstract class ButtonMenu extends ChestMenu {
     protected final SimpleContainer view;
     protected final ServerPlayer viewer;
     protected final int size;
+    /** True while {@link #press} runs for a shift-click. */
+    protected boolean shiftClick;
 
     /** @param rows 3 for a single-chest screen, 6 for a double-chest screen */
     protected ButtonMenu(int id, Inventory inventory, ServerPlayer viewer, int rows) {
@@ -55,7 +57,9 @@ public abstract class ButtonMenu extends ChestMenu {
     @Override
     public void clicked(int slot, int button, ContainerInput input, Player player) {
         if (slot >= 0 && slot < size && (input == ContainerInput.PICKUP || input == ContainerInput.QUICK_MOVE)) {
+            shiftClick = input == ContainerInput.QUICK_MOVE;
             press(slot);
+            shiftClick = false;
         }
         if (viewer.containerMenu == this) {
             sendAllDataToRemote();      // undo whatever the client predicted
