@@ -1154,6 +1154,149 @@ def gen_site(weapon_first, previews):
     wj(os.path.join(SITE, "version.json"), {"version": raw, "number": number, "channel": channel})
 
 # ----------------------------------------------------------------------------
+# Promotional art for the unlisted /promotional/ page: drawn from the same sprites the mod ships
+# ----------------------------------------------------------------------------
+PROMO_BG, PROMO_GRID, PROMO_PANEL, PROMO_SHADOW = (22, 18, 43), (32, 27, 61), (38, 32, 80), (17, 13, 38)
+PROMO_COLS = {"ZEUS": ((245, 184, 46), (169, 113, 10)), "POSEIDON": ((43, 183, 204), (20, 112, 127)),
+              "HADES": ((165, 90, 214), (101, 45, 143))}
+
+def gen_promo(weapon_first, previews):
+    from PIL import ImageDraw, ImageFont
+    out = os.path.join(SITE, "promotional")
+    font_path = os.path.join(SITE, "Monocraft.ttf")
+    if not os.path.isdir(SITE) or not os.path.exists(font_path):
+        return
+    os.makedirs(out, exist_ok=True)
+    raw, number, channel = read_version()
+    short = "v" + ".".join(number.split(".")[:2])
+    label = short + ("" if channel == "Release" else " " + channel.upper())
+    font = lambda size: ImageFont.truetype(font_path, size)
+
+    def canvas(wd, ht):
+        img = Image.new("RGBA", (wd, ht), PROMO_BG + (255,))
+        d = ImageDraw.Draw(img)
+        for x in range(0, wd, 64):
+            d.rectangle([x, 0, x + 1, ht], fill=PROMO_GRID)
+        for y in range(0, ht, 64):
+            d.rectangle([0, y, wd, y + 1], fill=PROMO_GRID)
+        for x in range(0, wd, 192):
+            for y in range(0, ht, 192):
+                d.rectangle([x - 4, y - 4, x + 5, y + 5], fill=(42, 36, 80))
+        return img, d
+
+    def chunk(d, box, col, sh, radius=18, depth=10):
+        x0, y0, x1, y1 = box
+        d.rounded_rectangle([x0, y0 + depth, x1, y1 + depth], radius, fill=sh)
+        d.rounded_rectangle(box, radius, fill=col)
+
+    def title(d, x, y, size, anchor="la"):
+        f = font(size)
+        gap = int(size * 1.02)
+        for i, (text, col, sh) in enumerate((("REALMS", (255, 255, 255), (169, 113, 10)), ("OF CHAOS", (245, 184, 46), (169, 113, 10)))):
+            yy = y + i * gap
+            k = max(3, size // 14)
+            d.text((x, yy + k * 2), text, font=f, fill=(0, 0, 0), anchor=anchor)
+            d.text((x + k, yy + k), text, font=f, fill=sh, anchor=anchor)
+            d.text((x, yy), text, font=f, fill=col, anchor=anchor)
+        return y + 2 * gap
+
+    def badge(d, x, y, size, anchor_right=False):
+        f = font(size)
+        wd = int(d.textlength(label, font=f)) + size
+        if anchor_right:
+            x -= wd
+        chunk(d, [x, y, x + wd, y + int(size * 1.7)], PROMO_COLS["HADES"][0], PROMO_COLS["HADES"][1], radius=size // 2, depth=max(4, size // 5))
+        d.text((x + size // 2, y + int(size * 0.32)), label, font=f, fill=(255, 255, 255))
+        return wd
+
+    def sprite(img, gid, x, y, k):
+        fig = previews[gid].resize((16 * k, 32 * k), Image.NEAREST)
+        img.alpha_composite(fig, (x, y))
+
+    def bar(d, x, y, wd, ht):
+        third = wd // 3
+        for i, line in enumerate(("ZEUS", "POSEIDON", "HADES")):
+            d.rectangle([x + i * third, y, x + (i + 1) * third, y + ht], fill=PROMO_COLS[line][0])
+
+    def champions(img, d, x, y, k, gap):
+        for i, (line, gid) in enumerate((("ZEUS", "zeus"), ("POSEIDON", "poseidon"), ("HADES", "hades"))):
+            col, sh = PROMO_COLS[line]
+            bx = x + i * (16 * k + gap + 40)
+            chunk(d, [bx, y, bx + 16 * k + 40, y + 32 * k + 40], col, sh)
+            sprite(img, gid, bx + 20, y + 20, k)
+
+    def weapons_row(img, x, y, k, ids):
+        for i, gid in enumerate(ids):
+            icon = weapon_first[gid].resize((16 * k, 16 * k), Image.NEAREST)
+            img.alpha_composite(icon, (x + i * (16 * k + k * 2), y))
+
+    tagline = "Three towers. Forty-five gods. Floors that move."
+    sub = "Fabric + Forge  -  Minecraft 26.3  -  by TheFarawayDev"
+    order = [g[0] for _, _, _, g in all_gods()]
+
+    # 1. social card 1200x630
+    img, d = canvas(1200, 630)
+    y = title(d, 64, 70, 104)
+    bar(d, 64, y + 18, 560, 14)
+    badge(d, 64, y + 62, 34)
+    d.text((64, 520), tagline, font=font(24), fill=(238, 234, 255))
+    d.text((64, 562), sub, font=font(17), fill=(170, 163, 214))
+    champions(img, d, 690, 110, 8, 0)
+    img.convert("RGB").save(os.path.join(out, "banner-1200x630.png"))
+
+    # 2. square 1080x1080
+    img, d = canvas(1080, 1080)
+    y = title(d, 540, 90, 118, anchor="ma")
+    bar(d, 220, y + 16, 640, 16)
+    champions(img, d, 126, y + 80, 13, 20)
+    f = font(40)
+    wd = int(d.textlength(label, font=f)) + 40
+    badge(d, 540 - wd // 2, 890, 40)
+    d.text((540, 1000), tagline, font=font(26), fill=(238, 234, 255), anchor="ma")
+    img.convert("RGB").save(os.path.join(out, "square-1080.png"))
+
+    # 3. wide key art 1920x1080
+    img, d = canvas(1920, 1080)
+    y = title(d, 110, 130, 170)
+    bar(d, 110, y + 30, 900, 22)
+    badge(d, 110, y + 96, 54)
+    d.text((110, 800), tagline, font=font(40), fill=(238, 234, 255))
+    d.text((110, 866), sub, font=font(26), fill=(170, 163, 214))
+    champions(img, d, 1130, 150, 13, 0)
+    weapons_row(img, 110, 950, 5, order[:15] + [order[15], order[30]])
+    img.convert("RGB").save(os.path.join(out, "keyart-1920x1080.png"))
+
+    # 4. one "climb" card per tower: the fifteen gods standing on a staircase, floor 1 at the bottom left
+    for line, gods in LINES.items():
+        col, sh = PROMO_COLS[line]
+        tower, tiers = TIERS[line]
+        img, d = canvas(1600, 900)
+        d.text((70, 60), tower.upper(), font=font(84), fill=(0, 0, 0))
+        d.text((64, 54), tower.upper(), font=font(84), fill=col)
+        d.text((66, 164), "15 floors  -  15 gods  -  one climb", font=font(28), fill=(238, 234, 255))
+        badge(d, 1536, 64, 34, anchor_right=True)
+        k, step_w, step_h = 5, 96, 26
+        base_y = 820
+        for floor in range(1, 16):
+            g = gods[15 - floor]
+            x = 64 + (floor - 1) * step_w
+            top = base_y - floor * step_h
+            d.rectangle([x, top + 12, x + step_w - 6, base_y + 12], fill=sh)
+            d.rectangle([x, top, x + step_w - 6, base_y], fill=col if floor % 5 else (255, 255, 255))
+            d.rectangle([x, top + 14, x + step_w - 6, base_y], fill=PROMO_PANEL)
+            sprite(img, g[0], x + 5, top - 32 * k, k)
+            d.text((x + (step_w - 6) // 2, top + 22, ), str(floor), font=font(18), fill=(170, 163, 214), anchor="ma")
+        for t, (name, f0) in enumerate(zip(tiers, (1, 6, 11, 15))):
+            x = 64 + (f0 - 1) * step_w
+            if t == 3:      # the summit label hangs from the right edge of the last step
+                d.text((x + step_w - 6, base_y + 30), name, font=font(17), fill=(255, 255, 255), anchor="ra")
+            else:
+                d.text((x, base_y + 30), name, font=font(17), fill=col)
+        img.convert("RGB").save(os.path.join(out, f"tower-{line.lower()}-1600x900.png"))
+
+    wj(os.path.join(out, "promo.json"), {"label": label, "version": raw, "channel": channel, "tagline": tagline})
+
+# ----------------------------------------------------------------------------
 if __name__ == "__main__":
     gen_java()
     gen_build_info()
@@ -1168,4 +1311,5 @@ if __name__ == "__main__":
     gen_advancements()
     gen_icon(previews)
     gen_site(first, previews)
+    gen_promo(first, {k: v for k, v in previews.items()})
     print("generated", sum(len(v) for v in LINES.values()), "gods")
