@@ -29,10 +29,13 @@ public class TarotDeckItem extends Item {
     }
 
     /** Plays {@code card} from the deck in {@code stack} and starts the deck's recharge. */
-    public static void play(ServerLevel level, ServerPlayer player, ItemStack stack, Tarot card, int cooldownTicks) {
-        card.cast(level, player);
-        Hud.actionBar(player, Hud.colored(card.displayName(), 0xF5B82E));
+    public static boolean play(ServerLevel level, ServerPlayer player, ItemStack stack, Tarot card, int cooldownTicks) {
+        if (!card.cast(level, player)) return false;
+        if (card != Tarot.DEVIL && card != Tarot.MOON && card != Tarot.FOOL && card != Tarot.HERMIT) {
+            Hud.actionBar(player, Hud.colored(card.displayName(), 0xF5B82E));
+        }
         player.getCooldowns().addCooldown(stack, cooldownTicks);
+        return true;
     }
 
     @Override
@@ -43,7 +46,9 @@ public class TarotDeckItem extends Item {
             if (player.isShiftKeyDown()) {
                 DeckMenu.open(sp, hand);
             } else {
-                Tarot card = Tarot.values()[serverLevel.getRandom().nextInt(Tarot.values().length)];
+                // a blind draw never deals The Devil: wiping an inventory must be something you chose
+                Tarot card = Tarot.DEVIL;
+                while (card == Tarot.DEVIL) card = Tarot.values()[serverLevel.getRandom().nextInt(Tarot.values().length)];
                 play(serverLevel, sp, stack, card, DRAW_COOLDOWN_TICKS);
             }
         }

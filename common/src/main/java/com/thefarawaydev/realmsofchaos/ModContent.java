@@ -81,6 +81,8 @@ public final class ModContent {
     public static final Map<Tarot, Ref<Item>> TAROT = new HashMap<>();
     public static final Map<VoodooDollItem.Pin, Ref<Item>> DOLLS = new HashMap<>();
     public static final Map<Line, Ref<Item>> ESSENCES = new HashMap<>();
+    /** Forge materials dropped on tiers 1-3 of each tower, keyed "<line id>/<tier>". */
+    public static final Map<String, Ref<Item>> MATERIALS = new HashMap<>();
     /** Not obtainable: the sprites staff bolts and god projectiles are drawn with, one per power. */
     public static final Map<Power, Ref<Item>> ORBS = new HashMap<>();
 
@@ -131,6 +133,13 @@ public final class ModContent {
             Ref<Item> ref = new Ref<>();
             ESSENCES.put(line, ref);
             item("essence_" + line.id(), ref, key -> new Item(new Item.Properties().setId(key).rarity(net.minecraft.world.item.Rarity.RARE).fireResistant()));
+        }
+        for (Line line : Line.values()) {
+            for (int tier = 1; tier <= 3; tier++) {
+                Ref<Item> ref = new Ref<>();
+                MATERIALS.put(line.id() + "/" + tier, ref);
+                item("material_" + line.id() + "_" + tier, ref, key -> new Item(new Item.Properties().setId(key).rarity(net.minecraft.world.item.Rarity.UNCOMMON)));
+            }
         }
         for (Power power : Power.values()) {
             Ref<Item> ref = new Ref<>();
@@ -199,6 +208,11 @@ public final class ModContent {
         return ESSENCES.get(line).get();
     }
 
+    /** What the gods of a tower's tier drop for the forge: tiers 1-3 their own material, tier 4 (the summit) the essence. */
+    public static Item materialItem(Line line, int tier) {
+        return tier >= 4 ? essenceItem(line) : MATERIALS.get(line.id() + "/" + tier).get();
+    }
+
     public static ResourceKey<EntityType<?>> godBossKey() {
         return ResourceKey.create(Registries.ENTITY_TYPE, RealmsOfChaos.id("god_boss"));
     }
@@ -232,7 +246,9 @@ public final class ModContent {
                 out.add(WEAPONS.get(god.id()).get());
             }
         }
-        for (Line line : Line.values()) out.add(ESSENCES.get(line).get());
+        for (Line line : Line.values()) {
+            for (int tier = 1; tier <= 4; tier++) out.add(materialItem(line, tier));
+        }
         out.add(TAROT_DECK.get());
         for (Tarot card : Tarot.values()) out.add(TAROT.get(card).get());
         for (VoodooDollItem.Pin pin : VoodooDollItem.Pin.values()) out.add(DOLLS.get(pin).get());

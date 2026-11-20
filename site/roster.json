@@ -7,11 +7,7 @@
     "tier": "Summit of Olympus",
     "id": "zeus",
     "name": "Zeus",
-    "title": "King of the Gods",
-    "weapon": "Keraunos, the Thunderbolt",
-    "power": "lightning",
-    "kind": "thrown",
-    "ranged": true
+    "title": "King of the Gods"
   },
   {
     "i": 1,
@@ -21,11 +17,7 @@
     "tier": "The Cloud Sanctum",
     "id": "athena",
     "name": "Athena",
-    "title": "Goddess of Wisdom and War",
-    "weapon": "Spear of the Grey-Eyed",
-    "power": "knockback",
-    "kind": "polearm",
-    "ranged": false
+    "title": "Goddess of Wisdom and War"
   },
   {
     "i": 2,
@@ -35,11 +27,7 @@
     "tier": "The Cloud Sanctum",
     "id": "apollo",
     "name": "Apollo",
-    "title": "God of the Sun and Prophecy",
-    "weapon": "Bow of the Sun",
-    "power": "fire",
-    "kind": "bow",
-    "ranged": true
+    "title": "God of the Sun and Prophecy"
   },
   {
     "i": 3,
@@ -49,11 +37,7 @@
     "tier": "The Cloud Sanctum",
     "id": "dionysus",
     "name": "Dionysus",
-    "title": "God of Wine and Madness",
-    "weapon": "Thyrsus of Madness",
-    "power": "none",
-    "kind": "staff",
-    "ranged": true
+    "title": "God of Wine and Madness"
   },
   {
     "i": 4,
@@ -63,11 +47,7 @@
     "tier": "The Cloud Sanctum",
     "id": "artemis",
     "name": "Artemis",
-    "title": "Goddess of the Hunt and Moon",
-    "weapon": "Moonlit Bow",
-    "power": "none",
-    "kind": "bow",
-    "ranged": true
+    "title": "Goddess of the Hunt and Moon"
   },
   {
     "i": 5,
@@ -77,11 +57,7 @@
     "tier": "The Marble Halls",
     "id": "ares",
     "name": "Ares",
-    "title": "God of War",
-    "weapon": "Warblade of Ares",
-    "power": "knockback",
-    "kind": "blade",
-    "ranged": false
+    "title": "God of War"
   },
   {
     "i": 6,
@@ -91,11 +67,7 @@
     "tier": "The Marble Halls",
     "id": "hermes",
     "name": "Hermes",
-    "title": "Messenger of the Gods",
-    "weapon": "Winged Caduceus",
-    "power": "none",
-    "kind": "staff",
-    "ranged": true
+    "title": "Messenger of the Gods"
   },
   {
     "i": 7,
@@ -105,11 +77,7 @@
     "tier": "The Marble Halls",
     "id": "asclepius",
     "name": "Asclepius",
-    "title": "God of Medicine",
-    "weapon": "Rod of Asclepius",
-    "power": "drain",
-    "kind": "staff",
-    "ranged": true
+    "title": "God of Medicine"
   },
   {
     "i": 8,
@@ -119,11 +87,7 @@
     "tier": "The Marble Halls",
     "id": "hebe",
     "name": "Hebe",
-    "title": "Goddess of Youth",
-    "weapon": "Chalice of Ambrosia",
-    "power": "none",
-    "kind": "relic",
-    "ranged": true
+    "title": "Goddess of Youth"
   },
   {
     "i": 9,
@@ -133,11 +97,7 @@
     "tier": "The Marble Halls",
     "id": "phobos",
     "name": "Phobos",
-    "title": "God of Fear",
-    "weapon": "Terror Fang",
-    "power": "none",
-    "kind": "dagger",
-    "ranged": false
+    "title": "God of Fear"
   },
   {
     "i": 10,
@@ -147,11 +107,7 @@
     "tier": "Foothills of Olympus",
     "id": "deimos",
     "name": "Deimos",
-    "title": "God of Dread",
-    "weapon": "Dread Reaper",
-    "power": "none",
-    "kind": "scythe",
-    "ranged": false
+    "title": "God of Dread"
   },
   {
     "i": 11,
@@ -161,11 +117,7 @@
     "tier": "Foothills of Olympus",
     "id": "hygeia",
     "name": "Hygeia",
-    "title": "Goddess of Health",
-    "weapon": "Bowl of Hygeia",
-    "power": "drain",
-    "kind": "relic",
-    "ranged": true
+    "title": "Goddess of Health"
   },
   {
     "i": 12,
@@ -175,11 +127,7 @@
     "tier": "Foothills of Olympus",
     "id": "pan",
     "name": "Pan",
-    "title": "God of Wild Nature",
-    "weapon": "Pan's Syrinx",
-    "power": "none",
-    "kind": "relic",
-    "ranged": true
+    "title": "God of Wild Nature"
   },
   {
     "i": 13,
@@ -189,11 +137,7 @@
     "tier": "Foothills of Olympus",
     "id": "nike",
     "name": "Nike",
-    "title": "Goddess of Victory",
-    "weapon": "Victory Gladius",
-    "power": "none",
-    "kind": "blade",
-    "ranged": false
+    "title": "Goddess of Victory"
   },
   {
     "i": 14,
@@ -203,11 +147,7 @@
     "tier": "Foothills of Olympus",
     "id": "iris",
     "name": "Iris",
-    "title": "Divine Messenger of the Rainbow",
-    "weapon": "Rainbow Rapier",
-    "power": "none",
-    "kind": "blade",
-    "ranged": false
+    "title": "Divine Messenger of the Rainbow"
   },
   {
     "i": 15,
@@ -217,11 +157,7 @@
     "tier": "Throne of the Deep",
     "id": "poseidon",
     "name": "Poseidon",
-    "title": "Lord of the Seas",
-    "weapon": "Trident of the Deep",
-    "power": "sweep",
-    "kind": "polearm",
-    "ranged": false
+    "title": "Lord of the Seas"
   },
   {
     "i": 16,
@@ -231,11 +167,7 @@
     "tier": "The Trench",
     "id": "amphitrite",
     "name": "Amphitrite",
-    "title": "Queen of the Sea",
-    "weapon": "Queen's Coral Scepter",
-    "power": "freeze",
-    "kind": "staff",
-    "ranged": true
+    "title": "Queen of the Sea"
   },
   {
     "i": 17,
@@ -245,11 +177,7 @@
     "tier": "The Trench",
     "id": "triton",
     "name": "Triton",
-    "title": "Herald of the Sea",
-    "weapon": "Triton's Conch",
-    "power": "knockback",
-    "kind": "relic",
-    "ranged": true
+    "title": "Herald of the Sea"
   },
   {
     "i": 18,
@@ -259,11 +187,7 @@
     "tier": "The Trench",
     "id": "chrysaor",
     "name": "Chrysaor",
-    "title": "Golden Blade of the Sea",
-    "weapon": "Golden Sword of Chrysaor",
-    "power": "sweep",
-    "kind": "blade",
-    "ranged": false
+    "title": "Golden Blade of the Sea"
   },
   {
     "i": 19,
@@ -273,11 +197,7 @@
     "tier": "The Trench",
     "id": "cymopoleia",
     "name": "Cymopoleia",
-    "title": "Goddess of Storm Waves",
-    "weapon": "Stormwave Maul",
-    "power": "knockback",
-    "kind": "hammer",
-    "ranged": false
+    "title": "Goddess of Storm Waves"
   },
   {
     "i": 20,
@@ -287,11 +207,7 @@
     "tier": "The Prismarine Halls",
     "id": "rhode",
     "name": "Rhode",
-    "title": "Nymph of Rhodes",
-    "weapon": "Roserain Bow",
-    "power": "none",
-    "kind": "bow",
-    "ranged": true
+    "title": "Nymph of Rhodes"
   },
   {
     "i": 21,
@@ -301,11 +217,7 @@
     "tier": "The Prismarine Halls",
     "id": "pegasus",
     "name": "Pegasus",
-    "title": "The Winged Horse",
-    "weapon": "Wingbeat Plume",
-    "power": "none",
-    "kind": "relic",
-    "ranged": true
+    "title": "The Winged Horse"
   },
   {
     "i": 22,
@@ -315,11 +227,7 @@
     "tier": "The Prismarine Halls",
     "id": "benthesikyme",
     "name": "Benthesikyme",
-    "title": "Goddess of the Deep Waves",
-    "weapon": "Deepcurrent Dirk",
-    "power": "drain",
-    "kind": "dagger",
-    "ranged": false
+    "title": "Goddess of the Deep Waves"
   },
   {
     "i": 23,
@@ -329,11 +237,7 @@
     "tier": "The Prismarine Halls",
     "id": "halia",
     "name": "Halia",
-    "title": "Sea Nymph of the Salt",
-    "weapon": "Seafoam Cutlass",
-    "power": "freeze",
-    "kind": "blade",
-    "ranged": false
+    "title": "Sea Nymph of the Salt"
   },
   {
     "i": 24,
@@ -343,11 +247,7 @@
     "tier": "The Prismarine Halls",
     "id": "nereus",
     "name": "Nereus",
-    "title": "Old Man of the Sea",
-    "weapon": "Elder's Tide Staff",
-    "power": "none",
-    "kind": "staff",
-    "ranged": true
+    "title": "Old Man of the Sea"
   },
   {
     "i": 25,
@@ -357,11 +257,7 @@
     "tier": "The Sunlit Shallows",
     "id": "proteus",
     "name": "Proteus",
-    "title": "The Shapeshifter",
-    "weapon": "Shapeshifter's Kris",
-    "power": "none",
-    "kind": "dagger",
-    "ranged": false
+    "title": "The Shapeshifter"
   },
   {
     "i": 26,
@@ -371,11 +267,7 @@
     "tier": "The Sunlit Shallows",
     "id": "palaemon",
     "name": "Palaemon",
-    "title": "God of Harbours",
-    "weapon": "Harbour Anchor",
-    "power": "none",
-    "kind": "hammer",
-    "ranged": false
+    "title": "God of Harbours"
   },
   {
     "i": 27,
@@ -385,11 +277,7 @@
     "tier": "The Sunlit Shallows",
     "id": "thetis",
     "name": "Thetis",
-    "title": "Silver-Footed Sea Nymph",
-    "weapon": "Silverfoot Javelin",
-    "power": "freeze",
-    "kind": "thrown",
-    "ranged": true
+    "title": "Silver-Footed Sea Nymph"
   },
   {
     "i": 28,
@@ -399,11 +287,7 @@
     "tier": "The Sunlit Shallows",
     "id": "galene",
     "name": "Galene",
-    "title": "Goddess of Calm Seas",
-    "weapon": "Calmwater Pearl",
-    "power": "none",
-    "kind": "relic",
-    "ranged": true
+    "title": "Goddess of Calm Seas"
   },
   {
     "i": 29,
@@ -413,11 +297,7 @@
     "tier": "The Sunlit Shallows",
     "id": "galatea",
     "name": "Galatea",
-    "title": "Sea Nymph of the Pearl Shore",
-    "weapon": "Pearl Sea Dagger",
-    "power": "freeze",
-    "kind": "dagger",
-    "ranged": false
+    "title": "Sea Nymph of the Pearl Shore"
   },
   {
     "i": 30,
@@ -427,11 +307,7 @@
     "tier": "Throne of the Underworld",
     "id": "hades",
     "name": "Hades",
-    "title": "Lord of the Underworld",
-    "weapon": "Bident of the Dead",
-    "power": "drain",
-    "kind": "polearm",
-    "ranged": false
+    "title": "Lord of the Underworld"
   },
   {
     "i": 31,
@@ -441,11 +317,7 @@
     "tier": "Halls of the Dead",
     "id": "persephone",
     "name": "Persephone",
-    "title": "Queen of the Underworld",
-    "weapon": "Pomegranate Scythe",
-    "power": "none",
-    "kind": "scythe",
-    "ranged": false
+    "title": "Queen of the Underworld"
   },
   {
     "i": 32,
@@ -455,11 +327,7 @@
     "tier": "Halls of the Dead",
     "id": "zagreus",
     "name": "Zagreus",
-    "title": "The Hunter of the Dead",
-    "weapon": "Stygian Blade",
-    "power": "fire",
-    "kind": "blade",
-    "ranged": false
+    "title": "The Hunter of the Dead"
   },
   {
     "i": 33,
@@ -469,11 +337,7 @@
     "tier": "Halls of the Dead",
     "id": "thanatos",
     "name": "Thanatos",
-    "title": "Death Incarnate",
-    "weapon": "Reaper's Sickle",
-    "power": "drain",
-    "kind": "scythe",
-    "ranged": false
+    "title": "Death Incarnate"
   },
   {
     "i": 34,
@@ -483,11 +347,7 @@
     "tier": "Halls of the Dead",
     "id": "hypnos",
     "name": "Hypnos",
-    "title": "God of Sleep",
-    "weapon": "Slumber Staff",
-    "power": "none",
-    "kind": "staff",
-    "ranged": true
+    "title": "God of Sleep"
   },
   {
     "i": 35,
@@ -497,11 +357,7 @@
     "tier": "Tartarus",
     "id": "melinoe",
     "name": "Melinoe",
-    "title": "Goddess of Ghosts",
-    "weapon": "Witchlight Lantern",
-    "power": "none",
-    "kind": "relic",
-    "ranged": true
+    "title": "Goddess of Ghosts"
   },
   {
     "i": 36,
@@ -511,11 +367,7 @@
     "tier": "Tartarus",
     "id": "macaria",
     "name": "Macaria",
-    "title": "Goddess of Blessed Death",
-    "weapon": "Mercy's Edge",
-    "power": "drain",
-    "kind": "dagger",
-    "ranged": false
+    "title": "Goddess of Blessed Death"
   },
   {
     "i": 37,
@@ -525,11 +377,7 @@
     "tier": "Tartarus",
     "id": "hecate",
     "name": "Hecate",
-    "title": "Goddess of Witchcraft",
-    "weapon": "Torch of the Crossroads",
-    "power": "fire",
-    "kind": "staff",
-    "ranged": true
+    "title": "Goddess of Witchcraft"
   },
   {
     "i": 38,
@@ -539,11 +387,7 @@
     "tier": "Tartarus",
     "id": "morpheus",
     "name": "Morpheus",
-    "title": "God of Dreams",
-    "weapon": "Dreamshaper Wand",
-    "power": "none",
-    "kind": "staff",
-    "ranged": true
+    "title": "God of Dreams"
   },
   {
     "i": 39,
@@ -553,11 +397,7 @@
     "tier": "Tartarus",
     "id": "nyx",
     "name": "Nyx",
-    "title": "Primordial Goddess of Night",
-    "weapon": "Midnight Shards",
-    "power": "none",
-    "kind": "thrown",
-    "ranged": true
+    "title": "Primordial Goddess of Night"
   },
   {
     "i": 40,
@@ -567,11 +407,7 @@
     "tier": "Fields of Asphodel",
     "id": "erinyes",
     "name": "The Erinyes",
-    "title": "The Furies of Vengeance",
-    "weapon": "Furies' Lash",
-    "power": "fire",
-    "kind": "polearm",
-    "ranged": false
+    "title": "The Furies of Vengeance"
   },
   {
     "i": 41,
@@ -581,11 +417,7 @@
     "tier": "Fields of Asphodel",
     "id": "moirai",
     "name": "The Moirai",
-    "title": "The Three Fates",
-    "weapon": "Shears of Fate",
-    "power": "none",
-    "kind": "dagger",
-    "ranged": false
+    "title": "The Three Fates"
   },
   {
     "i": 42,
@@ -595,11 +427,7 @@
     "tier": "Fields of Asphodel",
     "id": "keres",
     "name": "The Keres",
-    "title": "Spirits of Violent Death",
-    "weapon": "Carrion Talon",
-    "power": "drain",
-    "kind": "scythe",
-    "ranged": false
+    "title": "Spirits of Violent Death"
   },
   {
     "i": 43,
@@ -609,11 +437,7 @@
     "tier": "Fields of Asphodel",
     "id": "oneiroi",
     "name": "The Oneiroi",
-    "title": "Spirits of Dreams",
-    "weapon": "Nightmare Reed",
-    "power": "none",
-    "kind": "staff",
-    "ranged": true
+    "title": "Spirits of Dreams"
   },
   {
     "i": 44,
@@ -623,10 +447,6 @@
     "tier": "Fields of Asphodel",
     "id": "charon",
     "name": "Charon",
-    "title": "Ferryman of the Dead",
-    "weapon": "Ferryman's Oar",
-    "power": "knockback",
-    "kind": "hammer",
-    "ranged": false
+    "title": "Ferryman of the Dead"
   }
 ]

@@ -116,13 +116,10 @@
 
   footer { margin-top:64px; background:var(--panel-sh); padding:28px 0 40px; color:var(--muted); font-size:13px; }
   footer .wrap { display:flex; justify-content:space-between; flex-wrap:wrap; gap:10px; }
-  /* pixel sprites cut from the generated atlases (gods.png: 45 x 16x32, weapons.png: 45 x 16x16) */
-  .spr, .wpn { display:inline-block; flex:none; image-rendering:pixelated; background-repeat:no-repeat; --k:2; }
+  /* pixel sprites cut from the generated atlas (gods.png: 45 x 16x32) */
+  .spr { display:inline-block; flex:none; image-rendering:pixelated; background-repeat:no-repeat; --k:2; }
   .spr { width:calc(16px*var(--k)); height:calc(32px*var(--k)); background-image:url(gods.png);
          background-size:calc(720px*var(--k)) calc(32px*var(--k)); background-position:calc(-16px*var(--i)*var(--k)) 0; }
-  .wpn { width:calc(16px*var(--k)); height:calc(16px*var(--k)); background-image:url(weapons.png);
-         background-size:calc(720px*var(--k)) calc(16px*var(--k)); background-position:calc(-16px*var(--i)*var(--k)) 0; }
-
   .champs { flex:1; display:grid; grid-template-columns:repeat(3,1fr); gap:14px; margin-top:30px; }
   .champ { padding:14px 10px 10px; text-align:center; text-decoration:none; display:flex; flex-direction:column; align-items:center; justify-content:center; }
   .champ .spr { --k:4; filter:drop-shadow(0 4px 0 rgba(0,0,0,.35)); }
@@ -137,13 +134,12 @@
   .linecol { padding:18px 16px 12px; }
   .linecol h3 { margin:0 0 4px; font:400 1.15rem var(--pixel); color:var(--lc); }
   .linecol > p { margin:0 0 12px; color:var(--muted); font-size:13px; }
-  .god { display:grid; grid-template-columns:28px 32px 1fr 32px; gap:10px; align-items:center; padding:7px 8px; border-radius:10px; }
+  .god { display:grid; grid-template-columns:28px 32px 1fr; gap:10px; align-items:center; padding:7px 8px; border-radius:10px; }
   .god.alt { background:var(--panel-sh); }
   .god .rk { font:400 11px var(--pixel); color:var(--muted); text-align:center; }
   .god.final .rk, .god.starter .rk { color:#16122b; background:var(--lc); border-radius:6px; padding:3px 0; }
   .god b { display:block; font:400 13px var(--pixel); line-height:1.3; }
   .god small { display:block; color:var(--muted); font-size:11.5px; line-height:1.3; }
-  .god .wpn { --k:2; }
   .tabs { display:none; gap:10px; margin-bottom:16px; }
   .tabs button { flex:1; font:400 13px var(--pixel); border:0; padding:12px 6px; }
   @media (max-width:720px) { .tabs { display:flex; } .linecol { display:none; } .linecol.on { display:block; } }
@@ -155,9 +151,9 @@
   /* a tiny mock of the Codex chest menu */
   .mock { display:grid; grid-template-columns:repeat(9,1fr); gap:3px; background:var(--panel-sh); padding:8px; border-radius:10px; }
   .mock i { aspect-ratio:1; background:#3a3270; border-radius:3px; display:grid; place-items:center; }
-  .mock i .wpn { --k:1; }
   .mock i.g { background:#2c5a3c; } .mock i.n { background:#6a5a1e; } .mock i.x { background:#2a2550; }
   .toast { display:flex; gap:12px; align-items:center; background:var(--panel-sh); border-radius:10px; padding:10px 14px; margin-top:8px; }
+  .toast .spr { --k:1; }
   .toast b { font:400 12px var(--pixel); color:var(--gold); display:block; } .toast span { font-size:12px; color:var(--muted); }
   .title-mock { background:var(--panel-sh); border-radius:10px; padding:18px 10px; text-align:center; }
   .title-mock b { display:block; font:400 1.3rem var(--pixel); color:var(--purple); } .title-mock span { font:400 12px var(--pixel); color:var(--gold); }
@@ -168,24 +164,6 @@
   .chan[hidden] { display:none; }
   .tierh { font:400 11px var(--pixel); color:var(--lc); padding:12px 8px 5px; letter-spacing:.5px; text-transform:uppercase; }
 
-  .xtr { display:inline-block; flex:none; image-rendering:pixelated; background:url(extras.png) no-repeat; --k:2;
-         width:calc(16px*var(--k)); height:calc(16px*var(--k)); background-size:calc(480px*var(--k)) calc(16px*var(--k)); background-position:calc(-16px*var(--i)*var(--k)) 0; }
-  .arsenal { display:grid; grid-template-columns:repeat(auto-fit,minmax(min(100%,420px),1fr)); gap:20px; }
-  .arsenal > div { padding:22px; }
-  .arsenal h3 { margin:0 0 8px; font:400 1.1rem var(--pixel); color:var(--gold); }
-  .arsenal p { margin:0 0 14px; color:#d6d1f5; font-size:14px; }
-  .kinds { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; }
-  .kinds span { display:flex; align-items:center; gap:8px; background:var(--panel-sh); border-radius:10px; padding:6px 10px; font:400 12px var(--pixel); }
-  .kinds em { font-style:normal; color:var(--teal); font-size:10px; display:block; }
-  .cards { display:flex; flex-wrap:wrap; gap:6px; background:var(--panel-sh); border-radius:10px; padding:10px; }
-  .cards .xtr { --k:2; cursor:help; }
-  .stars { display:flex; gap:10px; align-items:center; background:var(--panel-sh); border-radius:10px; padding:10px 14px; font:400 13px var(--pixel); }
-  .stars b { color:var(--gold); letter-spacing:3px; } .stars s { color:#4a427f; text-decoration:none; letter-spacing:3px; }
-  .xpbar { height:10px; border-radius:5px; background:var(--panel-sh); margin-top:10px; overflow:hidden; } .xpbar b { display:block; height:100%; width:62%; background:var(--green); }
-
-  .reveal { opacity:0; transform:translateY(16px); transition:opacity .5s, transform .5s; }
-  .reveal.in { opacity:1; transform:none; }
-  @media (prefers-reduced-motion: reduce) { .reveal { opacity:1; transform:none; transition:none; } html { scroll-behavior:auto; } }
 </style>
 </head>
 <body>
@@ -249,7 +227,7 @@
     <section class="reveal">
       <div class="stats">
         <div class="chunk c-gold stat"><b>45</b><span>Gods to defeat</span></div>
-        <div class="chunk c-teal stat"><b>45</b><span>Relic weapons</span></div>
+        <div class="chunk c-teal stat"><b>15</b><span>Floors per tower</span></div>
         <div class="chunk c-purple stat"><b>3</b><span>Towers to climb</span></div>
         <div class="chunk c-green stat"><b>45</b><span>Unique floors</span></div>
       </div>
@@ -262,7 +240,7 @@
         <div class="chunk c-teal with-spr"><span class="spr" style="--i:29"></span><div><h3>Tower of Poseidon</h3><p>From sunlit sandstone shallows down through prismarine halls and the black trench to the Throne of the Deep.</p></div></div>
         <div class="chunk c-purple with-spr"><span class="spr" style="--i:44"></span><div><h3>Tower of Hades</h3><p>Past the Fields of Asphodel and the fires of Tartarus, through the Halls of the Dead, to the throne of the Underworld.</p></div></div>
         <div class="chunk c-green"><h3>Living floors</h3><p>Every floor has its own terrain - and it moves. Wound a god and the ground shifts under you: pits rise into daises, halls fold into terraces, then settle back.</p></div>
-        <div class="chunk c-gold"><h3>Relic weapons</h3><p>Every god drops an animated relic weapon, scaled by rank, with its own hit power and a right-click Divine Surge.</p></div>
+        <div class="chunk c-gold"><h3>One hub, three gates</h3><p>Every climb starts in the hub: a gate to each tower, and a gate home. Leave whenever you like and pick up on the floor you reached.</p></div>
         <div class="chunk c-teal"><h3>Fair fights</h3><p>Bosses telegraph their big attacks, no step is ever taller than one block, and nobody - you or a god - can get stuck or fall out.</p></div>
       </div>
     </section>
@@ -281,48 +259,20 @@
       </div>
     </section>
 
-    <section id="arsenal" class="reveal">
-      <div class="sh"><h2 class="chunk c-gold">Arsenal</h2><small>Not just swords</small></div>
-      <div class="arsenal">
-        <div class="chunk c-panel"><h3>Nine kinds of weapon</h3>
-          <p>Every god carries what suits them. Kinds differ in damage, speed and reach, and four of them fight at range - for you, and for the god that wields them.</p>
-          <div class="kinds">
-            <span><i class="wpn" style="--i:5"></i>Blade</span><span><i class="wpn" style="--i:9"></i>Dagger</span><span><i class="wpn" style="--i:1"></i>Polearm</span>
-            <span><i class="wpn" style="--i:19"></i>Heavy</span><span><i class="wpn" style="--i:10"></i>Scythe</span><span><i class="wpn" style="--i:3"></i><div>Staff<em>ranged</em></div></span>
-            <span><i class="wpn" style="--i:2"></i><div>Bow<em>ranged</em></div></span><span><i class="wpn" style="--i:0"></i><div>Thrown<em>ranged</em></div></span><span><i class="wpn" style="--i:8"></i><div>Relic<em>ranged</em></div></span>
-          </div>
-        </div>
-        <div class="chunk c-panel"><h3>Level up and forge</h3>
-          <p>A relic earns experience from every kill made with it and climbs to level 10. At the Forge of Chaos in the hub, the essences gods drop forge up to five stars onto it. Both raise its damage.</p>
-          <div class="stars"><i class="wpn" style="--i:2"></i><span>Bow of the Sun +3</span><b>&#9733;&#9733;</b><s>&#9733;&#9733;&#9733;</s></div>
-          <div class="xpbar"><b></b></div>
-          <div class="cards" style="margin-top:12px"><i class="xtr" style="--i:27" title="Spark of Olympus"></i><i class="xtr" style="--i:28" title="Pearl of the Deep"></i><i class="xtr" style="--i:29" title="Ember of the Underworld"></i></div>
-        </div>
-        <div class="chunk c-panel"><h3>The tarot of Hades</h3>
-          <p>The gods of Hades' tower drop the 22 Major Arcana. Single cards are played once. Hades himself throws them at you - and drops the Deck of Fate, a stack that never runs out.</p>
-          <div class="cards" id="tarot-cards"><i class="xtr" style="--i:0" title="Deck of Fate"></i></div>
-        </div>
-        <div class="chunk c-panel"><h3>Voodoo dolls</h3>
-          <p>Stitch a doll from wheat and string around a pin. Bind it to a creature, and from then on stabbing the doll hurts that creature from up to 64 blocks away.</p>
-          <div class="cards"><i class="xtr" style="--i:23;--k:3" title="Doll of Pain"></i><i class="xtr" style="--i:24;--k:3" title="Doll of Binding"></i><i class="xtr" style="--i:25;--k:3" title="Doll of Rot"></i><i class="xtr" style="--i:26;--k:3" title="Doll of Embers"></i></div>
-        </div>
-      </div>
-    </section>
-
     <section id="ingame" class="reveal">
       <div class="sh"><h2 class="chunk c-gold">In game</h2><small>Menus and on-screen prompts, not chat spam</small></div>
       <div class="ingame">
         <div class="chunk c-panel"><h3>Codex of Chaos</h3>
           <p>Your whole journey in one menu: the three towers, every floor and god, what is defeated and what is next. Click a floor you have reached to travel there, go to the hub, or leave the realms.</p>
           <div class="mock" aria-hidden="true">
-            <i class="g"><span class="wpn" style="--i:14"></span></i><i class="g"><span class="wpn" style="--i:13"></span></i><i class="g"><span class="wpn" style="--i:12"></span></i><i class="n"><span class="wpn" style="--i:11"></span></i><i class="x"></i><i class="x"></i><i class="x"></i><i class="x"></i><i class="x"></i>
+            <i class="g"></i><i class="g"></i><i class="g"></i><i class="n"></i><i class="x"></i><i class="x"></i><i class="x"></i><i class="x"></i><i class="x"></i>
             <i></i><i class="x"></i><i class="x"></i><i class="x"></i><i class="x"></i><i class="x"></i><i class="x"></i><i></i><i></i>
           </div>
         </div>
         <div class="chunk c-panel"><h3>Trial Altar</h3>
-          <p>Each floor's altar opens its own screen: who waits on this floor, their relic, and one button that begins the trial - or, once they have fallen, sends you up.</p>
-          <div class="toast"><span class="wpn" style="--i:9;--k:2"></span><div><b>Begin the trial</b><span>Phobos will rise at the centre of the floor</span></div></div>
-          <div class="toast"><span class="wpn" style="--i:8;--k:2"></span><div><b>Ascend to floor 8</b><span>Or walk through the Gate of Ascent</span></div></div>
+          <p>Each floor's altar opens its own screen: who waits on this floor, and one button that begins the trial - or, once they have fallen, sends you up.</p>
+          <div class="toast"><span class="spr" style="--i:9"></span><div><b>Begin the trial</b><span>Phobos will rise at the centre of the floor</span></div></div>
+          <div class="toast"><span class="spr" style="--i:8"></span><div><b>Ascend to floor 8</b><span>Or walk through the Gate of Ascent</span></div></div>
         </div>
         <div class="chunk c-panel"><h3>Tower HUD</h3>
           <p>A bar at the top of the screen always shows which tower and floor you are on. Arrivals, trials and victories appear as titles; short notices sit above the hotbar.</p>
@@ -333,8 +283,7 @@
             <li>Each god line is now a 15-floor tower you climb one god at a time.</li>
             <li>Every floor has its own terrain and materials, and reshapes itself mid-fight.</li>
             <li>Rooms have columns, ribbed ceilings, hanging lights and themed props.</li>
-            <li>Nine weapon kinds, ranged gods, weapon levels and the Forge of Chaos.</li>
-            <li>Tarot cards, the Deck of Fate and voodoo dolls.</li>
+            <li>Some gods now keep their distance and fight at range.</li>
             <li>A bigger Codex that draws each tower floor by floor.</li>
             <li>The hub has an exit gate; the Codex and <code>/roc leave</code> take you out too.</li>
             <li>Chat messages are gone: menus, titles and a tower bar instead.</li>
@@ -442,14 +391,10 @@
         return head + `
         <div class="god${n++ % 2 ? "" : " alt"}${g.rank === 1 ? " final" : g.rank === 15 ? " starter" : ""}">
           <span class="rk" title="Floor ${g.floor}">${g.floor}</span><span class="spr" style="--i:${g.i};--k:2"></span>
-          <div><b>${g.name}</b><small>${g.title}</small><small>${g.weapon} &middot; ${g.kind === "hammer" ? "heavy" : g.kind}${g.ranged ? " (ranged)" : ""}</small></div>
-          <span class="wpn" style="--i:${g.i}" title="${g.weapon}"></span>
+          <div><b>${g.name}</b><small>${g.title}</small></div>
         </div>`; }).join("");
     }
   }).catch(() => { $("#gods").style.display = "none"; });
-  fetch("tarot.json").then(r => r.json()).then(cards => {
-    $("#tarot-cards").innerHTML += cards.map((c, i) => `<i class="xtr" style="--i:${i + 1}" title="${c.name} (${c.numeral}): ${c.does}"></i>`).join("");
-  }).catch(() => {});
   for (const b of $$("#god-tabs button")) b.addEventListener("click", () =>
     $$(".linecol").forEach(c => c.classList.toggle("on", c.dataset.l === b.dataset.l)));
 

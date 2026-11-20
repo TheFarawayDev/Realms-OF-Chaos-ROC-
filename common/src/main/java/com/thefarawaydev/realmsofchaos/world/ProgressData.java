@@ -36,7 +36,8 @@ public class ProgressData extends SavedData {
             Codec.STRING.listOf().optionalFieldOf("built", List.of()).forGetter(d -> new ArrayList<>(d.built)),
             Codec.STRING.listOf().optionalFieldOf("welcomed", List.of()).forGetter(d -> new ArrayList<>(d.welcomed)),
             Codec.unboundedMap(Codec.STRING, ReturnPoint.CODEC).optionalFieldOf("returns", Map.of()).forGetter(d -> new HashMap<>(d.returns)),
-            Codec.STRING.listOf().optionalFieldOf("shifted", List.of()).forGetter(d -> new ArrayList<>(d.shifted))
+            Codec.STRING.listOf().optionalFieldOf("shifted", List.of()).forGetter(d -> new ArrayList<>(d.shifted)),
+            Codec.STRING.listOf().optionalFieldOf("hermits", List.of()).forGetter(d -> new ArrayList<>(d.hermits))
     ).apply(i, ProgressData::new));
 
     public static final SavedDataType<ProgressData> TYPE = new SavedDataType<>(
@@ -47,13 +48,27 @@ public class ProgressData extends SavedData {
     private final Set<String> welcomed = new HashSet<>();
     private final Map<String, ReturnPoint> returns = new HashMap<>();
     private final Set<String> shifted = new HashSet<>();
+    /** Players who own an island in the Hermitage; a player's position in this list is their island's number. */
+    private final List<String> hermits = new ArrayList<>();
 
     public ProgressData() {}
 
     private ProgressData(Map<String, List<String>> defeated, List<String> built, List<String> welcomed, Map<String, ReturnPoint> returns,
-                         List<String> shifted) {
+                         List<String> shifted, List<String> hermits) {
         this(defeated, built, welcomed, returns);
         this.shifted.addAll(shifted);
+        this.hermits.addAll(hermits);
+    }
+
+    /** The number of this player's Hermitage island, assigning the next free one the first time. */
+    public int hermitIndex(UUID player) {
+        int index = hermits.indexOf(player.toString());
+        if (index < 0) {
+            hermits.add(player.toString());
+            index = hermits.size() - 1;
+            setDirty();
+        }
+        return index;
     }
 
     /** Floors whose terrain is currently away from their own design (see FloorShifts). */

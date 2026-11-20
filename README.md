@@ -45,12 +45,52 @@ The current build is an **Alpha**.
 * **Ranged gods.** A god fights the way its weapon does: gods with a ranged kind keep their distance and shoot.
   Hades also throws tarot cards.
 * **Weapon levelling and forging.** A relic gains experience from every kill made with it (level 1-10, +8% damage a
-  level). Gods drop essences of their tower; at a **Forge of Chaos** (two stand in the hub; also `/roc forge` and the
-  Codex) those forge up to five stars onto a relic (+10% damage and faster recharge each; star N costs 2N essences
-  and needs weapon level 2N). One tower yields enough essences to fully forge one weapon.
+  level). At a **Forge of Chaos** (two stand in the hub; also `/roc forge` and the Codex) you forge up to five stars
+  onto it (+10% damage and faster recharge each; star N needs weapon level 2N). Stars are paid for with what the
+  gods of the weapon's own tower drop - every tier of a tower has its own material, so the higher stars send you
+  higher up:
+
+  | Tier (floors) | Zeus | Poseidon | Hades | Drop per god |
+  | --- | --- | --- | --- | --- |
+  | 1 (1-5) | Laurel Leaf | Sea Glass | Asphodel Petal | 2 |
+  | 2 (6-10) | Marble Shard | Reef Scale | Tartarus Cinder | 2 |
+  | 3 (11-14) | Cloud Silk | Trench Ink | Obol of the Dead | 3 |
+  | 4 (summit) | Spark of Olympus | Pearl of the Deep | Ember of the Underworld | 2 |
+
+  Star 1 costs 3 of tier 1; star 2: 3 of tier 1 + 2 of tier 2; star 3: 4 of tier 2 + 1 of tier 3; star 4: 4 of
+  tier 3; star 5: 3 of tier 3 + 1 of the summit essence. One climb of a tower drops enough to fully forge one
+  weapon, and a fully forged relic shimmers.
 * **Tarot.** The gods of Hades' tower drop the 22 Major Arcana (three copies of each of their cards). A card is
   played with right-click and spent. Hades drops Death and the **Deck of Fate**: a stack that never runs out -
   right-click draws a random card, sneak + right-click lets you choose one (the deck then rests longer).
+
+  | Card | What it does |
+  | --- | --- |
+  | 0 The Fool | Iron armour and an iron sword, and a journey to the nearest village or mineshaft |
+  | I The Magician | Strength II-III, and 20 logs |
+  | II The High Priestess | A bubble for 10 seconds: no harm gets in and monsters are pushed out |
+  | III The Empress | Grows the plants around you; Luck |
+  | IV The Emperor | No knockback and +8 armour for 45 seconds |
+  | V The Hierophant | Hero of the Village |
+  | VI The Lovers | Regeneration for you, and buffs for every player near you |
+  | VII The Chariot | Speed III, and you step up full blocks |
+  | VIII Strength | Strength and Resistance |
+  | IX The Hermit | Takes you to your own private island in a pocket dimension; play it again (or use the gate) to return |
+  | X Wheel of Fortune | Luck at its maximum |
+  | XI Justice | Everything around you glows through walls |
+  | XII The Hanged Man | Monsters stop targeting you for 30 seconds (gods are not fooled) |
+  | XIII Death | Hands you a Totem of Undying |
+  | XIV Temperance | Full health, hunger and saturation |
+  | XV The Devil | Burns your inventory; for 30 seconds everything you pick up becomes the item in your off hand |
+  | XVI The Tower | Carries you to a god tower |
+  | XVII The Star | Experience and a little Luck |
+  | XVIII The Moon | Summons five illusions that cannot hurt you; slay them all for a reward |
+  | XIX The Sun | Burns nearby foes; Regeneration |
+  | XX Judgement | Full health and a moment of Resistance |
+  | XXI The World | Speed, Strength, Regeneration and Resistance |
+
+  The Devil spares worn armour, the Deck of Fate and the chosen item, refuses to be played with an empty off hand,
+  and is never dealt by a blind draw from the Deck - you have to choose it.
 * **Voodoo dolls** (crafted: string over wheat-pin-wheat over wheat; the pin is an iron nugget, cobweb, rotten flesh
   or blaze powder). Right-click a creature to bind the doll, then right-click to stab: the creature is hurt from up
   to 64 blocks away. Pain wounds, Binding slows and weakens, Rot withers, Embers burns. Gods take half and ignore
@@ -91,8 +131,8 @@ The current build is an **Alpha**.
 1. Join a world. Open the **Codex of Chaos** (or run `/roc`), or use the **Compass of Chaos** / `/roc hub`.
 2. In the hub, walk into a tower gate. You arrive on the floor you are working on.
 3. Right-click the floor's **Trial Altar** and press **Begin the trial**. (Trials need a difficulty above Peaceful.)
-4. Defeat the god: it drops its **relic weapon** (sword-class, scaled by rank, with a signature hit power and a
-   right-click **Divine Surge**), and the **Gate of Ascent** at the far side of the floor opens for you.
+4. Defeat the god: it drops its **relic weapon** (scaled by rank, with a signature hit power and a **Divine
+   Surge**) and its tier's forge material, and the **Gate of Ascent** at the far side of the floor opens for you.
 5. Climb. The three towers are independent, and progress is saved per player.
 6. To go home, take the south gate in the hub, the Codex's *Leave the Realms* button, or `/roc leave`.
 
@@ -127,13 +167,16 @@ JAVA_HOME=/path/to/jdk-25 ./build.sh
 * `tools/generate.py` - the god roster (single source of truth) plus the generator for textures, skins, models,
   lang, advancements and the website's roster
 * `site/` - the download page (GitHub Pages)
+* `art/weapon-designs/` - a sheet of every weapon silhouette, including designs for mythologies that are not in the
+  mod yet (katana, naginata, kunai, tessen, battleaxe, Mjolnir, khopesh, claymore, halberd, mace, crossbow). Their
+  textures already ship under `textures/item/design/`.
 
 ### Self-test
 
 The mod contains a developer self-test that only runs when the JVM has `-Droc.selftest=true`. It exercises the mod
 on a real server: data loading, the hub, building and walking every floor of every tower, a full climb of all three
-towers through the altar menu, every weapon power, the Codex, leaving the realms, the welcome and the anti-stuck
-safeguards.
+towers through the altar menu, every weapon power, forging with tier materials, each tarot card, the Codex, leaving
+the realms, the welcome and the anti-stuck safeguards.
 
 ```bash
 cd forge && ./gradlew runGameTestServer && cat run/roc-selftest.txt

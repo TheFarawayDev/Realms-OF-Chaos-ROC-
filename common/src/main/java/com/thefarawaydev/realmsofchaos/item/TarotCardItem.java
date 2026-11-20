@@ -35,8 +35,10 @@ public class TarotCardItem extends Item {
         ItemStack stack = player.getItemInHand(hand);
         if (player.getCooldowns().isOnCooldown(stack)) return InteractionResult.PASS;
         if (level instanceof ServerLevel serverLevel && player instanceof ServerPlayer sp) {
-            card.cast(serverLevel, sp);
-            Hud.actionBar(sp, Hud.colored(card.displayName(), 0xF5B82E));
+            if (!card.cast(serverLevel, sp)) return InteractionResult.PASS;
+            if (card != Tarot.DEVIL && card != Tarot.MOON && card != Tarot.FOOL && card != Tarot.HERMIT) {
+                Hud.actionBar(sp, Hud.colored(card.displayName(), 0xF5B82E));
+            }
             player.getCooldowns().addCooldown(stack, PLAY_COOLDOWN_TICKS);
             if (!player.hasInfiniteMaterials()) stack.shrink(1);
         }
@@ -48,6 +50,9 @@ public class TarotCardItem extends Item {
     public void appendHoverText(ItemStack stack, Item.TooltipContext context, TooltipDisplay display,
                                 Consumer<Component> builder, TooltipFlag flag) {
         builder.accept(card.description().copy().withStyle(Style.EMPTY.withColor(0x55FFFF)));
+        if (card == Tarot.DEVIL) {
+            builder.accept(Component.translatable("tarot." + RealmsOfChaos.MOD_ID + ".devil.warn").withStyle(Style.EMPTY.withColor(0xFF5555)));
+        }
         builder.accept(Component.translatable("tarot." + RealmsOfChaos.MOD_ID + ".single").withStyle(Style.EMPTY.withColor(0xAAAAAA)));
     }
 }

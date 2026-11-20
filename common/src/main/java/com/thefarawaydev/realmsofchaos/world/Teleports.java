@@ -38,8 +38,8 @@ public final class Teleports {
     }
 
     /** Remembers where a player was before stepping into the realms, so "leave" can put them back. */
-    private static void rememberReturn(ServerPlayer player, MinecraftServer server) {
-        if (Realm.of(player.level().dimension()) != null) return;
+    public static void rememberReturn(ServerPlayer player, MinecraftServer server) {
+        if (Realm.of(player.level().dimension()) != null || Hermitage.isIn(player.level())) return;
         ProgressData.get(server).setReturnPoint(player.getUUID(), new ProgressData.ReturnPoint(
                 player.level().dimension().identifier().toString(), player.getX(), player.getY(), player.getZ(), player.getYRot()));
     }
@@ -129,7 +129,7 @@ public final class Teleports {
         if (point != null) {
             Identifier id = Identifier.tryParse(point.dimension());
             ServerLevel saved = id == null ? null : server.getLevel(ResourceKey.create(Registries.DIMENSION, id));
-            if (saved != null && Realm.of(saved.dimension()) == null) {
+            if (saved != null && Realm.of(saved.dimension()) == null && !Hermitage.isIn(saved)) {
                 return new Exit(saved, new Vec3(point.x(), point.y(), point.z()), point.yaw());
             }
         }
@@ -146,7 +146,7 @@ public final class Teleports {
     public static void leave(ServerPlayer player) {
         MinecraftServer server = player.level().getServer();
         if (server == null) return;
-        if (Realm.of(player.level().dimension()) == null) {
+        if (Realm.of(player.level().dimension()) == null && !Hermitage.isIn(player.level())) {
             if (!throttled(LAST_NOTICE, player, server)) {
                 Hud.actionBar(player, Hud.colored(Component.translatable(HUD + "not_inside"), 0xFF5555));
             }

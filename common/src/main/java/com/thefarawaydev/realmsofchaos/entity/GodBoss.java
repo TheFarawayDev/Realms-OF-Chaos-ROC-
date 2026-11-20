@@ -498,8 +498,8 @@ public class GodBoss extends Monster implements RangedAttackMob {
         if (weapon != null) {
             spawnAtLocation(level, new ItemStack(weapon));
         }
-        // essences for the Forge of Chaos: one from a starter, five from a final god
-        spawnAtLocation(level, new ItemStack(ModContent.essenceItem(god.line()), essenceDrop(god)));
+        // forge materials: each tier of a tower drops its own, and the summit's god drops the essence
+        spawnAtLocation(level, new ItemStack(ModContent.materialItem(god.line(), Tower.tier(Tower.floorOf(god))), materialDrop(god)));
         // Hades' tower gives up the tarot: three copies of each card a god holds, and the Deck of Fate from Hades
         for (Tarot card : Tarot.dropsFor(god)) {
             spawnAtLocation(level, new ItemStack(ModContent.tarotItem(card), 3));
@@ -509,8 +509,9 @@ public class GodBoss extends Monster implements RangedAttackMob {
         }
     }
 
-    public static int essenceDrop(God god) {
-        return 1 + (Line.RANKS - god.rank()) / 3;
+    /** How many forge materials a god drops: two, or three on the upper floors where the later stars are paid for. */
+    public static int materialDrop(God god) {
+        return Tower.tier(Tower.floorOf(god)) == 3 ? 3 : 2;
     }
 
     @Override

@@ -77,6 +77,8 @@ public final class WeaponProgress {
 
     public static void setStars(ItemStack stack, int stars) {
         write(stack, level(stack), xp(stack), Math.max(0, Math.min(MAX_STARS, stars)));
+        // a fully forged relic is "awakened": it shimmers
+        if (stars >= MAX_STARS) stack.set(DataComponents.ENCHANTMENT_GLINT_OVERRIDE, true);
     }
 
     public static void setLevel(ItemStack stack, int level) {
@@ -89,9 +91,21 @@ public final class WeaponProgress {
         return Math.max(1, Math.round(victim.getMaxHealth() / 4.0F));
     }
 
-    /** Essences needed to forge star number {@code star} (1-5), and the weapon level it requires. */
-    public static int starCost(int star) {
-        return star * 2;
+    /** One line of a forging price: so many of the material dropped on that tier of the weapon's tower. */
+    public record Cost(int tier, int count) {}
+
+    /**
+     * What forging star number {@code star} (1-5) costs. Early stars use what the lower floors drop; the last
+     * needs the essence only the summit's god gives up - so a weapon is finished by finishing its tower.
+     */
+    public static java.util.List<Cost> starCost(int star) {
+        return switch (star) {
+            case 1 -> java.util.List.of(new Cost(1, 3));
+            case 2 -> java.util.List.of(new Cost(1, 3), new Cost(2, 2));
+            case 3 -> java.util.List.of(new Cost(2, 4), new Cost(3, 1));
+            case 4 -> java.util.List.of(new Cost(3, 4));
+            default -> java.util.List.of(new Cost(3, 3), new Cost(4, 1));
+        };
     }
 
     public static int starLevel(int star) {

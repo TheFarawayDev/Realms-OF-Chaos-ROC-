@@ -24,7 +24,7 @@ import net.minecraft.world.item.Items;
  * experience bar towards the next level.
  */
 public class ForgeMenu extends ButtonMenu {
-    public static final int SLOT_WEAPON = slot(1, 1), SLOT_LEVEL = slot(1, 3), SLOT_COST = slot(1, 5), SLOT_FORGE = slot(1, 7);
+    public static final int SLOT_WEAPON = slot(1, 1), SLOT_LEVEL = slot(1, 2), SLOT_COST = slot(1, 4), SLOT_COST_2 = slot(1, 5), SLOT_FORGE = slot(1, 7);
     private static final String NS = "menu." + RealmsOfChaos.MOD_ID + ".forge.";
 
     public static void open(ServerPlayer player) {
@@ -42,9 +42,6 @@ public class ForgeMenu extends ButtonMenu {
         return held.getItem() instanceof GodWeaponItem ? held : ItemStack.EMPTY;
     }
 
-    private static Item essence(God god) {
-        return ModContent.essenceItem(god.line());
-    }
 
     public static int count(ServerPlayer player, Item item) {
         int n = 0;
@@ -74,7 +71,11 @@ public class ForgeMenu extends ButtonMenu {
         if (next > WeaponProgress.MAX_STARS) return "max";
         if (WeaponProgress.level(weapon) < WeaponProgress.starLevel(next)) return "level";
         God god = ((GodWeaponItem) weapon.getItem()).god();
-        if (!viewer.hasInfiniteMaterials() && count(viewer, essence(god)) < WeaponProgress.starCost(next)) return "cost";
+        if (!viewer.hasInfiniteMaterials()) {
+            for (WeaponProgress.Cost cost : WeaponProgress.starCost(next)) {
+                if (count(viewer, ModContent.materialItem(god.line(), cost.tier())) < cost.count()) return "cost";
+            }
+        }
         return null;
     }
 
@@ -88,7 +89,9 @@ public class ForgeMenu extends ButtonMenu {
         ItemStack weapon = weapon();
         God god = ((GodWeaponItem) weapon.getItem()).god();
         int next = WeaponProgress.stars(weapon) + 1;
-        if (!viewer.hasInfiniteMaterials()) take(viewer, essence(god), WeaponProgress.starCost(next));
+        if (!viewer.hasInfiniteMaterials()) {
+            for (WeaponProgress.Cost cost : WeaponProgress.starCost(next)) take(viewer, ModContent.materialItem(god.line(), cost.tier()), cost.count());
+        }
         WeaponProgress.setStars(weapon, next);
         viewer.level().playSound(null, viewer.blockPosition(), SoundEvents.ANVIL_USE, SoundSource.PLAYERS, 0.8F, 1.1F);
         viewer.level().playSound(null, viewer.blockPosition(), SoundEvents.PLAYER_LEVELUP, SoundSource.PLAYERS, 0.6F, 0.8F);
@@ -129,15 +132,23 @@ public class ForgeMenu extends ButtonMenu {
         if ("max".equals(blocker)) {
             view.setItem(SLOT_FORGE, icon(Items.NETHER_STAR, text(NS + "max", 0x55FF55), true, List.of()));
         } else {
-            Item essence = essence(god);
-            int cost = WeaponProgress.starCost(next), have = count(viewer, essence);
-            ItemStack price = icon(essence, text(NS + "cost", have >= cost ? 0x55FF55 : 0xFF5555, cost, new ItemStack(essence).getHoverName(), have), false, List.of());
-            price.setCount(Math.max(1, Math.min(64, cost)));
-            view.setItem(SLOT_COST, price);
             List<Component> lore = new ArrayList<>();
             lore.add(text(NS + "effect", 0xAAAAAA));
+            if (next == WeaponProgress.MAX_STARS) lore.add(text(NS + "awakened", 0xF5B82E));
             lore.add(text(NS + "needlevel", "level".equals(blocker) ? 0xFF5555 : 0x55FF55, WeaponProgress.starLevel(next)));
-            lore.add(text(NS + "cost", "cost".equals(blocker) ? 0xFF5555 : 0x55FF55, cost, new ItemStack(essence).getHoverName(), have));
+            int priceSlot = SLOT_COST;
+            for (WeaponProgress.Cost cost : WeaponProgress.starCost(next)) {
+                Item material = ModContent.materialItem(god.line(), cost.tier());
+                int have = count(viewer, material);
+                boolean enough = have >= cost.count() || viewer.hasInfiniteMaterials();
+                Component line = text(NS + "cost", enough ? 0x55FF55 : 0xFF5555, cost.count(), new ItemStack(material).getHoverName(), have);
+                ItemStack price = icon(material, line, false, List.of(text(NS + "from", 0xAAAAAA,
+                        com.thefarawaydev.realmsofchaos.world.Tower.tierName(god.line(), cost.tier() == 1 ? 1 : cost.tier() == 2 ? 6 : cost.tier() == 3 ? 11 : 15))));
+                price.setCount(Math.max(1, Math.min(64, cost.count())));
+                view.setItem(priceSlot, price);
+                priceSlot = SLOT_COST_2;
+                lore.add(line);
+            }
             view.setItem(SLOT_FORGE, icon(Items.ANVIL, text(NS + "upgrade", blocker == null ? 0x55FF55 : 0xFF5555, next), blocker == null, lore));
         }
 

@@ -7,3 +7,4 @@ run-data/
 .vscode/
 *.iml
 .DS_Store
+logs/

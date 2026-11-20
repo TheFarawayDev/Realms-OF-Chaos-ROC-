@@ -162,6 +162,7 @@ public class GodWeaponItem extends Item {
 
     /** Called by the loaders whenever a living thing dies: a kill with a relic in hand feeds that relic. */
     public static void onKill(LivingEntity victim, DamageSource source) {
+        TarotEffects.onDeath(victim, source);
         if (!(source.getEntity() instanceof ServerPlayer player)) return;
         ItemStack held = player.getMainHandItem();
         if (!(held.getItem() instanceof GodWeaponItem weapon)) return;

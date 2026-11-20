@@ -14,6 +14,8 @@ import com.thefarawaydev.realmsofchaos.god.WeaponKind;
 import com.thefarawaydev.realmsofchaos.item.GodWeaponItem;
 import com.thefarawaydev.realmsofchaos.item.Tarot;
 import com.thefarawaydev.realmsofchaos.item.TarotDeckItem;
+import com.thefarawaydev.realmsofchaos.item.TarotEffects;
+import com.thefarawaydev.realmsofchaos.world.Hermitage;
 import com.thefarawaydev.realmsofchaos.item.VoodooDollItem;
 import com.thefarawaydev.realmsofchaos.item.WeaponProgress;
 import com.thefarawaydev.realmsofchaos.ui.DeckMenu;
@@ -65,6 +67,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
@@ -403,8 +406,9 @@ public final class SelfTest {
                     check(!boss.isAlive(), at + "boss died");
                     check(data.isDefeated(player.getUUID(), god), at + "progress saved");
                     check(!level.getEntitiesOfClass(ItemEntity.class, room, e -> e.getItem().is(ModContent.weaponItem(god))).isEmpty(), at + "relic dropped");
-                    check(level.getEntitiesOfClass(ItemEntity.class, room, e -> e.getItem().is(ModContent.essenceItem(line)))
-                            .stream().anyMatch(e -> e.getItem().getCount() == GodBoss.essenceDrop(god)), at + "essences dropped");
+                    Item material = ModContent.materialItem(line, Tower.tier(floor));
+                    check(level.getEntitiesOfClass(ItemEntity.class, room, e -> e.getItem().is(material))
+                            .stream().anyMatch(e -> e.getItem().getCount() == GodBoss.materialDrop(god)), at + "forge material of this tier dropped");
                     for (Tarot card : Tarot.dropsFor(god)) {
                         check(!level.getEntitiesOfClass(ItemEntity.class, room, e -> e.getItem().is(ModContent.tarotItem(card))).isEmpty(), at + "tarot card " + card.id() + " dropped");
                     }
@@ -485,7 +489,7 @@ public final class SelfTest {
             b.discard();
         });
 
-        step("forge of chaos: stars cost essences and need levels; forging raises damage and the name", () -> {
+        step("forge of chaos: stars cost the tower's tier materials and need levels; one tower fully forges a weapon", () -> {
             ServerPlayer hero = fakePlayer(server, level, "RocSmith");
             hero.setPos(0.5, ay, 0.5);
             CodexMenu.open(hero);
@@ -500,21 +504,43 @@ public final class SelfTest {
             ForgeMenu forge = (ForgeMenu) hero.containerMenu;
             check("level".equals(forge.blocker()), "level 1 weapon cannot take a star: " + forge.blocker());
             WeaponProgress.setLevel(hero.getMainHandItem(), 2);
-            check("cost".equals(forge.blocker()), "no essences: " + forge.blocker());
-            hero.getInventory().add(new ItemStack(ModContent.essenceItem(Line.ZEUS), 5));
+            check("cost".equals(forge.blocker()), "no materials: " + forge.blocker());
+            // the wrong tower's material does not count
+            hero.getInventory().add(new ItemStack(ModContent.materialItem(Line.HADES, 1), 9));
+            check("cost".equals(forge.blocker()), "another tower's material is refused");
+            hero.getInventory().add(new ItemStack(ModContent.materialItem(Line.ZEUS, 1), 5));
             check(forge.blocker() == null, "ready to forge: " + forge.blocker());
             forge.clicked(ForgeMenu.SLOT_FORGE, 0, ContainerInput.PICKUP, hero);
             check(WeaponProgress.stars(hero.getMainHandItem()) == 1, "one star");
-            check(ForgeMenu.count(hero, ModContent.essenceItem(Line.ZEUS)) == 3, "two essences spent, left " + ForgeMenu.count(hero, ModContent.essenceItem(Line.ZEUS)));
+            check(ForgeMenu.count(hero, ModContent.materialItem(Line.ZEUS, 1)) == 2, "three laurel leaves spent");
+            check(ForgeMenu.count(hero, ModContent.materialItem(Line.HADES, 1)) == 9, "other materials untouched");
             check("level".equals(forge.blocker()), "second star needs level 4");
             check(Math.abs(WeaponProgress.multiplier(hero.getMainHandItem()) - 1.08 * 1.10) < 1e-9, "multiplier with a star");
             check(hero.getMainHandItem().getHoverName().getString().contains("\u2605"), "name shows a star");
             check(forge.getCarried().isEmpty(), "forge moves no items");
-            int total = 0;
-            for (int star = 1; star <= WeaponProgress.MAX_STARS; star++) total += WeaponProgress.starCost(star);
-            int line15 = 0;
-            for (God g : Gods.ofLine(Line.ZEUS)) line15 += GodBoss.essenceDrop(g);
-            check(line15 >= total, "one tower yields enough essences (" + line15 + ") to fully forge a weapon (" + total + ")");
+
+            // forge the rest: every star, each tier's material, the summit essence last
+            WeaponProgress.setLevel(hero.getMainHandItem(), 10);
+            for (int tier = 1; tier <= 4; tier++) hero.getInventory().add(new ItemStack(ModContent.materialItem(Line.ZEUS, tier), 16));
+            for (int star = 2; star <= WeaponProgress.MAX_STARS; star++) {
+                check(forge.blocker() == null, "star " + star + " ready: " + forge.blocker());
+                forge.clicked(ForgeMenu.SLOT_FORGE, 0, ContainerInput.PICKUP, hero);
+                check(WeaponProgress.stars(hero.getMainHandItem()) == star, "star " + star);
+            }
+            check("max".equals(forge.blocker()), "fully forged");
+            check(Boolean.TRUE.equals(hero.getMainHandItem().get(DataComponents.ENCHANTMENT_GLINT_OVERRIDE)), "a fully forged relic shimmers");
+
+            // what a whole tower drops covers everything one weapon needs
+            int[] need = new int[5], drops = new int[5];
+            for (int star = 1; star <= WeaponProgress.MAX_STARS; star++) {
+                for (WeaponProgress.Cost cost : WeaponProgress.starCost(star)) need[cost.tier()] += cost.count();
+            }
+            for (God g : Gods.ofLine(Line.ZEUS)) drops[Tower.tier(Tower.floorOf(g))] += GodBoss.materialDrop(g);
+            for (int tier = 1; tier <= 4; tier++) {
+                check(need[tier] > 0 && drops[tier] >= need[tier], "tier " + tier + ": tower drops " + drops[tier] + ", a weapon needs " + need[tier]);
+            }
+            RESULTS.add("        a tower drops " + drops[1] + "/" + drops[2] + "/" + drops[3] + "/" + drops[4] + " materials; one weapon needs "
+                    + need[1] + "/" + need[2] + "/" + need[3] + "/" + need[4]);
             hero.closeContainer();
         });
 
@@ -598,7 +624,7 @@ public final class SelfTest {
             hades.discard();
         });
 
-        step("tarot: Hades' tower drops all 22 cards; every card casts; single cards are spent; the deck is unlimited", () -> {
+        step("tarot: Hades' tower drops all 22 cards; every card casts", () -> {
             EnumSet<Tarot> dropped = EnumSet.noneOf(Tarot.class);
             for (God g : Gods.ALL) {
                 List<Tarot> cards = Tarot.dropsFor(g);
@@ -610,31 +636,179 @@ public final class SelfTest {
             check(Tarot.dropsFor(Gods.byId("hades")).equals(List.of(Tarot.DEATH)), "Hades holds Death");
 
             ServerPlayer hero = fakePlayer(server, level, "RocSeer");
-            hero.setPos(0.5, ay, 0.5);
-            hero.setYRot(-45);                                   // facing +x +z, towards the zombie
             for (Tarot card : Tarot.values()) {
+                hero.setPos(0.5, ay, 0.5);
+                hero.setItemInHand(InteractionHand.OFF_HAND, new ItemStack(Blocks.COBBLESTONE));
                 LivingEntity zombie = EntityTypes.ZOMBIE.create(level, EntitySpawnReason.TRIGGERED);
                 zombie.setPos(3.5, ay, 3.5);
                 level.addFreshEntity(zombie);
-                hero.setHealth(10.0F);
-                card.cast(level, hero);
+                advance(server, 41);
+                check(card.cast(level, hero), card.id() + " cast");
                 zombie.discard();
                 hero.removeAllEffects();
                 hero.setDeltaMovement(Vec3.ZERO);
-                hero.setPos(0.5, ay, 0.5);
             }
-            for (Projectile p : level.getEntitiesOfClass(Projectile.class, new AABB(-30, ay - 5, -30, 30, ay + 10, 30), e -> true)) p.discard();
-            hero.setHealth(6.0F);
-            Tarot.JUDGEMENT.cast(level, hero);
-            check(hero.getHealth() == hero.getMaxHealth(), "Judgement heals fully");
-            LivingEntity victim = EntityTypes.ZOMBIE.create(level, EntitySpawnReason.TRIGGERED);
-            victim.setPos(3.5, ay, 3.5);
-            level.addFreshEntity(victim);
-            float hp = victim.getHealth();
-            Tarot.DEATH.cast(level, hero);
-            check(victim.getHealth() < hp, "Death strikes the foe in front");
-            victim.discard();
+            // tidy up what those casts left behind
+            for (var e : level.getEntitiesOfClass(net.minecraft.world.entity.monster.Vex.class, new AABB(-40, ay - 10, -40, 40, ay + 20, 40), e -> true)) e.discard();
+            advance(server, 20 * 400);
+            TarotEffects.service(hero, server.getTickCount());
+        });
 
+        step("tarot: each card does what the index says", () -> {
+            ServerPlayer hero = fakePlayer(server, level, "RocReader");
+            hero.setPos(0.5, ay, 0.5);
+
+            // The Fool: iron from head to foot (the test world has no village or mineshaft to travel to)
+            Tarot.FOOL.cast(level, hero);
+            check(hero.getItemBySlot(net.minecraft.world.entity.EquipmentSlot.HEAD).is(net.minecraft.world.item.Items.IRON_HELMET)
+                    && hero.getItemBySlot(net.minecraft.world.entity.EquipmentSlot.FEET).is(net.minecraft.world.item.Items.IRON_BOOTS), "Fool: iron armour worn");
+            check(count(hero, net.minecraft.world.item.Items.IRON_SWORD) == 1, "Fool: iron sword");
+
+            // The Magician: strength II or III and twenty logs
+            Tarot.MAGICIAN.cast(level, hero);
+            check(count(hero, net.minecraft.world.item.Items.OAK_LOG) == 20, "Magician: 20 logs");
+            var strength = hero.getEffect(net.minecraft.world.effect.MobEffects.STRENGTH);
+            check(strength != null && strength.getAmplifier() >= 1 && strength.getAmplifier() <= 2, "Magician: strength II-III");
+
+            // The High Priestess: a bubble that pushes foes out and lets no harm in
+            Tarot.HIGH_PRIESTESS.cast(level, hero);
+            var resistance = hero.getEffect(net.minecraft.world.effect.MobEffects.RESISTANCE);
+            check(resistance != null && resistance.getAmplifier() >= 4, "Priestess: bubble");
+            float hpBefore = hero.getHealth();
+            hero.hurtServer(level, level.damageSources().magic(), 6.0F);
+            check(hero.getHealth() == hpBefore, "Priestess: no harm enters the bubble");
+            hero.removeAllEffects();
+
+            // The Empress: crops grow, and luck
+            BlockPos soil = new BlockPos(3, (int) ay - 1, -4);
+            BlockState before = level.getBlockState(soil);
+            level.setBlock(soil, Blocks.FARMLAND.defaultBlockState(), 2);
+            level.setBlock(soil.above(), Blocks.WHEAT.defaultBlockState(), 2);
+            Tarot.EMPRESS.cast(level, hero);
+            check(!level.getBlockState(soil.above()).equals(Blocks.WHEAT.defaultBlockState()), "Empress: the wheat grew");
+            check(hero.hasEffect(net.minecraft.world.effect.MobEffects.LUCK), "Empress: luck");
+            level.setBlock(soil.above(), Blocks.AIR.defaultBlockState(), 2);
+            level.setBlock(soil, before, 2);
+            hero.removeAllEffects();
+
+            // The Emperor: no knockback and more armour, for a while
+            double armour = hero.getAttributeValue(net.minecraft.world.entity.ai.attributes.Attributes.ARMOR);
+            Tarot.EMPEROR.cast(level, hero);
+            check(hero.getAttributeValue(net.minecraft.world.entity.ai.attributes.Attributes.KNOCKBACK_RESISTANCE) >= 1.0, "Emperor: no knockback");
+            check(hero.getAttributeValue(net.minecraft.world.entity.ai.attributes.Attributes.ARMOR) >= armour + 8, "Emperor: armour");
+            advance(server, 20 * 46);
+            TarotEffects.service(hero, server.getTickCount());
+            check(hero.getAttributeValue(net.minecraft.world.entity.ai.attributes.Attributes.ARMOR) == armour, "Emperor: wears off");
+
+            Tarot.HIEROPHANT.cast(level, hero);
+            check(hero.hasEffect(net.minecraft.world.effect.MobEffects.HERO_OF_THE_VILLAGE), "Hierophant: hero of the village");
+
+            // The Chariot: speed and step height, for a while
+            double step = hero.getAttributeValue(net.minecraft.world.entity.ai.attributes.Attributes.STEP_HEIGHT);
+            Tarot.CHARIOT.cast(level, hero);
+            check(hero.hasEffect(net.minecraft.world.effect.MobEffects.SPEED), "Chariot: speed");
+            check(hero.getAttributeValue(net.minecraft.world.entity.ai.attributes.Attributes.STEP_HEIGHT) >= step + 1.0, "Chariot: step height");
+            advance(server, 20 * 31);
+            TarotEffects.service(hero, server.getTickCount());
+            check(hero.getAttributeValue(net.minecraft.world.entity.ai.attributes.Attributes.STEP_HEIGHT) == step, "Chariot: wears off");
+            hero.removeAllEffects();
+
+            Tarot.STRENGTH.cast(level, hero);
+            check(hero.hasEffect(net.minecraft.world.effect.MobEffects.STRENGTH) && hero.hasEffect(net.minecraft.world.effect.MobEffects.RESISTANCE), "Strength");
+            hero.removeAllEffects();
+
+            Tarot.WHEEL_OF_FORTUNE.cast(level, hero);
+            check(hero.getEffect(net.minecraft.world.effect.MobEffects.LUCK).getAmplifier() >= 9, "Wheel: luck at its maximum");
+            hero.removeAllEffects();
+
+            // Justice reveals; The Hanged Man makes monsters lose interest
+            net.minecraft.world.entity.Mob zombie = EntityTypes.ZOMBIE.create(level, EntitySpawnReason.TRIGGERED);
+            zombie.setPos(4.5, ay, 4.5);
+            level.addFreshEntity(zombie);
+            Tarot.JUSTICE.cast(level, hero);
+            check(zombie.hasEffect(net.minecraft.world.effect.MobEffects.GLOWING), "Justice: revealed");
+            zombie.setTarget(hero);
+            check(zombie.getTarget() == hero, "test setup: zombie targets the player");
+            Tarot.HANGED_MAN.cast(level, hero);
+            check(zombie.getTarget() == null && TarotEffects.isUntargetable(hero), "Hanged Man: the zombie lets go");
+            zombie.setTarget(hero);
+            advance(server, 10);
+            TarotEffects.service(hero, (server.getTickCount() / 10) * 10L);
+            check(zombie.getTarget() == null, "Hanged Man: and stays away");
+            advance(server, 20 * 31);
+            TarotEffects.service(hero, server.getTickCount());
+            check(!TarotEffects.isUntargetable(hero), "Hanged Man: wears off");
+            zombie.discard();
+
+            Tarot.DEATH.cast(level, hero);
+            check(count(hero, net.minecraft.world.item.Items.TOTEM_OF_UNDYING) == 1, "Death: a totem of undying");
+
+            hero.setHealth(3.0F);
+            hero.getFoodData().setFoodLevel(4);
+            Tarot.TEMPERANCE.cast(level, hero);
+            check(hero.getHealth() == hero.getMaxHealth() && hero.getFoodData().getFoodLevel() == 20, "Temperance: full health and hunger");
+
+            int xp = hero.totalExperience;
+            Tarot.STAR.cast(level, hero);
+            check(hero.totalExperience > xp && hero.hasEffect(net.minecraft.world.effect.MobEffects.LUCK), "Star: experience and luck");
+            hero.removeAllEffects();
+
+            // The Moon: five harmless illusions; slaying them all pays out
+            int xpBeforeMoon = hero.totalExperience;
+            Tarot.MOON.cast(level, hero);
+            List<net.minecraft.world.entity.monster.Vex> illusions = level.getEntitiesOfClass(net.minecraft.world.entity.monster.Vex.class,
+                    new AABB(-12, ay - 4, -12, 12, ay + 10, 12), e -> e.entityTags().contains(TarotEffects.ILLUSION_TAG));
+            check(illusions.size() == Tarot.ILLUSIONS && TarotEffects.illusionsLeft(hero) == Tarot.ILLUSIONS, "Moon: illusions summoned: " + illusions.size());
+            check(illusions.get(0).getAttributeValue(net.minecraft.world.entity.ai.attributes.Attributes.ATTACK_DAMAGE) == 0.0, "Moon: illusions cannot hurt");
+            for (var vex : illusions) {
+                GodWeaponItem.onKill(vex, level.damageSources().playerAttack(hero));
+                vex.discard();
+            }
+            check(TarotEffects.illusionsLeft(hero) == 0 && hero.totalExperience > xpBeforeMoon, "Moon: reward for slaying them all");
+            hero.removeAllEffects();
+
+            // The Devil: refuses without an offering; with one, burns the inventory and turns pickups into it
+            hero.setItemInHand(InteractionHand.OFF_HAND, ItemStack.EMPTY);
+            int logs = count(hero, net.minecraft.world.item.Items.OAK_LOG);
+            check(!Tarot.DEVIL.cast(level, hero) && count(hero, net.minecraft.world.item.Items.OAK_LOG) == logs, "Devil: refuses with an empty off hand");
+            ItemStack cards = new ItemStack(ModContent.tarotItem(Tarot.DEVIL), 2);
+            hero.setItemInHand(InteractionHand.MAIN_HAND, cards);
+            cards.getItem().use(level, hero, InteractionHand.MAIN_HAND);
+            check(hero.getMainHandItem().getCount() == 2, "Devil: a refused card is not spent");
+            hero.getInventory().add(new ItemStack(ModContent.TAROT_DECK.get()));
+            hero.setItemInHand(InteractionHand.OFF_HAND, new ItemStack(net.minecraft.world.item.Items.DIAMOND));
+            check(Tarot.DEVIL.cast(level, hero), "Devil: cast with an offering");
+            check(count(hero, net.minecraft.world.item.Items.OAK_LOG) == 0 && count(hero, net.minecraft.world.item.Items.TOTEM_OF_UNDYING) == 0, "Devil: inventory burned");
+            check(count(hero, ModContent.TAROT_DECK.get()) == 1, "Devil: the Deck of Fate is spared");
+            check(hero.getItemBySlot(net.minecraft.world.entity.EquipmentSlot.HEAD).is(net.minecraft.world.item.Items.IRON_HELMET), "Devil: worn armour is spared");
+            check(hero.getOffhandItem().is(net.minecraft.world.item.Items.DIAMOND), "Devil: the offering is kept");
+            hero.getInventory().add(new ItemStack(Blocks.COBBLESTONE, 7));
+            TarotEffects.service(hero, server.getTickCount());
+            check(count(hero, net.minecraft.world.item.Items.DIAMOND) == 8 && count(hero, net.minecraft.world.item.Items.COBBLESTONE) == 0, "Devil: pickups become the chosen item");
+            advance(server, 20 * 31);
+            TarotEffects.service(hero, server.getTickCount());
+            hero.getInventory().add(new ItemStack(Blocks.COBBLESTONE, 3));
+            TarotEffects.service(hero, server.getTickCount());
+            check(count(hero, net.minecraft.world.item.Items.COBBLESTONE) == 3 && !TarotEffects.devilActive(hero), "Devil: the bargain ends");
+
+            // The Hermit: islands are private and furnished (the test server has no hermitage dimension to travel to)
+            check(data.hermitIndex(hero.getUUID()) == data.hermitIndex(hero.getUUID()), "Hermit: a player keeps one island");
+            int mine = data.hermitIndex(hero.getUUID());
+            int other = data.hermitIndex(UUID.randomUUID());
+            check(mine != other && Hermitage.cell(mine).distManhattan(Hermitage.cell(other)) >= Hermitage.SPACING, "Hermit: islands are far apart");
+            int shift = 40;                                    // build one island somewhere empty in the test world
+            Hermitage.buildCell(level, shift);
+            BlockPos o = Hermitage.cell(shift);
+            check(level.getBlockState(o.offset(0, 1, 5)).is(ModContent.GATE_LEAVE.get()), "Hermit: way home");
+            check(level.getBlockState(o.offset(-5, 1, 0)).is(Blocks.CRAFTING_TABLE) && level.getBlockState(o.offset(5, 1, 0)).is(Blocks.CHEST), "Hermit: furnished");
+            check(level.getBlockState(o.above()).isAir() && level.getBlockState(o.above(2)).isAir() && solid(level, o), "Hermit: arrival spot is free");
+            check(solid(level, o.offset(7, 2, 0)) && level.getBlockState(o.offset(0, 6, 0)).is(Blocks.BARRIER), "Hermit: walled and roofed");
+            Tarot.HERMIT.cast(level, hero);
+        });
+
+        step("tarot: single cards are spent; the Deck of Fate is unlimited and never deals The Devil blind", () -> {
+            ServerPlayer hero = fakePlayer(server, level, "RocDealer");
+            hero.setPos(0.5, ay, 0.5);
             ItemStack cards = new ItemStack(ModContent.tarotItem(Tarot.EMPRESS), 3);
             hero.setItemInHand(InteractionHand.MAIN_HAND, cards);
             cards.getItem().use(level, hero, InteractionHand.MAIN_HAND);
@@ -643,9 +817,18 @@ public final class SelfTest {
 
             ItemStack deck = new ItemStack(ModContent.TAROT_DECK.get());
             hero.setItemInHand(InteractionHand.MAIN_HAND, deck);
-            deck.getItem().use(level, hero, InteractionHand.MAIN_HAND);
-            check(hero.getMainHandItem().getCount() == 1 && hero.getCooldowns().isOnCooldown(deck), "the deck is not used up and rests");
-            hero.getCooldowns().removeCooldown(RealmsOfChaos.id("tarot_deck"));
+            hero.getInventory().add(new ItemStack(Blocks.COBBLESTONE, 5));
+            for (int i = 0; i < 60; i++) {
+                deck.getItem().use(level, hero, InteractionHand.MAIN_HAND);
+                check(hero.getMainHandItem().getCount() == 1 && hero.getCooldowns().isOnCooldown(deck), "the deck is not used up and rests");
+                hero.getCooldowns().removeCooldown(RealmsOfChaos.id("tarot_deck"));
+                advance(server, 41);
+            }
+            check(count(hero, net.minecraft.world.item.Items.COBBLESTONE) >= 5 && !TarotEffects.devilActive(hero), "sixty blind draws never dealt The Devil");
+            for (var e : level.getEntitiesOfClass(net.minecraft.world.entity.monster.Vex.class, new AABB(-40, ay - 10, -40, 40, ay + 20, 40), e -> true)) e.discard();
+            hero.setPos(0.5, ay, 0.5);
+            hero.removeAllEffects();
+
             DeckMenu.open(hero, InteractionHand.MAIN_HAND);
             check(hero.containerMenu instanceof DeckMenu, "deck menu opens");
             DeckMenu menu = (DeckMenu) hero.containerMenu;
@@ -654,7 +837,7 @@ public final class SelfTest {
                 check(slots.add(DeckMenu.slotOf(card)) && menu.getSlot(DeckMenu.slotOf(card)).getItem().is(ModContent.tarotItem(card)), "deck shows " + card.id());
             }
             hero.setHealth(4.0F);
-            menu.clicked(DeckMenu.slotOf(Tarot.JUDGEMENT), 0, ContainerInput.PICKUP, hero);
+            menu.clicked(DeckMenu.slotOf(Tarot.TEMPERANCE), 0, ContainerInput.PICKUP, hero);
             check(hero.getHealth() == hero.getMaxHealth() && !(hero.containerMenu instanceof DeckMenu), "choosing a card plays it and closes the deck");
             check(hero.getMainHandItem().getCount() == 1 && hero.getCooldowns().isOnCooldown(deck), "still one deck, resting");
         });
