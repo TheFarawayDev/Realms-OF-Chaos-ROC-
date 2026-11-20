@@ -149,6 +149,22 @@ public class ProgressData extends SavedData {
         if (built.add(key)) setDirty();
     }
 
+    private static String passedKey(UUID player, Line line, int passage) {
+        return "passed/" + player + "/" + line.id() + "/" + passage;
+    }
+
+    /** True once the player has walked out of this passage's gate (passage n lies between floors n and n + 1). */
+    public boolean hasPassed(UUID player, Line line, int passage) {
+        return built.contains(passedKey(player, line, passage));
+    }
+
+    /** @return true the first time. */
+    public boolean markPassed(UUID player, Line line, int passage) {
+        boolean first = built.add(passedKey(player, line, passage));
+        if (first) setDirty();
+        return first;
+    }
+
     /** @return true the first time this player is seen in this world. */
     public boolean markWelcomed(UUID player) {
         boolean first = welcomed.add(player.toString());
@@ -158,5 +174,6 @@ public class ProgressData extends SavedData {
 
     public void reset(UUID player) {
         if (defeated.remove(player.toString()) != null) setDirty();
+        if (built.removeIf(key -> key.startsWith("passed/" + player + "/"))) setDirty();
     }
 }

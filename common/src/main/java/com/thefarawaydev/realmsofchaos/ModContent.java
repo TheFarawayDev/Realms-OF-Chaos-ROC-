@@ -69,6 +69,8 @@ public final class ModContent {
     public static final Ref<Block> ALTAR_POSEIDON = new Ref<>();
     public static final Ref<Block> ALTAR_HADES = new Ref<>();
     public static final Ref<Block> CHAOS_FORGE = new Ref<>();
+    public static final Ref<Block> PASSAGE_SEAL = new Ref<>();
+    public static final Ref<Block> PASSAGE_SHRINE = new Ref<>();
 
     public static final List<Def<Block>> BLOCK_DEFS = new ArrayList<>();
 
@@ -105,6 +107,11 @@ public final class ModContent {
         block("altar_poseidon", ALTAR_POSEIDON, key -> altar(Line.POSEIDON, key));
         block("altar_hades", ALTAR_HADES, key -> altar(Line.HADES, key));
         block("chaos_forge", CHAOS_FORGE, key -> new ForgeBlock(unbreakable(key).mapColor(MapColor.COLOR_ORANGE).lightLevel(s -> 14).noOcclusion().sound(SoundType.ANVIL)));
+
+        block("passage_seal", PASSAGE_SEAL, key -> new com.thefarawaydev.realmsofchaos.block.SealBlock(
+                unbreakable(key).mapColor(MapColor.COLOR_CYAN).lightLevel(s -> 12).sound(SoundType.AMETHYST)));
+        block("passage_shrine", PASSAGE_SHRINE, key -> new com.thefarawaydev.realmsofchaos.block.ShrineBlock(
+                unbreakable(key).mapColor(MapColor.QUARTZ).lightLevel(s -> 14).sound(SoundType.AMETHYST)));
 
         // items: codex, compass, 45 god weapons (ordered by line, rank 1 -> 15), then the block items
         item("chaos_codex", CHAOS_CODEX, key -> new CodexItem(new Item.Properties().setId(key).stacksTo(1)));

@@ -41,6 +41,19 @@ public final class RealmSafety {
                 continue;
             }
             Line line = realm.line();
+            Passages.Spot spot = Passages.locate(player);
+            if (spot != null) {
+                // between floors: the passage looks after its own rooms, bar and guardians
+                Passages.service(player, level, spot);
+                boolean out = player.getY() < Passages.Y - 6 || player.getY() > Passages.Y + Passages.HEADROOM + 8;
+                int held = player.isAlive() && !player.isSpectator() && player.isInWall() ? STUCK_SECONDS.merge(player.getUUID(), 1, Integer::sum) : 0;
+                if (held == 0) STUCK_SECONDS.remove(player.getUUID());
+                if (player.isAlive() && !player.isSpectator() && (out || held >= 2)) {
+                    rescue(player, realm);
+                    STUCK_SECONDS.remove(player.getUUID());
+                }
+                continue;
+            }
             int floor = line == null ? 0 : Tower.floorAt(player.getY());
             // someone who logged out inside a realm before an update still gets the current layout
             if (line == null) RealmBuilder.ensureHub(level);
@@ -86,6 +99,20 @@ public final class RealmSafety {
         }
     }
 
+    /** The bar inside a passage: where it leads, and how many of its seals are broken. */
+    public static void updatePassageBar(ServerPlayer player, Passages.Plan plan, int broken) {
+        ServerBossEvent bar = BARS.computeIfAbsent(player.getUUID(), id -> new ServerBossEvent(
+                UUID.randomUUID(), Component.empty(), BossEvent.BossBarColor.WHITE, BossEvent.BossBarOverlay.NOTCHED_20));
+        int total = plan.seals.size();
+        bar.setName(Component.translatable("hud." + RealmsOfChaos.MOD_ID + ".passage.bar", Tower.towerName(plan.line), plan.index + 1, broken, total));
+        bar.setColor(plan.line.barColor());
+        bar.setProgress(total == 0 ? 1.0F : broken / (float) total);
+        if (!bar.getPlayers().contains(player)) {
+            bar.removeAllPlayers();
+            bar.addPlayer(player);
+        }
+    }
+
     private static void hideBar(UUID id) {
         ServerBossEvent bar = BARS.remove(id);
         if (bar != null) bar.removeAllPlayers();
@@ -99,6 +126,11 @@ public final class RealmSafety {
             pos = realm.spawn();
             yaw = realm.yaw();
             RealmBuilder.makeSafe(level, pos.x, pos.y, pos.z);
+        } else if (Passages.locate(player) != null) {
+            Passages.Spot spot = Passages.locate(player);
+            Passages.ensure(level, spot.line(), spot.index());
+            pos = Passages.plan(level, spot.line(), spot.index()).arrival();
+            yaw = 0.0F;
         } else {
             int floor = Tower.floorAt(player.getY());
             TowerBuilder.ensureFloor(level, realm.line(), floor);

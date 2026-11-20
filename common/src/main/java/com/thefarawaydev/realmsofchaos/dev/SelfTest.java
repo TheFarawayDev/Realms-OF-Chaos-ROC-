@@ -17,6 +17,11 @@ import com.thefarawaydev.realmsofchaos.item.TarotDeckItem;
 import com.thefarawaydev.realmsofchaos.item.TarotEffects;
 import com.thefarawaydev.realmsofchaos.world.Hermitage;
 import com.thefarawaydev.realmsofchaos.world.Scheduler;
+import com.thefarawaydev.realmsofchaos.world.Passages;
+import com.thefarawaydev.realmsofchaos.ui.StrikeBar;
+import com.thefarawaydev.realmsofchaos.ui.SealMenu;
+import com.thefarawaydev.realmsofchaos.block.SealBlock;
+import com.thefarawaydev.realmsofchaos.block.ShrineBlock;
 import com.thefarawaydev.realmsofchaos.god.Signature;
 import com.thefarawaydev.realmsofchaos.item.VoodooDollItem;
 import com.thefarawaydev.realmsofchaos.item.WeaponProgress;
@@ -137,6 +142,99 @@ public final class SelfTest {
             if (solid(level, BlockPos.containing(x, y, z))) return y + 1;
         }
         return y0 + 1;
+    }
+
+    /** Winds the clock on until the hammer of a strike bar is where a strike of the wanted quality needs it. */
+    private static void waitFor(MinecraftServer server, StrikeBar bar, StrikeBar.Hit wanted) throws Exception {
+        for (int i = 0; bar.hit(server.getTickCount()) != wanted; i++) {
+            check(i < 400, "the hammer never gave a " + wanted);
+            advance(server, 1);
+        }
+    }
+
+    /** Strikes a forging round that is in progress, one strike of each given quality. */
+    private static void strike(MinecraftServer server, ForgeMenu forge, ServerPlayer hero, StrikeBar.Hit... wanted) throws Exception {
+        for (StrikeBar.Hit hit : wanted) {
+            check(forge.strikeBar() != null, "a round is being struck");
+            waitFor(server, forge.strikeBar(), hit);
+            forge.clicked(ForgeMenu.SLOT_FORGE, 0, ContainerInput.PICKUP, hero);
+        }
+    }
+
+    /** Presses the forge button and strikes the star with three good strikes: fine work, no temper. */
+    private static void forgeFine(MinecraftServer server, ForgeMenu forge, ServerPlayer hero) throws Exception {
+        forge.clicked(ForgeMenu.SLOT_FORGE, 0, ContainerInput.PICKUP, hero);
+        strike(server, forge, hero, StrikeBar.Hit.GOOD, StrikeBar.Hit.GOOD, StrikeBar.Hit.GOOD);
+    }
+
+    /**
+     * Nothing ticks while the self-test runs, so chunks the test has only just loaded may not have told the entity
+     * tracker about themselves yet, and mobs in them would be invisible to lookups. This runs that pending work.
+     */
+    private static void settle(ServerLevel level) {
+        for (int i = 0; i < 5000 && level.getChunkSource().pollTask(); i++) { }
+    }
+
+    private static boolean open(ServerLevel level, BlockPos p) {
+        return level.getBlockState(p).getCollisionShape(level, p).isEmpty();
+    }
+
+    /**
+     * Checks one built passage: the plan is sound, everything it promises is there, and - walking only where a
+     * player fits - every seal, the chest, the shrine and the gate can be reached from the arrival spot without
+     * ever being able to step out of the passage.
+     */
+    private static void checkPassage(ServerLevel level, Passages.Plan plan, String at) {
+        check(plan.seals.size() == plan.tier + 1, at + "seals planned: " + plan.seals.size());
+        check(!plan.start.equals(plan.exit), at + "the way in is not the way out");
+        var dist = plan.distances();
+        check(dist.size() == plan.size * plan.size, at + "every room can be reached through doorways: " + dist.size());
+        check(dist.values().stream().allMatch(d -> d <= dist.get(plan.exit)), at + "the gate is in the farthest room");
+        int treasure = 0, shrines = 0;
+        for (Passages.Cell c : plan.cells()) {
+            Passages.Kind kind = plan.kind(c);
+            check(kind != null, at + "room without a kind");
+            if (kind == Passages.Kind.TREASURE) {
+                treasure++;
+                check(level.getBlockEntity(plan.featurePos(c)) instanceof net.minecraft.world.level.block.entity.ChestBlockEntity chest
+                        && chest.countItem(ModContent.materialItem(plan.line, plan.tier)) > 0, at + "treasure chest holds this tier's forge material");
+            }
+            if (kind == Passages.Kind.SHRINE) {
+                shrines++;
+                check(level.getBlockState(plan.featurePos(c)).is(ModContent.PASSAGE_SHRINE.get()), at + "shrine");
+            }
+            if (kind == Passages.Kind.SEAL) check(level.getBlockState(plan.sealPos(c)).is(ModContent.PASSAGE_SEAL.get()), at + "seal in place");
+        }
+        check(treasure == (plan.tier == 1 ? 1 : 2) && shrines == 1, at + "one shrine and the treasure rooms: " + shrines + ", " + treasure);
+        check(Passages.sealsLeft(level, plan) == plan.seals.size(), at + "all seals whole");
+        for (BlockPos g : plan.gatePositions()) check(level.getBlockState(g).is(ModContent.GATE_ASCEND.get()), at + "gate");
+
+        // flood from the arrival spot through every place a player can stand
+        AABB box = plan.box();
+        BlockPos start = BlockPos.containing(plan.arrival());
+        check(open(level, start) && open(level, start.above()) && solid(level, start.below()), at + "arrival spot is free and has a floor");
+        Set<BlockPos> seen = new HashSet<>();
+        java.util.ArrayDeque<BlockPos> queue = new java.util.ArrayDeque<>();
+        seen.add(start);
+        queue.add(start);
+        while (!queue.isEmpty()) {
+            BlockPos here = queue.poll();
+            check(here.getX() > box.minX && here.getX() < box.maxX - 1 && here.getZ() > box.minZ && here.getZ() < box.maxZ - 1,
+                    at + "a player could walk out of the passage at " + here);
+            check(solid(level, here.below()), at + "no floor under " + here);
+            for (net.minecraft.core.Direction d : net.minecraft.core.Direction.Plane.HORIZONTAL) {
+                BlockPos next = here.relative(d);
+                if (seen.contains(next) || !open(level, next) || !open(level, next.above())) continue;
+                seen.add(next);
+                queue.add(next);
+            }
+        }
+        for (Passages.Cell c : plan.cells()) {
+            // a hall is only its crossing and arms; every other room is open two steps south of its middle
+            BlockPos beside = plan.kind(c) == Passages.Kind.HALL ? plan.centre(c).above() : plan.centre(c).offset(0, 1, 2);
+            check(seen.contains(beside), at + "room " + c + " (" + plan.kind(c) + ") cannot be walked into");
+        }
+        check(seen.contains(plan.gatePositions().get(0)), at + "the gate cannot be walked into");
     }
 
     private static void clearBosses(ServerLevel level) {
@@ -343,7 +441,8 @@ public final class SelfTest {
 
         // ---- climb each tower from floor 1 to the summit, the way a player does ------------------------------
         for (Line line : Line.values()) {
-            step("climb the tower of " + line + ": altar menu, 15 trials, gate of ascent, advancements", () -> {
+            final int[] passageRooms = {0};
+            step("climb the tower of " + line + ": altar menu, 15 trials, 14 passages walked, advancements", () -> {
                 Realm.testAlias(Level.OVERWORLD, Realm.ofLine(line));
                 clearBosses(level);
                 data.reset(player.getUUID());
@@ -457,16 +556,109 @@ public final class SelfTest {
                     }
 
                     if (floor < Tower.FLOORS) {
-                        // walk through the gate of ascent (travel has a 2 s cooldown, so move the clock by hand)
-                        for (int i = 0; i < 3 && Tower.floorAt(player.getY()) == floor; i++) {
+                        // the gate of ascent leads into the passage to the next floor (travel has a 2 s cooldown, so move the clock by hand)
+                        check(Tower.currentFloor(data, player.getUUID(), line) == floor, at + "the next floor is not reached until its passage is walked");
+                        advance(server, 41);
+                        Teleports.ascend(player);
+                        Passages.Spot spot = Passages.locate(player);
+                        check(spot != null && spot.line() == line && spot.index() == floor, at + "the gate leads into passage " + floor + ", got " + spot);
+                        Passages.Plan plan = Passages.plan(level, line, floor);
+                        String in = at + "passage: ";
+                        check(player.position().distanceTo(plan.arrival()) < 0.1, in + "arrived at its start");
+                        checkPassage(level, plan, in);
+                        passageRooms[0] += plan.size * plan.size;
+
+                        // its gate is sealed
+                        advance(server, 41);
+                        check(!Passages.tryExit(player, spot) && Passages.locate(player) != null, in + "the gate refuses while seals hold");
+                        boolean thorough = floor == 1 || floor == 6 || floor == 11;
+                        for (Passages.Cell c : plan.seals) {
+                            BlockPos seal = plan.sealPos(c);
+                            if (!thorough) {
+                                Passages.breakSeal(level, seal, player);
+                                continue;
+                            }
+                            // walk into the chamber: its guardians wake, and the seal cannot be touched while they stand
+                            BlockPos stand = plan.centre(c).offset(2, 1, 0);
+                            player.setPos(stand.getX() + 0.5, stand.getY(), stand.getZ() + 0.5);
+                            check(plan.cellAt(player.blockPosition()).equals(c), in + "test setup: standing in the chamber");
+                            check(Passages.guardians(level, plan, c).isEmpty(), in + "guardians sleep until someone comes");
+                            Passages.service(player, level, spot);
+                            settle(level);
+                            List<net.minecraft.world.entity.Mob> guards = Passages.guardians(level, plan, c);
+                            check(guards.size() == Passages.guardianCount(plan.tier), in + "guardians woke: " + guards.size() + " of " + Passages.guardianCount(plan.tier) + " - tagged mobs nearby: "
+                                    + level.getEntitiesOfClass(net.minecraft.world.entity.Entity.class, plan.box().inflate(40), e -> e.entityTags().contains(Passages.GUARDIAN_TAG))
+                                    .stream().map(e -> e.getType().toShortString() + (e.isAlive() ? "" : "(dead)") + "@" + e.blockPosition().toShortString() + e.entityTags()).toList());
+                            for (net.minecraft.world.entity.Mob g : guards) check(level.noCollision(g) && plan.cellAt(g.blockPosition()).equals(c), in + "guardian stands free in its chamber");
+                            Passages.service(player, level, spot);
+                            check(Passages.guardians(level, plan, c).size() == guards.size(), in + "guardians wake only once");
+                            check(!SealBlock.tryOpen(level, seal, player) && !(player.containerMenu instanceof SealMenu), in + "the seal is warded while guardians stand");
+                            for (net.minecraft.world.entity.Mob g : guards) g.hurtServer(level, level.damageSources().playerAttack(player), 100000.0F);
+                            check(Passages.guardians(level, plan, c).isEmpty(), in + "guardians fell");
+                            // now it can be struck: a miss stings, good strikes crack it, and it gives way
+                            check(SealBlock.tryOpen(level, seal, player) && player.containerMenu instanceof SealMenu, in + "the strike screen opens");
+                            SealMenu sealMenu = (SealMenu) player.containerMenu;
+                            player.setHealth(player.getMaxHealth());
+                            player.damageCooldownTime = 0;
+                            waitFor(server, sealMenu.strikeBar(), StrikeBar.Hit.MISS);
+                            sealMenu.clicked(SealMenu.SLOT_STRIKE, 0, ContainerInput.PICKUP, player);
+                            check(sealMenu.cracks() == 0 && player.getHealth() < player.getMaxHealth(), in + "a missed strike cracks nothing and stings");
+                            waitFor(server, sealMenu.strikeBar(), StrikeBar.Hit.GOOD);
+                            sealMenu.clicked(SealMenu.SLOT_STRIKE, 0, ContainerInput.PICKUP, player);
+                            check(sealMenu.cracks() == 1, in + "a good strike cracks it once");
+                            for (int i = 0; i < 6 && player.containerMenu instanceof SealMenu; i++) {
+                                waitFor(server, sealMenu.strikeBar(), StrikeBar.Hit.PERFECT);
+                                sealMenu.clicked(SealMenu.SLOT_STRIKE, 0, ContainerInput.PICKUP, player);
+                            }
+                            check(!(player.containerMenu instanceof SealMenu) && level.getBlockState(seal).isAir(), in + "the seal broke and the screen closed");
+                            player.setHealth(player.getMaxHealth());
+                        }
+                        check(Passages.sealsLeft(level, plan) == 0, in + "every seal is broken");
+                        if (thorough) {
+                            // the map: opened with the Codex, it shows the rooms walked into and hints at the doors leading on
+                            Passages.service(player, level, spot);
+                            ModContent.CHAOS_CODEX.get().use(level, player, InteractionHand.MAIN_HAND);
+                            check(player.containerMenu instanceof com.thefarawaydev.realmsofchaos.ui.PassageMenu, in + "the Codex opens the passage map here");
+                            var map = (com.thefarawaydev.realmsofchaos.ui.PassageMenu) player.containerMenu;
+                            Set<Passages.Cell> walked = Passages.visited(player, plan);
+                            check(walked.contains(plan.start) && walked.containsAll(plan.seals) && walked.size() == plan.seals.size() + 1, in + "rooms walked into are remembered: " + walked);
+                            for (Passages.Cell c : plan.cells()) {
+                                boolean shown = !map.getSlot(com.thefarawaydev.realmsofchaos.ui.PassageMenu.slotOf(plan, c)).getItem().is(
+                                        net.minecraft.world.item.Items.STAINED_GLASS_PANE.pick(net.minecraft.world.item.DyeColor.BLACK));
+                                boolean hinted = plan.neighbours(c).stream().anyMatch(n -> walked.contains(n) && plan.connected(c, n));
+                                check(shown == (walked.contains(c) || hinted), in + "map shows " + c + " only if explored or a door leads there");
+                            }
+                            map.clicked(com.thefarawaydev.realmsofchaos.ui.PassageMenu.SLOT_CODEX, 0, ContainerInput.PICKUP, player);
+                            check(player.containerMenu instanceof CodexMenu, in + "the map leads on to the Codex");
+                            player.closeContainer();
+                            // the compass points at the gate once the seals are gone; the shrine blesses once
+                            check(Passages.point(player, level, spot).equals(plan.centre(plan.exit).above()), in + "the compass points to the gate");
+                            Passages.Cell shrine = plan.cells().stream().filter(c -> plan.kind(c) == Passages.Kind.SHRINE).findFirst().orElseThrow();
+                            player.setHealth(4.0F);
+                            check(ShrineBlock.bless(level, plan.featurePos(shrine), player) && player.getHealth() == player.getMaxHealth()
+                                    && !player.getActiveEffects().isEmpty(), in + "the shrine heals and blesses");
+                            check(!ShrineBlock.bless(level, plan.featurePos(shrine), player), in + "the shrine rests afterwards");
+                            player.removeAllEffects();
+                        }
+                        // and the passage's gate leads on to the next floor
+                        advance(server, 41);
+                        Teleports.ascend(player);
+                        check(Passages.locate(player) == null && Tower.floorAt(player.getY()) == floor + 1, at + "came out on floor " + (floor + 1) + ", is on " + Tower.floorAt(player.getY()));
+                        check(player.position().distanceTo(Tower.arrival(floor + 1)) < 0.1, at + "arrived on the pad");
+                        check(data.hasPassed(player.getUUID(), line, floor) && Tower.currentFloor(data, player.getUUID(), line) == floor + 1, at + "the passage is remembered");
+                        if (floor == 1) {
+                            // a passage already walked is skipped: the gate of ascent goes straight up
+                            advance(server, 41);
+                            Teleports.toFloor(player, line, 1);
+                            check(Tower.floorAt(player.getY()) == 1, at + "back on floor 1");
                             advance(server, 41);
                             Teleports.ascend(player);
+                            check(Passages.locate(player) == null && Tower.floorAt(player.getY()) == 2, at + "second time: straight up to floor 2");
                         }
-                        check(Tower.floorAt(player.getY()) == floor + 1, at + "ascended to floor " + (floor + 1) + ", is on " + Tower.floorAt(player.getY()));
-                        check(player.position().distanceTo(Tower.arrival(floor + 1)) < 0.1, at + "arrived on the pad");
                     }
                 }
                 check(data.nextRank(player.getUUID(), line) == 0 && data.count(player.getUUID(), line) == 15, "tower complete");
+                RESULTS.add("        " + line + ": 14 passages built and walked, " + passageRooms[0] + " rooms in all");
                 check(Tower.currentFloor(data, player.getUUID(), line) == Tower.FLOORS, "current floor is the summit");
                 clearBosses(level);
             });
@@ -547,7 +739,16 @@ public final class SelfTest {
             hero.getInventory().add(new ItemStack(ModContent.materialItem(Line.ZEUS, 1), 5));
             check(forge.blocker() == null, "ready to forge: " + forge.blocker());
             forge.clicked(ForgeMenu.SLOT_FORGE, 0, ContainerInput.PICKUP, hero);
+            check(WeaponProgress.stars(hero.getMainHandItem()) == 0 && forge.strikeBar() != null, "pressing forge starts the strikes; the star is not forged yet");
+            check(ForgeMenu.count(hero, ModContent.materialItem(Line.ZEUS, 1)) == 2, "the price is paid up front");
+            check(forge.getSlot(ForgeMenu.slot(ForgeMenu.BAR_ROW, forge.strikeBar().target())).getItem().is(net.minecraft.world.item.Items.STAINED_GLASS_PANE.pick(net.minecraft.world.item.DyeColor.YELLOW))
+                    || forge.getSlot(ForgeMenu.slot(ForgeMenu.BAR_ROW, forge.strikeBar().target())).getItem().is(net.minecraft.world.item.Items.MACE), "the strike bar shows its mark");
+            forge.clicked(ForgeMenu.SLOT_INFUSE, 0, ContainerInput.PICKUP, hero);
+            check(forge.strikeBar() != null, "other buttons wait while a round is struck");
+            strike(server, forge, hero, StrikeBar.Hit.GOOD, StrikeBar.Hit.GOOD, StrikeBar.Hit.GOOD);
+            check(forge.strikeBar() == null && forge.lastFinish() == ForgeMenu.Finish.FINE, "three good strikes: fine work");
             check(WeaponProgress.stars(hero.getMainHandItem()) == 1, "one star");
+            check(WeaponProgress.temper(hero.getMainHandItem()) == 0 && WeaponProgress.xp(hero.getMainHandItem()) == ForgeMenu.FINE_XP, "fine work: experience, no temper");
             check(ForgeMenu.count(hero, ModContent.materialItem(Line.ZEUS, 1)) == 2, "three laurel leaves spent");
             check(ForgeMenu.count(hero, ModContent.materialItem(Line.HADES, 1)) == 9, "other materials untouched");
             check("level".equals(forge.blocker()), "second star needs level 4");
@@ -571,7 +772,7 @@ public final class SelfTest {
             for (int tier = 1; tier <= 4; tier++) hero.getInventory().add(new ItemStack(ModContent.materialItem(Line.ZEUS, tier), 16));
             for (int star = 2; star <= WeaponProgress.MAX_STARS; star++) {
                 check(forge.blocker() == null, "star " + star + " ready: " + forge.blocker());
-                forge.clicked(ForgeMenu.SLOT_FORGE, 0, ContainerInput.PICKUP, hero);
+                forgeFine(server, forge, hero);
                 check(WeaponProgress.stars(hero.getMainHandItem()) == star, "star " + star);
             }
             check("max".equals(forge.blocker()), "fully forged");
@@ -589,6 +790,118 @@ public final class SelfTest {
             RESULTS.add("        a tower drops " + drops[1] + "/" + drops[2] + "/" + drops[3] + "/" + drops[4] + " materials; one weapon needs "
                     + need[1] + "/" + need[2] + "/" + need[3] + "/" + need[4]);
             hero.closeContainer();
+        });
+
+        step("forging is a quick-time event: the hammer, the mark, and the finish the strikes earn", () -> {
+            // the bar: the hammer sweeps 0..8 and back, one slot every few ticks
+            StrikeBar bar = new StrikeBar(1000, 2, 4);
+            int[] expect = {0, 1, 2, 3, 4, 5, 6, 7, 8, 7, 6, 5, 4, 3, 2, 1, 0, 1};
+            for (int i = 0; i < expect.length; i++) check(bar.marker(1000 + i * 2L) == expect[i] && bar.marker(1001 + i * 2L) == expect[i], "hammer at step " + i);
+            check(bar.hit(1008) == StrikeBar.Hit.PERFECT && bar.hit(1006) == StrikeBar.Hit.GOOD && bar.hit(1010) == StrikeBar.Hit.GOOD
+                    && bar.hit(1004) == StrikeBar.Hit.MISS && bar.hit(1000) == StrikeBar.Hit.MISS, "strikes are judged by distance from the mark");
+            check(bar.row(1008).length == 9 && bar.row(1008)[4].is(net.minecraft.world.item.Items.MACE), "the bar draws the hammer where it is");
+            StrikeBar.Hit P = StrikeBar.Hit.PERFECT, G = StrikeBar.Hit.GOOD, M = StrikeBar.Hit.MISS;
+            check(ForgeMenu.judge(List.of(P, P, G)) == ForgeMenu.Finish.MASTERWORK && ForgeMenu.judge(List.of(P, P, P)) == ForgeMenu.Finish.MASTERWORK, "masterwork: no misses, two perfect");
+            check(ForgeMenu.judge(List.of(P, G, G)) == ForgeMenu.Finish.FINE && ForgeMenu.judge(List.of(P, P, M)) == ForgeMenu.Finish.FINE, "fine: at most one miss");
+            check(ForgeMenu.judge(List.of(M, M, P)) == ForgeMenu.Finish.ROUGH, "rough: two misses");
+
+            ServerPlayer hero = fakePlayer(server, level, "RocFarrier");
+            hero.setPos(0.5, ay, 0.5);
+            ItemStack blade = new ItemStack(ModContent.weaponItem(Gods.byId("chrysaor")));
+            WeaponProgress.setLevel(blade, 9);
+            hero.setItemInHand(InteractionHand.MAIN_HAND, blade);
+            for (int tier = 1; tier <= 4; tier++) hero.getInventory().add(new ItemStack(ModContent.materialItem(Line.POSEIDON, tier), 20));
+            ForgeMenu.open(hero);
+            ForgeMenu forge = (ForgeMenu) hero.containerMenu;
+
+            // star 1, masterwork: tempered, and the relic learns from it
+            forge.clicked(ForgeMenu.SLOT_FORGE, 0, ContainerInput.PICKUP, hero);
+            strike(server, forge, hero, P, G, P);
+            ItemStack held = hero.getMainHandItem();
+            check(forge.lastFinish() == ForgeMenu.Finish.MASTERWORK && WeaponProgress.stars(held) == 1 && WeaponProgress.temper(held) == 1, "masterwork tempers the star");
+            check(WeaponProgress.xp(held) == ForgeMenu.MASTERWORK_XP, "masterwork experience");
+            check(Math.abs(WeaponProgress.multiplier(held) - (1.0 + 0.08 * 8) * (1.0 + 0.10 + 0.02)) < 1e-9, "a tempered star is worth 12%");
+            check("full".equals(forge.temperBlocker()), "nothing left to temper");
+
+            // star 2, rough: forged all the same, but plain
+            int xp = WeaponProgress.xp(held);
+            forge.clicked(ForgeMenu.SLOT_FORGE, 0, ContainerInput.PICKUP, hero);
+            strike(server, forge, hero, M, M, G);
+            check(forge.lastFinish() == ForgeMenu.Finish.ROUGH && WeaponProgress.stars(held) == 2 && WeaponProgress.temper(held) == 1 && WeaponProgress.xp(held) == xp, "rough work still forges the star");
+
+            // star 3: walking away mid-round does not lose what was paid - the round ends as it stands
+            int tier2 = ForgeMenu.count(hero, ModContent.materialItem(Line.POSEIDON, 2));
+            forge.clicked(ForgeMenu.SLOT_FORGE, 0, ContainerInput.PICKUP, hero);
+            strike(server, forge, hero, P);
+            hero.closeContainer();
+            check(!(hero.containerMenu instanceof ForgeMenu) && WeaponProgress.stars(held) == 3, "closing the forge mid-round still forges the star");
+            check(ForgeMenu.count(hero, ModContent.materialItem(Line.POSEIDON, 2)) == tier2 - 4 && WeaponProgress.temper(held) == 1, "paid once, finished roughly");
+
+            // tempering: a second go at a plain star - only a masterwork takes
+            ForgeMenu.open(hero);
+            forge = (ForgeMenu) hero.containerMenu;
+            check(forge.temperBlocker() == null && !forge.getSlot(ForgeMenu.SLOT_TEMPER).getItem().isEmpty(), "two plain stars can be tempered");
+            int tier1 = ForgeMenu.count(hero, ModContent.materialItem(Line.POSEIDON, 1));
+            forge.clicked(ForgeMenu.SLOT_TEMPER, 0, ContainerInput.PICKUP, hero);
+            check(ForgeMenu.count(hero, ModContent.materialItem(Line.POSEIDON, 1)) == tier1 - ForgeMenu.TEMPER_COST, "tempering has a price");
+            strike(server, forge, hero, G, G, G);
+            check(WeaponProgress.temper(held) == 1 && WeaponProgress.stars(held) == 3, "good is not enough to temper");
+            forge.clicked(ForgeMenu.SLOT_TEMPER, 0, ContainerInput.PICKUP, hero);
+            strike(server, forge, hero, P, P, P);
+            check(WeaponProgress.temper(held) == 2, "a masterwork tempers the second star");
+            forge.clicked(ForgeMenu.SLOT_TEMPER, 0, ContainerInput.PICKUP, hero);
+            strike(server, forge, hero, P, P, G);
+            check(WeaponProgress.temper(held) == 3 && "full".equals(forge.temperBlocker()), "all three stars tempered");
+            tier1 = ForgeMenu.count(hero, ModContent.materialItem(Line.POSEIDON, 1));
+            forge.clicked(ForgeMenu.SLOT_TEMPER, 0, ContainerInput.PICKUP, hero);
+            check(forge.strikeBar() == null && ForgeMenu.count(hero, ModContent.materialItem(Line.POSEIDON, 1)) == tier1, "nothing more to temper, nothing taken");
+            hero.closeContainer();
+        });
+
+        step("passages: procedural - laid out from the world seed, different from tower to tower and world to world", () -> {
+            int changed = 0, acrossTowers = 0;
+            Set<Passages.Kind> kinds = EnumSet.noneOf(Passages.Kind.class);
+            for (int n = 1; n <= Passages.COUNT; n++) {
+                Passages.Plan here = Passages.plan(level.getSeed(), Line.ZEUS, n);
+                check(here == Passages.plan(level.getSeed(), Line.ZEUS, n), "one plan per passage");
+                Passages.Plan other = Passages.plan(level.getSeed() + 1, Line.ZEUS, n);
+                Passages.Plan hades = Passages.plan(level.getSeed(), Line.HADES, n);
+                StringBuilder a = new StringBuilder(), b = new StringBuilder(), c = new StringBuilder();
+                for (Passages.Cell cell : here.cells()) {
+                    kinds.add(here.kind(cell));
+                    a.append(here.kind(cell).ordinal());
+                    b.append(other.kind(cell).ordinal());
+                    c.append(hades.kind(cell).ordinal());
+                }
+                if (!a.toString().contentEquals(b)) changed++;
+                if (!a.toString().contentEquals(c)) acrossTowers++;
+                check(here.size == (n <= 5 ? 4 : 5) && here.seals.size() == Tower.tier(n) + 1, "passage " + n + " grows with its tier");
+            }
+            check(changed >= Passages.COUNT - 1, "another world seed lays the passages out differently: " + changed + " of " + Passages.COUNT);
+            check(acrossTowers >= Passages.COUNT - 1, "another tower lays them out differently: " + acrossTowers);
+            check(kinds.size() == Passages.Kind.values().length, "every kind of room turns up in one tower: " + kinds);
+            // any seed gives a sound plan: every room reachable, the right seals, one shrine, a gate apart from the way in
+            java.util.Random seeds = new java.util.Random(99);
+            for (int i = 0; i < 300; i++) {
+                long seed = seeds.nextLong();
+                for (Line line : Line.values()) {
+                    int n = 1 + seeds.nextInt(Passages.COUNT);
+                    Passages.Plan plan = Passages.plan(seed, line, n);
+                    check(plan.distances().size() == plan.size * plan.size && !plan.start.equals(plan.exit) && plan.seals.size() == plan.tier + 1,
+                            "seed " + seed + " " + line + " " + n + ": unsound plan");
+                    check(plan.cells().stream().filter(c -> plan.kind(c) == Passages.Kind.SHRINE).count() == 1
+                            && plan.cells().stream().noneMatch(c -> plan.kind(c) == null), "seed " + seed + ": rooms");
+                }
+            }
+            RESULTS.add("        passage 6 of the tower of Zeus in this world (S in, X gate, * seal, $ treasure, + shrine, ! trap, o corridors, # room):");
+            for (String row : Passages.plan(level.getSeed(), Line.ZEUS, 6).ascii()) RESULTS.add("            " + row);
+            // where a passage is: out to the side of the tower, never mistaken for it
+            check(Passages.indexAt(0.5) == 0 && Passages.indexAt(Tower.WALL_OUTER) == 0, "the tower itself is no passage");
+            for (int n = 1; n <= Passages.COUNT; n++) {
+                Passages.Plan plan = Passages.plan(level.getSeed(), Line.ZEUS, n);
+                check(Passages.indexAt(plan.arrival().x) == n && Passages.indexAt(plan.origin().getX()) == n
+                        && Passages.indexAt(plan.origin().getX() + plan.width() - 1) == n, "passage " + n + " is found by where it is");
+            }
         });
 
         step("forge of chaos: your own experience levels can be poured into a relic", () -> {
@@ -1006,6 +1319,11 @@ public final class SelfTest {
             data.reset(player.getUUID());
             data.markDefeated(player.getUUID(), Tower.god(Line.ZEUS, 1));
             data.markDefeated(player.getUUID(), Tower.god(Line.ZEUS, 2));
+            data.markPassed(player.getUUID(), Line.ZEUS, 1);
+            advance(server, 41);
+            Teleports.toFloor(player, Line.ZEUS, 9);
+            check(Tower.floorAt(player.getY()) == 2, "floor 3 is not reached before its passage is walked: on " + Tower.floorAt(player.getY()));
+            data.markPassed(player.getUUID(), Line.ZEUS, 2);
             advance(server, 41);
             Teleports.toFloor(player, Line.ZEUS, 9);
             check(Tower.floorAt(player.getY()) == 3, "clamped to the current floor (3), is on " + Tower.floorAt(player.getY()));

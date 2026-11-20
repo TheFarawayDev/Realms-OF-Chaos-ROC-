@@ -16,7 +16,7 @@ import net.minecraft.world.item.component.CustomData;
 public final class WeaponProgress {
     public static final int MAX_LEVEL = 10;
     public static final int MAX_STARS = 5;
-    private static final String LEVEL = "roc_level", XP = "roc_xp", STARS = "roc_stars";
+    private static final String LEVEL = "roc_level", XP = "roc_xp", STARS = "roc_stars", TEMPER = "roc_temper";
 
     private WeaponProgress() {}
 
@@ -45,14 +45,25 @@ public final class WeaponProgress {
         return Math.max(0, Math.min(MAX_STARS, tag(stack).getIntOr(STARS, 0)));
     }
 
+    /** How many of the stars were finished as masterwork at the forge: 0 to {@link #stars}. Each adds 2% damage. */
+    public static int temper(ItemStack stack) {
+        return Math.max(0, Math.min(stars(stack), tag(stack).getIntOr(TEMPER, 0)));
+    }
+
+    public static void setTemper(ItemStack stack, int temper) {
+        CompoundTag tag = tag(stack);
+        tag.putInt(TEMPER, Math.max(0, Math.min(stars(stack), temper)));
+        stack.set(DataComponents.CUSTOM_DATA, CustomData.of(tag));
+    }
+
     /** Experience needed to go from {@code level} to the next. */
     public static int xpNeeded(int level) {
         return 20 * level + 10 * level * level;
     }
 
-    /** Damage multiplier from level (+8% each) and stars (+10% each). 1.0 for a fresh weapon. */
+    /** Damage multiplier from level (+8% each), stars (+10% each) and temper (+2% each). 1.0 for a fresh weapon. */
     public static double multiplier(ItemStack stack) {
-        return (1.0 + 0.08 * (level(stack) - 1)) * (1.0 + 0.10 * stars(stack));
+        return (1.0 + 0.08 * (level(stack) - 1)) * (1.0 + 0.10 * stars(stack) + 0.02 * temper(stack));
     }
 
     /** Recharge multiplier from stars: 8% faster per star. */

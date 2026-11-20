@@ -317,6 +317,8 @@ public class GodWeaponItem extends Item {
                 : line(ns + "level", 0x55FF55, level, meter(WeaponProgress.xp(stack) / (double) WeaponProgress.xpNeeded(level), 0x55FF55),
                         WeaponProgress.xp(stack), WeaponProgress.xpNeeded(level)));
         builder.accept(line(ns + "stars", 0xF5B82E, starRow(stars)));
+        int temper = WeaponProgress.temper(stack);
+        if (temper > 0) builder.accept(line(ns + "temper", 0x55FFFF, temper, temper * 2));
         int bonus = (int) Math.round((WeaponProgress.multiplier(stack) - 1.0) * 100);
         if (bonus > 0) builder.accept(line(ns + "bonus", 0xF5B82E, bonus));
     }

@@ -14,7 +14,7 @@ import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.component.TooltipDisplay;
 import net.minecraft.world.level.Level;
 
-/** Right-click to open the Codex of Chaos menu. */
+/** Right-click to open the Codex of Chaos menu - or, inside a passage, the map of that passage. */
 public class CodexItem extends Item {
     public CodexItem(Properties properties) {
         super(properties);
@@ -23,7 +23,10 @@ public class CodexItem extends Item {
     @Override
     public InteractionResult use(Level level, Player player, InteractionHand hand) {
         if (!level.isClientSide() && player instanceof ServerPlayer sp) {
-            CodexMenu.open(sp);
+            com.thefarawaydev.realmsofchaos.world.Passages.Spot spot = com.thefarawaydev.realmsofchaos.world.Passages.locate(sp);
+            // inside a passage the Codex opens on its map (the map has a button back to the Codex itself)
+            if (spot != null) com.thefarawaydev.realmsofchaos.ui.PassageMenu.open(sp, spot);
+            else CodexMenu.open(sp);
         }
         return InteractionResult.SUCCESS;
     }

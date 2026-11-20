@@ -33,12 +33,23 @@ import net.minecraft.world.phys.Vec3;
  *   row 2   . L . M . P . G .      level - signature move and perks - what the next star gives - materials guide
  *   row 3   . I . c F c . . .      infuse experience - the price either side of the forge button
  *   row 4   . = = = = = = = .      experience towards the next level
+ *   row 5   - - - m M m - - -      while forging: the strike bar - a hammer runs along it, click when it is on the mark
  * </pre>
+ *
+ * Forging is a quick-time event. Pressing the forge button pays the price and starts three strikes; each is judged
+ * by where the hammer is when the button is pressed again. The star is forged whatever happens - the strikes decide
+ * the finish: a masterwork (no misses, two perfect) tempers the star for 2% more damage, fine work earns the relic
+ * experience. A star that was not tempered can be struck again later with the Temper button.
  */
 public class ForgeMenu extends ButtonMenu {
     public static final int SLOT_WEAPON = slot(0, 4), SLOT_CLOSE = slot(0, 8), STAR_ROW = 1, STAR_COLUMN = 2,
             SLOT_LEVEL = slot(2, 1), SLOT_MOVE = slot(2, 3), SLOT_PREVIEW = slot(2, 5), SLOT_GUIDE = slot(2, 7),
-            SLOT_INFUSE = slot(3, 1), SLOT_COST = slot(3, 3), SLOT_FORGE = slot(3, 4), SLOT_COST_2 = slot(3, 5), XP_ROW = 4;
+            SLOT_INFUSE = slot(3, 1), SLOT_COST = slot(3, 3), SLOT_FORGE = slot(3, 4), SLOT_COST_2 = slot(3, 5), SLOT_TEMPER = slot(3, 7),
+            XP_ROW = 4, BAR_ROW = 5;
+    public static final int STRIKES = 3, TEMPER_COST = 2, MASTERWORK_XP = 60, FINE_XP = 30;
+
+    /** How a round of strikes came out. */
+    public enum Finish { MASTERWORK, FINE, ROUGH }
     /** Weapon experience one of the player's own levels is worth when infused. */
     public static final int INFUSE_XP = 30;
     private static final String NS = "menu." + RealmsOfChaos.MOD_ID + ".forge.";
@@ -46,6 +57,12 @@ public class ForgeMenu extends ButtonMenu {
 
     /** The forge block this screen was opened at, or null when it was opened from the Codex or a command. */
     private final BlockPos forge;
+    // the quick-time round in progress, if any
+    private StrikeBar bar;
+    private boolean tempering;
+    private final List<StrikeBar.Hit> hits = new ArrayList<>();
+    private int drawnMarker = -1;
+    private Finish lastFinish;
 
     public static void open(ServerPlayer player) {
         open(player, null);
@@ -103,8 +120,37 @@ public class ForgeMenu extends ButtonMenu {
         return null;
     }
 
+    private long now() {
+        return viewer.level().getServer().getTickCount();
+    }
+
+    /** The strike bar of the round in progress, or null. */
+    public StrikeBar strikeBar() {
+        return bar;
+    }
+
+    /** How the last finished round came out, or null if none has been struck on this screen. */
+    public Finish lastFinish() {
+        return lastFinish;
+    }
+
+    /** Why the weapon cannot be tempered right now, or null if it can. */
+    public String temperBlocker() {
+        ItemStack weapon = weapon();
+        if (weapon.isEmpty()) return "none";
+        if (WeaponProgress.temper(weapon) >= WeaponProgress.stars(weapon)) return "full";
+        God god = ((GodWeaponItem) weapon.getItem()).god();
+        if (!viewer.hasInfiniteMaterials() && count(viewer, ModContent.materialItem(god.line(), 1)) < TEMPER_COST) return "cost";
+        return null;
+    }
+
     @Override
     protected void press(int slot) {
+        if (bar != null) {
+            // a round is being struck: the forge button and the bar itself are the hammer, nothing else answers
+            if (slot == SLOT_FORGE || slot / 9 == BAR_ROW) strike();
+            return;
+        }
         if (slot == SLOT_CLOSE) {
             clickSound();
             viewer.closeContainer();
@@ -112,7 +158,132 @@ public class ForgeMenu extends ButtonMenu {
             infuse(shiftClick ? 5 : 1);
         } else if (slot == SLOT_FORGE) {
             forgeStar();
+        } else if (slot == SLOT_TEMPER) {
+            startTemper();
         }
+    }
+
+    private void beginRound(boolean temper) {
+        tempering = temper;
+        hits.clear();
+        newBar();
+        viewer.level().playSound(null, viewer.blockPosition(), SoundEvents.ANVIL_PLACE, SoundSource.PLAYERS, 0.6F, 1.2F);
+        render();
+    }
+
+    private void newBar() {
+        ItemStack weapon = weapon();
+        // the later stars are struck faster
+        int speed = tempering || WeaponProgress.stars(weapon) >= 2 ? 2 : 3;
+        bar = new StrikeBar(now(), speed, 2 + viewer.getRandom().nextInt(5));
+        drawnMarker = -1;
+    }
+
+    private void strike() {
+        StrikeBar.Hit hit = bar.hit(now());
+        hits.add(hit);
+        float pitch = hit == StrikeBar.Hit.PERFECT ? 1.6F : hit == StrikeBar.Hit.GOOD ? 1.2F : 0.6F;
+        viewer.level().playSound(null, viewer.blockPosition(), hit == StrikeBar.Hit.MISS ? SoundEvents.ANVIL_LAND : SoundEvents.ANVIL_USE, SoundSource.PLAYERS, 0.7F, pitch);
+        if (hit == StrikeBar.Hit.PERFECT) viewer.level().playSound(null, viewer.blockPosition(), SoundEvents.AMETHYST_BLOCK_CHIME, SoundSource.PLAYERS, 1.5F, 1.4F);
+        effects(hit == StrikeBar.Hit.MISS ? ParticleTypes.SMOKE : ParticleTypes.LAVA, hit == StrikeBar.Hit.PERFECT ? 10 : 4);
+        Hud.actionBar(viewer, Hud.colored(Component.translatable("menu." + RealmsOfChaos.MOD_ID + ".strike." + hit.name().toLowerCase() + ".hit"),
+                hit == StrikeBar.Hit.PERFECT ? 0xFFFF55 : hit == StrikeBar.Hit.GOOD ? 0x55FF55 : 0xFF5555));
+        if (hits.size() >= STRIKES) {
+            finishRound();
+        } else {
+            newBar();
+            render();
+        }
+    }
+
+    public static Finish judge(List<StrikeBar.Hit> hits) {
+        int perfect = 0, miss = 0;
+        for (StrikeBar.Hit hit : hits) {
+            if (hit == StrikeBar.Hit.PERFECT) perfect++;
+            if (hit == StrikeBar.Hit.MISS) miss++;
+        }
+        return miss == 0 && perfect >= 2 ? Finish.MASTERWORK : miss <= 1 ? Finish.FINE : Finish.ROUGH;
+    }
+
+    /** The round is over: the star is forged (or the temper taken), with the finish the strikes earned. */
+    private void finishRound() {
+        while (hits.size() < STRIKES) hits.add(StrikeBar.Hit.MISS);        // a round walked away from is finished roughly
+        Finish finish = judge(hits);
+        lastFinish = finish;
+        bar = null;
+        ItemStack weapon = weapon();
+        if (weapon.isEmpty()) return;
+        God god = ((GodWeaponItem) weapon.getItem()).god();
+        String hud = "hud." + RealmsOfChaos.MOD_ID + ".";
+        if (tempering) {
+            if (finish == Finish.MASTERWORK) {
+                WeaponProgress.setTemper(weapon, WeaponProgress.temper(weapon) + 1);
+                viewer.level().playSound(null, viewer.blockPosition(), SoundEvents.PLAYER_LEVELUP, SoundSource.PLAYERS, 0.7F, 1.4F);
+                effects(ParticleTypes.END_ROD, 30);
+                Hud.title(viewer, Hud.colored(Component.translatable(hud + "finish.masterwork"), 0x55FFFF),
+                        Hud.colored(Component.translatable(hud + "finish.tempered", WeaponProgress.temper(weapon) * 2), 0xFFFFFF), 5, 40, 15);
+            } else {
+                viewer.level().playSound(null, viewer.blockPosition(), SoundEvents.VILLAGER_NO, SoundSource.PLAYERS, 0.6F, 1.0F);
+                Hud.actionBar(viewer, Hud.colored(Component.translatable(hud + "finish.temper.failed"), 0xFF5555));
+            }
+            render();
+            return;
+        }
+        int next = WeaponProgress.stars(weapon) + 1;
+        WeaponProgress.setStars(weapon, next);
+        if (finish == Finish.MASTERWORK) WeaponProgress.setTemper(weapon, WeaponProgress.temper(weapon) + 1);
+        if (finish != Finish.ROUGH) WeaponProgress.addXp(weapon, finish == Finish.MASTERWORK ? MASTERWORK_XP : FINE_XP);
+
+        boolean milestone = next == GodWeaponItem.EMPOWERED_STARS || next == GodWeaponItem.AWAKENED_STARS;
+        viewer.level().playSound(null, viewer.blockPosition(), milestone ? SoundEvents.UI_TOAST_CHALLENGE_COMPLETE : SoundEvents.PLAYER_LEVELUP,
+                SoundSource.PLAYERS, 0.7F, milestone ? 1.2F : 0.8F);
+        effects(ParticleTypes.FLAME, 30);
+        effects(Signature.spark(god.line()), 20 * next);
+        if (milestone || finish == Finish.MASTERWORK) effects(ParticleTypes.END_ROD, 40);
+        Component what = next == GodWeaponItem.AWAKENED_STARS ? Component.translatable(hud + "forged.awakened", god.moveName())
+                : next == GodWeaponItem.EMPOWERED_STARS ? Component.translatable(hud + "forged.empowered", god.moveName())
+                : Component.translatable(hud + "finish." + finish.name().toLowerCase() + ".sub");
+        Hud.title(viewer, GodWeaponItem.starRow(next), Hud.colored(what, milestone ? 0xF5B82E : 0xFFFFFF), 5, 40, 15);
+        Hud.actionBar(viewer, Hud.colored(Component.translatable(hud + "finish." + finish.name().toLowerCase()),
+                finish == Finish.MASTERWORK ? 0x55FFFF : finish == Finish.FINE ? 0x55FF55 : 0xAAAAAA));
+        render();
+    }
+
+    /** Closing the screen mid-round does not lose the price paid: the round ends as it stands. */
+    @Override
+    public void removed(net.minecraft.world.entity.player.Player player) {
+        if (bar != null) finishRound();
+        super.removed(player);
+    }
+
+    private void drawBar() {
+        long now = now();
+        ItemStack[] row = bar.row(now);
+        for (int i = 0; i < StrikeBar.SLOTS; i++) view.setItem(slot(BAR_ROW, i), row[i]);
+        drawnMarker = bar.marker(now);
+    }
+
+    /** Called every server tick while the screen is open: during a round the hammer moves on. */
+    @Override
+    public void broadcastChanges() {
+        if (bar != null && bar.marker(now()) != drawnMarker) drawBar();
+        super.broadcastChanges();
+    }
+
+    private void startTemper() {
+        String blocker = temperBlocker();
+        if (blocker != null) {
+            if ("cost".equals(blocker)) {
+                Hud.actionBar(viewer, Hud.colored(Component.translatable(NS + "blocked.cost"), 0xFF5555));
+                viewer.level().playSound(null, viewer.blockPosition(), SoundEvents.VILLAGER_NO, SoundSource.PLAYERS, 0.6F, 1.0F);
+            }
+            render();
+            return;
+        }
+        ItemStack weapon = weapon();
+        God god = ((GodWeaponItem) weapon.getItem()).god();
+        if (!viewer.hasInfiniteMaterials()) take(viewer, ModContent.materialItem(god.line(), 1), TEMPER_COST);
+        beginRound(true);
     }
 
     /** Pours the player's own experience levels into the weapon. */
@@ -161,23 +332,8 @@ public class ForgeMenu extends ButtonMenu {
         if (!viewer.hasInfiniteMaterials()) {
             for (WeaponProgress.Cost cost : WeaponProgress.starCost(next)) take(viewer, ModContent.materialItem(god.line(), cost.tier()), cost.count());
         }
-        WeaponProgress.setStars(weapon, next);
-
-        String hud = "hud." + RealmsOfChaos.MOD_ID + ".";
-        boolean milestone = next == GodWeaponItem.EMPOWERED_STARS || next == GodWeaponItem.AWAKENED_STARS;
-        viewer.level().playSound(null, viewer.blockPosition(), SoundEvents.ANVIL_USE, SoundSource.PLAYERS, 0.8F, 1.1F);
-        viewer.level().playSound(null, viewer.blockPosition(), milestone ? SoundEvents.UI_TOAST_CHALLENGE_COMPLETE : SoundEvents.PLAYER_LEVELUP,
-                SoundSource.PLAYERS, 0.7F, milestone ? 1.2F : 0.8F);
-        effects(ParticleTypes.LAVA, 12);
-        effects(ParticleTypes.FLAME, 30);
-        effects(Signature.spark(god.line()), 20 * next);
-        if (milestone) effects(ParticleTypes.END_ROD, 40);
-        Component what = next == GodWeaponItem.AWAKENED_STARS ? Component.translatable(hud + "forged.awakened", god.moveName())
-                : next == GodWeaponItem.EMPOWERED_STARS ? Component.translatable(hud + "forged.empowered", god.moveName())
-                : Component.translatable(hud + "forged.star");
-        Hud.title(viewer, GodWeaponItem.starRow(next), Hud.colored(what, milestone ? 0xF5B82E : 0xFFFFFF), 5, 40, 15);
-        Hud.actionBar(viewer, Hud.colored(Component.translatable(hud + "forged", weapon.getHoverName(), next), 0xF5B82E));
-        render();
+        // the price is paid: now the star has to be struck
+        beginRound(false);
     }
 
     /** Sparks at the forge block if there is one, otherwise around the player. */
@@ -274,8 +430,34 @@ public class ForgeMenu extends ButtonMenu {
                         text(NS + "infuse.lore", 0xAAAAAA, INFUSE_XP), text(NS + "infuse.lore2", 0xAAAAAA),
                         text(NS + "infuse.have", viewer.experienceLevel > 0 ? 0x55FF55 : 0xFF5555, viewer.experienceLevel))));
 
-        // the price, either side of the forge button
-        if ("max".equals(blocker)) {
+        // tempering: a second go at the finish of a star that was not a masterwork
+        int temper = WeaponProgress.temper(weapon);
+        if (stars > 0) {
+            String tb = temperBlocker();
+            List<Component> lore = new ArrayList<>();
+            lore.add(text(NS + "temper.have", 0x55FFFF, temper, stars, temper * 2));
+            if ("full".equals(tb)) {
+                lore.add(text(NS + "temper.full", 0x55FF55));
+            } else {
+                Item material = ModContent.materialItem(god.line(), 1);
+                lore.add(text(NS + "temper.lore", 0xAAAAAA));
+                lore.add(text(NS + "cost", tb == null ? 0x55FF55 : 0xFF5555, TEMPER_COST, new ItemStack(material).getHoverName(), count(viewer, material)));
+            }
+            view.setItem(SLOT_TEMPER, icon(Items.GRINDSTONE, text(NS + "temper", tb == null ? 0x55FFFF : 0x888888), tb == null, lore));
+        }
+
+        if (bar != null) {
+            // a round is being struck
+            List<Component> lore = new ArrayList<>();
+            lore.add(text(NS + "strike.lore", 0xAAAAAA));
+            lore.add(text(NS + "strike.left", 0xFFFF55, STRIKES - hits.size()));
+            for (StrikeBar.Hit hit : hits) {
+                lore.add(text("menu." + RealmsOfChaos.MOD_ID + ".strike." + hit.name().toLowerCase() + ".hit",
+                        hit == StrikeBar.Hit.PERFECT ? 0xFFFF55 : hit == StrikeBar.Hit.GOOD ? 0x55FF55 : 0xFF5555));
+            }
+            view.setItem(SLOT_FORGE, icon(Items.MACE, text(NS + "strike", 0xFFFF55), true, lore));
+            drawBar();
+        } else if ("max".equals(blocker)) {
             view.setItem(SLOT_FORGE, icon(Items.NETHER_STAR, text(NS + "max", 0x55FF55), true, List.of(text(NS + "awakened", 0xF5B82E))));
         } else {
             List<Component> lore = new ArrayList<>();
@@ -296,6 +478,7 @@ public class ForgeMenu extends ButtonMenu {
                 priceSlot = SLOT_COST_2;
                 lore.add(line);
             }
+            lore.add(text(NS + "strike.hint", 0x55FFFF));
             view.setItem(SLOT_FORGE, icon(Items.ANVIL, text(NS + "upgrade", blocker == null ? 0x55FF55 : 0xFF5555, next), blocker == null, lore));
         }
 

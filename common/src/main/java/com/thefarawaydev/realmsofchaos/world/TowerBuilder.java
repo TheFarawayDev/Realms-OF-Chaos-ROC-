@@ -40,7 +40,7 @@ public final class TowerBuilder {
     /** Terrain height of a column relative to the floor's walking level. */
     public interface HeightFn { int at(int x, int z); }
 
-    private record Palette(Block top, Block topAlt, Block fill, Block wall, Block trim, Block pillar,
+    record Palette(Block top, Block topAlt, Block fill, Block wall, Block trim, Block pillar,
                            Block light, Block inlay, Block glass, Block fluid) {}
 
     private TowerBuilder() {}
@@ -66,7 +66,7 @@ public final class TowerBuilder {
         return (x, z) -> morphHeight(floor, x, z, step);
     }
 
-    private static Palette palette(Line line, int tier) {
+    static Palette palette(Line line, int tier) {
         return switch (line) {
             case ZEUS -> switch (tier) {
                 case 1 -> new Palette(Blocks.MOSS_BLOCK, Blocks.MOSSY_STONE_BRICKS, Blocks.STONE_BRICKS, Blocks.STONE_BRICKS,

@@ -50,6 +50,13 @@ public final class Teleports {
         player.teleportTo(dest, pos.x, pos.y, pos.z, Set.of(), yaw, 0.0F, true);
     }
 
+    /** For the passages: put a player somewhere in a realm, with the same care as every other journey here. */
+    static void moveTo(ServerPlayer player, ServerLevel dest, Vec3 pos, float yaw) {
+        MinecraftServer server = player.level().getServer();
+        if (server != null) rememberReturn(player, server);
+        move(player, dest, pos, yaw);
+    }
+
     private static ServerLevel realmLevel(ServerPlayer player, MinecraftServer server, Realm realm) {
         ServerLevel dest = realm.level(server);
         if (dest == null) Hud.actionBar(player, Hud.colored(Component.translatable(HUD + "unavailable"), 0xFF5555));
@@ -104,11 +111,20 @@ public final class Teleports {
                 Hud.colored(Component.translatable(HUD + "floor", Tower.towerName(line), floor), 0xCCCCCC));
     }
 
-    /** The Gate of Ascent: up one floor, but only once this floor's god has fallen to this player. */
+    /**
+     * The Gate of Ascent. On a tower floor it opens once the floor's god has fallen to this player, and leads into
+     * the passage to the next floor - or straight up, for a player who has walked that passage before. Inside a
+     * passage it is the way out, and opens when every seal is broken.
+     */
     public static void ascend(ServerPlayer player) {
         MinecraftServer server = player.level().getServer();
         Realm realm = Realm.of(player.level().dimension());
         if (server == null || realm == null || realm.line() == null) return;
+        Passages.Spot spot = Passages.locate(player);
+        if (spot != null) {
+            Passages.tryExit(player, spot);
+            return;
+        }
         int floor = Tower.floorAt(player.getY());
         God god = Tower.god(realm.line(), floor);
         if (!ProgressData.get(server).isDefeated(player.getUUID(), god)) {
@@ -117,7 +133,12 @@ public final class Teleports {
             }
             return;
         }
-        if (floor < Tower.FLOORS) toFloor(player, realm.line(), floor + 1);
+        if (floor >= Tower.FLOORS) return;
+        if (ProgressData.get(server).hasPassed(player.getUUID(), realm.line(), floor)) {
+            toFloor(player, realm.line(), floor + 1);
+        } else if (!throttled(LAST_TRAVEL, player, server)) {
+            Passages.enter(player, realm.line(), floor);
+        }
     }
 
     /** Where leaving the realms takes a player. */

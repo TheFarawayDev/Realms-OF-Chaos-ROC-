@@ -31,6 +31,26 @@ The current build is an **Alpha**.
 | 11-14 | The Cloud Sanctum | The Trench | Halls of the Dead |
 | 15 | Summit of Olympus | Throne of the Deep | Throne of the Underworld |
 
+* **Passages between the floors.** The Gate of Ascent no longer takes you straight up: the first time, it leads
+  into a **passage** - a level to explore between this floor and the next (14 per tower, 42 in all). A passage is
+  a maze of rooms and corridors with a gate at its far end, and the gate stays shut until every **seal** in it is
+  broken (two seals in the lower tier, three in the middle, four near the summit).
+  * **Procedural.** Each passage is laid out from the world seed - which rooms connect, where the way in, the gate
+    and the seals are, what every room is - so every world's towers are different, and every passage in a tower
+    is different from the last. Passages grow with the tower: 4 x 4 rooms on the lower floors, 5 x 5 above.
+  * **Rooms.** Sealed chambers, treasure rooms (a chest with this tier's forge material, experience bottles, food
+    and metal; in Hades' tower sometimes a tarot card), one **shrine** (right-click: full health, harmful effects
+    cleared and three minutes of the tower's favour, once every ten minutes per player), trapped rooms (scorching
+    tiles and webs), plain rooms and corridors.
+  * **Seals and guardians.** Walking into a sealed chamber wakes its guardians (three to five, by tier, themed to
+    the tower). While any stand the seal is warded. Then right-click the seal and **strike it apart** - a
+    quick-time bar: click when the hammer is on the mark. A perfect strike cracks it twice, a good one once, a miss
+    stings.
+  * **Finding your way.** The Codex opens the **passage map** while you are in one: one slot per room, filled in as
+    you explore, with unexplored rooms hinted where a door leads on. The Compass of Chaos points to the nearest
+    unbroken seal, then to the gate (sneak + right-click still travels to the hub). A bar at the top counts seals.
+  * A passage you have walked is remembered: next time the Gate of Ascent takes you straight up. Passages are
+    shared by everyone in the world - seals stay broken and chests stay opened.
 * **Living floors.** Floors change during a trial: when the god drops below two thirds health the terrain shifts,
   one block at a time, into a second shape (a pit rises into a dais, a hall folds into terraces), and shifts back
   below one third; the upper floors also keep shifting on a timer. Anything standing on rising ground is carried up,
@@ -61,7 +81,14 @@ The current build is an **Alpha**.
   level). At a **Forge of Chaos** (two stand in the hub; also `/roc forge` and the Codex) you forge up to five stars
   onto it (+10% damage and faster recharge each; star N needs weapon level 2N). The forge screen shows the star
   track, what the next star changes in numbers, the signature move and its perks, where each material drops, and
-  an **Infuse** button that pours your own experience levels into the relic (30 weapon XP a level). Stars are paid for with what the
+  an **Infuse** button that pours your own experience levels into the relic (30 weapon XP a level).
+* **Forging is struck, not clicked.** Pressing *Forge* pays the price and starts a quick-time round of three
+  strikes: a hammer runs back and forth along the bottom row, and each click is judged by where it is - on the
+  mark is perfect, beside it good, elsewhere a miss. The star is forged whatever happens; the strikes decide the
+  finish. **Masterwork** (no misses, two perfect) *tempers* the star for +2% damage and gives 60 weapon XP; fine
+  work (at most one miss) gives 30; rough work gives nothing extra. The later stars are struck faster. A star that
+  was not tempered can be struck again with the **Temper** button (2 of the tower's first material; only a
+  masterwork takes). Closing the screen mid-round ends it as it stands - nothing paid is lost. Stars are paid for with what the
   gods of the weapon's own tower drop - every tier of a tower has its own material, so the higher stars send you
   higher up:
 
@@ -171,10 +198,12 @@ Signature moves, floor by floor:
 1. Join a world. Open the **Codex of Chaos** (or run `/roc`), or use the **Compass of Chaos** / `/roc hub`.
 2. In the hub, walk into a tower gate. You arrive on the floor you are working on.
 3. Right-click the floor's **Trial Altar** and press **Begin the trial**. (Trials need a difficulty above Peaceful.)
-4. Defeat the god: it drops its **relic weapon** (scaled by rank, with a signature hit power and a **Divine
-   Surge**) and its tier's forge material, and the **Gate of Ascent** at the far side of the floor opens for you.
-5. Climb. The three towers are independent, and progress is saved per player.
-6. To go home, take the south gate in the hub, the Codex's *Leave the Realms* button, or `/roc leave`.
+4. Defeat the god: it drops its **relic weapon** (scaled by rank, with a hit power of its own and its god's
+   signature move) and its tier's forge material, and the **Gate of Ascent** at the far side of the floor opens for you.
+5. Step through the gate into the **passage**: explore it, break its seals, and take the gate at its far end up to
+   the next floor.
+6. Climb. The three towers are independent, and progress is saved per player.
+7. To go home, take the south gate in the hub, the Codex's *Leave the Realms* button, or `/roc leave`.
 
 Each line fights differently: **Zeus** calls lightning, **Poseidon** drags you in and crashes tidal waves over you,
 **Hades** drains your life and (for the top gods) raises wither skeletons. Bosses raise their arms and gather
@@ -215,8 +244,9 @@ JAVA_HOME=/path/to/jdk-25 ./build.sh
 
 The mod contains a developer self-test that only runs when the JVM has `-Droc.selftest=true`. It exercises the mod
 on a real server: data loading, the hub, building and walking every floor of every tower, a full climb of all three
-towers through the altar menu (with rematches), every god's signature move, the relic moves, forging with tier
-materials, each tarot card, the Codex, leaving the realms, the welcome and the anti-stuck safeguards.
+towers through the altar menu (with rematches) and all 42 passages (built, checked room by room for reachability,
+seals struck, guardians, shrine, map), every god's signature move, the relic moves, the forging quick-time rounds,
+tier materials, each tarot card, the Codex, leaving the realms, the welcome and the anti-stuck safeguards.
 
 ```bash
 cd forge && ./gradlew runGameTestServer && cat run/roc-selftest.txt

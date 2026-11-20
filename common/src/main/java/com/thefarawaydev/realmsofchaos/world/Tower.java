@@ -63,10 +63,16 @@ public final class Tower {
         return Component.translatable("tower." + RealmsOfChaos.MOD_ID + "." + line.id());
     }
 
-    /** The floor a player is working on: the floor of their next trial, or the summit once the tower is conquered. */
+    /**
+     * The floor a player is working on: the floor of their next trial, or the summit once the tower is conquered.
+     * A floor is only reached by walking the passage that leads up to it, so a player who has beaten a floor's god
+     * but not yet come out of its passage is still on that floor.
+     */
     public static int currentFloor(ProgressData data, UUID player, Line line) {
         int next = data.nextRank(player, line);
-        return next == 0 ? FLOORS : FLOORS + 1 - next;
+        if (next == 0) return FLOORS;
+        int floor = FLOORS + 1 - next;
+        return floor > 1 && !data.hasPassed(player, line, floor - 1) ? floor - 1 : floor;
     }
 
     /** Where players appear on a floor: a flat pad by the south gate, facing the altar. */
