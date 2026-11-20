@@ -37,28 +37,21 @@
   .c-panel { --c:var(--panel); --s:var(--panel-sh); }
   [aria-disabled=true] { filter:grayscale(1) brightness(.7); pointer-events:none; box-shadow:0 3px 0 var(--s); transform:translateY(3px); }
 
-  /* header */
-  .nav { position:sticky; top:0; z-index:10; background:var(--bg); border-bottom:4px solid var(--panel-sh); }
-  .nav .wrap { display:flex; align-items:center; justify-content:space-between; height:70px; gap:16px; }
-  .brand { font:400 16px var(--pixel); text-decoration:none; display:flex; align-items:center; gap:12px; }
-  .brand i { width:14px; height:14px; background:var(--gold); box-shadow:18px 0 0 var(--teal), 36px 0 0 var(--purple); margin-right:42px; }
-  .links { display:flex; gap:12px; }
-  .links a { font:13px var(--pixel); text-decoration:none; padding:9px 16px; }
-  @media (max-width:700px) { .links a { display:none; } }
-
   /* hero */
-  .hero { padding:84px 0 20px; text-align:center; }
-  .eyebrow { display:inline-block; font:13px var(--pixel); padding:9px 18px; }
-  h1 { margin:34px 0 8px; font:400 clamp(2.6rem,10.5vw,6.4rem)/.98 var(--pixel); color:#fff; text-transform:uppercase; letter-spacing:-2px; }
+  .hero { padding:64px 0 8px; display:grid; grid-template-columns:1.15fr 1fr; gap:36px; align-items:center; }
+  .hero-left { text-align:left; }
+  h1 { margin:0 0 8px; font:400 clamp(2.6rem,9vw,6.2rem)/.98 var(--pixel); color:#fff; text-transform:uppercase; letter-spacing:-2px; }
   h1 span { display:block; text-shadow:0 5px 0 #000, 5px 5px 0 var(--gold-sh), 0 8px 0 var(--gold-sh); }
   h1 .l2 { color:var(--gold); text-shadow:0 5px 0 var(--gold-sh), 0 10px 0 #000; }
-  .bar { display:grid; grid-template-columns:repeat(3,1fr); height:12px; margin:30px auto 0; max-width:560px; border-radius:6px; overflow:hidden; box-shadow:0 5px 0 #000; }
+  .bar { display:grid; grid-template-columns:repeat(3,1fr); height:12px; margin:30px 0 0; max-width:100%; border-radius:6px; overflow:hidden; box-shadow:0 5px 0 #000; }
   .bar b:nth-child(1){background:var(--gold)} .bar b:nth-child(2){background:var(--teal)} .bar b:nth-child(3){background:var(--purple)}
-  .badges { display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:14px; margin-top:42px; }
-  .badge { font:13px var(--pixel); padding:14px 12px; display:flex; flex-direction:column; gap:2px; align-items:center; }
-  .badge span { font-size:11px; opacity:.8; }
-  .cta { margin-top:26px; display:grid; grid-template-columns:repeat(3,1fr); gap:16px; }
-  @media (max-width:700px) { .cta { grid-template-columns:1fr; } }
+  .info { padding:22px 24px; text-align:right; }
+  .eyebrow { display:block; font:13px var(--pixel); padding:11px 16px; margin:0 0 14px auto; width:100%; text-align:right; }
+  .irow { display:flex; justify-content:space-between; gap:16px; padding:9px 0; border-bottom:2px solid var(--panel-sh); font-size:14px; }
+  .irow:last-child { border:0; padding-bottom:0; }
+  .irow span { color:var(--muted); } .irow b { font:400 13px var(--pixel); text-align:right; }
+  .cta { margin-top:30px; display:grid; grid-template-columns:repeat(3,1fr); gap:16px; }
+  @media (max-width:860px) { .hero { grid-template-columns:1fr; } .cta { grid-template-columns:1fr; } }
 
   .btn { font:400 15px var(--pixel); text-decoration:none; display:flex; align-items:center; justify-content:center; gap:10px; padding:20px 18px; text-align:center; width:100%; border:0; }
   .btn svg { width:20px; height:20px; }
@@ -122,33 +115,29 @@
 <body>
 <canvas id="bg" aria-hidden="true"></canvas>
 
-<header class="nav">
-  <div class="wrap">
-    <a class="brand" href="#top"><i></i>REALMS OF CHAOS</a>
-    <nav class="links">
-      <a class="chunk" href="#download">Download</a><a class="chunk" href="#features">Features</a><a class="chunk" href="#install">Install</a><a class="chunk" href="#releases">Releases</a>
-    </nav>
-  </div>
-</header>
-
 <main id="top">
   <div class="wrap">
     <div class="hero">
-      <span class="eyebrow chunk c-green"><span id="hero-ver">Loading release...</span></span>
-      <h1><span>Realms</span><span class="l2">of Chaos</span></h1>
-      <div class="bar"><b></b><b></b><b></b></div>
-      <div class="badges">
-        <span class="badge chunk c-panel"><span>Minecraft</span>26.3</span>
-        <span class="badge chunk c-panel"><span>Loaders</span>Fabric &middot; Forge</span>
-        <span class="badge chunk c-panel"><span>Java</span>25</span>
-        <span class="badge chunk c-panel"><span>License</span>MIT</span>
-        <span class="badge chunk c-panel"><span>Author</span>TheFarawayDev</span>
+      <div class="hero-left">
+        <h1><span>Realms</span><span class="l2">of Chaos</span></h1>
+        <div class="bar"><b></b><b></b><b></b></div>
       </div>
-      <div class="cta">
+      <aside class="info chunk c-panel">
+        <span class="eyebrow chunk c-green" id="hero-ver">Loading release...</span>
+        <div class="irow"><span>Version</span><b id="i-ver">-</b></div>
+        <div class="irow"><span>Last updated</span><b id="i-date">-</b></div>
+        <div class="irow"><span>Total downloads</span><b id="i-dl">-</b></div>
+        <div class="irow"><span>Minecraft</span><b>26.3</b></div>
+        <div class="irow"><span>Loaders</span><b>Fabric &middot; Forge</b></div>
+        <div class="irow"><span>Java</span><b>25</b></div>
+        <div class="irow"><span>License</span><b>MIT</b></div>
+        <div class="irow"><span>Author</span><b>TheFarawayDev</b></div>
+      </aside>
+    </div>
+    <div class="cta">
         <a class="btn chunk c-gold" id="cta-fabric" aria-disabled="true" href="#download">Download Fabric</a>
         <a class="btn chunk c-teal" id="cta-forge" aria-disabled="true" href="#download">Download Forge</a>
         <a class="btn chunk" href="#install">How to install</a>
-      </div>
     </div>
 
     <section id="download" class="reveal">
@@ -253,6 +242,9 @@
       fill(0, jars.find(a => /fabric/i.test(a.name)), latest.tag_name, "#cta-fabric", "#dl-fabric", "Fabric");
       fill(1, jars.find(a => /forge/i.test(a.name)), latest.tag_name, "#cta-forge", "#dl-forge", "Forge");
       $("#hero-ver").textContent = `Latest: ${latest.tag_name} - ${new Date(latest.published_at).toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric" })}`;
+      $("#i-ver").textContent = ver((jars[0] || {}).name || "") + " (" + latest.tag_name + ")";
+      $("#i-date").textContent = new Date(latest.published_at).toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric" });
+      $("#i-dl").textContent = list.reduce((n, r) => n + r.assets.reduce((m, a) => m + a.download_count, 0), 0).toLocaleString();
       $("#dl-note").textContent = `Released ${new Date(latest.published_at).toLocaleDateString()}`;
       $("#rel-list").innerHTML = list.map((r, i) => `
         <div class="row chunk c-panel"><div><b>${r.name || r.tag_name}</b>${i === 0 ? '<span class="tagl">LATEST</span>' : ""}<br><small>${r.tag_name}</small></div>
