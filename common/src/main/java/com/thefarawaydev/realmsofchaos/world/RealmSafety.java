@@ -29,6 +29,7 @@ public final class RealmSafety {
     private RealmSafety() {}
 
     public static void tick(MinecraftServer server) {
+        FloorShifts.tick(server);
         if (++ticker % 20 != 0) return;
         for (ServerPlayer player : server.getPlayerList().getPlayers()) {
             Realm realm = Realm.of(player.level().dimension());

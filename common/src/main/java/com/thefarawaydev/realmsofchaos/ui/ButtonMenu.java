@@ -26,15 +26,24 @@ import net.minecraft.world.level.ItemLike;
  * they behave the same on Fabric and Forge and need no custom packets. Icons are buttons; nothing can be taken.
  */
 public abstract class ButtonMenu extends ChestMenu {
-    public static final int SIZE = 27;
-
     protected final SimpleContainer view;
     protected final ServerPlayer viewer;
+    protected final int size;
 
-    protected ButtonMenu(int id, Inventory inventory, ServerPlayer viewer, SimpleContainer view) {
-        super(MenuType.GENERIC_9x3, id, inventory, view, 3);
+    /** @param rows 3 for a single-chest screen, 6 for a double-chest screen */
+    protected ButtonMenu(int id, Inventory inventory, ServerPlayer viewer, int rows) {
+        this(id, inventory, viewer, rows, new SimpleContainer(rows * 9));
+    }
+
+    private ButtonMenu(int id, Inventory inventory, ServerPlayer viewer, int rows, SimpleContainer view) {
+        super(rows == 6 ? MenuType.GENERIC_9x6 : MenuType.GENERIC_9x3, id, inventory, view, rows);
         this.view = view;
         this.viewer = viewer;
+        this.size = rows * 9;
+    }
+
+    public static int slot(int row, int column) {
+        return row * 9 + column;
     }
 
     /** A button was pressed. */
@@ -45,7 +54,7 @@ public abstract class ButtonMenu extends ChestMenu {
 
     @Override
     public void clicked(int slot, int button, ContainerInput input, Player player) {
-        if (slot >= 0 && slot < SIZE && (input == ContainerInput.PICKUP || input == ContainerInput.QUICK_MOVE)) {
+        if (slot >= 0 && slot < size && (input == ContainerInput.PICKUP || input == ContainerInput.QUICK_MOVE)) {
             press(slot);
         }
         if (viewer.containerMenu == this) {
@@ -69,7 +78,22 @@ public abstract class ButtonMenu extends ChestMenu {
 
     protected void fill(DyeColor color) {
         ItemStack filler = filler(color);
-        for (int i = 0; i < SIZE; i++) view.setItem(i, filler.copy());
+        for (int i = 0; i < size; i++) view.setItem(i, filler.copy());
+    }
+
+    /** A coloured border with a darker inside: reads as a framed panel. */
+    protected void frame(DyeColor border, DyeColor inside) {
+        ItemStack edge = filler(border), back = filler(inside);
+        int rows = size / 9;
+        for (int i = 0; i < size; i++) {
+            int row = i / 9, col = i % 9;
+            view.setItem(i, (row == 0 || row == rows - 1 || col == 0 || col == 8 ? edge : back).copy());
+        }
+    }
+
+    /** A named pane used as a label or meter segment. */
+    protected static ItemStack pane(DyeColor color, Component name, List<Component> lore) {
+        return icon(Items.STAINED_GLASS_PANE.pick(color), name, false, lore);
     }
 
     protected static Style plain(int color) {

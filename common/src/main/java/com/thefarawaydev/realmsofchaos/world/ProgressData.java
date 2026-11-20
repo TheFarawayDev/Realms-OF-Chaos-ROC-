@@ -35,7 +35,8 @@ public class ProgressData extends SavedData {
             Codec.unboundedMap(Codec.STRING, Codec.STRING.listOf()).optionalFieldOf("defeated", Map.of()).forGetter(ProgressData::exportDefeated),
             Codec.STRING.listOf().optionalFieldOf("built", List.of()).forGetter(d -> new ArrayList<>(d.built)),
             Codec.STRING.listOf().optionalFieldOf("welcomed", List.of()).forGetter(d -> new ArrayList<>(d.welcomed)),
-            Codec.unboundedMap(Codec.STRING, ReturnPoint.CODEC).optionalFieldOf("returns", Map.of()).forGetter(d -> new HashMap<>(d.returns))
+            Codec.unboundedMap(Codec.STRING, ReturnPoint.CODEC).optionalFieldOf("returns", Map.of()).forGetter(d -> new HashMap<>(d.returns)),
+            Codec.STRING.listOf().optionalFieldOf("shifted", List.of()).forGetter(d -> new ArrayList<>(d.shifted))
     ).apply(i, ProgressData::new));
 
     public static final SavedDataType<ProgressData> TYPE = new SavedDataType<>(
@@ -45,8 +46,28 @@ public class ProgressData extends SavedData {
     private final Set<String> built = new HashSet<>();
     private final Set<String> welcomed = new HashSet<>();
     private final Map<String, ReturnPoint> returns = new HashMap<>();
+    private final Set<String> shifted = new HashSet<>();
 
     public ProgressData() {}
+
+    private ProgressData(Map<String, List<String>> defeated, List<String> built, List<String> welcomed, Map<String, ReturnPoint> returns,
+                         List<String> shifted) {
+        this(defeated, built, welcomed, returns);
+        this.shifted.addAll(shifted);
+    }
+
+    /** Floors whose terrain is currently away from their own design (see FloorShifts). */
+    public boolean isShifted(String key) {
+        return shifted.contains(key);
+    }
+
+    public void markShifted(String key) {
+        if (shifted.add(key)) setDirty();
+    }
+
+    public void clearShifted(String key) {
+        if (shifted.remove(key)) setDirty();
+    }
 
     private ProgressData(Map<String, List<String>> defeated, List<String> built, List<String> welcomed, Map<String, ReturnPoint> returns) {
         defeated.forEach((k, v) -> this.defeated.put(k, new HashSet<>(v)));

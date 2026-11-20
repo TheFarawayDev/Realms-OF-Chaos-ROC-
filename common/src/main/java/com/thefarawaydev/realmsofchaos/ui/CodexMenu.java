@@ -13,7 +13,6 @@ import java.util.ArrayList;
 import java.util.List;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.SimpleMenuProvider;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.DyeColor;
@@ -21,25 +20,32 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 
 /**
- * The Codex of Chaos. Main page: the three towers, travel to the hub, leave the realms and an about card.
- * Tower page: all 15 gods of that line, floor by floor, with defeated / next / locked status; click a floor you
- * have reached to travel there.
+ * The Codex of Chaos, on a double-chest screen.
+ *
+ * Main page: the three towers side by side, each with a three-segment climb meter beneath it (upper floors on
+ * top), plus travel to the hub, leaving the realms and an about card.
+ *
+ * Tower page: the tower drawn as it stands - floors 11-15 on the top row, 6-10 in the middle, 1-5 at the bottom,
+ * each row labelled with its tier. Defeated gods glint, the next trial is highlighted, the rest are locked.
+ * Click any floor you have reached to travel there.
  */
 public class CodexMenu extends ButtonMenu {
-    public static final int SLOT_ABOUT = 4, SLOT_ZEUS = 10, SLOT_POSEIDON = 13, SLOT_HADES = 16, SLOT_HUB = 21, SLOT_LEAVE = 23;
-    public static final int SLOT_BACK = 18, SLOT_TRAVEL = 22, SLOT_SUMMARY = 26;
+    public static final int SLOT_ABOUT = slot(0, 4);
+    public static final int SLOT_ZEUS = slot(1, 2), SLOT_POSEIDON = slot(1, 4), SLOT_HADES = slot(1, 6);
+    public static final int SLOT_HUB = slot(5, 2), SLOT_LEAVE = slot(5, 6);
+    public static final int SLOT_BACK = slot(5, 0), SLOT_TRAVEL = slot(5, 4), SLOT_SUMMARY = slot(0, 4);
     private static final String NS = "menu." + RealmsOfChaos.MOD_ID + ".";
 
     private Line page;     // null = main page
 
     public static void open(ServerPlayer player) {
         player.openMenu(new SimpleMenuProvider(
-                (id, inventory, p) -> new CodexMenu(id, inventory, (ServerPlayer) p, new SimpleContainer(SIZE)),
+                (id, inventory, p) -> new CodexMenu(id, inventory, (ServerPlayer) p),
                 Component.translatable(NS + "codex")));
     }
 
-    private CodexMenu(int id, Inventory inventory, ServerPlayer viewer, SimpleContainer view) {
-        super(id, inventory, viewer, view);
+    private CodexMenu(int id, Inventory inventory, ServerPlayer viewer) {
+        super(id, inventory, viewer, 6);
         render();
     }
 
@@ -47,21 +53,25 @@ public class CodexMenu extends ButtonMenu {
         return page;
     }
 
-    /** The slot showing the god of {@code rank} on a tower page: top row ranks 15..7, second row ranks 6..1. */
-    public static int slotOfRank(int rank) {
-        return rank >= 7 ? Line.RANKS - rank : 9 + (6 - rank) + 1;
+    /** Where a floor sits on a tower page: row 1 = floors 11-15, row 2 = 6-10, row 3 = 1-5, columns 2-6. */
+    public static int slotOfFloor(int floor) {
+        int tierRow = (floor - 1) / 5;                  // 0 = bottom group
+        return slot(3 - tierRow, 2 + (floor - 1) % 5);
+    }
+
+    private static int column(Line line) {
+        return 2 + line.ordinal() * 2;
     }
 
     @Override
     protected void press(int slot) {
         if (page == null) {
-            switch (slot) {
-                case SLOT_ZEUS -> show(Line.ZEUS);
-                case SLOT_POSEIDON -> show(Line.POSEIDON);
-                case SLOT_HADES -> show(Line.HADES);
-                case SLOT_HUB -> { close(); Teleports.toHub(viewer); }
-                case SLOT_LEAVE -> { close(); Teleports.leave(viewer); }
-                default -> { }
+            if (slot == SLOT_HUB) { close(); Teleports.toHub(viewer); return; }
+            if (slot == SLOT_LEAVE) { close(); Teleports.leave(viewer); return; }
+            // a tower icon or any segment of its meter opens that tower
+            int row = slot / 9, col = slot % 9;
+            for (Line line : Line.values()) {
+                if (col == column(line) && row >= 1 && row <= 4) { show(line); return; }
             }
             return;
         }
@@ -72,16 +82,12 @@ public class CodexMenu extends ButtonMenu {
             close();
             Teleports.enterTower(viewer, line);
         } else {
-            // a god icon: travel to that floor if the player has reached it
             ProgressData data = ProgressData.get(viewer.level().getServer());
-            for (int rank = 1; rank <= Line.RANKS; rank++) {
-                if (slotOfRank(rank) == slot) {
-                    int floor = Tower.FLOORS + 1 - rank;
-                    if (floor <= Tower.currentFloor(data, viewer.getUUID(), page)) {
-                        Line line = page;
-                        close();
-                        Teleports.toFloor(viewer, line, floor);
-                    }
+            for (int floor = 1; floor <= Tower.FLOORS; floor++) {
+                if (slotOfFloor(floor) == slot && floor <= Tower.currentFloor(data, viewer.getUUID(), page)) {
+                    Line line = page;
+                    close();
+                    Teleports.toFloor(viewer, line, floor);
                     return;
                 }
             }
@@ -99,31 +105,53 @@ public class CodexMenu extends ButtonMenu {
         viewer.closeContainer();
     }
 
-    @Override
-    protected void render() {
-        ProgressData data = ProgressData.get(viewer.level().getServer());
-        fill(page == null ? DyeColor.PURPLE : switch (page) {
+    private static DyeColor dye(Line line) {
+        return switch (line) {
             case ZEUS -> DyeColor.YELLOW;
             case POSEIDON -> DyeColor.CYAN;
             case HADES -> DyeColor.PURPLE;
-        });
+        };
+    }
+
+    @Override
+    protected void render() {
+        ProgressData data = ProgressData.get(viewer.level().getServer());
         if (page == null) {
+            frame(DyeColor.PURPLE, DyeColor.BLACK);
             renderMain(data);
         } else {
+            frame(dye(page), DyeColor.BLACK);
             renderTower(data, page);
         }
         broadcastChanges();
     }
 
+    // ---- main page ------------------------------------------------------------------------------------------
+
     private void renderMain(ProgressData data) {
-        view.setItem(SLOT_ABOUT, icon(ModContent.CHAOS_CODEX.get(), text(NS + "about", 0xA55AD6), false, List.of(
+        view.setItem(SLOT_ABOUT, icon(ModContent.CHAOS_CODEX.get(), text(NS + "about", 0xA55AD6), true, List.of(
                 text(NS + "about.lore1", 0xF5B82E),
                 text(NS + "about.lore2", 0xAAAAAA),
                 text(NS + "about.version", 0xAAAAAA, BuildInfo.DISPLAY),
                 text(NS + "about.total", 0x55FFFF, data.total(viewer.getUUID())))));
-        view.setItem(SLOT_ZEUS, towerIcon(data, Line.ZEUS));
-        view.setItem(SLOT_POSEIDON, towerIcon(data, Line.POSEIDON));
-        view.setItem(SLOT_HADES, towerIcon(data, Line.HADES));
+        for (Line line : Line.values()) {
+            int col = column(line);
+            view.setItem(slot(1, col), towerIcon(data, line));
+            // climb meter: three segments, upper floors on top
+            int current = Tower.currentFloor(data, viewer.getUUID(), line);
+            boolean complete = data.nextRank(viewer.getUUID(), line) == 0;
+            for (int seg = 0; seg < 3; seg++) {
+                int from = seg * 5 + 1, to = seg * 5 + 5;
+                int done = 0;
+                for (int f = from; f <= to; f++) if (data.isDefeated(viewer.getUUID(), Tower.god(line, f))) done++;
+                DyeColor color = done == 5 ? DyeColor.LIME : (!complete && current >= from && current <= to) ? dye(line) : DyeColor.GRAY;
+                List<Component> lore = new ArrayList<>();
+                lore.add(text(NS + "tier.floors", 0xAAAAAA, from, to));
+                lore.add(text(NS + "tier.progress", done == 5 ? 0x55FF55 : 0x55FFFF, done, 5));
+                if (seg == 2) lore.add(text(NS + "tier.summit", 0xAAAAAA, Tower.tierName(line, Tower.FLOORS)));
+                view.setItem(slot(4 - seg, col), pane(color, Tower.tierName(line, from).copy().withStyle(plain(line.color())), lore));
+            }
+        }
         view.setItem(SLOT_HUB, icon(ModContent.CHAOS_COMPASS.get(), text(NS + "hub", 0xFFFFFF), false,
                 List.of(text(NS + "click", 0xAAAAAA))));
         view.setItem(SLOT_LEAVE, icon(Items.OAK_DOOR, text(NS + "leave", 0x55FF55), false,
@@ -147,16 +175,29 @@ public class CodexMenu extends ButtonMenu {
         return icon(ModContent.weaponItem(Gods.get(line, 1)), Tower.towerName(line).copy().withStyle(plain(line.color())), next == 0, lore);
     }
 
+    // ---- tower page -----------------------------------------------------------------------------------------
+
     private void renderTower(ProgressData data, Line line) {
         int next = data.nextRank(viewer.getUUID(), line);
-        for (int rank = Line.RANKS; rank >= 1; rank--) {
-            view.setItem(slotOfRank(rank), godIcon(data, Gods.get(line, rank), next));
+        for (int floor = 1; floor <= Tower.FLOORS; floor++) {
+            view.setItem(slotOfFloor(floor), godIcon(data, Tower.god(line, floor), next));
         }
+        // tier labels down the left edge, the summit marked on the right of the top row
+        for (int seg = 0; seg < 3; seg++) {
+            int from = seg * 5 + 1;
+            view.setItem(slot(3 - seg, 1), pane(dye(line), Tower.tierName(line, from).copy().withStyle(plain(line.color())),
+                    List.of(text(NS + "tier.floors", 0xAAAAAA, from, seg == 2 ? 14 : from + 4))));
+        }
+        view.setItem(slot(1, 7), pane(DyeColor.WHITE, Tower.tierName(line, Tower.FLOORS).copy().withStyle(plain(0xFFFFFF)),
+                List.of(text(NS + "tier.floors", 0xAAAAAA, Tower.FLOORS, Tower.FLOORS))));
+
+        view.setItem(SLOT_SUMMARY, icon(ModContent.CHAOS_CODEX.get(), Tower.towerName(line).copy().withStyle(plain(line.color())), true,
+                List.of(text(NS + "line.progress", 0x55FFFF, data.count(viewer.getUUID(), line)),
+                        next == 0 ? text(NS + "line.complete", 0x55FF55)
+                                : text(NS + "line.floor", 0xFFFFFF, Tower.currentFloor(data, viewer.getUUID(), line)))));
         view.setItem(SLOT_BACK, icon(Items.ARROW, text(NS + "back", 0xFFFFFF), false, List.of()));
-        view.setItem(SLOT_TRAVEL, icon(Items.ENDER_PEARL, text(NS + "travel", line.color(), Tower.towerName(line)), false,
+        view.setItem(SLOT_TRAVEL, icon(Items.ENDER_PEARL, text(NS + "travel", line.color(), Tower.towerName(line)), true,
                 List.of(text(NS + "travel.lore", 0xAAAAAA), text(NS + "click", 0xAAAAAA))));
-        view.setItem(SLOT_SUMMARY, icon(ModContent.CHAOS_CODEX.get(), Tower.towerName(line).copy().withStyle(plain(line.color())), false,
-                List.of(text(NS + "line.progress", 0x55FFFF, data.count(viewer.getUUID(), line)))));
     }
 
     private ItemStack godIcon(ProgressData data, God god, int next) {
@@ -180,6 +221,6 @@ public class CodexMenu extends ButtonMenu {
         }
         God blocker = Gods.get(god.line(), god.rank() + 1);
         lore.add(text(NS + "god.locked", 0xFF5555, blocker.displayName()));
-        return icon(Items.STAINED_GLASS_PANE.pick(DyeColor.GRAY), god.displayName().copy().withStyle(plain(0x888888)), false, lore);
+        return pane(DyeColor.GRAY, god.displayName().copy().withStyle(plain(0x888888)), lore);
     }
 }

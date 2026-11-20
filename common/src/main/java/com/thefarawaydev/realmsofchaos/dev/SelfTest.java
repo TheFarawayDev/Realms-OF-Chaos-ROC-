@@ -11,6 +11,7 @@ import com.thefarawaydev.realmsofchaos.god.Line;
 import com.thefarawaydev.realmsofchaos.god.Power;
 import com.thefarawaydev.realmsofchaos.ui.AltarMenu;
 import com.thefarawaydev.realmsofchaos.ui.CodexMenu;
+import com.thefarawaydev.realmsofchaos.world.FloorShifts;
 import com.thefarawaydev.realmsofchaos.world.ProgressData;
 import com.thefarawaydev.realmsofchaos.world.Realm;
 import com.thefarawaydev.realmsofchaos.world.RealmBuilder;
@@ -188,6 +189,29 @@ public final class SelfTest {
                     && Tower.floorAt(Tower.floorY(f) + Tower.ROOM_HEIGHT) == f, "floorAt for floor " + f);
         });
 
+        step("living floors: every in-between shape of every floor stays walkable (no step over one block)", () -> {
+            int ring = Tower.FIGHT_RADIUS + 1;
+            for (int floor = 1; floor <= Tower.FLOORS; floor++) {
+                check(TowerBuilder.altLayout(floor) != TowerBuilder.layout(floor), "floor " + floor + " has a different alternate layout");
+                boolean differs = false;
+                for (int st = 0; st <= TowerBuilder.MORPH_STEPS; st++) {
+                    for (int x = -ring; x <= ring; x++) {
+                        for (int z = -ring; z <= ring; z++) {
+                            int h = TowerBuilder.morphHeight(floor, x, z, st);
+                            check(h >= -2 && h <= 2, "floor " + floor + " step " + st + " height " + h);
+                            check(Math.abs(h - TowerBuilder.morphHeight(floor, x + 1, z, st)) <= 1
+                                    && Math.abs(h - TowerBuilder.morphHeight(floor, x, z + 1, st)) <= 1,
+                                    "floor " + floor + " step " + st + ": step too high at " + x + "," + z);
+                            if (st == TowerBuilder.MORPH_STEPS && h != TowerBuilder.morphHeight(floor, x, z, 0)) differs = true;
+                            // the altar, arrival pad and gate corridors never move
+                            if (Math.abs(x) <= 5 && (z >= 9 || z <= -14)) check(h == 0, "corridor moved on floor " + floor);
+                        }
+                    }
+                }
+                check(differs, "floor " + floor + " actually changes shape");
+            }
+        });
+
         for (Line line : Line.values()) {
             step("tower of " + line + ": all 15 floors build, are walkable and unobstructed", () -> {
                 for (int floor = 1; floor <= Tower.FLOORS; floor++) {
@@ -196,6 +220,54 @@ public final class SelfTest {
                 }
             });
         }
+
+        step("living floors: a floor shifts under a mob and an item, carries them, and settles back", () -> {
+            Line line = Line.HADES;
+            int floor = 4, y0 = Tower.floorY(floor);                 // a pit that rises into a dais
+            String key = TowerBuilder.floorKey(line, floor);
+            LivingEntity mob = EntityTypes.ZOMBIE.create(level, EntitySpawnReason.TRIGGERED);
+            Vec3 c = Tower.centre(level, floor);
+            mob.setPos(c.x, c.y, c.z);
+            level.addFreshEntity(mob);
+            ItemEntity item = new ItemEntity(level, 3.5, y0 + TowerBuilder.morphHeight(floor, 3, 3, 0) + 1, 3.5, new ItemStack(Blocks.STONE));
+            level.addFreshEntity(item);
+            double startY = mob.getY();
+
+            FloorShifts.set(level, line, floor, true);
+            check(FloorShifts.isShifted(line, floor) && data.isShifted(key), "shift started and recorded");
+            for (int i = 1; i <= TowerBuilder.MORPH_STEPS; i++) {
+                FloorShifts.stepAll(server, false);
+                check(level.noCollision(mob) && !mob.isInWall(), "mob buried at step " + i);
+                check(level.noCollision(item), "item buried at step " + i);
+            }
+            check(FloorShifts.position(line, floor) == TowerBuilder.MORPH_STEPS, "fully shifted");
+            int ring = Tower.FIGHT_RADIUS - 1;
+            for (int x = -ring; x <= ring; x++) {
+                for (int z = -ring; z <= ring; z++) {
+                    if (x * x + z * z > ring * ring || (x == 0 && z == 12)) continue;
+                    int h = TowerBuilder.morphHeight(floor, x, z, TowerBuilder.MORPH_STEPS);
+                    check(solid(level, new BlockPos(x, y0 + h, z)) && level.getBlockState(new BlockPos(x, y0 + h + 1, z)).isAir(),
+                            "shifted terrain wrong at " + x + "," + z);
+                }
+            }
+            check(mob.getY() > startY + 1.5, "mob was carried up with the rising centre (" + startY + " -> " + mob.getY() + ")");
+            check(Math.abs(Tower.centre(level, floor).y - (y0 + 1 + TowerBuilder.morphHeight(floor, 0, 0, TowerBuilder.MORPH_STEPS))) < 0.01, "boss spot follows the terrain");
+
+            // with no god on the floor, the idle check sends it home
+            FloorShifts.stepAll(server, true);
+            for (int i = 0; i < TowerBuilder.MORPH_STEPS + 1; i++) FloorShifts.stepAll(server, false);
+            check(!FloorShifts.isShifted(line, floor) && FloorShifts.position(line, floor) == 0 && !data.isShifted(key), "settled back");
+            mob.discard();
+            item.discard();
+            checkFloor(level, line, floor);
+
+            // a floor left shifted by a server stop is rebuilt on the next visit
+            data.markShifted(key);
+            TowerBuilder.reshape(level, line, floor, TowerBuilder.heights(floor, 0), TowerBuilder.heights(floor, 2));
+            FloorShifts.repairIfStale(level, line, floor);
+            check(!data.isShifted(key), "stale shift repaired");
+            checkFloor(level, line, floor);
+        });
 
         step("first join: thank-you, codex + compass given, only once, root advancement", () -> {
             Welcome.onJoin(player);
@@ -212,11 +284,20 @@ public final class SelfTest {
             CodexMenu menu = (CodexMenu) player.containerMenu;
             check(menu.getSlot(CodexMenu.SLOT_HUB).getItem().is(ModContent.CHAOS_COMPASS.get()), "hub button");
             check(menu.getSlot(CodexMenu.SLOT_LEAVE).getItem().is(net.minecraft.world.item.Items.OAK_DOOR), "leave button");
+            check(menu.slots.size() == 54 + 36, "double-chest layout, slots=" + menu.slots.size());
+            menu.clicked(CodexMenu.SLOT_ZEUS + 18, 0, ContainerInput.PICKUP, player);      // a meter segment opens the tower too
+            check(menu.page() == Line.ZEUS, "meter opens zeus page");
+            menu.clicked(CodexMenu.SLOT_BACK, 0, ContainerInput.PICKUP, player);
             menu.clicked(CodexMenu.SLOT_ZEUS, 0, ContainerInput.PICKUP, player);
             check(menu.page() == Line.ZEUS, "zeus page");
-            for (int rank = 1; rank <= Line.RANKS; rank++) check(!menu.getSlot(CodexMenu.slotOfRank(rank)).getItem().isEmpty(), "icon for rank " + rank);
+            Set<Integer> slots = new HashSet<>();
+            for (int floor = 1; floor <= Tower.FLOORS; floor++) {
+                check(slots.add(CodexMenu.slotOfFloor(floor)), "floor " + floor + " shares a slot");
+                check(!menu.getSlot(CodexMenu.slotOfFloor(floor)).getItem().isEmpty(), "icon for floor " + floor);
+            }
             menu.clicked(3, 0, ContainerInput.QUICK_MOVE, player);
-            menu.clicked(30, 0, ContainerInput.PICKUP, player);
+            menu.clicked(60, 0, ContainerInput.PICKUP, player);
+            menu.clicked(60, 0, ContainerInput.QUICK_MOVE, player);
             check(menu.getCarried().isEmpty(), "nothing picked up");
             menu.clicked(CodexMenu.SLOT_BACK, 0, ContainerInput.PICKUP, player);
             check(menu.page() == null, "back to main page");
@@ -227,6 +308,7 @@ public final class SelfTest {
         for (Line line : Line.values()) {
             step("climb the tower of " + line + ": altar menu, 15 trials, gate of ascent, advancements", () -> {
                 Realm.testAlias(Level.OVERWORLD, Realm.ofLine(line));
+                clearBosses(level);
                 data.reset(player.getUUID());
                 for (int cx = -2; cx <= 2; cx++) for (int cz = -2; cz <= 2; cz++) level.setChunkForced(cx, cz, true);
                 advance(server, 41);
@@ -275,6 +357,25 @@ public final class SelfTest {
                     boss.keepUnstuck(level);
                     check(boss.position().distanceTo(Tower.centre(level, floor)) < 0.1, at + "boss at home is left alone");
 
+                    if (floor == 2 || floor == 8 || floor == 15) {
+                        // living floor: wounding the god makes the terrain shift, then shift back
+                        boss.setHealth(boss.getMaxHealth() * 0.6F);
+                        boss.updateFloorShift(level);
+                        check(FloorShifts.isShifted(line, floor), at + "floor shifts when the god is wounded");
+                        for (int i = 0; i < TowerBuilder.MORPH_STEPS; i++) {
+                            FloorShifts.stepAll(server, false);
+                            check(level.noCollision(boss) && !boss.isInWall(), at + "boss buried by the shift");
+                        }
+                        boss.keepUnstuck(level);
+                        // (nothing ticks inside the self-test, so a boss on lowered ground has not fallen yet: compare x/z)
+                        Vec3 c = Tower.centre(level, floor);
+                        check(Math.hypot(boss.getX() - c.x, boss.getZ() - c.z) < 1.0 && boss.getY() >= c.y - 0.01, at + "boss still above the centre after the shift");
+                        boss.setHealth(boss.getMaxHealth() * 0.3F);
+                        boss.updateFloorShift(level);
+                        check(!FloorShifts.isShifted(line, floor), at + "floor shifts back when the god is nearly beaten");
+                        for (int i = 0; i < TowerBuilder.MORPH_STEPS + 1; i++) FloorShifts.stepAll(server, false);
+                        check(level.noCollision(boss), at + "boss buried by the return shift");
+                    }
                     boss.hurtServer(level, level.damageSources().playerAttack(player), 100000.0F);
                     check(!boss.isAlive(), at + "boss died");
                     check(data.isDefeated(player.getUUID(), god), at + "progress saved");

@@ -16,7 +16,7 @@ import net.minecraft.world.level.block.state.BlockState;
  * solid stands inside the fight ring, the entrance and exit corridors are flat, and the whole floor is enclosed.
  */
 public final class TowerBuilder {
-    public static final int LAYOUT_VERSION = 3;
+    public static final int LAYOUT_VERSION = 4;
 
     public enum Layout { FLAT, MOUNDS, PILLARS, PIT, DAIS, WAVES, MOAT, TERRACES, SPLIT, ZIGGURAT, SUMMIT }
 
@@ -27,6 +27,19 @@ public final class TowerBuilder {
             Layout.SUMMIT                                                                   // the final god
     };
 
+    /** The layout each floor shifts into during a trial; chosen so the change is dramatic (a pit becomes a dais...). */
+    private static final Layout[] ALT_BY_FLOOR = {
+            Layout.DAIS, Layout.PIT, Layout.WAVES, Layout.DAIS, Layout.TERRACES,
+            Layout.ZIGGURAT, Layout.SPLIT, Layout.ZIGGURAT, Layout.WAVES, Layout.PIT,
+            Layout.TERRACES, Layout.SPLIT, Layout.MOUNDS, Layout.ZIGGURAT,
+            Layout.TERRACES
+    };
+    /** A shift moves every column at most one block per step, so it takes this many steps at most. */
+    public static final int MORPH_STEPS = 4;
+
+    /** Terrain height of a column relative to the floor's walking level. */
+    public interface HeightFn { int at(int x, int z); }
+
     private record Palette(Block top, Block topAlt, Block fill, Block wall, Block trim, Block pillar,
                            Block light, Block inlay, Block glass, Block fluid) {}
 
@@ -34,6 +47,23 @@ public final class TowerBuilder {
 
     public static Layout layout(int floor) {
         return BY_FLOOR[Tower.clampFloor(floor) - 1];
+    }
+
+    public static Layout altLayout(int floor) {
+        return ALT_BY_FLOOR[Tower.clampFloor(floor) - 1];
+    }
+
+    /**
+     * Height of a column while a floor is {@code step} steps (0..{@value #MORPH_STEPS}) of the way from its own
+     * layout to its alternate one. Every column moves one block per step towards its target.
+     */
+    public static int morphHeight(int floor, int x, int z, int step) {
+        int a = height(layout(floor), floor, x, z), b = height(altLayout(floor), floor, x, z);
+        return a + Math.max(-step, Math.min(step, b - a));
+    }
+
+    public static HeightFn heights(int floor, int step) {
+        return (x, z) -> morphHeight(floor, x, z, step);
     }
 
     private static Palette palette(Line line, int tier) {
@@ -75,15 +105,23 @@ public final class TowerBuilder {
         floor = Tower.clampFloor(floor);
         ProgressData data = ProgressData.get(level.getServer());
         Realm realm = Realm.ofLine(line);
-        String cleanup = realm.id() + "/cleanup@" + LAYOUT_VERSION;
+        String cleanup = realm.id() + "/cleanup@3";      // fixed key: the pre-tower arena is removed once, ever
         if (!data.isBuilt(cleanup)) {
             clearOldArena(level);
             data.markBuilt(cleanup);
         }
-        String key = realm.id() + "/floor" + floor + "@" + LAYOUT_VERSION;
-        if (data.isBuilt(key)) return;
+        String key = floorKey(line, floor);
+        if (data.isBuilt(key)) {
+            // a floor left mid-shift by a server stop is put back to its own design
+            FloorShifts.repairIfStale(level, line, floor);
+            return;
+        }
         buildFloor(level, line, floor);
         data.markBuilt(key);
+    }
+
+    public static String floorKey(Line line, int floor) {
+        return Realm.ofLine(line).id() + "/floor" + Tower.clampFloor(floor) + "@" + LAYOUT_VERSION;
     }
 
     /** Versions before 1.2 had one flat arena per realm at y 61..102; remove what a tower will not overwrite. */
@@ -143,6 +181,7 @@ public final class TowerBuilder {
         final boolean summit = floor == Tower.FLOORS;
         final int roofY = y0 + Tower.ROOM_HEIGHT + 1;
         final int f = floor;
+        final HeightFn hf = heights(floor, 0);
         BlockState air = Blocks.AIR.defaultBlockState();
         BlockPos.MutableBlockPos pos = new BlockPos.MutableBlockPos();
 
@@ -173,9 +212,9 @@ public final class TowerBuilder {
                 }
 
                 // ---- inside the tower: ground with this floor's terrain, then air, then the roof
-                int h = height(layout, f, x, z);
+                int h = hf.at(x, z);
                 for (int y = y0 - Tower.DEPTH; y < y0 + h; y++) set(level, x, y, z, p.fill());
-                set(level, x, y0 + h, z, surface(p, layout, f, x, z, r, h));
+                set(level, x, y0 + h, z, surface(p, hf, f, x, z, r, h));
                 int airTop = summit ? y0 + 30 : roofY - 1;
                 for (int y = y0 + h + 1; y <= airTop; y++) {
                     pos.set(x, y, z);
@@ -219,6 +258,8 @@ public final class TowerBuilder {
             }
         }
 
+        decorate(level, line, floor, layout, p);
+
         // ---- altar on a small dais in the entrance corridor
         BlockPos altar = Tower.altarPos(floor);
         for (int dx = -2; dx <= 2; dx++) {
@@ -237,18 +278,129 @@ public final class TowerBuilder {
         if (!summit) gate(level, 0, y0, -19, p, ModContent.GATE_ASCEND.get());
     }
 
-    private static Block surface(Palette p, Layout layout, int floor, int x, int z, double r, int h) {
+    private static Block surface(Palette p, HeightFn hf, int floor, int x, int z, double r, int h) {
         if (r < 2.5) return p.inlay();                                                  // centre medallion: the boss spot
         if (r >= Tower.FIGHT_RADIUS - 0.5 && r < Tower.FIGHT_RADIUS + 0.5) {             // the ring that marks the fight area
             return Math.floorMod(x + z, 5) == 0 ? p.light() : p.inlay();
         }
+        if (r >= Tower.FIGHT_RADIUS + 0.5) {
+            // the outer walkway: a kerb against the wall, a processional path from each gate, chequered paving
+            if (r >= 20) return p.trim();
+            if (x == 0 && Math.abs(z) >= 13) return p.inlay();
+            return ((x + z) & 1) == 0 ? p.topAlt() : p.top();
+        }
+        if (x == 0 && (z >= 14 || z <= -14)) return p.inlay();                          // the path continues to the ring
         if (Math.floorMod(x, 7) == 0 && Math.floorMod(z, 7) == 0) return p.light();     // floor lights
         // step edges get the alternate block so height changes read clearly
-        boolean edge = height(layout, floor, x + 1, z) != h || height(layout, floor, x - 1, z) != h
-                || height(layout, floor, x, z + 1) != h || height(layout, floor, x, z - 1) != h;
-        if (edge && r < Tower.FIGHT_RADIUS) return p.topAlt();
+        boolean edge = hf.at(x + 1, z) != h || hf.at(x - 1, z) != h || hf.at(x, z + 1) != h || hf.at(x, z - 1) != h;
+        if (edge) return p.topAlt();
         // each floor shuffles its paving a little differently
         return Math.floorMod((x >> 1) * 3 + (z >> 1) * 5 + floor, 7) < 2 ? p.topAlt() : p.top();
+    }
+
+    /**
+     * Moves the terrain of a built floor from one height map to another (used by floor shifts). Only the fight ring
+     * changes; walkway, walls, altar and gates stay. @return true if any block changed.
+     */
+    public static boolean reshape(ServerLevel level, Line line, int floor, HeightFn from, HeightFn to) {
+        floor = Tower.clampFloor(floor);
+        int y0 = Tower.floorY(floor);
+        Palette p = palette(line, Tower.tier(floor));
+        boolean changed = false;
+        int ri = Tower.FIGHT_RADIUS + 1;
+        for (int x = -ri; x <= ri; x++) {
+            for (int z = -ri; z <= ri; z++) {
+                double r = Math.sqrt(x * x + z * z);
+                if (r >= Tower.FIGHT_RADIUS + 0.5) continue;
+                int a = from.at(x, z), b = to.at(x, z);
+                // repaint the top block even when the height stays, so step edges follow the new shape
+                boolean edgeMayChange = to.at(x + 1, z) != from.at(x + 1, z) || to.at(x - 1, z) != from.at(x - 1, z)
+                        || to.at(x, z + 1) != from.at(x, z + 1) || to.at(x, z - 1) != from.at(x, z - 1);
+                if (a == b && !edgeMayChange) continue;
+                for (int y = y0 + Math.min(a, b); y < y0 + b; y++) set(level, x, y, z, p.fill());
+                set(level, x, y0 + b, z, surface(p, to, floor, x, z, r, b));
+                for (int y = y0 + b + 1; y <= y0 + Math.max(a, b); y++) set(level, x, y, z, Blocks.AIR);
+                changed |= a != b;
+            }
+        }
+        return changed;
+    }
+
+    // ---- decoration: everything here stands outside the fight ring or hangs well above head height ------------
+
+    private static Block[] prop(Line line, int tier, boolean variant) {
+        return switch (line) {
+            case ZEUS -> switch (tier) {
+                case 1 -> variant ? new Block[]{Blocks.MOSS_BLOCK, Blocks.FLOWERING_AZALEA} : new Block[]{Blocks.OAK_LOG, Blocks.LANTERN};
+                case 2 -> variant ? new Block[]{Blocks.CHISELED_QUARTZ_BLOCK, Blocks.GOLD_BLOCK} : new Block[]{Blocks.QUARTZ_PILLAR, Blocks.QUARTZ_PILLAR, Blocks.GLOWSTONE};
+                default -> variant ? new Block[]{Blocks.SNOW_BLOCK, Blocks.END_ROD} : new Block[]{Blocks.CALCITE, Blocks.PEARLESCENT_FROGLIGHT};
+            };
+            case POSEIDON -> switch (tier) {
+                case 1 -> variant ? new Block[]{Blocks.PRISMARINE, Blocks.SEA_LANTERN} : new Block[]{Blocks.CUT_SANDSTONE, Blocks.CHISELED_SANDSTONE, Blocks.LANTERN};
+                case 2 -> variant ? new Block[]{Blocks.DARK_PRISMARINE, Blocks.SEA_LANTERN} : new Block[]{Blocks.PRISMARINE_BRICKS, Blocks.PRISMARINE_BRICKS, Blocks.SEA_LANTERN};
+                default -> variant ? new Block[]{Blocks.SCULK, Blocks.SOUL_LANTERN} : new Block[]{Blocks.CHISELED_DEEPSLATE, Blocks.SEA_LANTERN};
+            };
+            case HADES -> switch (tier) {
+                case 1 -> variant ? new Block[]{Blocks.BONE_BLOCK, Blocks.BONE_BLOCK, Blocks.SOUL_LANTERN} : new Block[]{Blocks.SMOOTH_BASALT, Blocks.SOUL_SOIL, Blocks.SOUL_FIRE};
+                case 2 -> variant ? new Block[]{Blocks.NETHER_BRICKS, Blocks.SOUL_SOIL, Blocks.SOUL_FIRE} : new Block[]{Blocks.GILDED_BLACKSTONE, Blocks.SHROOMLIGHT};
+                default -> variant ? new Block[]{Blocks.OBSIDIAN, Blocks.AMETHYST_BLOCK, Blocks.SOUL_LANTERN} : new Block[]{Blocks.CRYING_OBSIDIAN, Blocks.SOUL_LANTERN};
+            };
+        };
+    }
+
+    private static void decorate(ServerLevel level, Line line, int floor, Layout layout, Palette p) {
+        int y0 = Tower.floorY(floor);
+        boolean summit = floor == Tower.FLOORS;
+        int roofY = y0 + Tower.ROOM_HEIGHT + 1;
+
+        if (summit) {
+            // four obelisks on the diagonals crown the summit
+            for (int sx = -1; sx <= 1; sx += 2) {
+                for (int sz = -1; sz <= 1; sz += 2) {
+                    int x = 14 * sx, z = 14 * sz;
+                    for (int y = 1; y <= 7; y++) set(level, x, y0 + y, z, y == 4 ? p.trim() : p.pillar());
+                    set(level, x, y0 + 8, z, p.light());
+                    if (line == Line.ZEUS) set(level, x, y0 + 9, z, Blocks.END_ROD);
+                }
+            }
+            return;
+        }
+
+        // engaged columns against the wall between the windows, floor to ceiling
+        for (int i = 0; i < 16; i++) {
+            double a = Math.PI * 2 * i / 16;
+            int x = (int) Math.round(Math.cos(a) * 20.2), z = (int) Math.round(Math.sin(a) * 20.2);
+            if (Math.abs(x) <= 4) continue;                                  // leave the gates clear
+            for (int y = y0 + 1; y < roofY; y++) {
+                int h = y - y0;
+                set(level, x, y, z, (h == 1 || h == Tower.ROOM_HEIGHT) ? p.trim() : h == 6 ? p.light() : p.pillar());
+            }
+        }
+
+        // ceiling: two ribs and five hanging lights, all well above anything on the floor
+        int ri = Tower.WALL_INNER;
+        for (int x = -ri; x <= ri; x++) {
+            for (int z = -ri; z <= ri; z++) {
+                double r = Math.sqrt(x * x + z * z);
+                if ((r >= 7.5 && r < 8.5) || (r >= 15.5 && r < 16.5)) set(level, x, roofY - 1, z, p.trim());
+            }
+        }
+        int[][] hangers = {{0, 0, 4}, {9, 9, 3}, {-9, 9, 3}, {9, -9, 3}, {-9, -9, 3}};
+        for (int[] c : hangers) {
+            for (int d = 1; d < c[2]; d++) set(level, c[0], roofY - d, c[1], p.trim());
+            set(level, c[0], roofY - c[2], c[1], p.light());
+        }
+
+        // themed props under the windows (floors whose layout already fills the walkway keep it clear)
+        if (layout != Layout.MOAT && layout != Layout.PILLARS) {
+            for (int i = 0; i < 16; i++) {
+                double a = Math.PI * 2 * (i + 0.5) / 16;
+                int x = (int) Math.round(Math.cos(a) * 19.3), z = (int) Math.round(Math.sin(a) * 19.3);
+                if (Math.abs(x) <= 6 && Math.abs(z) >= 9) continue;         // nothing beside the gates or the path
+                Block[] stack = prop(line, Tower.tier(floor), (i & 1) == 0);
+                for (int k = 0; k < stack.length; k++) set(level, x, y0 + 1 + k, z, stack[k]);
+            }
+        }
     }
 
     /** A gate arch across X centred at (cx, cz), standing on the floor at y0. */

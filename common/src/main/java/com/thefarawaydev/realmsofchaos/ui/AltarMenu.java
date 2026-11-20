@@ -14,7 +14,6 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.SimpleMenuProvider;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.DyeColor;
@@ -25,7 +24,9 @@ import net.minecraft.world.item.Items;
  * begin the trial, ascend (once the god is defeated), or an explanation of why nothing can happen right now.
  */
 public class AltarMenu extends ButtonMenu {
-    public static final int SLOT_ACTION = 11, SLOT_GOD = 13, SLOT_CLOSE = 15, SLOT_INFO = 22;
+    public static final int SLOT_INFO = slot(0, 4), SLOT_ACTION = slot(1, 2), SLOT_GOD = slot(1, 4), SLOT_CLOSE = slot(1, 6);
+    /** The bottom row is a strip of nine floors centred on this one. */
+    public static final int STRIP_ROW = 2;
     private static final String NS = "menu." + RealmsOfChaos.MOD_ID + ".";
 
     private final Line line;
@@ -33,12 +34,12 @@ public class AltarMenu extends ButtonMenu {
 
     public static void open(ServerPlayer player, Line line, BlockPos altar) {
         player.openMenu(new SimpleMenuProvider(
-                (id, inventory, p) -> new AltarMenu(id, inventory, (ServerPlayer) p, new SimpleContainer(SIZE), line, altar),
+                (id, inventory, p) -> new AltarMenu(id, inventory, (ServerPlayer) p, line, altar),
                 Component.translatable(NS + "altar")));
     }
 
-    private AltarMenu(int id, Inventory inventory, ServerPlayer viewer, SimpleContainer view, Line line, BlockPos altar) {
-        super(id, inventory, viewer, view);
+    private AltarMenu(int id, Inventory inventory, ServerPlayer viewer, Line line, BlockPos altar) {
+        super(id, inventory, viewer, 3);
         this.line = line;
         this.altar = altar;
         render();
@@ -78,12 +79,12 @@ public class AltarMenu extends ButtonMenu {
     @Override
     protected void render() {
         AltarBlock.State state = state();
-        fill(switch (state) {
+        frame(switch (state) {
             case READY -> DyeColor.LIME;
             case DEFEATED, COMPLETE -> DyeColor.LIGHT_BLUE;
             case UNDERWAY -> DyeColor.ORANGE;
             default -> DyeColor.RED;
-        });
+        }, DyeColor.BLACK);
         God god = AltarBlock.godFor(level(), viewer, altar, line);
         boolean inTower = Realm.of(level().dimension()) != null;
         int floor = inTower ? Tower.floorAt(altar.getY()) : (god == null ? Tower.FLOORS : Tower.floorOf(god));
@@ -113,8 +114,26 @@ public class AltarMenu extends ButtonMenu {
         });
 
         view.setItem(SLOT_CLOSE, icon(Items.ARROW, text(NS + "altar.close", 0xFFFFFF), false, List.of()));
-        view.setItem(SLOT_INFO, icon(ModContent.CHAOS_CODEX.get(), Tower.towerName(line).copy().withStyle(plain(line.color())), false, List.of(
+        view.setItem(SLOT_INFO, icon(ModContent.CHAOS_CODEX.get(), Tower.towerName(line).copy().withStyle(plain(line.color())), true, List.of(
                 text("hud." + RealmsOfChaos.MOD_ID + ".floor", 0xFFFFFF, Tower.tierName(line, floor), floor))));
+
+        // the climb at a glance: four floors below, this floor, four floors above
+        com.thefarawaydev.realmsofchaos.world.ProgressData data = com.thefarawaydev.realmsofchaos.world.ProgressData.get(level().getServer());
+        for (int i = 0; i < 9; i++) {
+            int f = floor - 4 + i;
+            if (f < 1 || f > Tower.FLOORS) {
+                view.setItem(slot(STRIP_ROW, i), filler(DyeColor.BLACK));
+                continue;
+            }
+            God g = Tower.god(line, f);
+            boolean won = data.isDefeated(viewer.getUUID(), g);
+            List<Component> lore = new ArrayList<>();
+            lore.add(Tower.tierName(line, f).copy().withStyle(plain(0xAAAAAA)));
+            if (f == floor) lore.add(text(NS + "strip.here", 0xFFFF55));
+            if (won) lore.add(text(NS + "god.defeated", 0x55FF55));
+            view.setItem(slot(STRIP_ROW, i), pane(won ? DyeColor.LIME : f == floor ? DyeColor.YELLOW : DyeColor.GRAY,
+                    text(NS + "strip.floor", won ? 0x55FF55 : f == floor ? 0xFFFF55 : 0x888888, f, g.displayName()), lore));
+        }
         broadcastChanges();
     }
 }

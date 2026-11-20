@@ -7,6 +7,7 @@ import com.thefarawaydev.realmsofchaos.god.Gods;
 import com.thefarawaydev.realmsofchaos.god.Line;
 import com.thefarawaydev.realmsofchaos.world.ProgressData;
 import com.thefarawaydev.realmsofchaos.world.Realm;
+import com.thefarawaydev.realmsofchaos.world.FloorShifts;
 import com.thefarawaydev.realmsofchaos.world.Tower;
 import com.thefarawaydev.realmsofchaos.ui.Hud;
 import com.thefarawaydev.realmsofchaos.world.RocAdvancements;
@@ -73,6 +74,7 @@ public class GodBoss extends Monster {
     private Vec3 home;
     private Vec3 lastProgressPos = Vec3.ZERO;
     private int stuckSeconds;
+    private int shiftStage;
 
     public GodBoss(EntityType<? extends GodBoss> type, Level level) {
         super(type, level);
@@ -119,7 +121,31 @@ public class GodBoss extends Monster {
 
     private Vec3 home() {
         if (home == null) home = position();
+        Realm realm = Realm.of(level().dimension());
+        if (realm != null && realm.line() != null && level() instanceof ServerLevel serverLevel) {
+            // in a tower the floor can shift under the boss: home is always the top of the floor's centre
+            home = Tower.centre(serverLevel, Tower.floorAt(home.y));
+        }
         return home;
+    }
+
+    /**
+     * Living floors: the terrain shifts into its alternate shape when the god drops below two thirds health and
+     * back below one third; on the upper floors it also keeps shifting on a timer.
+     */
+    public void updateFloorShift(ServerLevel level) {
+        Realm realm = Realm.of(level.dimension());
+        if (realm == null || realm.line() == null) return;
+        int floor = Tower.floorAt(home().y);
+        float hp = getHealth() / getMaxHealth();
+        int stage = hp < 0.33F ? 2 : hp < 0.66F ? 1 : 0;
+        if (stage > shiftStage) {
+            shiftStage = stage;
+            FloorShifts.set(level, realm.line(), floor, stage == 1);
+        }
+        if (Tower.tier(floor) >= 3 && tickCount > 0 && tickCount % 500 == 0) {
+            FloorShifts.toggle(level, realm.line(), floor);
+        }
     }
 
     private double leashRadius() {
@@ -249,6 +275,7 @@ public class GodBoss extends Monster {
         }
 
         if (tickCount % 20 == 0) keepUnstuck(level);
+        if (tickCount % 10 == 0) updateFloorShift(level);
         if (tickCount % 6 == 0) {
             level.sendParticles(lineParticle(), getX(), getY() + 1.1, getZ(), enraged ? 4 : 2, 0.35, 0.7, 0.35, 0.02);
         }
@@ -422,6 +449,7 @@ public class GodBoss extends Monster {
         super.addAdditionalSaveData(output);
         output.putInt("God", godIndex());
         output.putBoolean("Enraged", enraged);
+        output.putInt("ShiftStage", shiftStage);
         Vec3 h = home();
         output.putDouble("HomeX", h.x);
         output.putDouble("HomeY", h.y);
@@ -433,6 +461,7 @@ public class GodBoss extends Monster {
         super.readAdditionalSaveData(input);
         this.entityData.set(DATA_GOD, input.getIntOr("God", 0));
         this.enraged = input.getBooleanOr("Enraged", false);
+        this.shiftStage = input.getIntOr("ShiftStage", 0);
         double hy = input.getDoubleOr("HomeY", Double.NaN);
         if (!Double.isNaN(hy)) {
             this.home = new Vec3(input.getDoubleOr("HomeX", getX()), hy, input.getDoubleOr("HomeZ", getZ()));

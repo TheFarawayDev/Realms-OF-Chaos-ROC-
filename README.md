@@ -31,6 +31,13 @@ The current build is an **Alpha**.
 | 11-14 | The Cloud Sanctum | The Trench | Halls of the Dead |
 | 15 | Summit of Olympus | Throne of the Deep | Throne of the Underworld |
 
+* **Living floors.** Floors change during a trial: when the god drops below two thirds health the terrain shifts,
+  one block at a time, into a second shape (a pit rises into a dais, a hall folds into terraces), and shifts back
+  below one third; the upper floors also keep shifting on a timer. Anything standing on rising ground is carried up,
+  no step ever exceeds one block, and the floor settles back into its own design when the fight ends.
+* **Furnished rooms.** Every floor has engaged columns between its windows, a ribbed ceiling with hanging lights, a
+  processional path from the gates, and props that match its tier (azaleas and lanterns in the foothills, braziers
+  of soul fire in Tartarus, sculk and soul lanterns in the Trench...).
 * **45 gods** - each is a boss with its own look *and* an animated relic weapon:
 
 | Floor | Rank | Zeus line | Poseidon line | Hades line |
@@ -52,9 +59,11 @@ The current build is an **Alpha**.
 | 1 (start) | 15 | **Iris** | **Galatea** | **Charon** |
 
 * **In-game UI instead of chat** - nothing the mod tells you goes to chat:
-  * **Codex of Chaos** (item or `/roc`): the three towers, every floor and god, travel to any floor you have
-    reached, travel to the hub, and leave the realms.
-  * **Trial Altar menu**: right-click a floor's altar to see its god and begin the trial, or ascend once it is won.
+  * **Codex of Chaos** (item or `/roc`), a double-chest screen: the three towers side by side with climb meters,
+    and a page per tower that draws it floor by floor with tier labels. Click any floor you have reached to travel
+    there; travel to the hub or leave the realms from the main page.
+  * **Trial Altar menu**: right-click a floor's altar to see its god and begin the trial, or ascend once it is won;
+    a strip along the bottom shows the floors around you.
   * **Tower bar**: a bar at the top of the screen shows the tower, floor and tier you are on.
   * **Titles and action bar** for arrivals, trials, victories and short notices.
   * **Advancements tab** with one advancement per god.
