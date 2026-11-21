@@ -5,360 +5,518 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Realms of Chaos - Download</title>
 <meta name="description" content="Realms of Chaos by TheFarawayDev - a Minecraft mythology boss-rush mod for Fabric and Forge.">
-<meta name="theme-color" content="#16122b">
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%2307060f'/%3E%3Cpath d='M16 4l10 6v12l-10 6-10-6V10z' fill='none' stroke='%23f2c94c' stroke-width='3'/%3E%3C/svg%3E">
+<meta name="theme-color" content="#0f0c1d">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 8 8' shape-rendering='crispEdges'%3E%3Crect width='8' height='8' fill='%230f0c1d'/%3E%3Cpath d='M2 1h4v1H2zM2 2h1v5H2zM5 2h1v1H5zM3 3h3v1H3zM4 4h1v1H4zM5 5h1v2H5z' fill='%23f5b82e'/%3E%3C/svg%3E">
+<link rel="preload" href="ChaosBlocks.ttf" as="font" type="font/ttf" crossorigin>
 <style>
+  @font-face { font-family:"Chaos Blocks"; src:url("ChaosBlocks.ttf") format("truetype"); font-display:swap; }
   @font-face { font-family:"Monocraft"; src:url("Monocraft.ttf") format("truetype"); font-display:swap; }
   :root {
-    --bg:#16122b; --grid:#201b3d; --panel:#262050; --panel-sh:#110d26; --text:#f4f1ff; --muted:#aaa3d6;
-    --gold:#f5b82e; --gold-sh:#a9710a; --teal:#2bb7cc; --teal-sh:#14707f; --purple:#a55ad6; --purple-sh:#652d8f;
-    --green:#4cc97f; --green-sh:#27804d; --neutral:#40387c; --neutral-sh:#1e1944;
+    --bg:#0f0c1d; --panel:#1d1838; --hi:#3d3672; --lo:#090711; --ink:#05040b; --line:#2a2450;
+    --text:#f3f0ff; --soft:#d3cef0; --muted:#a39cca;
+    --gold:#f5b82e; --gold-hi:#ffe08a; --gold-lo:#a9710a;
+    --teal:#2bb7cc; --teal-hi:#93e8f3; --teal-lo:#14707f;
+    --purple:#a55ad6; --purple-hi:#d9a8f7; --purple-lo:#652d8f;
+    --green:#4cc97f; --green-hi:#a9f2c6; --green-lo:#27804d;
+    --stone:#5d5788; --stone-hi:#8f89b8; --stone-lo:#37325a;
+    --title:"Chaos Blocks", "Monocraft", ui-monospace, Menlo, Consolas, monospace;
     --pixel:"Monocraft", ui-monospace, Menlo, Consolas, monospace;
     --sans:system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-    --r:14px;
+    --nav:58px; --lc:var(--gold); --ll:var(--gold-hi); --ls:var(--gold-lo);
   }
   * { box-sizing:border-box; }
-  html { scroll-behavior:smooth; }
+  html { scroll-behavior:smooth; scroll-padding-top:calc(var(--nav) + 18px); }
   body { margin:0; background:var(--bg); color:var(--text); font:16px/1.6 var(--sans); overflow-x:hidden; }
-  #bg { position:fixed; inset:0; width:100%; height:100%; z-index:-1; display:block; }
   a { color:inherit; }
-  .wrap { max-width:1120px; margin:0 auto; padding:0 20px; }
+  .wrap { max-width:1160px; margin:0 auto; padding:0 20px; }
 
-  /* the chunky "press" effect shared by every button-like surface */
-  .chunk { --c:var(--neutral); --s:var(--neutral-sh); background:var(--c); color:var(--text); border-radius:var(--r);
-           box-shadow:0 6px 0 var(--s); transition:transform .1s, box-shadow .1s; }
-  a.chunk, button.chunk, .chunk.hov { cursor:pointer; }
-  a.chunk:hover, .chunk.hov:hover { transform:translateY(-3px); box-shadow:0 9px 0 var(--s); }
-  a.chunk:active, .chunk.hov:active { transform:translateY(6px); box-shadow:0 0 0 var(--s); }
-  .c-gold { --c:var(--gold); --s:var(--gold-sh); color:#1b1300; }
-  .c-teal { --c:var(--teal); --s:var(--teal-sh); color:#03232a; }
-  .c-purple { --c:var(--purple); --s:var(--purple-sh); color:#1e0830; }
-  .c-green { --c:var(--green); --s:var(--green-sh); color:#06260f; }
-  .c-panel { --c:var(--panel); --s:var(--panel-sh); }
-  [aria-disabled=true] { filter:grayscale(1) brightness(.7); pointer-events:none; box-shadow:0 3px 0 var(--s); transform:translateY(3px); }
+  /* ---- shared pieces: a bevelled pane and a bevelled button, both square ---- */
+  .pane { background:var(--panel); border:3px solid; border-color:var(--hi) var(--lo) var(--lo) var(--hi); box-shadow:0 0 0 3px var(--ink); }
+  .btn { --c:var(--stone); --ch:var(--stone-hi); --cl:var(--stone-lo); --ct:#fff; --cs:#1b1836;
+         display:flex; align-items:center; justify-content:center; gap:10px; width:100%; padding:13px 16px; cursor:pointer;
+         font:400 15px/1.3 var(--pixel); text-align:center; text-decoration:none; color:var(--ct); text-shadow:2px 2px 0 var(--cs);
+         background:var(--c); border:3px solid; border-color:var(--ch) var(--cl) var(--cl) var(--ch); box-shadow:0 0 0 3px var(--ink); }
+  .btn:hover, .btn:focus-visible { filter:brightness(1.12); box-shadow:0 0 0 3px #fff; outline:0; }
+  .btn:active { border-color:var(--cl) var(--ch) var(--ch) var(--cl); transform:translateY(2px); }
+  .btn.gold { --c:var(--gold); --ch:var(--gold-hi); --cl:var(--gold-lo); --ct:#211600; --cs:transparent; }
+  .btn.teal { --c:var(--teal); --ch:var(--teal-hi); --cl:var(--teal-lo); --ct:#03232a; --cs:transparent; }
+  .btn.purple { --c:var(--purple); --ch:var(--purple-hi); --cl:var(--purple-lo); --ct:#fff; --cs:#3c1759; }
+  .btn.sm { width:auto; padding:8px 14px; font-size:12px; }
+  [aria-disabled=true] { filter:grayscale(1) brightness(.75); pointer-events:none; }
+  .chan { display:inline-block; font:400 11px/1 var(--pixel); letter-spacing:1px; padding:5px 8px; color:#06260f; background:var(--green); box-shadow:0 0 0 2px var(--ink); vertical-align:middle; }
+  .chan.alpha { background:var(--purple); color:#fff; } .chan.beta { background:var(--teal); color:#03232a; }
+  .chan[hidden] { display:none; }
+  code { font:12px var(--pixel); background:var(--lo); padding:3px 7px; color:var(--gold-hi); }
 
-  /* hero */
-  /* Hero: two columns that share their top and bottom edges. Everything in the left column spans its full width. */
-  .hero { padding:64px 0 8px; display:grid; grid-template-columns:1.15fr 1fr; gap:36px; align-items:stretch; }
-  .hero-left { text-align:left; display:flex; flex-direction:column; min-width:0; container-type:inline-size; }
-  /* "OF CHAOS" is 5.2267em of ink wide in Monocraft, so this font size makes it span the column edge to edge;
-     the small negative top margin puts the cap height on the column's top edge (the font has 0.095em above caps). */
-  h1 { margin:-.095em 0 0; font:400 clamp(2.4rem,8.6vw,6rem)/.98 var(--pixel); color:#fff; text-transform:uppercase; white-space:nowrap; }
-  @supports (width:1cqw) { h1 { font-size:calc(100cqw / 5.2267); } }
-  h1 span { display:block; text-shadow:0 5px 0 #000, 5px 5px 0 var(--gold-sh), 0 8px 0 var(--gold-sh); }
-  h1 .l2 { color:var(--gold); text-shadow:0 5px 0 var(--gold-sh), 0 10px 0 #000; }
-  .rule { display:flex; align-items:center; gap:14px; margin:26px 0 0; }
-  .bar { flex:1; display:grid; grid-template-columns:repeat(3,1fr); height:12px; border-radius:6px; overflow:hidden; box-shadow:0 5px 0 #000; }
-  .rule .chan { font-size:13px; padding:7px 14px; letter-spacing:1px; border-radius:8px; box-shadow:0 5px 0 #000; }
-  .bar b:nth-child(1){background:var(--gold)} .bar b:nth-child(2){background:var(--teal)} .bar b:nth-child(3){background:var(--purple)}
-  .info { padding:22px 24px; text-align:right; display:flex; flex-direction:column; }
-  .info .irow { flex:1; align-items:center; }
-  .eyebrow { display:block; font:13px var(--pixel); line-height:1.5; padding:11px 16px; margin:0 0 14px; width:100%; text-align:center; }
-  .eyebrow small { display:block; font-size:11px; opacity:.8; }
-  .irow { display:flex; justify-content:space-between; gap:16px; padding:9px 0; border-bottom:2px solid var(--panel-sh); font-size:14px; }
-  .irow:last-child { border:0; padding-bottom:0; }
-  .irow span { color:var(--muted); } .irow b { font:400 13px var(--pixel); text-align:right; }
-  .cta { margin-top:30px; display:grid; grid-template-columns:repeat(3,1fr); gap:16px; }
-  @media (max-width:860px) { .hero { grid-template-columns:1fr; } .cta { grid-template-columns:1fr; } }
-
-  .btn { font:400 15px var(--pixel); text-decoration:none; display:flex; align-items:center; justify-content:center; gap:10px; padding:20px 18px; text-align:center; width:100%; border:0; }
-  .btn svg { width:20px; height:20px; }
-
-  /* sections */
-  section { padding:54px 0 8px; }
-  .sh { margin-bottom:22px; display:flex; align-items:center; justify-content:space-between; gap:10px 16px; flex-wrap:wrap; }
-  .sh h2 { display:inline-block; font:400 1.3rem var(--pixel); margin:0; padding:10px 20px; }
-  .sh small { color:var(--muted); font-size:13px; text-align:right; margin-left:auto; }
-
-  .dl { display:grid; grid-template-columns:repeat(auto-fit,minmax(340px,1fr)); gap:22px; }
-  .dlcard { padding:26px; display:flex; flex-direction:column; }
-  .dltop { display:flex; align-items:center; gap:16px; margin-bottom:20px; }
-  .logo { width:64px; height:64px; border-radius:14px; display:grid; place-items:center; background:var(--c); box-shadow:0 5px 0 var(--s); }
-  .logo svg { width:36px; height:36px; color:var(--ink); }
-  .dlcard.fabric { --ink:#1b1300; --c:var(--gold); --s:var(--gold-sh); } .dlcard.forge { --ink:#03232a; --c:var(--teal); --s:var(--teal-sh); }
-  .dlcard { background:var(--panel); border-radius:var(--r); --pc:var(--c); --ps:var(--s); box-shadow:0 6px 0 var(--panel-sh); }
-  .dltop h3 { margin:0; font:400 1.5rem var(--pixel); color:var(--pc); }
-  .dltop p { margin:2px 0 0; color:var(--muted); font-size:13px; }
-  dl.facts { display:grid; grid-template-columns:auto 1fr; gap:0; margin:0 0 22px; font-size:13px; background:var(--panel-sh); border-radius:10px; padding:6px 16px; }
-  dl.facts dt, dl.facts dd { padding:9px 0; border-bottom:2px solid #1d1740; }
-  dl.facts dt:nth-last-of-type(1), dl.facts dd:last-of-type { border-bottom:0; }
-  dl.facts dd[data-f] { min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
-  dl.facts dt { color:var(--muted); white-space:nowrap; padding-right:16px; } dl.facts dd { margin:0; text-align:right; font:12px var(--pixel); }
-  .dlcard .btn { margin-top:auto; }
-
-  .stats { display:grid; grid-template-columns:repeat(4,1fr); gap:18px; }
-  @media (max-width:700px) { .stats { grid-template-columns:repeat(2,1fr); } }
-  .stat { padding:24px 12px; text-align:center; }
-  .stat b { display:block; font:400 2.6rem/1.1 var(--pixel); }
-  .stat span { font-size:13px; font-weight:600; opacity:.85; }
-
-  .feat { display:grid; grid-template-columns:repeat(auto-fit,minmax(300px,1fr)); gap:20px; }
-  .feat > div { padding:24px; }
-  .feat h3 { margin:0 0 8px; font:400 1.15rem var(--pixel); }
-  .feat p { margin:0; font-size:14px; font-weight:500; opacity:.9; }
-
-  .two { display:grid; grid-template-columns:repeat(auto-fit,minmax(340px,1fr)); gap:22px; }
-  .two .chunk { padding:26px; }
-  .two h3 { margin:0 0 14px; font:400 1.15rem var(--pixel); color:var(--gold); }
-  ol { margin:0; padding-left:22px; } li { margin:9px 0; }
-  code { font:12px var(--pixel); background:var(--panel-sh); border-radius:6px; padding:3px 8px; }
-  table { width:100%; border-collapse:collapse; font-size:14px; }
-  td { padding:11px 0; border-bottom:2px solid var(--panel-sh); } tr:last-child td { border:0; }
-  td:first-child { color:var(--muted); } td:last-child { text-align:right; font:12px var(--pixel); }
-
-  #rel-list { display:grid; gap:18px; }
-  .row { display:grid; grid-template-columns:1.5fr 1fr auto; gap:14px; align-items:center; padding:18px 22px; }
-  .row b { font:400 14px var(--pixel); } .row small { color:var(--muted); font-size:13px; }
-  .dls { display:flex; gap:10px; }
-  .dls a { font:12px var(--pixel); padding:10px 16px; text-decoration:none; }
-  .tagl { font:11px var(--pixel); color:#06260f; background:var(--green); border-radius:6px; padding:3px 8px; margin-left:10px; }
-  @media (max-width:640px) { .row { grid-template-columns:1fr; } }
-
-  footer { margin-top:64px; background:var(--panel-sh); padding:28px 0 40px; color:var(--muted); font-size:13px; }
-  footer .wrap { display:flex; justify-content:space-between; flex-wrap:wrap; gap:10px; }
   /* pixel sprites cut from the generated atlas (gods.png: 45 x 16x32) */
-  .spr { display:inline-block; flex:none; image-rendering:pixelated; background-repeat:no-repeat; --k:2; }
-  .spr { width:calc(16px*var(--k)); height:calc(32px*var(--k)); background-image:url(gods.png);
+  .spr { display:inline-block; flex:none; image-rendering:pixelated; background-repeat:no-repeat; --k:2;
+         width:calc(16px*var(--k)); height:calc(32px*var(--k)); background-image:url(gods.png);
          background-size:calc(720px*var(--k)) calc(32px*var(--k)); background-position:calc(-16px*var(--i)*var(--k)) 0; }
-  .champs { flex:1; display:grid; grid-template-columns:repeat(3,1fr); gap:14px; margin-top:30px; }
-  .champ { padding:14px 10px 10px; text-align:center; text-decoration:none; display:flex; flex-direction:column; align-items:center; justify-content:center; }
-  .champ .spr { --k:4; filter:drop-shadow(0 4px 0 rgba(0,0,0,.35)); }
-  .champ b { display:block; font:400 13px var(--pixel); margin-top:6px; }
-  .champ small { font-size:11px; font-weight:600; opacity:.8; }
-  @media (max-width:420px) { .champ .spr { --k:3; } }
 
-  .feat .with-spr { display:flex; gap:16px; align-items:center; }
-  .feat .with-spr .spr { --k:3; }
+  /* ---- top bar ---- */
+  nav { position:sticky; top:0; z-index:20; height:var(--nav); background:#0c0a18; border-bottom:3px solid var(--ink); box-shadow:inset 0 -3px 0 var(--line); }
+  nav .wrap { height:100%; display:flex; align-items:center; gap:22px; }
+  .mark { font:400 16px/1 var(--title); text-decoration:none; color:#fff; white-space:nowrap; text-shadow:0 2px 0 var(--stone-lo); }
+  .mark i { font-style:normal; color:var(--gold); text-shadow:0 2px 0 var(--gold-lo); }
+  .links { display:flex; gap:4px; margin-left:auto; }
+  .links a { font:400 12px/1 var(--pixel); text-decoration:none; text-transform:uppercase; letter-spacing:.5px; color:var(--muted); padding:10px 10px; border-bottom:3px solid transparent; }
+  .links a:hover { color:#fff; } .links a.on { color:var(--gold); border-bottom-color:var(--gold); }
+  nav .btn { flex:none; }
+  @media (max-width:900px) { .links { display:none; } nav .btn { margin-left:auto; } }
 
-  .lines3 { display:grid; grid-template-columns:repeat(auto-fit,minmax(310px,1fr)); gap:22px; align-items:start; }
-  .linecol { padding:18px 16px 12px; }
-  .linecol h3 { margin:0 0 4px; font:400 1.15rem var(--pixel); color:var(--lc); }
-  .linecol > p { margin:0 0 12px; color:var(--muted); font-size:13px; }
-  .god { display:grid; grid-template-columns:28px 32px 1fr; gap:10px; align-items:center; padding:7px 8px; border-radius:10px; }
-  .god.alt { background:var(--panel-sh); }
-  .god .rk { font:400 11px var(--pixel); color:var(--muted); text-align:center; }
-  .god.final .rk, .god.starter .rk { color:#16122b; background:var(--lc); border-radius:6px; padding:3px 0; }
-  .god b { display:block; font:400 13px var(--pixel); line-height:1.3; }
-  .god small { display:block; color:var(--muted); font-size:11.5px; line-height:1.3; }
-  .god small.mv { color:var(--lc); font:400 10.5px var(--pixel); margin-top:2px; }
-  .tabs { display:none; gap:10px; margin-bottom:16px; }
-  .tabs button { flex:1; font:400 13px var(--pixel); border:0; padding:12px 6px; }
-  @media (max-width:720px) { .tabs { display:flex; } .linecol { display:none; } .linecol.on { display:block; } }
+  /* ---- hero: the name, then the buttons, on the plain background ---- */
+  .hero-in { width:100%; max-width:1160px; margin:0 auto; padding:64px 20px 96px; display:flex; flex-direction:column; align-items:center; text-align:center; }
+  .hero-top { width:100%; container-type:inline-size; position:relative; }
+  /* the whole name is 72 blocks wide and a letter is 8 blocks to the em, so this size fills the row edge to edge */
+  h1 { margin:0; font:400 clamp(2rem, 9.6vw, 7.4rem)/1 var(--title); white-space:nowrap; letter-spacing:0; }
+  @supports (width:1cqw) { h1 { font-size:min(118px, calc(100cqw / 9.25)); } }
+  h1 span { display:inline-block; color:transparent; -webkit-background-clip:text; background-clip:text;
+            background-image:linear-gradient(#fff 0 25%, #e5e1f8 25% 62.5%, #bdb7de 62.5%);
+            filter:drop-shadow(0 .125em 0 #58527f) drop-shadow(0 .0625em 0 #06050d); }
+  h1 .l2 { background-image:linear-gradient(#fff0b8 0 25%, #f5b82e 25% 62.5%, #d0900f 62.5%); filter:drop-shadow(0 .125em 0 #8a5a06) drop-shadow(0 .0625em 0 #06050d); }
+  .splash { position:absolute; right:2%; bottom:-14px; font:400 15px/1 var(--pixel); color:#ffe95e; text-shadow:2px 2px 0 #403a00; transform:rotate(-9deg); animation:throb .55s ease-in-out infinite alternate; white-space:nowrap; }
+  @keyframes throb { from { transform:rotate(-9deg) scale(1); } to { transform:rotate(-9deg) scale(1.07); } }
+  .tag { max-width:620px; margin:34px 0 0; font-size:17px; color:var(--soft); }
+  .menu { width:min(100%, 430px); margin-top:30px; display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+  .menu .wide { grid-column:1 / -1; padding:16px; font-size:16px; }
+  .hero-ver { margin-top:24px; font:400 12px/1.7 var(--pixel); color:var(--soft); }
+  .hero-ver small { display:block; font-size:11px; color:var(--muted); }
+  @media (max-width:760px) {
+    h1 span { display:block; }
+    h1 { font-size:clamp(2rem, 18.5vw, 5.4rem); line-height:1.12; }
+    @supports (width:1cqw) { h1 { font-size:calc(100cqw / 4.85); } }
+    .splash { position:static; display:inline-block; margin-top:14px; font-size:13px; }
+    .tag { margin-top:18px; font-size:15.5px; }
+    .hero-in { padding:36px 16px 76px; }
+    .menu .btn:not(.wide) { font-size:13px; padding:13px 6px; }
+  }
 
-  .ingame { display:grid; grid-template-columns:repeat(auto-fit,minmax(min(100%,420px),1fr)); gap:20px; }
-  .ingame > div { padding:22px; }
-  .ingame h3 { margin:0 0 8px; font:400 1.1rem var(--pixel); color:var(--gold); }
-  .ingame p { margin:0 0 12px; color:#d6d1f5; font-size:14px; }
-  /* a tiny mock of the Codex chest menu */
-  .mock { display:grid; grid-template-columns:repeat(9,1fr); gap:3px; background:var(--panel-sh); padding:8px; border-radius:10px; }
-  .mock i { aspect-ratio:1; background:#3a3270; border-radius:3px; display:grid; place-items:center; }
-  .mock i.g { background:#2c5a3c; } .mock i.n { background:#6a5a1e; } .mock i.x { background:#2a2550; }
-  .toast { display:flex; gap:12px; align-items:center; background:var(--panel-sh); border-radius:10px; padding:10px 14px; margin-top:8px; }
+  /* ---- the release strip under the hero ---- */
+  .strip { position:relative; z-index:2; margin-top:-34px; display:grid; grid-template-columns:repeat(5, 1fr); }
+  .strip div { padding:13px 16px 12px; border-right:3px solid var(--lo); border-bottom:3px solid var(--lo); min-width:0; }
+  .strip div:nth-child(5n) { border-right:0; } .strip div:nth-last-child(-n+5) { border-bottom:0; }
+  .strip div > span { display:block; font:400 10px/1.2 var(--pixel); letter-spacing:1px; text-transform:uppercase; color:var(--muted); margin-bottom:6px; }
+  .strip b { display:block; font:400 13px/1.3 var(--pixel); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  @media (max-width:860px) {
+    .strip { grid-template-columns:repeat(2, 1fr); }
+    .strip div:nth-child(n) { border-right:3px solid var(--lo); border-bottom:3px solid var(--lo); }
+    .strip div:nth-child(2n) { border-right:0; } .strip div:nth-last-child(-n+2) { border-bottom:0; }
+  }
+
+  /* ---- sections ---- */
+  section, .band { padding:76px 0 0; }
+  .sh { display:flex; align-items:flex-end; justify-content:space-between; gap:12px 24px; flex-wrap:wrap; margin-bottom:30px; }
+  .sh .k { display:block; font:400 11px/1 var(--pixel); letter-spacing:2px; color:var(--gold); margin-bottom:14px; }
+  .sh h2 { margin:0; font:400 40px/1 var(--title); color:#fff; text-shadow:0 5px 0 var(--stone-lo); }
+  .sh p { margin:0; max-width:460px; color:var(--muted); font-size:14px; text-align:right; }
+  @media (max-width:700px) { .sh h2 { font-size:32px; text-shadow:0 4px 0 var(--stone-lo); } .sh p { text-align:left; } }
+
+  /* download */
+  .dl { display:grid; grid-template-columns:repeat(auto-fit, minmax(min(100%, 340px), 1fr)); gap:26px; }
+  .dlcard { --c:var(--gold); --cl:var(--gold-lo); display:flex; flex-direction:column; }
+  .dlcard.forge { --c:var(--teal); --cl:var(--teal-lo); }
+  .dltop { display:flex; align-items:center; gap:16px; padding:20px 22px; border-bottom:3px solid var(--lo); }
+  .logo { width:56px; height:56px; flex:none; display:grid; place-items:center; background:var(--c); color:#14101f; box-shadow:0 0 0 3px var(--ink), inset -3px -3px 0 var(--cl); }
+  .logo svg { width:32px; height:32px; }
+  .dltop h3 { margin:0; font:400 32px/1 var(--title); color:var(--c); text-shadow:0 4px 0 var(--cl); }
+  .dltop p { margin:8px 0 0; color:var(--muted); font-size:13px; }
+  dl.facts { display:grid; grid-template-columns:auto 1fr; margin:0; padding:8px 22px; font-size:13px; }
+  dl.facts dt, dl.facts dd { padding:10px 0; border-bottom:2px solid var(--line); }
+  dl.facts dt:last-of-type, dl.facts dd:last-of-type { border-bottom:0; }
+  dl.facts dt { color:var(--muted); white-space:nowrap; padding-right:16px; }
+  dl.facts dd { margin:0; text-align:right; font:12px/1.7 var(--pixel); min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .dlcard .foot { margin-top:auto; padding:8px 22px 22px; }
+  .dlcard .btn { padding:16px; }
+
+  /* the three towers */
+  .towers { display:grid; grid-template-columns:repeat(3, 1fr); gap:26px; }
+  @media (max-width:980px) { .towers { grid-template-columns:1fr; } }
+  .tower { display:flex; flex-direction:column; border-color:var(--lc) var(--ls) var(--ls) var(--lc); }
+  [data-l=poseidon] { --lc:var(--teal); --ll:var(--teal-hi); --ls:var(--teal-lo); }
+  [data-l=hades] { --lc:var(--purple); --ll:var(--purple-hi); --ls:var(--purple-lo); }
+  .thead { display:flex; align-items:flex-end; gap:16px; padding:22px 22px 0; }
+  .thead .spr { --k:4; filter:drop-shadow(0 4px 0 rgba(0,0,0,.45)); }
+  .thead small { display:block; font:400 10px/1 var(--pixel); letter-spacing:2px; color:var(--ll); margin-bottom:10px; }
+  .thead h3 { margin:0 0 14px; font:400 32px/1 var(--title); color:var(--lc); text-shadow:0 4px 0 var(--ls); }
+  .tower.poseidon .thead h3 { font-size:24px; text-shadow:0 3px 0 var(--ls); margin-bottom:18px; }
+  .tbody { padding:18px 22px 22px; display:flex; flex-direction:column; flex:1; border-top:3px solid var(--lo); }
+  .tbody p { margin:0 0 18px; font-size:14px; color:var(--soft); }
+  .ladder { display:grid; grid-template-columns:repeat(15, 1fr); gap:3px; margin-bottom:14px; }
+  .ladder i { aspect-ratio:1; background:var(--ls); opacity:.55; } .ladder i.t2 { opacity:.75; } .ladder i.t3 { background:var(--lc); opacity:.8; } .ladder i.t4 { background:var(--ll); opacity:1; }
+  .tiers { list-style:none; margin:0 0 20px; padding:0; font-size:13px; }
+  .tiers li { display:flex; justify-content:space-between; gap:12px; padding:7px 0; border-bottom:2px solid var(--line); color:var(--soft); }
+  .tiers li:last-child { border:0; } .tiers b { font:400 11px/1.9 var(--pixel); color:var(--ll); white-space:nowrap; }
+  .tbody .btn { margin-top:auto; }
+
+  /* numbers */
+  .stats { display:grid; grid-template-columns:repeat(6, 1fr); }
+  .stat { padding:26px 10px 22px; text-align:center; border-right:3px solid var(--lo); }
+  .stat:last-child { border-right:0; }
+  .stat b { display:block; font:400 40px/1 var(--title); color:var(--c, #fff); text-shadow:0 5px 0 var(--s, var(--stone-lo)); margin-bottom:16px; white-space:nowrap; }
+  .stat span { font:400 11px/1.4 var(--pixel); color:var(--muted); text-transform:uppercase; letter-spacing:.5px; }
+  @media (max-width:980px) { .stats { grid-template-columns:repeat(3, 1fr); } .stat:nth-child(3) { border-right:0; } .stat:nth-child(-n+3) { border-bottom:3px solid var(--lo); } }
+  @media (max-width:560px) { .stats { grid-template-columns:repeat(2, 1fr); } .stat:nth-child(n) { border-right:3px solid var(--lo); border-bottom:3px solid var(--lo); }
+    .stat:nth-child(2n) { border-right:0; } .stat:nth-last-child(-n+2) { border-bottom:0; } .stat b { font-size:32px; text-shadow:0 4px 0 var(--s, var(--stone-lo)); } }
+
+  /* features: a heading column and a grid of cards for each group */
+  .group { --c:var(--gold); --cl:var(--gold-lo); display:grid; grid-template-columns:250px 1fr; gap:34px; padding:34px 0; border-top:3px solid var(--line); }
+  .sh + .group { border-top:0; padding-top:0; } .group:last-of-type { padding-bottom:0; }
+  .group.teal { --c:var(--teal); --cl:var(--teal-lo); } .group.purple { --c:var(--purple); --cl:var(--purple-lo); } .group.green { --c:var(--green); --cl:var(--green-lo); }
+  .ghead { position:sticky; top:calc(var(--nav) + 24px); align-self:start; }
+  .ghead .n { display:block; font:400 64px/1 var(--title); color:var(--c); text-shadow:0 8px 0 var(--cl); margin-bottom:26px; }
+  .ghead h3 { margin:0 0 10px; font:400 24px/1.25 var(--title); color:#fff; }
+  .ghead p { margin:0; color:var(--muted); font-size:14px; }
+  .cards { display:grid; grid-template-columns:repeat(auto-fill, minmax(min(100%, 270px), 1fr)); gap:20px; }
+  .fx { padding:18px 20px 20px; border-left-color:var(--c); border-left-width:6px; }
+  .fx h4 { margin:0 0 8px; font:400 15px/1.35 var(--pixel); color:var(--c); }
+  .fx p { margin:0; font-size:14px; color:var(--soft); }
+  @media (max-width:860px) { .group { grid-template-columns:1fr; gap:22px; } .ghead { position:static; display:grid; grid-template-columns:auto 1fr; column-gap:18px; align-items:center; }
+    .ghead .n { grid-row:1 / 3; font-size:48px; text-shadow:0 6px 0 var(--cl); margin:0; } .ghead h3 { margin:0; align-self:end; } .ghead p { align-self:start; } }
+
+  /* the gods: one tower at a time */
+  .tabs { display:grid; grid-template-columns:repeat(3, 1fr); gap:16px; margin-bottom:26px; }
+  .tabs .btn { padding:14px 6px; filter:saturate(.35) brightness(.6); }
+  .tabs .btn:hover { filter:saturate(.8) brightness(.9); } .tabs .btn[aria-selected=true] { filter:none; box-shadow:0 0 0 3px #fff; }
+  .linecol { display:none; } .linecol.on { display:block; }
+  .tierh { display:flex; align-items:center; gap:14px; margin:30px 0 16px; font:400 12px/1 var(--pixel); letter-spacing:1px; text-transform:uppercase; color:var(--ll); }
+  .tierh:first-child { margin-top:0; }
+  .tierh::after { content:""; flex:1; height:3px; background:var(--line); } .tierh em { font-style:normal; color:var(--muted); }
+  .tgrid { display:grid; grid-template-columns:repeat(auto-fit, minmax(150px, 1fr)); gap:18px; }
+  .god { display:flex; flex-direction:column; align-items:center; text-align:center; padding:16px 12px 16px; min-width:0; }
+  .god .spr { --k:3; margin-bottom:12px; filter:drop-shadow(0 3px 0 rgba(0,0,0,.4)); }
+  .god .rk { display:inline-block; font:400 10px/1 var(--pixel); letter-spacing:1px; color:var(--muted); margin-bottom:10px; }
+  .god.final .rk, .god.starter .rk { color:var(--ink); background:var(--lc); padding:3px 6px; }
+  .god b { display:block; font:400 16px/1.15 var(--title); color:#fff; }
+  .god small { display:block; color:var(--muted); font-size:12px; line-height:1.35; margin-top:7px; }
+  .god small.mv { color:var(--lc); font:400 11px/1.4 var(--pixel); }
+  /* the god at the summit gets the whole row */
+  .god.final { flex-direction:row; text-align:left; gap:22px; padding:18px 24px; border-color:var(--lc) var(--ls) var(--ls) var(--lc); background:color-mix(in srgb, var(--lc) 14%, var(--panel)); }
+  .god.final .spr { --k:4; margin:0; } .god.final b { font-size:32px; color:var(--lc); text-shadow:0 4px 0 var(--ls); } .god.final small { font-size:14px; margin-top:12px; } .god.final small.mv { font-size:12px; margin-top:6px; }
+  @media (max-width:520px) { .tgrid > .god:last-child:nth-child(odd):not(:only-child) { grid-column:1 / -1; }
+    .god.final b { font-size:24px; text-shadow:0 3px 0 var(--ls); } .god.final { padding:16px; gap:16px; } }
+
+  /* in game */
+  .ingame { display:grid; grid-template-columns:repeat(auto-fit, minmax(min(100%, 430px), 1fr)); gap:26px; }
+  .ig { padding:22px; display:flex; flex-direction:column; }
+  .ig h3 { margin:0 0 8px; font:400 16px/1.3 var(--pixel); color:var(--gold); }
+  .ig p { margin:0 0 18px; color:var(--soft); font-size:14px; }
+  .ig .mockbox { flex:1; display:flex; flex-direction:column; justify-content:center; background:var(--lo); box-shadow:inset 3px 3px 0 #000; padding:14px; }
+  .mock { display:grid; grid-template-columns:repeat(9, 1fr); gap:3px; }
+  .mock i { aspect-ratio:1; background:#2b2551; box-shadow:inset 2px 2px 0 #15112b, inset -2px -2px 0 #3d3672; }
+  .mock i.g { background:#2c6a45; } .mock i.n { background:#8a6a12; } .mock i.t { background:#1b6f7d; } .mock i.p { background:#5d2f86; }
+  .toast { display:flex; gap:12px; align-items:center; padding:6px 4px; }
+  .toast + .toast { border-top:2px solid var(--line); }
   .toast .spr { --k:1; }
   .toast b { font:400 12px var(--pixel); color:var(--gold); display:block; } .toast span { font-size:12px; color:var(--muted); }
-  .title-mock { background:var(--panel-sh); border-radius:10px; padding:18px 10px; text-align:center; }
-  .title-mock b { display:block; font:400 1.3rem var(--pixel); color:var(--purple); } .title-mock span { font:400 12px var(--pixel); color:var(--gold); }
-  .news { margin:0; padding-left:20px; } .news li { margin:6px 0; color:#d6d1f5; font-size:14px; }
+  .title-mock { text-align:center; padding:6px 0; }
+  .title-mock .barline { display:block; font:400 11px/1.5 var(--pixel); color:var(--muted); }
+  .title-mock b { display:block; font:400 32px/1 var(--title); color:var(--gold); text-shadow:0 4px 0 var(--gold-lo); margin:16px 0 14px; }
+  .title-mock span { font:400 12px var(--pixel); color:var(--soft); }
+  .chart { display:grid; grid-template-columns:repeat(13, 1fr); gap:0; width:min(100%, 390px); margin:0 auto; }
+  .chart i { aspect-ratio:1; background:#17132b; }
+  .chart i.r { background:#c9b98a; box-shadow:inset 0 0 0 2px #8f7f52; } .chart i.c { background:#8f7f52; } .chart i.s { background:var(--purple); box-shadow:inset 0 0 0 2px #c9b98a; }
+  .chart i.u { background:var(--green); box-shadow:inset 0 0 0 2px #c9b98a; } .chart i.f { background:#211b3d; }
+  .chartcap { display:flex; justify-content:space-between; margin-top:10px; font:400 11px var(--pixel); color:var(--muted); }
+  .news { margin-top:26px; padding:24px 26px; }
+  .news h3 { margin:0 0 14px; font:400 16px/1.3 var(--pixel); color:var(--gold); }
+  .news ul { margin:0; padding:0; list-style:none; columns:2 340px; column-gap:40px; }
+  .news li { break-inside:avoid; position:relative; padding:6px 0 6px 22px; color:var(--soft); font-size:14px; }
+  .news li::before { content:""; position:absolute; left:0; top:14px; width:8px; height:8px; background:var(--gold); }
 
-  .chan { display:inline-block; font:400 12px var(--pixel); padding:4px 10px; border-radius:7px; color:#16122b; background:var(--green); vertical-align:middle; }
-  .chan.alpha { background:var(--purple); color:#fff; } .chan.beta { background:var(--teal); }
-  .chan[hidden] { display:none; }
-  .tierh { font:400 11px var(--pixel); color:var(--lc); padding:12px 8px 5px; letter-spacing:.5px; text-transform:uppercase; }
+  /* install */
+  .steps { display:grid; grid-template-columns:repeat(4, 1fr); gap:22px; counter-reset:step; }
+  .step { padding:20px; counter-increment:step; }
+  .step::before { content:counter(step); display:block; font:400 40px/1 var(--title); color:var(--gold); text-shadow:0 5px 0 var(--gold-lo); margin-bottom:22px; }
+  .step h3 { margin:0 0 6px; font:400 14px/1.35 var(--pixel); color:#fff; }
+  .step p { margin:0; font-size:14px; color:var(--soft); }
+  @media (max-width:980px) { .steps { grid-template-columns:repeat(2, 1fr); } }
+  @media (max-width:520px) { .steps { grid-template-columns:1fr; } }
+  .reqs { margin-top:26px; display:grid; grid-template-columns:repeat(4, 1fr); }
+  .reqs div { padding:14px 18px; border-right:3px solid var(--lo); min-width:0; } .reqs div:last-child { border-right:0; }
+  .reqs span { display:block; font:400 10px/1.2 var(--pixel); letter-spacing:1px; text-transform:uppercase; color:var(--muted); margin-bottom:6px; }
+  .reqs b { font:400 13px/1.4 var(--pixel); }
+  @media (max-width:760px) { .reqs { grid-template-columns:repeat(2, 1fr); } .reqs div:nth-child(2n) { border-right:0; } .reqs div:nth-child(-n+2) { border-bottom:3px solid var(--lo); } }
 
+  /* releases */
+  #rel-list { display:grid; gap:18px; }
+  .row { display:grid; grid-template-columns:1.4fr 1fr auto; gap:14px 20px; align-items:center; padding:16px 20px; }
+  .row b { font:400 14px/1.5 var(--pixel); } .row small { color:var(--muted); font-size:13px; }
+  .row .dls { display:flex; gap:12px; }
+  .tagl { display:inline-block; font:400 10px/1 var(--pixel); letter-spacing:1px; color:#06260f; background:var(--green); padding:4px 7px; margin-left:10px; vertical-align:middle; }
+  @media (max-width:700px) { .row { grid-template-columns:1fr; } }
+
+  footer { margin-top:96px; background:#0a0814; border-top:3px solid var(--ink); box-shadow:inset 0 3px 0 var(--line); padding:34px 0 44px; color:var(--muted); font-size:13px; }
+  footer .wrap { display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:18px 40px; }
+  footer .mark { display:block; margin-bottom:12px; } footer p { margin:0; max-width:520px; }
+  footer p.r { text-align:right; } @media (max-width:760px) { footer p.r { text-align:left; } }
+
+  /* sections ease in as they scroll into view (only once the script has run, so nothing hides without it) */
+  .js .reveal { opacity:0; transform:translateY(18px); transition:opacity .5s, transform .5s; }
+  .js .reveal.in { opacity:1; transform:none; }
+  @media (prefers-reduced-motion: reduce) { html { scroll-behavior:auto; } .js .reveal { opacity:1; transform:none; transition:none; } .splash { animation:none; } }
 </style>
 </head>
 <body>
-<canvas id="bg" aria-hidden="true"></canvas>
+<nav aria-label="Sections"><div class="wrap">
+  <a class="mark" href="#top">Realms of <i>Chaos</i></a>
+  <div class="links">
+    <a href="#download">Download</a><a href="#towers">Towers</a><a href="#features">Features</a><a href="#gods">Gods</a><a href="#ingame">In game</a><a href="#install">Install</a><a href="#releases">Releases</a>
+  </div>
+  <a class="btn gold sm" href="#download">Get the mod</a>
+</div></nav>
 
-<main id="top">
-  <div class="wrap">
-    <div class="hero">
-      <div class="hero-left">
-        <h1><span>Realms</span><span class="l2">of Chaos</span></h1>
-        <div class="rule"><div class="bar"><b></b><b></b><b></b></div><b class="chan" id="chan-hero" hidden></b></div>
-        <div class="champs">
-          <a class="champ chunk c-gold hov" href="#gods"><span class="spr" style="--i:0"></span><b>Zeus</b><small>15 floors</small></a>
-          <a class="champ chunk c-teal hov" href="#gods"><span class="spr" style="--i:15"></span><b>Poseidon</b><small>15 floors</small></a>
-          <a class="champ chunk c-purple hov" href="#gods"><span class="spr" style="--i:30"></span><b>Hades</b><small>15 floors</small></a>
-        </div>
-      </div>
-      <aside class="info chunk c-panel">
-        <span class="eyebrow chunk c-green" id="hero-ver">Loading release...</span>
-        <div class="irow"><span>Version</span><b id="i-ver">-</b></div>
-        <div class="irow"><span>Build</span><b id="i-build">-</b></div>
-        <div class="irow"><span>Channel</span><b><span class="chan" id="i-chan">-</span></b></div>
-        <div class="irow"><span>Released</span><b id="i-date">-</b></div>
-        <div class="irow"><span>Release time</span><b id="i-time">-</b></div>
-        <div class="irow"><span>Total downloads</span><b id="i-dl">-</b></div>
-        <div class="irow"><span>Minecraft</span><b>26.3</b></div>
-        <div class="irow"><span>Loaders</span><b>Fabric &middot; Forge</b></div>
-        <div class="irow"><span>Java</span><b>25</b></div>
-        <div class="irow"><span>License</span><b>MIT</b></div>
-        <div class="irow"><span>Author</span><b>TheFarawayDev</b></div>
-      </aside>
+<header class="hero" id="top">
+  <div class="hero-in">
+    <div class="hero-top">
+      <h1><span class="l1">Realms</span> <span class="l2">of Chaos</span></h1>
+      <b class="splash">45 gods. 3 towers. Climb!</b>
     </div>
-    <div class="cta">
-        <a class="btn chunk c-gold" id="cta-fabric" aria-disabled="true" href="#download">Download Fabric</a>
-        <a class="btn chunk c-teal" id="cta-forge" aria-disabled="true" href="#download">Download Forge</a>
-        <a class="btn chunk" href="#gods">Meet the gods</a>
+    <p class="tag">A mythology boss-rush for Minecraft 26.3. Find the broken gate, climb three towers floor by floor, and wake the forty-five gods who wait on them.</p>
+    <div class="menu">
+      <a class="btn gold wide" id="cta-fabric" aria-disabled="true" href="#download">Download Fabric</a>
+      <a class="btn teal wide" id="cta-forge" aria-disabled="true" href="#download">Download Forge</a>
+      <a class="btn" href="#gods">Meet the gods</a>
+      <a class="btn" href="#install">How to install</a>
+    </div>
+    <div class="hero-ver"><span id="hero-ver">Loading release...</span> <b class="chan" id="chan-hero" hidden></b></div>
+  </div>
+</header>
+
+<main>
+  <div class="wrap">
+    <div class="strip pane" aria-label="Latest release">
+      <div><span>Version</span><b id="i-ver">-</b></div>
+      <div><span>Build</span><b id="i-build">-</b></div>
+      <div><span>Channel</span><b><span class="chan" id="i-chan">-</span></b></div>
+      <div><span>Released</span><b id="i-date">-</b></div>
+      <div><span>Release time</span><b id="i-time">-</b></div>
+      <div><span>Total downloads</span><b id="i-dl">-</b></div>
+      <div><span>Minecraft</span><b>26.3</b></div>
+      <div><span>Java</span><b>25</b></div>
+      <div><span>License</span><b>MIT</b></div>
+      <div><span>Author</span><b>TheFarawayDev</b></div>
     </div>
 
     <section id="download" class="reveal">
-      <div class="sh"><h2 class="chunk c-gold">Download</h2><small id="dl-note"></small></div>
+      <div class="sh"><div><span class="k">01 / GET IT</span><h2>Download</h2></div><p id="dl-note">One jar for each loader. Both hold the same mod.</p></div>
       <div class="dl">
-        <article class="dlcard fabric">
+        <article class="dlcard fabric pane">
           <div class="dltop">
             <div class="logo"><svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="square"><path d="M5 9h22M5 16h22M5 23h22M9 5v22M16 5v22M23 5v22"/><path d="M5 5h22v22H5z" stroke-width="3"/></svg></div>
             <div><h3>Fabric</h3><p>Lightweight loader</p></div>
           </div>
           <dl class="facts"><dt>Version</dt><dd data-f="ver">-</dd><dt>File</dt><dd data-f="name">-</dd><dt>Size</dt><dd data-f="size">-</dd><dt>Downloads</dt><dd data-f="count">-</dd><dt>Requires</dt><dd>Loader 0.20.1+ &amp; Fabric API</dd></dl>
-          <a class="btn chunk c-gold" id="dl-fabric" aria-disabled="true" href="#">Loading...</a>
+          <div class="foot"><a class="btn gold" id="dl-fabric" aria-disabled="true" href="#">Loading...</a></div>
         </article>
-        <article class="dlcard forge">
+        <article class="dlcard forge pane">
           <div class="dltop">
             <div class="logo"><svg viewBox="0 0 32 32" fill="currentColor"><path d="M4 8h24v4c0 3-3 5-7 5h-1l1 4h5v4H8v-4h5l1-4h-1c-4 0-7-2-7-5z"/></svg></div>
             <div><h3>Forge</h3><p>Established mod platform</p></div>
           </div>
           <dl class="facts"><dt>Version</dt><dd data-f="ver">-</dd><dt>File</dt><dd data-f="name">-</dd><dt>Size</dt><dd data-f="size">-</dd><dt>Downloads</dt><dd data-f="count">-</dd><dt>Requires</dt><dd>Forge 66.1.9+</dd></dl>
-          <a class="btn chunk c-teal" id="dl-forge" aria-disabled="true" href="#">Loading...</a>
+          <div class="foot"><a class="btn teal" id="dl-forge" aria-disabled="true" href="#">Loading...</a></div>
         </article>
       </div>
     </section>
 
-    <section class="reveal">
-      <div class="stats">
-        <div class="chunk c-gold stat"><b>45</b><span>Gods to defeat</span></div>
-        <div class="chunk c-teal stat"><b>15</b><span>Floors per tower</span></div>
-        <div class="chunk c-purple stat"><b>3</b><span>Towers to climb</span></div>
-        <div class="chunk c-green stat"><b>2,637</b><span>Rooms to explore</span></div>
+    <section id="towers" class="reveal">
+      <div class="sh"><div><span class="k">02 / THE CLIMB</span><h2>Three towers</h2></div><p>Fifteen floors each, one god to a floor. Floor 1 is where you start; floor 15 is the summit.</p></div>
+      <div class="towers">
+        <article class="tower zeus pane" data-l="zeus">
+          <div class="thead"><span class="spr" style="--i:0"></span><div><small>TOWER OF</small><h3>Zeus</h3></div></div>
+          <div class="tbody">
+            <p>Fifteen floors from the mossy foothills, through marble halls and a cloud sanctum, to the open summit of Olympus.</p>
+            <div class="ladder" aria-hidden="true"></div><ul class="tiers"></ul>
+            <a class="btn gold" href="#gods" data-l="zeus">See its gods</a>
+          </div>
+        </article>
+        <article class="tower poseidon pane" data-l="poseidon">
+          <div class="thead"><span class="spr" style="--i:15"></span><div><small>TOWER OF</small><h3>Poseidon</h3></div></div>
+          <div class="tbody">
+            <p>From sunlit sandstone shallows down through prismarine halls and the black trench to the Throne of the Deep.</p>
+            <div class="ladder" aria-hidden="true"></div><ul class="tiers"></ul>
+            <a class="btn teal" href="#gods" data-l="poseidon">See its gods</a>
+          </div>
+        </article>
+        <article class="tower hades pane" data-l="hades">
+          <div class="thead"><span class="spr" style="--i:30"></span><div><small>TOWER OF</small><h3>Hades</h3></div></div>
+          <div class="tbody">
+            <p>Past the Fields of Asphodel and the fires of Tartarus, through the Halls of the Dead, to the throne of the Underworld.</p>
+            <div class="ladder" aria-hidden="true"></div><ul class="tiers"></ul>
+            <a class="btn purple" href="#gods" data-l="hades">See its gods</a>
+          </div>
+        </article>
       </div>
     </section>
+  </div>
 
+  <div class="band reveal">
+    <div class="wrap">
+      <div class="stats pane">
+        <div class="stat" style="--c:var(--gold);--s:var(--gold-lo)"><b>45</b><span>Gods to wake</span></div>
+        <div class="stat" style="--c:var(--teal);--s:var(--teal-lo)"><b>3</b><span>Towers to climb</span></div>
+        <div class="stat" style="--c:var(--purple);--s:var(--purple-lo)"><b>15</b><span>Floors per tower</span></div>
+        <div class="stat" style="--c:var(--green);--s:var(--green-lo)"><b>63</b><span>Kinds of sentinel</span></div>
+        <div class="stat" style="--c:var(--gold);--s:var(--gold-lo)"><b>1-10</b><span>Levels per passage</span></div>
+        <div class="stat" style="--c:var(--teal);--s:var(--teal-lo)"><b>12</b><span>Mastery skills</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="wrap">
     <section id="features" class="reveal">
-      <div class="sh"><h2 class="chunk c-gold">Features</h2></div>
-      <div class="feat">
-        <div class="chunk c-gold with-spr"><span class="spr" style="--i:14"></span><div><h3>Tower of Zeus</h3><p>Fifteen floors from the mossy foothills, through marble halls and a cloud sanctum, to the open summit of Olympus.</p></div></div>
-        <div class="chunk c-teal with-spr"><span class="spr" style="--i:29"></span><div><h3>Tower of Poseidon</h3><p>From sunlit sandstone shallows down through prismarine halls and the black trench to the Throne of the Deep.</p></div></div>
-        <div class="chunk c-purple with-spr"><span class="spr" style="--i:44"></span><div><h3>Tower of Hades</h3><p>Past the Fields of Asphodel and the fires of Tartarus, through the Halls of the Dead, to the throne of the Underworld.</p></div></div>
-        <div class="chunk c-green"><h3>Living floors</h3><p>Every floor has its own terrain - and it moves. Wound a god and the ground shifts under you: pits rise into daises, halls fold into terraces, then settle back.</p></div>
-        <div class="chunk c-gold"><h3>Signature moves</h3><p>Every god has a move of its own - Zeus calls down the Wrath of Olympus, Hermes windsteps behind you, Hades opens the Gates of Tartarus. Each is named on screen before it lands.</p></div>
-        <div class="chunk c-teal"><h3>Fair fights</h3><p>Big attacks are telegraphed, and the ground breaks under them. Enraged gods make the floor erupt under your feet. Beaten a god? Call a rematch.</p></div>
-        <div class="chunk c-purple"><h3>Three phases</h3><p>At 65% a god raises its aegis: nothing hurts it until the shield pylons round the floor are broken. At 30% comes its wrath - the floor is lost ring by ring, and strikes fall from above, each marked before it lands.</p></div>
-        <div class="chunk c-green"><h3>Gods that learn</h3><p>A god measures your weapons, their enchantments and your armour, and rises to match. Shoot it and it turns shots aside and closes in; stay hand to hand and its guard lashes back. Each phase changes how it looks.</p></div>
-        <div class="chunk c-gold"><h3>Scan, don't warp</h3><p>Nothing teleports you in an instant. The compass scans for a minute or more - rough readings, a Clean Lock, a burst of static. Raise relay towers to steady it, and waygates to travel between after a five-second channel.</p></div>
-        <div class="chunk c-purple"><h3>Passages to explore</h3><p>Between two floors lie one to ten levels, each a maze with a name like 7-B2: sealed chambers, arenas, vaults, chime rooms, beam rooms, trembling floors, crusher and dart halls, rune chambers that flood. Every level is harder than the last.</p></div>
-        <div class="chunk c-green"><h3>Different in every world</h3><p>Passages are generated from your world's seed - where the rooms connect, where the seals hide, what each room holds. No two worlds have the same towers.</p></div>
-        <div class="chunk c-gold"><h3>Find your way</h3><p>A chart with fog of war inks in each room as you walk into it, a bar counts the seals you have broken, and a guide points you to the nearest one left. The next level is built while you explore.</p></div>
-        <div class="chunk c-teal"><h3>A story to uncover</h3><p>Chaos is unmaking the world, and the gods who hid from it have forgotten why. The Oracle tells it in nineteen chapters, written as you climb - and every god you beat is not slain, but woken.</p></div>
-        <div class="chunk c-purple"><h3>Find the way in</h3><p>The gates were broken on purpose. Follow your compass to a Ruined Gate in the Overworld, track down three keystones in shrines across the world, and wake it.</p></div>
-        <div class="chunk c-green"><h3>A living, growing hub</h3><p>The Oracle's flame burns at its heart and echoes of the gods watch from their gates. Hand in what it asks for and the hub rises through five tiers - a sanctuary that mends you, a daily bounty board, faster waygates.</p></div>
-        <div class="chunk c-gold"><h3>Mastery</h3><p>Every god woken and every passage walked earns a point for the mastery tree: twelve skills across combat, survival and exploration, re-spendable at any time.</p></div>
-        <div class="chunk c-gold"><h3>Climb together</h3><p>Form a party of up to four and enter a tower on your highest member's floor. Progress stays your own - nobody climbs past a god they have not beaten - but friends can always come and help.</p></div>
-        <div class="chunk c-teal"><h3>The tower adapts</h3><p>More challengers make a harder trial, the world's difficulty sets its pace, a god that keeps beating you relents a little, and a passage seals itself again for anyone who has not walked it.</p></div>
-        <div class="chunk c-purple"><h3>Sentinels</h3><p>Sixty-three kinds, twenty-one to a tower. Shield-bearers shelter their allies, wardens take their wounds, singers raise the fallen - while bombers, snipers, thieves and heralds make trouble. Kill the helper first.</p></div>
+      <div class="sh"><div><span class="k">03 / WHAT IS IN IT</span><h2>Features</h2></div><p>Everything below is in the current build, on both loaders.</p></div>
+
+      <div class="group">
+        <div class="ghead"><span class="n">1</span><h3>The trial</h3><p>One god waits on every floor. Beat it to go up.</p></div>
+        <div class="cards">
+          <div class="fx pane"><h4>Signature moves</h4><p>Every god has a move of its own - Zeus calls down the Wrath of Olympus, Hermes windsteps behind you, Hades opens the Gates of Tartarus. Each is named on screen before it lands.</p></div>
+          <div class="fx pane"><h4>Three phases</h4><p>At 65% a god raises its aegis: nothing hurts it until the shield pylons round the floor are broken. At 30% comes its wrath - the floor is lost ring by ring, and strikes fall from above, each marked before it lands.</p></div>
+          <div class="fx pane"><h4>Gods that learn</h4><p>A god measures your weapons, their enchantments and your armour, and rises to match. Shoot it and it turns shots aside and closes in; stay hand to hand and its guard lashes back. Each phase changes how it looks.</p></div>
+          <div class="fx pane"><h4>Fair fights</h4><p>Big attacks are telegraphed, and the ground breaks under them. Enraged gods make the floor erupt under your feet. Beaten a god? Call a rematch.</p></div>
+          <div class="fx pane"><h4>Living floors</h4><p>Every floor has its own terrain - and it moves. Wound a god and the ground shifts under you: pits rise into daises, halls fold into terraces, then settle back.</p></div>
+          <div class="fx pane"><h4>The tower adapts</h4><p>More challengers make a harder trial, the world's difficulty sets its pace, and a god that keeps beating you relents a little.</p></div>
+        </div>
+      </div>
+
+      <div class="group purple">
+        <div class="ghead"><span class="n">2</span><h3>The passages</h3><p>Between two floors lies a maze to get through.</p></div>
+        <div class="cards">
+          <div class="fx pane"><h4>One to ten levels</h4><p>Every passage is one to ten levels deep, each with a name like 7-B2 and each harder than the last. The next level is built while you explore this one.</p></div>
+          <div class="fx pane"><h4>Puzzle rooms</h4><p>Vaults of lights to put out, chimes to play back in order, beams to steer with mirrors, and trembling floors with one safe path across.</p></div>
+          <div class="fx pane"><h4>Trap halls</h4><p>Crusher halls, dart halls and rune chambers that flood. Each one shows what it is about to do, if you are watching.</p></div>
+          <div class="fx pane"><h4>Sentinels</h4><p>Sixty-three kinds, twenty-one to a tower. Shield-bearers shelter their allies, wardens take their wounds, singers raise the fallen - while bombers, snipers, thieves and heralds make trouble. Kill the helper first.</p></div>
+          <div class="fx pane"><h4>Find your way</h4><p>A chart with fog of war inks in each room as you walk into it, a bar counts the seals you have broken, and a guide points you to the nearest one left.</p></div>
+          <div class="fx pane"><h4>Different in every world</h4><p>Passages are generated from your world's seed - where the rooms connect, where the seals hide, what each room holds. A passage seals itself again for anyone who has not walked it.</p></div>
+        </div>
+      </div>
+
+      <div class="group teal">
+        <div class="ghead"><span class="n">3</span><h3>The world</h3><p>The realms have to be found before they can be climbed.</p></div>
+        <div class="cards">
+          <div class="fx pane"><h4>Find the way in</h4><p>The gates were broken on purpose. Follow your compass to a Ruined Gate in the Overworld, track down three keystones in shrines across the world, and wake it.</p></div>
+          <div class="fx pane"><h4>Scan, don't warp</h4><p>Nothing teleports you in an instant. The compass scans for a minute or more - rough readings, a Clean Lock, a burst of static. Raise relay towers to steady it, and waygates to travel between after a five-second channel.</p></div>
+          <div class="fx pane"><h4>A living, growing hub</h4><p>The Oracle's flame burns at its heart and echoes of the gods watch from their gates. Hand in what it asks for and the hub rises through five tiers - a sanctuary that mends you, a daily bounty board, faster waygates.</p></div>
+          <div class="fx pane"><h4>A story to uncover</h4><p>Chaos is unmaking the world, and the gods who hid from it have forgotten why. The Oracle tells it in nineteen chapters, written as you climb - and every god you beat is not slain, but woken.</p></div>
+        </div>
+      </div>
+
+      <div class="group green">
+        <div class="ghead"><span class="n">4</span><h3>Your climb</h3><p>Progress is your own, alone or with friends.</p></div>
+        <div class="cards">
+          <div class="fx pane"><h4>Mastery</h4><p>Every god woken and every passage walked earns a point for the mastery tree: twelve skills across combat, survival and exploration, re-spendable at any time.</p></div>
+          <div class="fx pane"><h4>Climb together</h4><p>Form a party of up to four and enter a tower on your highest member's floor. Nobody climbs past a god they have not beaten - but friends can always come and help.</p></div>
+          <div class="fx pane"><h4>Its own menus</h4><p>Every menu wears artwork drawn for the mod - panels, tiles and gem meters - and it all ships inside the jar, with nothing extra to install.</p></div>
+          <div class="fx pane"><h4>A handbook, not a wiki</h4><p>A handbook opens for new players, and a short tip appears the first time each new thing happens. No chat spam: menus, titles and a tower bar instead.</p></div>
+        </div>
       </div>
     </section>
+  </div>
 
-    <section id="gods" class="reveal">
-      <div class="sh"><h2 class="chunk c-gold">The Gods</h2><small>One god per floor, each with its own signature move. Floor 1 is where you start; floor 15 is the summit.</small></div>
-      <div class="tabs" id="god-tabs">
-        <button class="chunk c-gold" data-l="zeus">Zeus</button>
-        <button class="chunk c-teal" data-l="poseidon">Poseidon</button>
-        <button class="chunk c-purple" data-l="hades">Hades</button>
+  <div class="band reveal" id="gods">
+    <div class="wrap">
+      <div class="sh"><div><span class="k">04 / WHO WAITS</span><h2>The gods</h2></div><p>One god per floor, each with its own signature move. Pick a tower.</p></div>
+      <div class="tabs" id="god-tabs" role="tablist">
+        <button class="btn gold" role="tab" aria-selected="true" data-l="zeus">Zeus</button>
+        <button class="btn teal" role="tab" aria-selected="false" data-l="poseidon">Poseidon</button>
+        <button class="btn purple" role="tab" aria-selected="false" data-l="hades">Hades</button>
       </div>
-      <div class="lines3" id="god-lines">
-        <div class="chunk c-panel linecol on" data-l="zeus" style="--lc:var(--gold)"><h3>Tower of Zeus</h3><p>15 floors</p><div class="list"></div></div>
-        <div class="chunk c-panel linecol" data-l="poseidon" style="--lc:var(--teal)"><h3>Tower of Poseidon</h3><p>15 floors</p><div class="list"></div></div>
-        <div class="chunk c-panel linecol" data-l="hades" style="--lc:var(--purple)"><h3>Tower of Hades</h3><p>15 floors</p><div class="list"></div></div>
+      <div id="god-lines">
+        <div class="linecol on" data-l="zeus"><div class="list"></div></div>
+        <div class="linecol" data-l="poseidon"><div class="list"></div></div>
+        <div class="linecol" data-l="hades"><div class="list"></div></div>
       </div>
-    </section>
+    </div>
+  </div>
 
+  <div class="wrap">
     <section id="ingame" class="reveal">
-      <div class="sh"><h2 class="chunk c-gold">In game</h2><small>Menus and on-screen prompts, not chat spam</small></div>
+      <div class="sh"><div><span class="k">05 / ON SCREEN</span><h2>In game</h2></div><p>Menus and on-screen prompts, not chat spam.</p></div>
       <div class="ingame">
-        <div class="chunk c-panel"><h3>Codex of Chaos</h3>
+        <div class="ig pane"><h3>Codex of Chaos</h3>
           <p>Your whole journey in one menu: the three towers, every floor and god, what is defeated and what is next. Click a floor you have reached to travel there, go to the hub, or leave the realms.</p>
-          <div class="mock" aria-hidden="true">
-            <i class="g"></i><i class="g"></i><i class="g"></i><i class="n"></i><i class="x"></i><i class="x"></i><i class="x"></i><i class="x"></i><i class="x"></i>
-            <i></i><i class="x"></i><i class="x"></i><i class="x"></i><i class="x"></i><i class="x"></i><i class="x"></i><i></i><i></i>
+          <div class="mockbox"><div class="mock" aria-hidden="true">
+            <i class="g"></i><i class="g"></i><i class="g"></i><i class="n"></i><i></i><i></i><i></i><i></i><i></i>
+            <i class="t"></i><i class="t"></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i>
+            <i class="p"></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i>
+          </div></div>
+        </div>
+        <div class="ig pane"><h3>Trial Altar</h3>
+          <p>Each floor's altar opens its own screen: who waits on this floor, and one button that begins the trial - or, once they have fallen, sends you up.</p>
+          <div class="mockbox">
+            <div class="toast"><span class="spr" style="--i:9"></span><div><b>Begin the trial</b><span>Phobos will rise at the centre of the floor</span></div></div>
+            <div class="toast"><span class="spr" style="--i:8"></span><div><b>Ascend to floor 8</b><span>Or walk through the Gate of Ascent</span></div></div>
           </div>
         </div>
-        <div class="chunk c-panel"><h3>Trial Altar</h3>
-          <p>Each floor's altar opens its own screen: who waits on this floor, and one button that begins the trial - or, once they have fallen, sends you up.</p>
-          <div class="toast"><span class="spr" style="--i:9"></span><div><b>Begin the trial</b><span>Phobos will rise at the centre of the floor</span></div></div>
-          <div class="toast"><span class="spr" style="--i:8"></span><div><b>Ascend to floor 8</b><span>Or walk through the Gate of Ascent</span></div></div>
-        </div>
-        <div class="chunk c-panel"><h3>Tower HUD</h3>
+        <div class="ig pane"><h3>Tower HUD</h3>
           <p>A bar at the top of the screen always shows which tower and floor you are on. Arrivals, trials and victories appear as titles; short notices sit above the hotbar.</p>
-          <div class="title-mock"><span style="color:var(--muted)">Tower of Zeus - Floor 6 of 15 - The Marble Halls</span><b style="margin-top:10px;color:var(--gold)">Victory!</b><span>Artemis has fallen</span></div>
+          <div class="mockbox"><div class="title-mock"><span class="barline">Tower of Zeus - Floor 11 of 15 - The Cloud Sanctum</span><b>Victory!</b><span>Artemis has fallen</span></div></div>
         </div>
-        <div class="chunk c-panel"><h3>What changed in 1.2</h3>
-          <ul class="news">
-            <li>A tutorial: a handbook that opens for new players, and tips the first time things happen.</li>
-            <li>Real screens for the Codex, the altar, the story and the party.</li>
-            <li>Passages have two or three levels each; 879 rooms to a tower.</li>
-            <li>The floor erupts in a fight, and every heavy move breaks the ground.</li>
-            <li>Parties of up to four, with each player's progress and loot their own.</li>
-            <li>Trials scale with the group; passages have twelve kinds of sentinel.</li>
-            <li>The realms' walls can no longer be broken.</li>
-            <li>A story, told by the Oracle in nineteen chapters.</li>
-            <li>The realms must be found: a Ruined Gate in the Overworld, woken with three keystones.</li>
-            <li>A livelier hub: the Oracle, echoes of the gods, pilgrims, a canal and gardens.</li>
-            <li>Each god line is now a 15-floor tower you climb one god at a time.</li>
-            <li>Between every two floors lies a passage to explore: a maze generated from your world's seed, with seals to break, guardians, treasure and a shrine.</li>
-            <li>A passage map that fills in as you explore, and a compass that points the way.</li>
-            <li>Every floor has its own terrain and materials, and reshapes itself mid-fight.</li>
-            <li>Rooms have columns, ribbed ceilings, hanging lights and themed props.</li>
-            <li>Every god has a named signature move, lunges or hops away, and enrages at half health.</li>
-            <li>Some gods keep their distance and fight at range.</li>
-            <li>Fallen gods can be called back for a rematch.</li>
-            <li>A bigger Codex that draws each tower floor by floor.</li>
-            <li>The hub has an exit gate; the Codex and <code>/roc leave</code> take you out too.</li>
-            <li>Chat messages are gone: menus, titles and a tower bar instead.</li>
-            <li>Builds are labelled Alpha or Beta until they are battle-tested.</li>
-          </ul>
+        <div class="ig pane"><h3>Passage Chart</h3>
+          <p>The chart starts blank. Rooms are inked in as you walk into them, seals show where you found them, and everything you have not seen stays under fog.</p>
+          <div class="mockbox"><div class="chart" aria-hidden="true">
+            <i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i>
+            <i></i><i class="r"></i><i class="c"></i><i class="r"></i><i class="c"></i><i class="s"></i><i class="f"></i><i class="f"></i><i></i><i></i><i></i><i></i><i></i>
+            <i></i><i class="c"></i><i></i><i></i><i></i><i class="c"></i><i></i><i class="f"></i><i></i><i></i><i></i><i></i><i></i>
+            <i></i><i class="r"></i><i></i><i class="r"></i><i class="c"></i><i class="r"></i><i class="c"></i><i class="u"></i><i class="f"></i><i class="f"></i><i></i><i></i><i></i>
+            <i></i><i class="c"></i><i></i><i class="c"></i><i></i><i></i><i></i><i class="f"></i><i></i><i class="f"></i><i></i><i></i><i></i>
+            <i></i><i class="r"></i><i class="c"></i><i class="r"></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i>
+            <i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i>
+          </div><div class="chartcap"><span>Level 7-B2</span><span>1 of 3 seals</span></div></div>
         </div>
+      </div>
+      <div class="news pane"><h3>New in this build</h3>
+        <ul>
+          <li>Trials have three phases: an aegis that falls only when its pylons do, then the god's wrath.</li>
+          <li>Gods measure your weapons, enchantments and armour, and change how they fight - and how they look.</li>
+          <li>Sixty-three kinds of sentinel, twenty-one to a tower, each with a trick of its own and a layered outfit.</li>
+          <li>Passages run one to ten levels deep, with names like 7-B2, built a level ahead of you.</li>
+          <li>New rooms: vaults, chime rooms, beam rooms, trembling floors, crusher halls, dart halls and rune chambers.</li>
+          <li>A Passage Chart with fog of war.</li>
+          <li>A mastery tree of twelve skills.</li>
+          <li>The compass scans instead of warping; relay towers and waygates extend its reach.</li>
+          <li>The hub grows through five tiers and posts a daily bounty.</li>
+          <li>Powerful strikes leave craters in the ground.</li>
+          <li>Menus drawn in the mod's own style.</li>
+          <li>A sidebar that keeps track of your climb.</li>
+        </ul>
       </div>
     </section>
 
     <section id="install" class="reveal">
-      <div class="sh"><h2 class="chunk c-gold">Install</h2></div>
-      <div class="two">
-        <div class="chunk c-panel"><h3>Steps</h3>
-          <ol>
-            <li>Install Java 25 and your loader for Minecraft 26.3.</li>
-            <li>Fabric only: add Fabric API.</li>
-            <li>Put the downloaded <code>.jar</code> in your <code>mods</code> folder.</li>
-            <li>Join a world: you are given the Codex, the Compass of Chaos and the Oracle's letter. Follow the compass to a Ruined Gate.</li>
-          </ol>
-        </div>
-        <div class="chunk c-panel"><h3>Requirements</h3>
-          <table>
-            <tr><td>Minecraft</td><td>26.3</td></tr>
-            <tr><td>Java</td><td>25+</td></tr>
-            <tr><td>Fabric</td><td>Loader 0.20.1+ / API 0.166.2+</td></tr>
-            <tr><td>Forge</td><td>66.1.9+</td></tr>
-          </table>
-        </div>
+      <div class="sh"><div><span class="k">06 / SET UP</span><h2>Install</h2></div><p>Four steps, about five minutes.</p></div>
+      <div class="steps">
+        <div class="step pane"><h3>Java and a loader</h3><p>Install Java 25, then Fabric or Forge for Minecraft 26.3.</p></div>
+        <div class="step pane"><h3>Fabric only</h3><p>Add Fabric API to your <code>mods</code> folder. Forge needs nothing extra.</p></div>
+        <div class="step pane"><h3>Drop in the jar</h3><p>Put the downloaded <code>.jar</code> in your <code>mods</code> folder and start the game.</p></div>
+        <div class="step pane"><h3>Join a world</h3><p>You are given the Codex, the Compass of Chaos and the Oracle's letter. Follow the compass to a Ruined Gate.</p></div>
+      </div>
+      <div class="reqs pane">
+        <div><span>Minecraft</span><b>26.3</b></div>
+        <div><span>Java</span><b>25+</b></div>
+        <div><span>Fabric</span><b>Loader 0.20.1+ / API 0.166.2+</b></div>
+        <div><span>Forge</span><b>66.1.9+</b></div>
       </div>
     </section>
 
     <section id="releases" class="reveal">
-      <div class="sh"><h2 class="chunk c-gold">Releases</h2></div>
-      <div id="rel-list"><div class="row chunk c-panel"><small>Loading...</small></div></div>
+      <div class="sh"><div><span class="k">07 / HISTORY</span><h2>Releases</h2></div><p>The six most recent builds.</p></div>
+      <div id="rel-list"><div class="row pane"><small>Loading...</small></div></div>
     </section>
   </div>
 </main>
 
 <footer><div class="wrap">
-  <span>Realms of Chaos &copy; TheFarawayDev &middot; MIT licensed</span>
-  <span>Not affiliated with Mojang or Microsoft &middot; Font: Monocraft (SIL OFL)</span>
+  <div><a class="mark" href="#top">Realms of <i>Chaos</i></a><p>&copy; TheFarawayDev &middot; MIT licensed</p></div>
+  <p class="r">Not affiliated with Mojang or Microsoft.<br>Title lettering: Chaos Blocks, drawn for this project &middot; Text: Monocraft (SIL OFL)</p>
 </div></footer>
 
 <script>
+  document.documentElement.classList.add("js");
   // Repository that hosts the releases. Change this if releases move to another repo.
   const REPO = "TheFarawayDev/Realms-OF-Chaos-ROC-";
   const $ = s => document.querySelector(s), $$ = s => [...document.querySelectorAll(s)];
+  const esc = s => String(s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
   const fmtSize = b => b > 1048576 ? (b / 1048576).toFixed(2) + " MB" : Math.round(b / 1024) + " KB";
   const ver = n => (n.match(/(\d+\.\d+\.\d+(?:-[a-z]+)?)/) || [])[1] || "-";
   // release times are shown in the visitor's own time zone, with the date
@@ -369,10 +527,14 @@
   const channelOf = r => /alpha/i.test(r.tag_name + r.name) ? "Alpha" : /beta/i.test(r.tag_name + r.name) ? "Beta" : "Release";
   const setChan = (el, c) => { el.textContent = c.toUpperCase(); el.className = "chan " + c.toLowerCase(); el.hidden = false; };
 
-  function fill(card, asset, tag, ctaSel, btnSel, label) {
+  function fill(card, asset, ctaSel, btnSel, label) {
     const card_ = $$(".dlcard")[card];
     const set = (k, v) => card_.querySelector(`[data-f=${k}]`).textContent = v;
-    for (const sel of [ctaSel, btnSel]) { const el = $(sel); if (asset) { el.href = asset.browser_download_url; el.textContent = sel === btnSel ? `Download ${label}` : `Download ${label}`; el.removeAttribute("aria-disabled"); } else { el.textContent = "Not available"; } }
+    for (const sel of [ctaSel, btnSel]) {
+      const el = $(sel);
+      if (asset) { el.href = asset.browser_download_url; el.textContent = `Download ${label}`; el.removeAttribute("aria-disabled"); }
+      else el.textContent = "Not available";
+    }
     if (!asset) return;
     set("ver", ver(asset.name)); set("name", asset.name);
     card_.querySelector("[data-f=name]").title = asset.name;
@@ -385,9 +547,9 @@
       list = list.filter(r => !r.draft);
       const latest = list[0]; if (!latest) throw new Error("none");
       const jars = latest.assets.filter(a => a.name.endsWith(".jar"));
-      fill(0, jars.find(a => /fabric/i.test(a.name)), latest.tag_name, "#cta-fabric", "#dl-fabric", "Fabric");
-      fill(1, jars.find(a => /forge/i.test(a.name)), latest.tag_name, "#cta-forge", "#dl-forge", "Forge");
-      $("#hero-ver").innerHTML = `Latest: ${latest.tag_name}<small>${when(latest.published_at)} &middot; ${ago(latest.published_at)}</small>`;
+      fill(0, jars.find(a => /fabric/i.test(a.name)), "#cta-fabric", "#dl-fabric", "Fabric");
+      fill(1, jars.find(a => /forge/i.test(a.name)), "#cta-forge", "#dl-forge", "Forge");
+      $("#hero-ver").innerHTML = `Latest: ${esc(latest.tag_name)}<small>${when(latest.published_at)} &middot; ${ago(latest.published_at)}</small>`;
       $("#i-ver").textContent = ver((jars[0] || {}).name || "");
       $("#i-build").textContent = latest.tag_name;
       $("#i-date").textContent = new Date(latest.published_at).toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric" });
@@ -396,77 +558,52 @@
       const chan = channelOf(latest);
       setChan($("#i-chan"), chan);
       if (chan !== "Release") setChan($("#chan-hero"), chan);
-      $("#dl-note").textContent = `Released ${when(latest.published_at)}`;
+      $("#dl-note").textContent = `Released ${when(latest.published_at)}. One jar for each loader.`;
       $("#rel-list").innerHTML = list.map((r, i) => `
-        <div class="row chunk c-panel"><div><b>${r.name || r.tag_name}</b>${i === 0 ? '<span class="tagl">LATEST</span>' : ""}${channelOf(r) !== "Release" ? `<span class="tagl" style="background:${channelOf(r) === "Alpha" ? "var(--purple);color:#fff" : "var(--teal)"}">${channelOf(r).toUpperCase()}</span>` : ""}<br><small>${r.tag_name}</small></div>
+        <div class="row pane"><div><b>${esc(r.name || r.tag_name)}</b>${i === 0 ? '<span class="tagl">LATEST</span>' : ""}${channelOf(r) !== "Release" ? `<span class="tagl" style="background:${channelOf(r) === "Alpha" ? "var(--purple);color:#fff" : "var(--teal)"}">${channelOf(r).toUpperCase()}</span>` : ""}<br><small>${esc(r.tag_name)}</small></div>
         <small>${when(r.published_at)} &middot; ${r.assets.reduce((n, a) => n + a.download_count, 0).toLocaleString()} downloads</small>
-        <span class="dls">${["fabric", "forge"].map(k => { const a = r.assets.find(x => x.name.endsWith(".jar") && x.name.toLowerCase().includes(k)); return a ? `<a class="chunk ${k === "fabric" ? "c-gold" : "c-teal"}" href="${a.browser_download_url}">${k[0].toUpperCase() + k.slice(1)}</a>` : ""; }).join("")}</span></div>`).join("");
+        <span class="dls">${["fabric", "forge"].map(k => { const a = r.assets.find(x => x.name.endsWith(".jar") && x.name.toLowerCase().includes(k)); return a ? `<a class="btn sm ${k === "fabric" ? "gold" : "teal"}" href="${esc(a.browser_download_url)}">${k === "fabric" ? "Fabric" : "Forge"}</a>` : ""; }).join("")}</span></div>`).join("");
     })
     .catch(() => {
       $("#hero-ver").textContent = "Release info unavailable";
       fetch("version.json").then(r => r.json()).then(v => { setChan($("#i-chan"), v.channel); if (v.channel !== "Release") setChan($("#chan-hero"), v.channel); $("#i-ver").textContent = v.version; }).catch(() => {});
       for (const s of ["#cta-fabric", "#dl-fabric", "#cta-forge", "#dl-forge"]) $(s).textContent = "Unavailable";
-      $("#rel-list").innerHTML = `<div class="row chunk c-panel"><small>Could not load releases right now. Please try again later.</small></div>`;
+      $("#rel-list").innerHTML = `<div class="row pane"><small>Could not load releases right now. Please try again later.</small></div>`;
     });
 
-  // the gods: three columns built from roster.json (generated together with the mod's own roster)
+  // the gods and the towers' floor ladders, built from roster.json (generated together with the mod's own roster)
   fetch("roster.json").then(r => r.json()).then(roster => {
     for (const col of $$(".linecol")) {
-      const gods = roster.filter(g => g.line === col.dataset.l).sort((a, b) => b.rank - a.rank);
-      let tier = "", n = 0;
-      col.querySelector(".list").innerHTML = gods.map(g => {
-        const head = g.tier !== tier ? `<div class="tierh">${tier = g.tier}</div>` : "";
-        return head + `
-        <div class="god${n++ % 2 ? "" : " alt"}${g.rank === 1 ? " final" : g.rank === 15 ? " starter" : ""}">
-          <span class="rk" title="Floor ${g.floor}">${g.floor}</span><span class="spr" style="--i:${g.i};--k:2"></span>
-          <div><b>${g.name}</b><small>${g.title}</small><small class="mv">${g.move}</small></div>
-        </div>`; }).join("");
+      const gods = roster.filter(g => g.line === col.dataset.l).sort((a, b) => a.rank - b.rank);
+      const tiers = [...new Set(gods.map(g => g.tier))];
+      col.querySelector(".list").innerHTML = tiers.map(t => {
+        const mine = gods.filter(g => g.tier === t), floors = mine.map(g => g.floor), lo = Math.min(...floors), hi = Math.max(...floors);
+        return `<div class="tierh">${esc(t)} <em>${lo === hi ? "Floor " + lo : "Floors " + lo + "-" + hi}</em></div><div class="tgrid">` + mine.map(g => `
+          <div class="god pane${g.rank === 1 ? " final" : g.rank === 15 ? " starter" : ""}">
+            <span class="spr" style="--i:${+g.i}"></span>
+            <div><span class="rk">FLOOR ${+g.floor}</span><b>${esc(g.name)}</b><small>${esc(g.title)}</small><small class="mv">${esc(g.move)}</small></div>
+          </div>`).join("") + "</div>"; }).join("");
+    }
+    for (const card of $$(".tower")) {
+      const gods = roster.filter(g => g.line === card.dataset.l).sort((a, b) => a.floor - b.floor);
+      const tiers = [...new Set(gods.map(g => g.tier))];
+      card.querySelector(".ladder").innerHTML = gods.map(g => `<i class="t${tiers.indexOf(g.tier) + 1}"></i>`).join("");
+      card.querySelector(".tiers").innerHTML = tiers.map(t => { const f = gods.filter(g => g.tier === t).map(g => g.floor);
+        return `<li><span>${esc(t)}</span><b>${f[0] === f[f.length - 1] ? f[0] : f[0] + "-" + f[f.length - 1]}</b></li>`; }).reverse().join("");
     }
   }).catch(() => { $("#gods").style.display = "none"; });
-  for (const b of $$("#god-tabs button")) b.addEventListener("click", () =>
-    $$(".linecol").forEach(c => c.classList.toggle("on", c.dataset.l === b.dataset.l)));
+  const showLine = l => { $$(".linecol").forEach(c => c.classList.toggle("on", c.dataset.l === l));
+    $$("#god-tabs button").forEach(b => b.setAttribute("aria-selected", b.dataset.l === l)); };
+  for (const b of $$("#god-tabs button, .tower .btn")) b.addEventListener("click", () => showLine(b.dataset.l));
 
-  // scroll reveal
-  const io = new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting) { e.target.classList.add("in"); io.unobserve(e.target); } }), { threshold: .08 });
-  $$(".reveal").forEach(el => io.observe(el));
-
-  // ---- background: flat matte colour, flat scrolling grid, flat comets flying across now and then ----
-  const cv = $("#bg"), cx = cv.getContext("2d");
-  const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
-  let W, H, DPR, t = 0, comets = [], nextComet = 100;
-  function size() { DPR = Math.min(devicePixelRatio || 1, 2); W = innerWidth; H = innerHeight; cv.width = W * DPR; cv.height = H * DPR; cx.setTransform(DPR, 0, 0, DPR, 0, 0); }
-  addEventListener("resize", size); size();
-  const colors = ["#f5b82e", "#2bb7cc", "#a55ad6", "#4cc97f"];
-  const rnd = (a, b) => a + Math.random() * (b - a);
-  function spawn() {
-    const left = Math.random() < .5, sp = rnd(6, 11);
-    comets.push({ x: left ? -120 : W + 120, y: rnd(40, H * .8), vx: (left ? 1 : -1) * sp, vy: rnd(-.25, .25) * sp, c: colors[Math.random() * 4 | 0], len: rnd(90, 190), w: rnd(8, 14) | 0 });
-  }
-  function frame() {
-    t += reduce ? 0 : 1;
-    cx.fillStyle = "#16122b"; cx.fillRect(0, 0, W, H);
-    const cell = 64, ox = (t * .4) % cell, oy = (t * .4) % cell;
-    cx.fillStyle = "#201b3d";                       // flat grid lines, drifting diagonally
-    for (let x = -cell + ox; x < W + cell; x += cell) cx.fillRect(x | 0, 0, 2, H);
-    for (let y = -cell + oy; y < H + cell; y += cell) cx.fillRect(0, y | 0, W, 2);
-    cx.fillStyle = "#2a2450";                       // little squares riding the grid intersections
-    for (let x = -cell + ox; x < W + cell; x += cell * 3) for (let y = -cell + oy; y < H + cell; y += cell * 3) cx.fillRect((x - 4) | 0, (y - 4) | 0, 10, 10);
-
-    if (!reduce && --nextComet <= 0) { spawn(); nextComet = rnd(240, 560); }
-    for (const m of comets) {                        // flat blocky comets: a solid head with a stepped tail
-      m.x += m.vx; m.y += m.vy;
-      const dir = Math.sign(m.vx), steps = 7;
-      for (let i = 0; i < steps; i++) {
-        const k = i / steps, seg = m.len / steps;
-        cx.globalAlpha = 1 - k; cx.fillStyle = m.c;
-        cx.fillRect((m.x - dir * (i * seg + (dir > 0 ? seg : 0))) | 0, (m.y - m.vy * i * 2) | 0, seg + 1, m.w * (1 - k * .55));
-      }
-      cx.globalAlpha = 1; cx.fillStyle = "#fff"; cx.fillRect((m.x - (dir < 0 ? 0 : 3)) | 0, m.y | 0, m.w, m.w);
-    }
-    comets = comets.filter(m => m.x > -400 && m.x < W + 400 && m.y > -50 && m.y < H + 50);
-    requestAnimationFrame(frame);
-  }
-  frame();
+  // scroll reveal, and the top bar marks the section on screen
+  if ("IntersectionObserver" in window) {
+    const io = new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting) { e.target.classList.add("in"); io.unobserve(e.target); } }), { rootMargin: "0px 0px -8% 0px" });
+    $$(".reveal").forEach(el => io.observe(el));
+    const links = $$(".links a"), spy = new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting)
+      links.forEach(a => a.classList.toggle("on", a.getAttribute("href") === "#" + e.target.id)); }), { rootMargin: "-45% 0px -50% 0px" });
+    links.forEach(a => { const el = $(a.getAttribute("href")); if (el) spy.observe(el); });
+  } else $$(".reveal").forEach(el => el.classList.add("in"));
 </script>
 </body>
 </html>

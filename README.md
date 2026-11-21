@@ -443,6 +443,8 @@ JAVA_HOME=/path/to/jdk-25 ./build.sh
 * `tools/generate.py` - the god roster (single source of truth) plus the generator for textures, skins, models,
   lang, advancements and the website's roster
 * `site/` - the download page (GitHub Pages)
+* `tools/make_font.py` - builds `site/ChaosBlocks.ttf`, the square block lettering of the site's titles (an original
+  typeface; needs `pip install fonttools`)
 * `art/atlases/` - every texture the mod ships, gathered into atlases (items, animated item frames, blocks, skins,
   portraits, weapon designs), each also at 4x, with an `index.json` naming every tile
 * `art/weapon-designs/` - a sheet of every weapon silhouette, including designs for mythologies that are not in the

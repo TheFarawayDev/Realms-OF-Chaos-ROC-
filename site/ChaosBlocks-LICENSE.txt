@@ -1,0 +1,8 @@
+Chaos Blocks
+Copyright (c) TheFarawayDev
+
+The square block lettering used for the titles on this site. It is an original typeface drawn for Realms of
+Chaos: capitals five blocks tall on a grid, built by tools/make_font.py in the project's repository. It is not
+a Mojang or Microsoft font and contains no part of one.
+
+Released under the MIT License, the same licence as the rest of the project (see LICENSE in the repository).
