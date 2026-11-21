@@ -2,6 +2,7 @@ package com.thefarawaydev.realmsofchaos.god;
 
 import com.thefarawaydev.realmsofchaos.RealmsOfChaos;
 import com.thefarawaydev.realmsofchaos.entity.GodBoss;
+import com.thefarawaydev.realmsofchaos.world.Fx;
 import com.thefarawaydev.realmsofchaos.world.Scheduler;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -159,6 +160,7 @@ public enum Signature {
                 for (LivingEntity e : foes(level, user, 14.0)) {
                     bolt(level, e.getX(), e.getY(), e.getZ());
                     strike(level, user, e, god, damage);
+                    Fx.impact(level, e.position(), 3);
                 }
                 for (int i = 0; i < 3; i++) {
                     double a = user.getRandom().nextDouble() * Math.PI * 2, r = 4.0 + user.getRandom().nextDouble() * 5.0;
@@ -190,6 +192,7 @@ public enum Signature {
                     user.teleportTo(end.x, end.y, end.z);
                     user.resetFallDistance();
                 }
+                Fx.impact(level, end, 4);
                 sound(level, user, SoundEvents.PLAYER_ATTACK_SWEEP, 1.4F, 0.6F);
                 sound(level, user, SoundEvents.PLAYER_ATTACK_STRONG, 1.2F, 0.8F);
             }
@@ -217,6 +220,7 @@ public enum Signature {
                     if (!user.isAlive() || user.level() != level) return;
                     for (LivingEntity e : foes(level, user, 4.5)) strike(level, user, e, god, damage);
                     level.sendParticles(ParticleTypes.EXPLOSION, user.getX(), user.getY() + 1.0, user.getZ(), 6, 1.5, 0.5, 1.5, 0.0);
+                    Fx.impact(level, user.position(), 5);
                     ring(level, spark, user.position(), 4.5, 0.5);
                     sound(level, user, SoundEvents.GENERIC_SPLASH, 1.5F, 0.6F);
                 });
@@ -228,6 +232,9 @@ public enum Signature {
                     push(e, away.x * 1.3, 0.45, away.z * 1.3);
                 }
                 level.sendParticles(ParticleTypes.EXPLOSION, at.x, at.y + 1.0, at.z, 4, 0.6, 0.3, 0.6, 0.0);
+                // the shockwave breaks the ground as it goes out
+                Fx.impact(level, at, 6);
+                for (int i = 0; i < 4; i++) Fx.impact(level, at.add(Math.cos(Math.PI / 2 * i) * 3.5, 0, Math.sin(Math.PI / 2 * i) * 3.5), 3);
                 ring(level, ParticleTypes.CLOUD, at, 3.0, 0.3);
                 ring(level, spark, at, 5.0, 0.4);
                 ring(level, ParticleTypes.CLOUD, at, 7.0, 0.3);
@@ -259,6 +266,7 @@ public enum Signature {
                 strike(level, user, target, god, damage * 1.6F);
                 level.sendParticles(ParticleTypes.PORTAL, user.getX(), user.getY() + 1.0, user.getZ(), 40, 0.3, 0.8, 0.3, 0.4);
                 level.sendParticles(ParticleTypes.CRIT, target.getX(), target.getY(0.6), target.getZ(), 25, 0.3, 0.5, 0.3, 0.3);
+                Fx.impact(level, target.position(), 2);
                 sound(level, user, SoundEvents.ENDERMAN_TELEPORT, 1.0F, 1.2F);
                 sound(level, user, SoundEvents.PLAYER_ATTACK_CRIT, 1.2F, 0.9F);
             }
@@ -411,6 +419,7 @@ public enum Signature {
                             level.sendParticles(spark, m.x, m.y + h, m.z, 10, 0.8, 0.1, 0.8, 0.05);
                         }
                         level.sendParticles(ParticleTypes.EXPLOSION, m.x, m.y + 0.8, m.z, 2, 0.5, 0.2, 0.5, 0.0);
+                        Fx.impact(level, m, 8);
                         level.sendParticles(ParticleTypes.LAVA, m.x, m.y + 0.3, m.z, 8, 0.8, 0.1, 0.8, 0.0);
                         level.playSound(null, m.x, m.y, m.z, SoundEvents.GENERIC_EXPLODE.value(), SoundSource.HOSTILE, 1.0F, 0.8F);
                     }

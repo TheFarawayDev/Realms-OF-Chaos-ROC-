@@ -507,7 +507,7 @@
       16
     ],
     "columns": 8,
-    "count": 22,
+    "count": 23,
     "source": "assets/realms_of_chaos/textures/block",
     "tiles": {
       "altar_base": [
@@ -594,8 +594,12 @@
         4,
         2
       ],
-      "passage_shrine": [
+      "passage_seal_top": [
         5,
+        2
+      ],
+      "passage_shrine": [
+        6,
         2
       ]
     }
@@ -606,7 +610,7 @@
       64
     ],
     "columns": 9,
-    "count": 57,
+    "count": 63,
     "source": "assets/realms_of_chaos/textures/entity",
     "tiles": {
       "god/amphitrite": [
@@ -789,52 +793,76 @@
         8,
         4
       ],
-      "sentinel/keeper_shades": [
+      "sentinel/fury": [
         0,
+        5
+      ],
+      "sentinel/harpy": [
+        1,
+        5
+      ],
+      "sentinel/keeper_shades": [
+        2,
         5
       ],
       "sentinel/keeper_sky": [
-        1,
-        5
-      ],
-      "sentinel/keeper_tides": [
-        2,
-        5
-      ],
-      "sentinel/lampad": [
         3,
         5
       ],
-      "sentinel/reef_brute": [
+      "sentinel/keeper_tides": [
         4,
         5
       ],
-      "sentinel/shade": [
+      "sentinel/lampad": [
         5,
         5
       ],
-      "sentinel/siren": [
+      "sentinel/necromancer": [
         6,
         5
       ],
-      "sentinel/sky_archer": [
+      "sentinel/reef_brute": [
         7,
         5
       ],
-      "sentinel/storm_hoplite": [
+      "sentinel/shade": [
         8,
         5
       ],
-      "sentinel/tartarus_brute": [
+      "sentinel/siren": [
         0,
         6
       ],
-      "sentinel/thunder_brute": [
+      "sentinel/sky_archer": [
         1,
         6
       ],
-      "sentinel/tide_hoplite": [
+      "sentinel/storm_augur": [
         2,
+        6
+      ],
+      "sentinel/storm_hoplite": [
+        3,
+        6
+      ],
+      "sentinel/tartarus_brute": [
+        4,
+        6
+      ],
+      "sentinel/telchine": [
+        5,
+        6
+      ],
+      "sentinel/thunder_brute": [
+        6,
+        6
+      ],
+      "sentinel/tide_hoplite": [
+        7,
+        6
+      ],
+      "sentinel/tide_priest": [
+        8,
         6
       ]
     }
@@ -1197,7 +1225,7 @@
       32
     ],
     "columns": 15,
-    "count": 57,
+    "count": 63,
     "tiles": {
       "zeus": [
         0,
@@ -1426,6 +1454,30 @@
       "keeper_shades": [
         11,
         3
+      ],
+      "harpy": [
+        12,
+        3
+      ],
+      "storm_augur": [
+        13,
+        3
+      ],
+      "telchine": [
+        14,
+        3
+      ],
+      "tide_priest": [
+        0,
+        4
+      ],
+      "fury": [
+        1,
+        4
+      ],
+      "necromancer": [
+        2,
+        4
       ]
     }
   }

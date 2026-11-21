@@ -127,6 +127,7 @@ public final class Ruins {
                 Site site = nearest(level.getSeed(), kind, player.getX(), player.getZ());
                 double dx = site.x - player.getX(), dz = site.z - player.getZ();
                 if (dx * dx + dz * dz <= RAISE_DISTANCE * RAISE_DISTANCE) ensure(level, site);
+                if (kind == Kind.GATE && dx * dx + dz * dz <= 40 * 40) com.thefarawaydev.realmsofchaos.ui.Tutorial.tip(player, com.thefarawaydev.realmsofchaos.ui.Tutorial.Tip.RUIN);
             }
         }
     }

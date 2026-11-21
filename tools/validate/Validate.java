@@ -150,6 +150,14 @@ public class Validate {
             check(lang.contains("\"entity.realms_of_chaos.sentinel." + kind.id() + "\""), "lang sentinel " + kind.id());
         }
 
+        for (com.thefarawaydev.realmsofchaos.ui.HandbookData.Topic topic : com.thefarawaydev.realmsofchaos.ui.HandbookData.ALL) {
+            check(lang.contains("\"handbook.realms_of_chaos." + topic.id() + ".title\""), "lang handbook " + topic.id());
+            for (int n = 1; n <= topic.lines(); n++) check(lang.contains("\"handbook.realms_of_chaos." + topic.id() + ".line" + n + "\""), "lang handbook " + topic.id() + " line " + n);
+        }
+        for (com.thefarawaydev.realmsofchaos.ui.Tutorial.Tip tip : com.thefarawaydev.realmsofchaos.ui.Tutorial.Tip.values()) {
+            check(lang.contains("\"tip.realms_of_chaos." + tip.id() + "\""), "lang tip " + tip.id());
+        }
+
         // 5b. relic tags: one per tower with its fifteen weapons
         for (com.thefarawaydev.realmsofchaos.god.Line line : com.thefarawaydev.realmsofchaos.god.Line.values()) {
             Path tag = res.resolve("data/realms_of_chaos/tags/item/relics/" + line.id() + ".json");

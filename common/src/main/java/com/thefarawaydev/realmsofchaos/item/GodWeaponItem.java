@@ -103,6 +103,8 @@ public class GodWeaponItem extends Item {
             god.power().hit(level, target, attacker, god);
             god.applyTargetEffect(target);
             god.applySelfEffect(attacker);
+            // a hammer, an anchor or an oar comes down hard enough to break the ground
+            if (god.kind() == WeaponKind.HAMMER) com.thefarawaydev.realmsofchaos.world.Fx.impact(level, target.position(), 2);
             if (god.kind() == WeaponKind.SCYTHE) {
                 // a scythe's edge carries through everything beside the target
                 for (LivingEntity other : level.getEntitiesOfClass(LivingEntity.class, target.getBoundingBox().inflate(2.5),
@@ -119,6 +121,7 @@ public class GodWeaponItem extends Item {
                 level.sendParticles(ParticleTypes.CRIT, target.getX(), target.getY(0.6), target.getZ(), 18, 0.3, 0.4, 0.3, 0.4);
                 level.sendParticles(ParticleTypes.ENCHANTED_HIT, target.getX(), target.getY(0.6), target.getZ(), 12, 0.3, 0.4, 0.3, 0.3);
                 level.playSound(null, target.blockPosition(), SoundEvents.PLAYER_ATTACK_CRIT, SoundSource.PLAYERS, 1.0F, 0.7F);
+                com.thefarawaydev.realmsofchaos.world.Fx.impact(level, target.position(), 3);
                 if (player instanceof ServerPlayer sp) {
                     Hud.actionBar(sp, Hud.colored(Component.translatable("hud." + RealmsOfChaos.MOD_ID + ".flourish"), god.line().color()));
                 }

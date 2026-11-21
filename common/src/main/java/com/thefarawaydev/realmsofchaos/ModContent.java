@@ -115,7 +115,7 @@ public final class ModContent {
         block("chaos_forge", CHAOS_FORGE, key -> new ForgeBlock(unbreakable(key).mapColor(MapColor.COLOR_ORANGE).lightLevel(s -> 14).noOcclusion().sound(SoundType.ANVIL)));
 
         block("passage_seal", PASSAGE_SEAL, key -> new com.thefarawaydev.realmsofchaos.block.SealBlock(
-                unbreakable(key).mapColor(MapColor.COLOR_CYAN).lightLevel(s -> 12).sound(SoundType.AMETHYST)));
+                unbreakable(key).mapColor(MapColor.COLOR_CYAN).lightLevel(s -> 12).noOcclusion().sound(SoundType.AMETHYST)));
         block("passage_shrine", PASSAGE_SHRINE, key -> new com.thefarawaydev.realmsofchaos.block.ShrineBlock(
                 unbreakable(key).mapColor(MapColor.QUARTZ).lightLevel(s -> 14).sound(SoundType.AMETHYST)));
 

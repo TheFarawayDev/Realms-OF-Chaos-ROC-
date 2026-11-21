@@ -32,7 +32,7 @@ public class OracleBlock extends Block {
         if (level instanceof ServerLevel serverLevel && player instanceof ServerPlayer sp) {
             serverLevel.playSound(null, pos, SoundEvents.AMETHYST_BLOCK_CHIME, SoundSource.BLOCKS, 1.5F, 0.6F);
             if (Story.Chapter.HUB.unlocked(sp)) Story.give(sp, Story.Chapter.HUB);
-            StoryMenu.open(sp);
+            com.thefarawaydev.realmsofchaos.ui.Screens.show(sp, com.thefarawaydev.realmsofchaos.ui.Screens.chronicle(sp));
         }
         return InteractionResult.SUCCESS;
     }

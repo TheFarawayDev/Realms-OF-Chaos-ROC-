@@ -18,6 +18,7 @@ import com.thefarawaydev.realmsofchaos.ui.Hud;
 import com.thefarawaydev.realmsofchaos.world.RocAdvancements;
 import java.util.LinkedHashSet;
 import java.util.Set;
+import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleOptions;
 import java.util.List;
 import java.util.UUID;
@@ -88,6 +89,11 @@ public class GodBoss extends Monster implements RangedAttackMob {
     private boolean statue;
     /** How many players this trial was raised against, and how many times the god had already beaten its summoner. */
     private int challengers = 1, mercy;
+    /** Once enraged, a god makes the floor erupt under its challengers every so often. */
+    private int upheavalCooldown = 160;
+    /** Below a fifth of its health a god makes one last stand. */
+    private boolean lastStand;
+    public static final int UPHEAVAL_WARNING = 20;
     // the attack goal follows the god's weapon: melee for blades and the like, ranged for bows, staffs and relics
     private Goal attackGoal;
 
@@ -409,6 +415,11 @@ public class GodBoss extends Monster implements RangedAttackMob {
         }
 
         if (!enraged && getHealth() < getMaxHealth() * 0.5F) enrage(level, god);
+        if (!lastStand && getHealth() < getMaxHealth() * 0.2F) lastStand(level);
+        if (enraged && --upheavalCooldown <= 0) {
+            upheavalCooldown = lastStand ? 140 : 220;
+            upheaval(level);
+        }
 
         if (tickCount % 20 == 0) keepUnstuck(level);
         if (tickCount % 10 == 0) updateFloorShift(level);
@@ -493,6 +504,105 @@ public class GodBoss extends Monster implements RangedAttackMob {
                 Hud.actionBar(sp, Hud.colored(Component.translatable("hud." + RealmsOfChaos.MOD_ID + ".enraged", god.displayName()), 0xFF5555));
             }
         }
+    }
+
+    /**
+     * The floor throws itself up. Wherever a challenger is standing the ground is marked - dust and a rumble, for a
+     * second - and then erupts: chunks of the floor fly, and anyone still on the spot is thrown into the air.
+     * @return how many places were marked
+     */
+    public int upheaval(ServerLevel level) {
+        God god = god();
+        float s = (Line.RANKS + 1 - god.rank()) / (float) Line.RANKS;
+        float damage = (2.0F + 4.0F * s) * damageScale();
+        List<Vec3> marks = new java.util.ArrayList<>();
+        for (Player p : nearbyPlayers(level, 26)) {
+            marks.add(p.position());
+            if (p instanceof ServerPlayer sp) {
+                Hud.actionBar(sp, Hud.colored(Component.translatable("hud." + RealmsOfChaos.MOD_ID + ".upheaval"), 0xFFAA00));
+                com.thefarawaydev.realmsofchaos.ui.Tutorial.tip(sp, com.thefarawaydev.realmsofchaos.ui.Tutorial.Tip.UPHEAVAL);
+            }
+        }
+        if (marks.isEmpty()) return 0;
+        level.playSound(null, blockPosition(), SoundEvents.WARDEN_SONIC_CHARGE, SoundSource.HOSTILE, 1.5F, 0.6F);
+        for (int delay = 0; delay < UPHEAVAL_WARNING; delay += 6) {
+            Runnable warn = () -> {
+                for (Vec3 m : marks) {
+                    BlockPos under = BlockPos.containing(m.x, m.y + 0.2, m.z);
+                    level.sendParticles(new net.minecraft.core.particles.BlockParticleOption(ParticleTypes.BLOCK, com.thefarawaydev.realmsofchaos.world.Fx.ground(level, under)),
+                            m.x, m.y + 0.1, m.z, 14, 0.9, 0.05, 0.9, 0.05);
+                    level.sendParticles(lineParticle(), m.x, m.y + 0.15, m.z, 6, 0.9, 0.05, 0.9, 0.0);
+                }
+            };
+            if (delay == 0) warn.run();
+            else com.thefarawaydev.realmsofchaos.world.Scheduler.after(level.getServer(), delay, warn);
+        }
+        com.thefarawaydev.realmsofchaos.world.Scheduler.after(level.getServer(), UPHEAVAL_WARNING, () -> {
+            if (!isAlive() || level() != level) return;
+            java.util.Set<Player> thrown = new java.util.HashSet<>();
+            for (Vec3 m : marks) {
+                com.thefarawaydev.realmsofchaos.world.Fx.impact(level, m, 8);
+                level.sendParticles(ParticleTypes.EXPLOSION, m.x, m.y + 0.5, m.z, 2, 0.5, 0.2, 0.5, 0.0);
+                for (Player p : level.getEntitiesOfClass(Player.class, new AABB(m.x - 2.0, m.y - 1.5, m.z - 2.0, m.x + 2.0, m.y + 3.0, m.z + 2.0),
+                        e -> e.isAlive() && !e.isSpectator() && !e.isCreative())) {
+                    if (!thrown.add(p)) continue;
+                    p.hurtServer(level, damageSources().mobAttack(this), damage);
+                    p.setDeltaMovement(p.getDeltaMovement().x * 0.5, 0.95, p.getDeltaMovement().z * 0.5);
+                    p.needsSync = true;
+                }
+            }
+        });
+        return marks.size();
+    }
+
+    public boolean madeLastStand() {
+        return lastStand;
+    }
+
+    /**
+     * A god's last stand, once, at a fifth of its health. For two seconds nothing can touch it. It calls two
+     * sentinels of its tower to its side, the ground breaks round it, and then its signature move and its line's
+     * ability follow one after the other. From here on the floor erupts more often.
+     */
+    public void lastStand(ServerLevel level) {
+        if (lastStand || statue) return;
+        lastStand = true;
+        God god = god();
+        setPermanentlyInvulnerable(true);
+        com.thefarawaydev.realmsofchaos.world.Scheduler.after(level.getServer(), 40, () -> setPermanentlyInvulnerable(false));
+        level.playSound(null, blockPosition(), SoundEvents.WITHER_SPAWN, SoundSource.HOSTILE, 1.2F, 0.7F);
+        level.sendParticles(lineParticle(), getX(), getY() + 1.2, getZ(), 200, 1.0, 1.4, 1.0, 0.4);
+        com.thefarawaydev.realmsofchaos.world.Fx.impact(level, position(), 8);
+        for (Player p : nearbyPlayers(level, 40)) {
+            if (p instanceof ServerPlayer sp) {
+                Hud.title(sp, Hud.colored(Component.translatable("hud." + RealmsOfChaos.MOD_ID + ".laststand", god.displayName()), god.line().color()),
+                        Hud.colored(Component.translatable("hud." + RealmsOfChaos.MOD_ID + ".laststand.sub"), 0xCCCCCC), 5, 50, 15);
+            }
+        }
+        // two of its tower's sentinels answer the call, as strong as the floor asks
+        int floor = Tower.floorOf(god);
+        com.thefarawaydev.realmsofchaos.entity.Sentinel.Role[] called = {com.thefarawaydev.realmsofchaos.entity.Sentinel.Role.SOLDIER, com.thefarawaydev.realmsofchaos.entity.Sentinel.Role.CASTER};
+        for (int i = 0; i < called.length; i++) {
+            Sentinel guard = ModContent.SENTINEL.get().create(level, EntitySpawnReason.MOB_SUMMONED);
+            if (guard == null) continue;
+            guard.setUp(Sentinel.Kind.of(god.line(), called[i]), Math.min(3, Tower.tier(floor)), Sentinel.threat(floor, 0), false);
+            double a = Math.PI * i + random.nextDouble();
+            guard.snapTo(getX() + Math.cos(a) * 2.0, getY() + 0.1, getZ() + Math.sin(a) * 2.0, getYRot(), 0.0F);
+            if (!level.noCollision(guard)) guard.snapTo(getX(), getY() + 0.1, getZ(), getYRot(), 0.0F);
+            guard.addTag(MINION_TAG);
+            guard.setPersistenceRequired();
+            guard.setTarget(getTarget());
+            level.addFreshEntity(guard);
+        }
+        // and then everything it has, one after the other
+        com.thefarawaydev.realmsofchaos.world.Scheduler.after(level.getServer(), 45, () -> {
+            if (isAlive() && level() == level) castSignature(level);
+        });
+        com.thefarawaydev.realmsofchaos.world.Scheduler.after(level.getServer(), 80, () -> {
+            if (isAlive() && level() == level) castAbility(level, god());
+        });
+        abilityCooldown = 120;
+        upheavalCooldown = 100;
     }
 
     /**
@@ -639,6 +749,7 @@ public class GodBoss extends Monster implements RangedAttackMob {
             boolean first = data.markDefeated(player.getUUID(), god);
             RocAdvancements.awardGod(player, god);
             if (first) com.thefarawaydev.realmsofchaos.story.Story.onDefeated(player, god);
+            com.thefarawaydev.realmsofchaos.ui.Tutorial.tip(player, com.thefarawaydev.realmsofchaos.ui.Tutorial.Tip.VICTORY);
             com.thefarawaydev.realmsofchaos.world.Adapt.clearLosses(player.getUUID(), god);
             dropFor(level, player, god, first);
             if (god.isFinalBoss()) {
@@ -705,6 +816,7 @@ public class GodBoss extends Monster implements RangedAttackMob {
         output.putInt("Casts", casts);
         output.putBoolean("Rematch", rematch);
         output.putBoolean("Statue", statue);
+        output.putBoolean("LastStand", lastStand);
         output.putInt("Challengers", challengers);
         output.putInt("Mercy", mercy);
         Vec3 h = home();
@@ -721,6 +833,7 @@ public class GodBoss extends Monster implements RangedAttackMob {
         this.shiftStage = input.getIntOr("ShiftStage", 0);
         this.casts = input.getIntOr("Casts", 0);
         this.rematch = input.getBooleanOr("Rematch", false);
+        this.lastStand = input.getBooleanOr("LastStand", false);
         this.challengers = Math.max(1, input.getIntOr("Challengers", 1));
         this.mercy = input.getIntOr("Mercy", 0);
         double hy = input.getDoubleOr("HomeY", Double.NaN);

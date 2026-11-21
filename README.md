@@ -16,6 +16,13 @@ The current build is an **Alpha**.
 
 ## What's in 1.2.0
 
+* **Custom screens, not just chests.** The Codex, the Climber's Handbook, the Oracle's Chronicle, the Trial Altar
+  and the party are real screens - a title, text, pictures of items and buttons - built on the game's own dialog
+  system, so they work the same on Fabric and Forge. Chapters of the story are read on screen, page by page. The
+  screens with moving parts (the forge's strike bar, the passage map, a tower's floor plan) are still chest menus.
+* **A tutorial.** A new player is shown the **Climber's Handbook** a few seconds after they first join: twelve
+  topics, from getting in to reading a fight, always there in the Codex. After that, a **tip** appears the first
+  time each thing happens - the first Ruined Gate, the first altar, the first seal, the first eruption - once each.
 * **Climb together.** Up to four players can form a **party** (Codex -> Party, or `/roc party invite <player>`,
   `/roc party accept`, `/roc party leave`).
   * A party enters a tower on the floor of its **highest member**, and anyone in it may begin that floor's trial.
@@ -34,17 +41,28 @@ The current build is an **Alpha**.
 * **The walls hold.** Inside the hub, the towers and the passages, survival players are in adventure mode - they
   can fight, open and use everything, but not break or place blocks - and get survival back the moment they leave.
   Creative players are not restricted.
-* **Sentinels: the passages' own enemies.** Twelve kinds, four to a tower, each with its own look, growing
-  stronger higher up:
+* **Sentinels: the passages' own enemies.** Eighteen kinds, six to a tower, each with its own look:
 
-  | | Soldier | Caster | Brute (floors 6+) | Keeper |
-  | --- | --- | --- | --- | --- |
-  | Zeus | Storm Hoplite | Sky Archer (arrows) | Thunder Brute | Keeper of the Sky (calls lightning) |
-  | Poseidon | Tide Hoplite | Siren (slowing bolts) | Reef Brute | Keeper of the Tides (drags you in) |
-  | Hades | Shade (steps behind you) | Lampad (weakening bolts) | Tartarus Brute | Keeper of the Shades (hexes) |
+  | | Soldier | Caster | Skirmisher | Brute | Mystic | Keeper |
+  | --- | --- | --- | --- | --- | --- | --- |
+  | Zeus | Storm Hoplite | Sky Archer | Harpy | Thunder Brute | Storm Augur | Keeper of the Sky |
+  | Poseidon | Tide Hoplite | Siren | Telchine | Reef Brute | Tide Priest | Keeper of the Tides |
+  | Hades | Shade | Lampad | Fury | Tartarus Brute | Necromancer | Keeper of the Shades |
 
-  One Keeper and its guard hold every seal; brutes hit slowly and throw you back; about a third of the ordinary
-  rooms have a **patrol**. A Keeper always drops a piece of the tier's forge material.
+  Soldiers close in (the Shade steps behind you). Casters stand off and shoot. Skirmishers are quick and leap at
+  you (a Fury's blow sets you alight). Brutes hit slowly and throw you back. **Mystics** help the rest: the Storm
+  Augur quickens and emboldens them, the Tide Priest heals them, the Necromancer raises Shades. A **Keeper** holds
+  every seal and uses a small version of one of its tower's moves. **Elites** glow, take half as much again to
+  bring down and always drop forge material.
+  How strong a sentinel is follows its place: every passage further up the tower, and every level further into a
+  passage, makes them tougher and brings more kinds - skirmishers from the second passage, brutes from the middle
+  of the tower, mystics near the top.
+* **Fights that move.** Every heavy move now **breaks the ground**: chunks of whatever the floor is made of are
+  thrown into the air (they are for show, and vanish when they land). Once a god is enraged **the floor erupts**
+  under its challengers every few seconds - dust and a rumble for a second, then anyone still standing there is
+  thrown into the air. At a fifth of its health a god makes a **last stand**: for two seconds nothing can touch it,
+  two of its tower's sentinels answer its call, and then its signature move and its line's ability follow one
+  after the other.
 * **A story.** Chaos, the oldest thing there is, has woken and is unmaking the world one story at a time. The
   gods of the sky, the sea and the dead shut themselves in three towers to hold it off - and have forgotten why.
   You do not slay them: every trial wakes a god, and a relic is its thanks. The story is told by the **Oracle** in
@@ -85,18 +103,24 @@ The current build is an **Alpha**.
 | 15 | Summit of Olympus | Throne of the Deep | Throne of the Underworld |
 
 * **Passages between the floors.** The Gate of Ascent no longer takes you straight up: the first time, it leads
-  into a **passage** - a level to explore between this floor and the next (14 per tower, 42 in all). A passage is
-  a maze of rooms and corridors with a gate at its far end, and the gate stays shut until every **seal** in it is
-  broken (two seals in the lower tier, three in the middle, four near the summit).
+  into a **passage** (14 per tower, 42 in all). A passage is not one level but several, stacked one above the
+  other - **two levels** in the lower third of a tower, **three** above - and each level is a maze of rooms and
+  corridors with a gate at its far end that stays shut until every **seal** on that level is broken (two seals
+  low in the tower, three in the middle, four near the summit). A level's gate leads up to the next level; the
+  last one leads to the next floor. Each level is harder than the one below, and each passage harder than the last.
   * **Procedural.** Each passage is laid out from the world seed - which rooms connect, where the way in, the gate
-    and the seals are, what every room is - so every world's towers are different, and every passage in a tower
-    is different from the last. Passages grow with the tower: 4 x 4 rooms on the lower floors, 5 x 5 above.
-  * **Rooms.** Sealed chambers, treasure rooms (a cache with a share for every player: this tier's forge material,
+    and the seals are, what every room is - so every world's towers are different, and every level of every
+    passage is different. Mazes grow with the tower: 4 x 4 rooms on the lower floors, 5 x 5 above, and 6 x 6 for
+    the last level of the highest passages. A tower has 879 rooms in all.
+  * **Rooms.** Every proper room has a shallow dome, a band of trim and sconces in its walls. There are sealed
+    chambers, **arenas** (on the levels above the first: an elite and its pack guard a richer cache), **gardens**,
+    **libraries** (with a working enchanting table), **pools**, treasure rooms (a cache with a share for every player: this tier's forge material,
     experience bottles, food and metal; in Hades' tower sometimes a tarot card), one **shrine** (right-click: full health, harmful effects
     cleared and three minutes of the tower's favour, once every ten minutes per player), trapped rooms (scorching
     tiles and webs), plain rooms and corridors.
-  * **Seals and guardians.** Walking into a sealed chamber wakes its sentinels (a Keeper and two to four more, by
-    tier; more for a group). While any stand the seal is warded. Then right-click the seal and **strike it apart** - a
+  * **Seals and guardians.** Walking into a sealed chamber wakes its sentinels: a Keeper, one more for each tier of
+    the tower and one more again for each level into the passage (more for a group), with an elite among them on a
+    passage's last level. A breaking seal goes with a shockwave that throws up the floor and staggers anyone close. While any stand the seal is warded. Then right-click the seal and **strike it apart** - a
     quick-time bar: click when the hammer is on the mark. A perfect strike cracks it twice, a good one once, a miss
     stings.
   * **Finding your way.** The Codex opens the **passage map** while you are in one: one slot per room, filled in as
@@ -305,7 +329,8 @@ JAVA_HOME=/path/to/jdk-25 ./build.sh
 The mod contains a developer self-test that only runs when the JVM has `-Droc.selftest=true`. It exercises the mod
 on a real server: data loading, the hub, building and walking every floor of every tower, a full climb of all three
 towers through the altar menu (with rematches) and all 42 passages, the Ruined Gate and its keystones, the story's
-chapters, the hub's residents, the sentinels, parties, group scaling and per-player loot, the wall protection (built, checked room by room for reachability,
+chapters, the hub's residents, all eighteen sentinels, the custom screens and their buttons, the tutorial, impacts, the
+floor's eruptions and the gods' last stands, parties, group scaling and per-player loot, the wall protection (built, checked room by room for reachability,
 seals struck, guardians, shrine, map), every god's signature move, the relic moves, the forging quick-time rounds,
 tier materials, each tarot card, the Codex, leaving the realms, the welcome and the anti-stuck safeguards.
 

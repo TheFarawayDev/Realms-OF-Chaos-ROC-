@@ -26,7 +26,7 @@ public class CodexItem extends Item {
             com.thefarawaydev.realmsofchaos.world.Passages.Spot spot = com.thefarawaydev.realmsofchaos.world.Passages.locate(sp);
             // inside a passage the Codex opens on its map (the map has a button back to the Codex itself)
             if (spot != null) com.thefarawaydev.realmsofchaos.ui.PassageMenu.open(sp, spot);
-            else CodexMenu.open(sp);
+            else com.thefarawaydev.realmsofchaos.ui.Screens.show(sp, com.thefarawaydev.realmsofchaos.ui.Screens.home(sp));
         }
         return InteractionResult.SUCCESS;
     }

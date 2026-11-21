@@ -7,7 +7,7 @@ again four times larger (`@4x`). `index.json` maps every texture name to its col
 | --- | --- | --- | --- |
 | `items.png` | 99 | 16 x 16 | every item texture (first frame of animated ones) |
 | `weapon-designs.png` | 21 | 16 x 16 | weapon designs drawn ahead for future mythologies |
-| `blocks.png` | 22 | 16 x 16 | every block texture (first frame) |
-| `skins.png` | 57 | 64 x 64 | the raw 64x64 skins of the gods and the passage sentinels |
-| `portraits.png` | 57 | 16 x 32 | the gods and sentinels as they look from the front |
+| `blocks.png` | 23 | 16 x 16 | every block texture (first frame) |
+| `skins.png` | 63 | 64 x 64 | the raw 64x64 skins of the gods and the passage sentinels |
+| `portraits.png` | 63 | 16 x 32 | the gods and sentinels as they look from the front |
 | `items-animated.png` | 86 rows | 16 x 16 | every frame of every animated item, one item per row |

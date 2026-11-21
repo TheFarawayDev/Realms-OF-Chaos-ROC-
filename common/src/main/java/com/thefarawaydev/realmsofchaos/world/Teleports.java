@@ -87,6 +87,7 @@ public final class Teleports {
         move(player, dest, pos, yaw);
         Hud.title(player, Hud.colored(Component.translatable(HUD + "hub"), 0xA55AD6),
                 Hud.colored(Component.translatable(HUD + "hub.sub"), 0xCCCCCC));
+        com.thefarawaydev.realmsofchaos.ui.Tutorial.tip(player, com.thefarawaydev.realmsofchaos.ui.Tutorial.Tip.HUB);
     }
 
     /** Hub gate / Codex: go to the floor this player is currently working on. */
@@ -126,6 +127,7 @@ public final class Teleports {
         move(player, dest, Tower.arrival(floor), Tower.ARRIVAL_YAW);
         Hud.title(player, Hud.colored(Tower.tierName(line, floor), line.color()),
                 Hud.colored(Component.translatable(HUD + "floor", Tower.towerName(line), floor), 0xCCCCCC));
+        com.thefarawaydev.realmsofchaos.ui.Tutorial.tip(player, com.thefarawaydev.realmsofchaos.ui.Tutorial.Tip.FLOOR);
     }
 
     /**

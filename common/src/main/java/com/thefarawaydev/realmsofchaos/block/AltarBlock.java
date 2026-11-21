@@ -54,7 +54,7 @@ public class AltarBlock extends Block {
     @Override
     protected InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hit) {
         if (level instanceof ServerLevel && player instanceof ServerPlayer sp) {
-            AltarMenu.open(sp, line, pos);
+            com.thefarawaydev.realmsofchaos.ui.Screens.show(sp, com.thefarawaydev.realmsofchaos.ui.Screens.altar(sp, (ServerLevel) level, line, pos));
         }
         return InteractionResult.SUCCESS;
     }
@@ -128,6 +128,7 @@ public class AltarBlock extends Block {
         int challengers = Math.max(1, level.getEntitiesOfClass(ServerPlayer.class, fightArea(level, altar, line), p -> p.isAlive() && !p.isSpectator()).size());
         int mercy = rematch ? 0 : Math.min(com.thefarawaydev.realmsofchaos.world.Adapt.MAX_MERCY, com.thefarawaydev.realmsofchaos.world.Adapt.losses(player.getUUID(), god));
         boss.setTrial(challengers, mercy);
+        com.thefarawaydev.realmsofchaos.ui.Tutorial.tip(player, com.thefarawaydev.realmsofchaos.ui.Tutorial.Tip.TRIAL);
         boss.setPos(spawn.x, spawn.y, spawn.z);
         boss.setHome(spawn);
         level.addFreshEntity(boss);

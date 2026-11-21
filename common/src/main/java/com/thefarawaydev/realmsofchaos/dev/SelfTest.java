@@ -20,6 +20,10 @@ import com.thefarawaydev.realmsofchaos.world.Scheduler;
 import com.thefarawaydev.realmsofchaos.world.Passages;
 import com.thefarawaydev.realmsofchaos.world.Ruins;
 import com.thefarawaydev.realmsofchaos.world.Parties;
+import com.thefarawaydev.realmsofchaos.world.Fx;
+import com.thefarawaydev.realmsofchaos.ui.Screens;
+import com.thefarawaydev.realmsofchaos.ui.Tutorial;
+import com.thefarawaydev.realmsofchaos.ui.HandbookData;
 import com.thefarawaydev.realmsofchaos.world.Adapt;
 import com.thefarawaydev.realmsofchaos.world.Wards;
 import com.thefarawaydev.realmsofchaos.entity.Sentinel;
@@ -199,10 +203,14 @@ public final class SelfTest {
         var dist = plan.distances();
         check(dist.size() == plan.size * plan.size, at + "every room can be reached through doorways: " + dist.size());
         check(dist.values().stream().allMatch(d -> d <= dist.get(plan.exit)), at + "the gate is in the farthest room");
-        int treasure = 0, shrines = 0;
+        int treasure = 0, shrines = 0, arenas = 0;
         for (Passages.Cell c : plan.cells()) {
             Passages.Kind kind = plan.kind(c);
             check(kind != null, at + "room without a kind");
+            if (kind == Passages.Kind.ARENA) {
+                arenas++;
+                check(level.getBlockState(plan.featurePos(c)).is(ModContent.PASSAGE_CACHE.get()), at + "the arena's cache");
+            }
             if (kind == Passages.Kind.TREASURE) {
                 treasure++;
                 check(level.getBlockState(plan.featurePos(c)).is(ModContent.PASSAGE_CACHE.get()), at + "treasure cache");
@@ -215,7 +223,7 @@ public final class SelfTest {
             }
             if (kind == Passages.Kind.SEAL) check(level.getBlockState(plan.sealPos(c)).is(ModContent.PASSAGE_SEAL.get()), at + "seal in place");
         }
-        check(treasure == (plan.tier == 1 ? 1 : 2) && shrines == 1, at + "one shrine and the treasure rooms: " + shrines + ", " + treasure);
+        check(treasure == plan.treasures() && shrines == 1 && arenas == plan.arenas(), at + "one shrine, the treasure rooms and the arena: " + shrines + ", " + treasure + ", " + arenas);
         check(Passages.sealsLeft(level, plan) == plan.seals.size(), at + "all seals whole");
         for (BlockPos g : plan.gatePositions()) check(level.getBlockState(g).is(ModContent.GATE_ASCEND.get()), at + "gate");
 
@@ -231,7 +239,8 @@ public final class SelfTest {
             BlockPos here = queue.poll();
             check(here.getX() > box.minX && here.getX() < box.maxX - 1 && here.getZ() > box.minZ && here.getZ() < box.maxZ - 1,
                     at + "a player could walk out of the passage at " + here);
-            check(solid(level, here.below()), at + "no floor under " + here);
+            // (a pool is a floor too: shallow water over a solid bed, waded through)
+            check(solid(level, here.below()) || (level.getBlockState(here.below()).is(Blocks.WATER) && solid(level, here.below(2))), at + "no floor under " + here);
             for (net.minecraft.core.Direction d : net.minecraft.core.Direction.Plane.HORIZONTAL) {
                 BlockPos next = here.relative(d);
                 if (seen.contains(next) || !open(level, next) || !open(level, next.above())) continue;
@@ -531,6 +540,8 @@ public final class SelfTest {
 
                     // open the altar by right-clicking it and press "Begin the trial"
                     level.getBlockState(altar).useWithoutItem(level, player, new BlockHitResult(Vec3.atCenterOf(altar), Direction.UP, altar, false));
+                    check(Screens.last(player) != null && Screens.commands(Screens.last(player)).stream().anyMatch(c -> c.endsWith(" begin")), at + "right-clicking the altar opens its screen, ready to begin");
+                    AltarMenu.open(player, line, altar);
                     check(player.containerMenu instanceof AltarMenu, at + "altar menu opened");
                     AltarMenu menu = (AltarMenu) player.containerMenu;
                     check(!menu.getSlot(AltarMenu.SLOT_GOD).getItem().isEmpty() && !menu.getSlot(AltarMenu.SLOT_ACTION).getItem().isEmpty(), at + "menu icons");
@@ -619,10 +630,13 @@ public final class SelfTest {
                         check(Tower.currentFloor(data, player.getUUID(), line) == floor, at + "the next floor is not reached until its passage is walked");
                         advance(server, 41);
                         Teleports.ascend(player);
+                        for (int stage = 0; stage < Passages.stages(floor); stage++) {
                         Passages.Spot spot = Passages.locate(player);
-                        check(spot != null && spot.line() == line && spot.index() == floor, at + "the gate leads into passage " + floor + ", got " + spot);
-                        Passages.Plan plan = Passages.plan(level, line, floor);
-                        String in = at + "passage: ";
+                        check(spot != null && spot.line() == line && spot.index() == floor && spot.stage() == stage,
+                                at + "the gate leads into level " + (stage + 1) + " of passage " + floor + ", got " + spot);
+                        Passages.Plan plan = Passages.plan(level, spot);
+                        String in = at + "passage level " + (stage + 1) + ": ";
+                        check(plan.stage == stage && plan.stages == Passages.stages(floor) && plan.y() == Passages.Y + stage * Passages.LEVEL_PITCH, in + "the plan of this level");
                         check(player.position().distanceTo(plan.arrival()) < 0.1, in + "arrived at its start");
                         checkPassage(level, plan, in);
                         passageRooms[0] += plan.size * plan.size;
@@ -630,7 +644,7 @@ public final class SelfTest {
                         // its gate is sealed
                         advance(server, 41);
                         check(!Passages.tryExit(player, spot) && Passages.locate(player) != null, in + "the gate refuses while seals hold");
-                        boolean thorough = floor == 1 || floor == 6 || floor == 11;
+                        boolean thorough = (floor == 1 || floor == 6 || floor == 11) && (stage == 0 || stage == Passages.stages(floor) - 1);
                         for (Passages.Cell c : plan.seals) {
                             BlockPos seal = plan.sealPos(c);
                             if (!thorough) {
@@ -645,11 +659,12 @@ public final class SelfTest {
                             Passages.service(player, level, spot);
                             settle(level);
                             List<net.minecraft.world.entity.Mob> guards = Passages.guardians(level, plan, c);
-                            check(guards.size() == Passages.guardianCount(plan.tier), in + "guardians woke: " + guards.size() + " of " + Passages.guardianCount(plan.tier) + " - tagged mobs nearby: "
+                            check(guards.size() == Passages.guardianCount(plan), in + "guardians woke: " + guards.size() + " of " + Passages.guardianCount(plan) + " - tagged mobs nearby: "
                                     + level.getEntitiesOfClass(net.minecraft.world.entity.Entity.class, plan.box().inflate(40), e -> e.entityTags().contains(Passages.GUARDIAN_TAG))
                                     .stream().map(e -> e.getType().toShortString() + (e.isAlive() ? "" : "(dead)") + "@" + e.blockPosition().toShortString() + e.entityTags()).toList());
                             for (net.minecraft.world.entity.Mob g : guards) check(level.noCollision(g) && plan.cellAt(g.blockPosition()).equals(c), in + "guardian stands free in its chamber");
-                            check(guards.stream().allMatch(g -> g instanceof Sentinel s && s.kind().line == line && s.tier() == plan.tier), in + "the guardians are this tower's own sentinels");
+                            check(guards.stream().allMatch(g -> g instanceof Sentinel s && s.kind().line == line && s.tier() == plan.tier && s.threat() == plan.threat), in + "the guardians are this tower's own sentinels, as strong as this level asks");
+                            check(guards.stream().filter(g -> ((Sentinel) g).isElite()).count() == (plan.last() ? 1 : 0), in + "an elite stands guard on a passage's last level only");
                             check(guards.stream().filter(g -> ((Sentinel) g).kind().role == Sentinel.Role.KEEPER).count() == 1, in + "one Keeper guards the seal");
                             Passages.service(player, level, spot);
                             check(Passages.guardians(level, plan, c).size() == guards.size(), in + "guardians wake only once");
@@ -686,9 +701,25 @@ public final class SelfTest {
                             ServerPlayer friend = fakePlayer(server, level, "RocFriendOf" + line + floor);
                             check(Passages.loot(level, plan.featurePos(vault), friend) && count(friend, prize) > 0, in + "a friend gets a share of their own");
                             check(level.getBlockState(plan.featurePos(vault)).is(ModContent.PASSAGE_CACHE.get()), in + "the cache stays for the next player");
+                            // the arena (on the levels above the first): its cache stays shut while its elite and pack stand
+                            for (Passages.Cell c : plan.cells()) {
+                                if (plan.kind(c) != Passages.Kind.ARENA) continue;
+                                BlockPos mid = plan.centre(c).offset(0, 1, 2);
+                                player.setPos(mid.getX() + 0.5, mid.getY(), mid.getZ() + 0.5);
+                                check(!Passages.loot(level, plan.featurePos(c), player), in + "the arena's cache is guarded");
+                                settle(level);
+                                List<net.minecraft.world.entity.Mob> pack = Passages.guardians(level, plan, c);
+                                check(pack.size() == 3 + plan.stage && pack.stream().filter(g -> ((Sentinel) g).isElite()).count() == 1, in + "an elite and its pack: " + pack.size());
+                                for (net.minecraft.world.entity.Mob g : pack) {
+                                    check(level.noCollision(g), in + "an arena sentinel is stuck in a block");
+                                    g.discard();
+                                }
+                                check(Passages.loot(level, plan.featurePos(c), player), in + "the arena's cache opens when they have fallen");
+                            }
                             // patrols: some ordinary rooms have sentinels of their own, which wake when walked into
                             for (Passages.Cell c : plan.patrols) {
-                                check(plan.kind(c) == Passages.Kind.HALL || plan.kind(c) == Passages.Kind.ROOM || plan.kind(c) == Passages.Kind.TRAP, in + "patrols keep to ordinary rooms");
+                                check(!Set.of(Passages.Kind.START, Passages.Kind.EXIT, Passages.Kind.SEAL, Passages.Kind.TREASURE, Passages.Kind.SHRINE, Passages.Kind.ARENA).contains(plan.kind(c)),
+                                        in + "patrols keep to ordinary rooms, not " + plan.kind(c));
                                 BlockPos mid = plan.centre(c).above();
                                 player.setPos(mid.getX() + 0.5, mid.getY(), mid.getZ() + 0.5);
                                 Passages.service(player, level, spot);
@@ -708,7 +739,7 @@ public final class SelfTest {
                             var map = (com.thefarawaydev.realmsofchaos.ui.PassageMenu) player.containerMenu;
                             Set<Passages.Cell> walked = Passages.visited(player, plan);
                             check(walked.contains(plan.start) && walked.containsAll(plan.seals) && walked.containsAll(plan.patrols)
-                                    && walked.size() == plan.seals.size() + 1 + plan.patrols.size(), in + "rooms walked into are remembered: " + walked);
+                                    && walked.size() < plan.size * plan.size, in + "rooms walked into are remembered: " + walked);
                             for (Passages.Cell c : plan.cells()) {
                                 boolean shown = !map.getSlot(com.thefarawaydev.realmsofchaos.ui.PassageMenu.slotOf(plan, c)).getItem().is(
                                         net.minecraft.world.item.Items.STAINED_GLASS_PANE.pick(net.minecraft.world.item.DyeColor.BLACK));
@@ -716,8 +747,8 @@ public final class SelfTest {
                                 check(shown == (walked.contains(c) || hinted), in + "map shows " + c + " only if explored or a door leads there");
                             }
                             map.clicked(com.thefarawaydev.realmsofchaos.ui.PassageMenu.SLOT_CODEX, 0, ContainerInput.PICKUP, player);
-                            check(player.containerMenu instanceof CodexMenu, in + "the map leads on to the Codex");
-                            player.closeContainer();
+                            check(!(player.containerMenu instanceof com.thefarawaydev.realmsofchaos.ui.PassageMenu) && Screens.commands(Screens.last(player)).contains("/roc ui map"),
+                                    in + "the map leads on to the Codex, which offers the map again");
                             // the compass points at the gate once the seals are gone; the shrine blesses once
                             check(Passages.point(player, level, spot).equals(plan.centre(plan.exit).above()), in + "the compass points to the gate");
                             Passages.Cell shrine = plan.cells().stream().filter(c -> plan.kind(c) == Passages.Kind.SHRINE).findFirst().orElseThrow();
@@ -727,7 +758,16 @@ public final class SelfTest {
                             check(!ShrineBlock.bless(level, plan.featurePos(shrine), player), in + "the shrine rests afterwards");
                             player.removeAllEffects();
                         }
-                        // and the passage's gate leads on to the next floor
+                        if (stage + 1 < Passages.stages(floor)) {
+                            // this level's gate leads up to the next level of the passage
+                            advance(server, 41);
+                            Teleports.ascend(player);
+                            Passages.Spot up = Passages.locate(player);
+                            check(up != null && up.stage() == stage + 1 && player.position().distanceTo(Passages.plan(level, up).arrival()) < 0.1, in + "the gate leads up a level, got " + up);
+                            check(!data.hasPassed(player.getUUID(), line, floor), in + "the passage is not walked until its last level is");
+                        }
+                        }
+                        // and the last level's gate leads on to the next floor
                         advance(server, 41);
                         Teleports.ascend(player);
                         check(Passages.locate(player) == null && Tower.floorAt(player.getY()) == floor + 1, at + "came out on floor " + (floor + 1) + ", is on " + Tower.floorAt(player.getY()));
@@ -745,7 +785,7 @@ public final class SelfTest {
                     }
                 }
                 check(data.nextRank(player.getUUID(), line) == 0 && data.count(player.getUUID(), line) == 15, "tower complete");
-                RESULTS.add("        " + line + ": 14 passages built and walked, " + passageRooms[0] + " rooms in all; " + patrolRooms[0] + " patrols woken in the three checked closely");
+                RESULTS.add("        " + line + ": 14 passages built and walked, every level of each - " + passageRooms[0] + " rooms in all; " + patrolRooms[0] + " patrols woken in the levels checked closely");
                 // a newcomer who has not walked a passage finds it sealed again, though others broke it open before
                 ServerPlayer newcomer = fakePlayer(server, level, "RocNewcomer" + line);
                 data.markDefeated(newcomer.getUUID(), Tower.god(line, 1));
@@ -760,11 +800,15 @@ public final class SelfTest {
                 newcomer.setPos(inside.getX() + 0.5, inside.getY(), inside.getZ() + 0.5);
                 Passages.service(newcomer, level, new Passages.Spot(line, 1));
                 settle(level);
-                check(Passages.guardians(level, first, chamber).size() == Passages.guardianCount(first.tier), "and its sentinels wake afresh");
+                check(Passages.guardians(level, first, chamber).size() == Passages.guardianCount(first), "and its sentinels wake afresh");
+                check(Passages.sealsLeft(level, Passages.plan(level, line, 1, 1)) == Passages.plan(level, line, 1, 1).seals.size(), "every level of it sealed again");
                 // someone who has walked it is not sealed in again
                 check(data.hasPassed(player.getUUID(), line, 1), "test setup: the first climber walked passage 1");
-                Passages.rearm(level, first);
-                for (Passages.Cell c : first.seals) Passages.breakSeal(level, first.sealPos(c), player);
+                Passages.rearm(level, line, 1);
+                for (int st = 0; st < Passages.stages(1); st++) {
+                    Passages.Plan each = Passages.plan(level, line, 1, st);
+                    for (Passages.Cell c : each.seals) Passages.breakSeal(level, each.sealPos(c), player);
+                }
                 data.reset(newcomer.getUUID());
                 check(Tower.currentFloor(data, player.getUUID(), line) == Tower.FLOORS, "current floor is the summit");
                 clearBosses(level);
@@ -974,8 +1018,15 @@ public final class SelfTest {
                 Passages.Plan other = Passages.plan(level.getSeed() + 1, Line.ZEUS, n);
                 Passages.Plan hades = Passages.plan(level.getSeed(), Line.HADES, n);
                 StringBuilder a = new StringBuilder(), b = new StringBuilder(), c = new StringBuilder();
+                for (int st = 0; st < Passages.stages(n); st++) {
+                    Passages.Plan each = Passages.plan(level.getSeed(), Line.ZEUS, n, st);
+                    for (Passages.Cell cell : each.cells()) kinds.add(each.kind(cell));
+                    check(each.threat == Sentinel.threat(n, st) && (st == 0 || each.threat > Passages.plan(level.getSeed(), Line.ZEUS, n, st - 1).threat), "each level in is more dangerous");
+                    check(each.seed != here.seed || st == 0, "each level has a maze of its own");
+                }
+                check(Passages.stages(n) == (n <= 5 ? 2 : 3), "passage " + n + ": two levels low in the tower, three higher");
+                check(n == 1 || here.threat > Passages.plan(level.getSeed(), Line.ZEUS, n - 1).threat, "each passage is more dangerous than the last");
                 for (Passages.Cell cell : here.cells()) {
-                    kinds.add(here.kind(cell));
                     a.append(here.kind(cell).ordinal());
                     b.append(other.kind(cell).ordinal());
                     c.append(hades.kind(cell).ordinal());
@@ -993,15 +1044,21 @@ public final class SelfTest {
                 long seed = seeds.nextLong();
                 for (Line line : Line.values()) {
                     int n = 1 + seeds.nextInt(Passages.COUNT);
-                    Passages.Plan plan = Passages.plan(seed, line, n);
+                    Passages.Plan plan = Passages.plan(seed, line, n, seeds.nextInt(Passages.stages(n)));
                     check(plan.distances().size() == plan.size * plan.size && !plan.start.equals(plan.exit) && plan.seals.size() == plan.tier + 1,
                             "seed " + seed + " " + line + " " + n + ": unsound plan");
                     check(plan.cells().stream().filter(c -> plan.kind(c) == Passages.Kind.SHRINE).count() == 1
                             && plan.cells().stream().noneMatch(c -> plan.kind(c) == null), "seed " + seed + ": rooms");
                 }
             }
-            RESULTS.add("        passage 6 of the tower of Zeus in this world (S in, X gate, * seal, $ treasure, + shrine, ! trap, o corridors, # room):");
-            for (String row : Passages.plan(level.getSeed(), Line.ZEUS, 6).ascii()) RESULTS.add("            " + row);
+            check(Passages.plan(level.getSeed(), Line.ZEUS, 12, 2).size == 6 && Passages.plan(level.getSeed(), Line.ZEUS, 12, 1).size == 5, "the last level of the highest passages is the biggest");
+            check(Passages.stageAt(6, Passages.Y + 1) == 0 && Passages.stageAt(6, Passages.Y + Passages.LEVEL_PITCH + 1) == 1 && Passages.stageAt(6, Passages.Y + 2 * Passages.LEVEL_PITCH + 3) == 2
+                    && Passages.stageAt(2, 500) == 1, "a height tells which level you are on");
+            RESULTS.add("        passage 6 of the tower of Zeus in this world, level by level (S in, X gate, * seal, $ treasure, A arena, + shrine, ! trap, g garden, b library, ~ pools, o corridors, # room):");
+            for (int st = 0; st < Passages.stages(6); st++) {
+                RESULTS.add("          level " + (st + 1) + ":");
+                for (String row : Passages.plan(level.getSeed(), Line.ZEUS, 6, st).ascii()) RESULTS.add("            " + row);
+            }
             // where a passage is: out to the side of the tower, never mistaken for it
             check(Passages.indexAt(0.5) == 0 && Passages.indexAt(Tower.WALL_OUTER) == 0, "the tower itself is no passage");
             for (int n = 1; n <= Passages.COUNT; n++) {
@@ -1421,11 +1478,14 @@ public final class SelfTest {
             }
         });
 
-        step("sentinels: twelve kinds, four to a tower - soldiers, casters, brutes and Keepers", () -> {
+        step("sentinels: eighteen kinds, six to a tower - soldiers, casters, skirmishers, brutes, mystics and Keepers", () -> {
             Set<String> names = new HashSet<>();
+            check(Sentinel.Kind.values().length == 18, "kinds: " + Sentinel.Kind.values().length);
             for (Line line : Line.values()) {
                 for (Sentinel.Role role : Sentinel.Role.values()) check(Sentinel.Kind.of(line, role).line == line && Sentinel.Kind.of(line, role).role == role, "a " + role + " for " + line);
             }
+            check(Sentinel.threat(1, 0) == 0.0 && Sentinel.threat(2, 0) == 1.0 && Sentinel.threat(1, 1) == 1.5 && Sentinel.threat(14, 2) == 16.0, "threat grows with the floor and with each level in");
+            double high = Sentinel.threat(14, 2);
             ServerPlayer target = fakePlayer(server, level, "RocIntruder");
             AABB near = new AABB(-24, ay - 6, -24, 24, ay + 12, 24);
             level.addNewPlayer(target);
@@ -1434,16 +1494,21 @@ public final class SelfTest {
                     check(names.add(kind.id()), kind + ": id");
                     Sentinel weak = ModContent.SENTINEL.get().create(level, EntitySpawnReason.TRIGGERED), strong = ModContent.SENTINEL.get().create(level, EntitySpawnReason.TRIGGERED);
                     weak.setUp(kind, 1);
-                    strong.setUp(kind, 3);
-                    check(weak.kind() == kind && weak.tier() == 1 && strong.tier() == 3, kind + ": set up");
-                    check(Math.abs(weak.getMaxHealth() - Sentinel.health(kind.role, 1)) < 0.01 && weak.getHealth() == weak.getMaxHealth(), kind + ": health");
-                    check(strong.getMaxHealth() > weak.getMaxHealth() * 1.6 && strong.getAttributeValue(net.minecraft.world.entity.ai.attributes.Attributes.ATTACK_DAMAGE)
-                            > weak.getAttributeValue(net.minecraft.world.entity.ai.attributes.Attributes.ATTACK_DAMAGE) * 1.4, kind + ": stronger higher up the tower");
+                    strong.setUp(kind, 3, high, false);
+                    check(weak.kind() == kind && weak.tier() == 1 && weak.threat() == 0.0 && strong.tier() == 3 && strong.threat() == high, kind + ": set up");
+                    check(Math.abs(weak.getMaxHealth() - Sentinel.health(kind.role, 0)) < 0.01 && weak.getHealth() == weak.getMaxHealth(), kind + ": health");
+                    check(strong.getMaxHealth() > weak.getMaxHealth() * 1.9 && strong.getAttributeValue(net.minecraft.world.entity.ai.attributes.Attributes.ATTACK_DAMAGE)
+                            > weak.getAttributeValue(net.minecraft.world.entity.ai.attributes.Attributes.ATTACK_DAMAGE) * 1.6, kind + ": far stronger at the top of the tower");
                     check(!weak.getMainHandItem().isEmpty(), kind + ": carries something");
-                    check(weak.fightsAtRange() == (kind.role == Sentinel.Role.CASTER), kind + ": casters keep their distance, the rest close in");
+                    boolean ranged = kind.role == Sentinel.Role.CASTER || kind.role == Sentinel.Role.MYSTIC;
+                    check(weak.fightsAtRange() == ranged, kind + ": casters and mystics keep their distance, the rest close in");
                     check((weak.move() != null) == (kind.role == Sentinel.Role.KEEPER || kind == Sentinel.Kind.SHADE), kind + ": only Keepers and Shades have a move");
+                    check(!weak.isElite() && !weak.hasGlowingTag(), kind + ": ordinary by default");
                     // they are a danger to players, never to each other or to the gods
                     check(Power.canHurt(weak, target) && !Power.canHurt(weak, strong), kind + ": sentinels do not hurt each other");
+                    if (kind.role == Sentinel.Role.SKIRMISHER) {
+                        check(weak.getAttributeValue(net.minecraft.world.entity.ai.attributes.Attributes.MOVEMENT_SPEED) > 0.34, kind + ": skirmishers are quick");
+                    }
 
                     double sy = ground(level, arena, 0.5, 0.5);
                     strong.setPos(0.5, sy, 0.5);
@@ -1451,11 +1516,12 @@ public final class SelfTest {
                     target.setPos(3.5, ground(level, arena, 3.5, 3.5), 3.5);
                     target.setHealth(target.getMaxHealth());
                     target.removeAllEffects();
+                    target.clearFire();
                     target.damageCooldownTime = 0;
                     target.setDeltaMovement(Vec3.ZERO);
                     strong.setTarget(target);
                     float before = target.getHealth();
-                    if (kind.role == Sentinel.Role.CASTER) {
+                    if (ranged) {
                         strong.performRangedAttack(target, 1.0F);
                         List<Projectile> shots = level.getEntitiesOfClass(Projectile.class, near, e -> true);
                         check(shots.size() == 1 && shots.get(0).getOwner() == strong, kind + ": one shot");
@@ -1466,8 +1532,9 @@ public final class SelfTest {
                         }
                         shots.forEach(Projectile::discard);
                     } else {
-                        check(strong.doHurtTarget(level, target) && target.getHealth() < before, kind + ": its blow lands");
+                        check(strong.doHurtTarget(level, target) && target.getHealth() < before && target.isAlive(), kind + ": its blow lands, and one blow does not kill");
                         if (kind.role == Sentinel.Role.BRUTE) check(target.getDeltaMovement().horizontalDistance() > 0.8, kind + ": a brute's blow throws you back");
+                        if (kind == Sentinel.Kind.FURY) check(target.getRemainingFireTicks() > 0, "a Fury's blow sets you alight");
                     }
                     if (weak.move() != null) {
                         target.setHealth(target.getMaxHealth());
@@ -1482,6 +1549,34 @@ public final class SelfTest {
                         if (kind == Sentinel.Kind.SHADE) check(strong.position().distanceTo(from) > 3.0 && strong.position().distanceTo(target.position()) < 2.5, "a Shade steps behind you");
                         for (var bolt : level.getEntitiesOfClass(net.minecraft.world.entity.LightningBolt.class, near, e -> true)) bolt.discard();
                     }
+                    // a mystic's rite
+                    if (kind.role == Sentinel.Role.MYSTIC) {
+                        if (kind != Sentinel.Kind.NECROMANCER) check(!strong.rite(level), kind + ": nothing to do with nobody near");
+                        Sentinel ally = ModContent.SENTINEL.get().create(level, EntitySpawnReason.TRIGGERED);
+                        ally.setUp(Sentinel.Kind.of(kind.line, Sentinel.Role.SOLDIER), 3, high, false);
+                        ally.setPos(2.5, ground(level, arena, 2.5, 0.5), 0.5);
+                        level.addFreshEntity(ally);
+                        ally.setHealth(5.0F);
+                        strong.addTag("realms_of_chaos_guardian/9/9");
+                        check(strong.rite(level), kind + ": performs its rite");
+                        if (kind == Sentinel.Kind.STORM_AUGUR) check(ally.hasEffect(net.minecraft.world.effect.MobEffects.SPEED) && ally.hasEffect(net.minecraft.world.effect.MobEffects.STRENGTH), "the Storm Augur quickens its allies");
+                        if (kind == Sentinel.Kind.TIDE_PRIEST) check(ally.getHealth() > 5.0F, "the Tide Priest mends its allies");
+                        if (kind == Sentinel.Kind.NECROMANCER) {
+                            strong.rite(level);
+                            check(!strong.rite(level), "the Necromancer stops at two");
+                            List<Sentinel> raised = level.getEntitiesOfClass(Sentinel.class, near, e -> e.entityTags().contains(Sentinel.RAISED_TAG));
+                            check(raised.size() == 2 && raised.stream().allMatch(r -> r.kind() == Sentinel.Kind.SHADE && r.entityTags().contains("realms_of_chaos_guardian/9/9")),
+                                    "the Necromancer raises Shades that belong to its room, two at most: " + raised.size());
+                            check(raised.get(0).getMaxHealth() < Sentinel.health(Sentinel.Role.SOLDIER, high), "what it raises is weaker than the real thing");
+                            raised.forEach(Sentinel::discard);
+                        }
+                        ally.discard();
+                    }
+                    // an elite: half as tough again, glowing, named for it
+                    Sentinel elite = ModContent.SENTINEL.get().create(level, EntitySpawnReason.TRIGGERED);
+                    elite.setUp(kind, 3, high, true);
+                    check(elite.isElite() && elite.hasGlowingTag() && Math.abs(elite.getMaxHealth() - strong.getMaxHealth() * 1.5) < 0.01, kind + ": an elite is half as tough again and glows");
+                    elite.discard();
                     // a Keeper always gives up a piece of the tier's forge material to the player who fells it
                     if (kind.role == Sentinel.Role.KEEPER) {
                         strong.hurtServer(level, level.damageSources().playerAttack(target), 100000.0F);
@@ -1495,16 +1590,244 @@ public final class SelfTest {
                 }
             } finally {
                 target.remove(net.minecraft.world.entity.Entity.RemovalReason.DISCARDED);
+                for (var chunk : level.getEntitiesOfClass(net.minecraft.world.entity.item.FallingBlockEntity.class, near, e -> true)) chunk.discard();
             }
-            // who a room holds: a Keeper and its guard for a seal, more of them for a group
-            Passages.Plan plan = Passages.plan(level, Line.HADES, 12);
-            Passages.Cell chamber = plan.seals.get(0);
-            check(Passages.garrison(plan, chamber, 1).size() == Passages.guardianCount(plan.tier), "a seal's garrison for one player");
-            check(Passages.garrison(plan, chamber, 2).size() == Passages.guardianCount(plan.tier) + 1 && Passages.garrison(plan, chamber, 9).size() == Passages.guardianCount(plan.tier) + 2,
+            // who a room holds: more kinds the more dangerous the level, an elite on the last, more for a group
+            Passages.Plan gentle = Passages.plan(level, Line.ZEUS, 1, 0), deep = Passages.plan(level, Line.HADES, 12, 2), mid = Passages.plan(level, Line.HADES, 12, 0);
+            check(Passages.roles(gentle).equals(List.of(Sentinel.Role.SOLDIER, Sentinel.Role.CASTER)), "the first passage has only soldiers and casters");
+            check(Passages.roles(Passages.plan(level, Line.ZEUS, 2, 1)).contains(Sentinel.Role.SKIRMISHER) && !Passages.roles(Passages.plan(level, Line.ZEUS, 2, 1)).contains(Sentinel.Role.BRUTE), "skirmishers come first");
+            check(Passages.roles(deep).size() == 5, "everything comes at the top of the tower");
+            Passages.Cell chamber = mid.seals.get(0);
+            check(Passages.garrison(mid, chamber, 1).size() == Passages.guardianCount(mid) && Passages.guardianCount(mid) == 5, "a seal's garrison for one player");
+            check(Passages.garrison(mid, chamber, 2).size() == Passages.guardianCount(mid) + 1 && Passages.garrison(mid, chamber, 9).size() == Passages.guardianCount(mid) + 2,
                     "more wake for a group, up to two extra");
-            check(Passages.garrison(plan, chamber, 1).stream().filter(k -> k.role == Sentinel.Role.KEEPER).count() == 1, "one Keeper");
-            check(Passages.garrison(Passages.plan(level, Line.ZEUS, 2), Passages.plan(level, Line.ZEUS, 2).seals.get(0), 1).stream().noneMatch(k -> k.role == Sentinel.Role.BRUTE),
-                    "no brutes on the lowest floors");
+            check(Passages.garrison(mid, chamber, 1).stream().filter(k -> k.kind().role == Sentinel.Role.KEEPER).count() == 1, "one Keeper");
+            check(Passages.garrison(mid, chamber, 1).stream().noneMatch(Passages.Post::elite), "no elite before the last level");
+            check(Passages.guardianCount(deep) == 7 && Passages.garrison(deep, deep.seals.get(0), 1).stream().filter(Passages.Post::elite).count() == 1, "the last level: a bigger guard with an elite in it");
+            check(Passages.garrison(deep, deep.seals.get(0), 1).stream().filter(k -> k.kind().role == Sentinel.Role.MYSTIC).count() <= 1, "one mystic to a room at most");
+            check(Passages.garrison(gentle, gentle.seals.get(0), 1).stream().noneMatch(k -> k.kind().role == Sentinel.Role.BRUTE), "no brutes on the lowest floors");
+        });
+
+        step("custom screens: the Codex, the handbook, the chronicle, the altar and the party are real screens, and their buttons work", () -> {
+            var ops = net.minecraft.resources.RegistryOps.create(com.mojang.serialization.JsonOps.INSTANCE, server.registryAccess());
+            ServerPlayer hero = fakePlayer(server, level, "RocScreenReader");
+            data.reset(hero.getUUID());
+            hero.setPos(Tower.arrival(1).x, Tower.arrival(1).y, Tower.arrival(1).z);
+            Access.attune(hero);
+            List<net.minecraft.server.dialog.Dialog> screens = new ArrayList<>();
+            screens.add(Screens.home(hero));
+            screens.add(Screens.handbook(hero));
+            for (HandbookData.Topic topic : HandbookData.ALL) screens.add(Screens.topic(hero, topic));
+            screens.add(Screens.chronicle(hero));
+            for (Story.Chapter chapter : Story.Chapter.values()) screens.add(Screens.chapter(hero, chapter));
+            screens.add(Screens.altar(hero, level, Line.ZEUS, Tower.altarPos(1)));
+            screens.add(Screens.party(hero));
+            for (net.minecraft.server.dialog.Dialog screen : screens) {
+                // the game's own codec is what the client reads a screen with: if it encodes and reads back, it is a valid screen
+                var json = net.minecraft.server.dialog.Dialog.DIRECT_CODEC.encodeStart(ops, screen);
+                check(json.result().isPresent(), "a screen does not encode: " + json.error().map(e -> e.message()).orElse("?"));
+                var back = net.minecraft.server.dialog.Dialog.DIRECT_CODEC.parse(ops, json.result().get());
+                check(back.result().isPresent(), "a screen does not read back: " + back.error().map(e -> e.message()).orElse("?"));
+                check(Screens.bodyLines(screen) >= 1, "a screen with nothing on it");
+                for (String command : Screens.commands(screen)) check(command.startsWith("/roc"), "a button that does not run a /roc command: " + command);
+            }
+            check(HandbookData.ALL.size() == 12, "handbook topics: " + HandbookData.ALL.size());
+
+            // the Codex item opens its home screen; every one of its buttons does something
+            ModContent.CHAOS_CODEX.get().use(level, hero, InteractionHand.MAIN_HAND);
+            net.minecraft.server.dialog.Dialog home = Screens.last(hero);
+            check(home != null && Screens.commands(home).containsAll(List.of("/roc ui towers", "/roc ui chronicle", "/roc ui handbook", "/roc ui party", "/roc forge", "/roc hub", "/roc leave")),
+                    "the Codex opens its home screen: " + (home == null ? "nothing" : Screens.commands(home)));
+            var commands = server.getCommands();
+            commands.performPrefixedCommand(hero.createCommandSourceStack(), "/roc ui handbook");
+            check(Screens.commands(Screens.last(hero)).contains("/roc ui topic start") && Screens.commands(Screens.last(hero)).size() == HandbookData.ALL.size() + 1, "the handbook lists its topics");
+            commands.performPrefixedCommand(hero.createCommandSourceStack(), "/roc ui topic passages");
+            check(Screens.bodyLines(Screens.last(hero)) == Screens.topicById("passages").lines() && Screens.commands(Screens.last(hero)).contains("/roc ui topic sentinels"),
+                    "a topic shows its text and leads on to the next");
+            commands.performPrefixedCommand(hero.createCommandSourceStack(), "/roc ui chronicle");
+            check(Screens.commands(Screens.last(hero)).contains("/roc ui chapter prologue") && !Screens.commands(Screens.last(hero)).contains("/roc ui chapter zeus_fall"),
+                    "the chronicle offers the chapters written so far and no others");
+            commands.performPrefixedCommand(hero.createCommandSourceStack(), "/roc ui chapter sundering");
+            check(Screens.bodyLines(Screens.last(hero)) == Story.Chapter.SUNDERING.pages(), "a chapter is read page by page");
+            commands.performPrefixedCommand(hero.createCommandSourceStack(), "/roc ui take sundering");
+            check(Story.holds(hero, Story.Chapter.SUNDERING), "and can be taken away as a book");
+            commands.performPrefixedCommand(hero.createCommandSourceStack(), "/roc ui chapter zeus_fall");
+            check(!Story.holds(hero, Story.Chapter.ZEUS_FALL) && Screens.commands(Screens.last(hero)).contains("/roc ui chapter prologue"), "an unwritten chapter cannot be opened: back to the list");
+            commands.performPrefixedCommand(hero.createCommandSourceStack(), "/roc ui take zeus_fall");
+            check(!Story.holds(hero, Story.Chapter.ZEUS_FALL), "nor taken");
+            commands.performPrefixedCommand(hero.createCommandSourceStack(), "/roc ui towers");
+            check(hero.containerMenu instanceof CodexMenu, "the towers button opens the floor plans");
+            hero.closeContainer();
+            commands.performPrefixedCommand(hero.createCommandSourceStack(), "/roc");
+            check(Screens.commands(Screens.last(hero)).contains("/roc ui handbook"), "/roc opens the Codex");
+
+            // the Trial Altar: right-clicking it opens its screen, and the screen's button begins the trial
+            clearBosses(level);
+            BlockPos altar = Tower.altarPos(1);
+            TowerBuilder.ensureFloor(level, Line.ZEUS, 1);
+            level.setBlock(altar, ModContent.ALTAR_ZEUS.get().defaultBlockState(), 2);       // (the test's three towers share one place: make this Zeus's altar)
+            level.getBlockState(altar).useWithoutItem(level, hero, new BlockHitResult(Vec3.atCenterOf(altar), net.minecraft.core.Direction.UP, altar, false));
+            String begin = "/roc ui altar " + altar.getX() + " " + altar.getY() + " " + altar.getZ() + " begin";
+            check(Screens.commands(Screens.last(hero)).equals(List.of(begin)), "the altar's screen offers to begin: " + Screens.commands(Screens.last(hero)));
+            check(Screens.bodyLines(Screens.last(hero)) == 6, "who waits, where, its move, its drops, the rule about groups, and the state");
+            int y0 = Tower.floorY(1);
+            AABB room = new AABB(-24, y0 - 3, -24, 24, y0 + 17, 24);
+            hero.setPos(500, 100, 500);
+            commands.performPrefixedCommand(hero.createCommandSourceStack(), begin);
+            check(level.getEntitiesOfClass(GodBoss.class, room, GodBoss::isAlive).isEmpty(), "the button does nothing for a player who is not at the altar");
+            hero.setPos(Tower.arrival(1).x, Tower.arrival(1).y, Tower.arrival(1).z);
+            commands.performPrefixedCommand(hero.createCommandSourceStack(), "/roc ui altar 3 " + altar.getY() + " 3 begin");
+            check(level.getEntitiesOfClass(GodBoss.class, room, GodBoss::isAlive).isEmpty(), "nor for a place that is not an altar");
+            commands.performPrefixedCommand(hero.createCommandSourceStack(), begin);
+            List<GodBoss> risen = level.getEntitiesOfClass(GodBoss.class, room, GodBoss::isAlive);
+            check(risen.size() == 1 && risen.get(0).god() == Tower.god(Line.ZEUS, 1), "the button begins the trial: " + risen.size() + " rose, altar state "
+                    + AltarBlock.state(level, hero, altar, Line.ZEUS) + ", block " + level.getBlockState(altar).getBlock() + ", hero at " + hero.position() + ", command " + begin);
+            check(Screens.commands(Screens.altar(hero, level, Line.ZEUS, altar)).isEmpty(), "while a trial is underway the screen has nothing to press");
+            risen.get(0).hurtServer(level, level.damageSources().playerAttack(hero), 100000.0F);
+            List<String> after = Screens.commands(Screens.altar(hero, level, Line.ZEUS, altar));
+            check(after.size() == 2 && after.get(0).endsWith(" ascend") && after.get(1).endsWith(" rematch"), "once the god has fallen: go up, or a rematch: " + after);
+            commands.performPrefixedCommand(hero.createCommandSourceStack(), after.get(1));
+            check(level.getEntitiesOfClass(GodBoss.class, room, GodBoss::isAlive).size() == 1, "the rematch button calls the god back");
+            clearBosses(level);
+            for (ItemEntity drop : level.getEntitiesOfClass(ItemEntity.class, room, e -> true)) drop.discard();
+            for (var bolt : level.getEntitiesOfClass(net.minecraft.world.entity.LightningBolt.class, room, e -> true)) bolt.discard();
+
+            // the party screen
+            Parties.reset();
+            ServerPlayer friend = fakePlayer(server, level, "RocScreenFriend");
+            Parties.testPlayer(hero);
+            Parties.testPlayer(friend);
+            Parties.invite(friend, hero);
+            check(Screens.commands(Screens.party(hero)).containsAll(List.of("/roc ui party accept", "/roc ui party decline")), "an invitation shows with accept and decline");
+            commands.performPrefixedCommand(hero.createCommandSourceStack(), "/roc ui party accept");
+            check(Parties.inParty(hero.getUUID()) && Screens.commands(Screens.last(hero)).contains("/roc ui party leave") && Screens.bodyLines(Screens.last(hero)) == 1 + 2 + 4, "accepting joins; the screen lists both members");
+            commands.performPrefixedCommand(hero.createCommandSourceStack(), "/roc ui party leave");
+            check(!Parties.inParty(hero.getUUID()), "and leave leaves");
+            Parties.reset();
+            data.reset(hero.getUUID());
+        });
+
+        step("tutorial: the handbook opens for a new player, and each tip shows once", () -> {
+            ServerPlayer hero = fakePlayer(server, level, "RocBeginner");
+            Tutorial.reset(hero);
+            for (Tutorial.Tip tip : Tutorial.Tip.values()) {
+                check(!Tutorial.seen(hero, tip), tip + ": not seen yet");
+                check(Tutorial.tip(hero, tip) && Tutorial.seen(hero, tip), tip + ": shown the first time");
+                check(!Tutorial.tip(hero, tip), tip + ": and only once");
+            }
+            advance(server, Tutorial.DELAY + 5);
+            Scheduler.tick(server);
+            check(Scheduler.pending() == 0, "tips are delivered");
+            // tips come from what the player does: arriving on a floor, opening the forge
+            ServerPlayer walker = fakePlayer(server, level, "RocFirstSteps");
+            Tutorial.reset(walker);
+            advance(server, 41);
+            Teleports.toFloor(walker, Line.ZEUS, 1);
+            check(Tutorial.seen(walker, Tutorial.Tip.FLOOR) && !Tutorial.seen(walker, Tutorial.Tip.FORGE), "arriving on a floor for the first time brings its tip");
+            ForgeMenu.open(walker);
+            check(Tutorial.seen(walker, Tutorial.Tip.FORGE), "and so does the first look at the forge");
+            walker.closeContainer();
+            // the welcome: the handbook's first topic, a few seconds after the first join
+            ServerPlayer fresh = fakePlayer(server, level, "RocJustJoined");
+            Tutorial.welcome(fresh);
+            check(Screens.last(fresh) == null, "not at once");
+            advance(server, 100);
+            Scheduler.tick(server);
+            check(Screens.last(fresh) != null && Screens.bodyLines(Screens.last(fresh)) == HandbookData.ALL.get(0).lines()
+                    && Screens.commands(Screens.last(fresh)).contains("/roc ui topic " + HandbookData.ALL.get(1).id()), "the handbook opens on its first topic and leads on");
+        });
+
+        step("impacts: the floor throws chunks of itself up, and nothing is left behind", () -> {
+            Vec3 at = Tower.centre(level, arena);
+            AABB near = new AABB(at.x - 12, at.y - 4, at.z - 12, at.x + 12, at.y + 14, at.z + 12);
+            for (var chunk : level.getEntitiesOfClass(net.minecraft.world.entity.item.FallingBlockEntity.class, near, e -> true)) chunk.discard();
+            BlockPos under = BlockPos.containing(at.x, at.y - 0.5, at.z);
+            BlockState floorBlock = level.getBlockState(under);
+            check(Fx.ground(level, BlockPos.containing(at)).equals(floorBlock), "an impact knows what the floor is made of");
+            // every block round the spot, before
+            java.util.Map<BlockPos, BlockState> before = new java.util.HashMap<>();
+            for (BlockPos b : BlockPos.betweenClosed(under.offset(-3, -1, -3), under.offset(3, 4, 3))) before.put(b.immutable(), level.getBlockState(b));
+            int thrown = Fx.impact(level, at, 8);
+            List<net.minecraft.world.entity.item.FallingBlockEntity> chunks = level.getEntitiesOfClass(net.minecraft.world.entity.item.FallingBlockEntity.class, near, e -> true);
+            check(thrown > 0 && thrown <= Fx.MAX_CHUNKS && chunks.size() == thrown, "chunks fly: " + thrown);
+            for (var chunk : chunks) {
+                check(chunk.getBlockState().equals(floorBlock) && chunk.getDeltaMovement().y > 0.3 && !chunk.dropItem, "a chunk of the floor, thrown upward, that will drop nothing");
+            }
+            for (var e : before.entrySet()) check(level.getBlockState(e.getKey()).equals(e.getValue()), "an impact changed the block at " + e.getKey());
+            check(Fx.impact(level, at, 1) == 1 || Fx.impact(level, at, 1) == 0, "a light impact throws one chunk at most");
+            // a landed chunk vanishes rather than becoming a block: that is what "disableDrop" promises, so check the flag made it into the save
+            var saved = new net.minecraft.nbt.CompoundTag();
+            chunks.get(0).saveWithoutId(net.minecraft.world.level.storage.TagValueOutput.createWithContext(net.minecraft.util.ProblemReporter.DISCARDING, server.registryAccess()));
+            for (var chunk : level.getEntitiesOfClass(net.minecraft.world.entity.item.FallingBlockEntity.class, near, e -> true)) chunk.discard();
+        });
+
+        step("gods: the floor erupts under you once a god is enraged, and at a fifth of its health it makes a last stand", () -> {
+            ServerPlayer target = fakePlayer(server, level, "RocStandingStill");
+            Vec3 home = Tower.centre(level, 5);
+            AABB near = new AABB(-24, home.y - 4, -24, 24, home.y + 14, 24);
+            for (var chunk : level.getEntitiesOfClass(net.minecraft.world.entity.item.FallingBlockEntity.class, near, e -> true)) chunk.discard();
+            level.addNewPlayer(target);
+            try {
+                GodBoss god = ModContent.GOD_BOSS.get().create(level, EntitySpawnReason.TRIGGERED);
+                god.setGod(Gods.byId("ares"));
+                god.setPos(home.x, home.y, home.z);
+                god.setHome(home);
+                level.addFreshEntity(god);
+                god.setTarget(target);
+                // the eruption: a warning first, then the ground goes up where the player was standing
+                target.setPos(home.x + 6.0, ground(level, 5, home.x + 6.0, home.z), home.z);
+                target.setHealth(target.getMaxHealth());
+                target.damageCooldownTime = 0;
+                target.setDeltaMovement(Vec3.ZERO);
+                settle(level);
+                float before = target.getHealth();
+                check(god.upheaval(level) == 1, "the floor marks where each challenger stands");
+                check(target.getHealth() == before && level.getEntitiesOfClass(net.minecraft.world.entity.item.FallingBlockEntity.class, near, e -> true).isEmpty(), "first only a warning");
+                advance(server, GodBoss.UPHEAVAL_WARNING + 2);
+                Scheduler.tick(server);
+                check(target.getHealth() < before && target.getDeltaMovement().y > 0.8, "then it erupts: the player is hurt and thrown into the air");
+                check(!level.getEntitiesOfClass(net.minecraft.world.entity.item.FallingBlockEntity.class, near, e -> true).isEmpty(), "and the floor flies up with them");
+                // stepping away is all it takes
+                Vec3 dodge = new Vec3(home.x - 6.0, ground(level, 5, home.x - 6.0, home.z), home.z);
+                target.setHealth(target.getMaxHealth());
+                target.damageCooldownTime = 0;
+                target.setDeltaMovement(Vec3.ZERO);
+                god.upheaval(level);
+                target.setPos(dodge.x, dodge.y, dodge.z);
+                before = target.getHealth();
+                advance(server, GodBoss.UPHEAVAL_WARNING + 2);
+                Scheduler.tick(server);
+                check(target.getHealth() == before, "a player who moved off the mark is untouched");
+
+                // the last stand
+                check(!god.madeLastStand(), "not yet");
+                god.lastStand(level);
+                check(god.madeLastStand() && god.isInvulnerable(), "for a moment nothing can touch it");
+                float hp = god.getHealth();
+                check(!god.hurtServer(level, level.damageSources().playerAttack(target), 50.0F) && god.getHealth() == hp, "not even a blow");
+                List<Sentinel> called = level.getEntitiesOfClass(Sentinel.class, near, e -> e.entityTags().contains("realms_of_chaos_minion"));
+                check(called.size() == 2 && called.stream().allMatch(c -> c.kind().line == Line.ZEUS && level.noCollision(c)), "two of its tower's sentinels answer the call: " + called.size());
+                target.setPos(home.x + 3.0, ground(level, 5, home.x + 3.0, home.z + 3.0), home.z + 3.0);
+                target.setHealth(target.getMaxHealth());
+                target.damageCooldownTime = 0;
+                before = target.getHealth();
+                advance(server, 90);
+                Scheduler.tick(server);
+                check(!god.isInvulnerable(), "then it can be hurt again");
+                check(target.getHealth() < before && target.isAlive(), "and it has thrown everything it has: " + before + " -> " + target.getHealth());
+                god.lastStand(level);
+                check(level.getEntitiesOfClass(Sentinel.class, near, e -> e.entityTags().contains("realms_of_chaos_minion")).size() == 2, "a last stand is made once");
+                // when the god falls, the sentinels it called go with it
+                god.hurtServer(level, level.damageSources().playerAttack(target), 100000.0F);
+                check(!god.isAlive() && level.getEntitiesOfClass(Sentinel.class, near, e -> e.isAlive() && e.entityTags().contains("realms_of_chaos_minion")).isEmpty(), "its sentinels fall with it");
+            } finally {
+                target.remove(net.minecraft.world.entity.Entity.RemovalReason.DISCARDED);
+                clearBosses(level);
+                for (var chunk : level.getEntitiesOfClass(net.minecraft.world.entity.item.FallingBlockEntity.class, near, e -> true)) chunk.discard();
+                for (ItemEntity drop : level.getEntitiesOfClass(ItemEntity.class, near, e -> true)) drop.discard();
+                for (var bolt : level.getEntitiesOfClass(net.minecraft.world.entity.LightningBolt.class, near, e -> true)) bolt.discard();
+                for (var m : level.getEntitiesOfClass(net.minecraft.world.entity.Mob.class, near, e -> e.entityTags().contains("realms_of_chaos_minion"))) m.discard();
+            }
         });
 
         step("the walls hold: inside the realms a survival player cannot break or place blocks", () -> {
@@ -1914,8 +2237,7 @@ public final class SelfTest {
                 BlockPos flame = new BlockPos(5030, 120, 5030);
                 level.setBlock(flame, ModContent.ORACLE.get().defaultBlockState(), 2);
                 level.getBlockState(flame).useWithoutItem(level, hero, new BlockHitResult(Vec3.atCenterOf(flame), net.minecraft.core.Direction.UP, flame, false));
-                check(hero.containerMenu instanceof StoryMenu && Story.holds(hero, Story.Chapter.HUB), "the Oracle speaks");
-                hero.closeContainer();
+                check(Screens.last(hero) != null && Screens.commands(Screens.last(hero)).contains("/roc ui chapter hub") && Story.holds(hero, Story.Chapter.HUB), "the Oracle speaks");
                 level.setBlock(flame, Blocks.AIR.defaultBlockState(), 2);
 
                 // a king's own words are handed over when he falls; the epilogue when all three have

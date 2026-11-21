@@ -318,6 +318,90 @@ def shade(c, f):
 def mix(a, b, t):
     return tuple(clamp(a[i] * (1 - t) + b[i] * t) for i in range(3))
 
+# The Climber's Handbook: the tutorial, topic by topic. (id, title, lines). Shown as a custom screen; opened once for a
+# new player and always from the Codex.
+HANDBOOK = [
+    ("start", "Getting started", [
+        "Welcome to Realms of Chaos, and thank you for using our mod.",
+        "You have been given three things: the Codex of Chaos (this menu), the Compass of Chaos, and a letter from the Oracle. Read the letter - it is the start of the story.",
+        "The realms of the gods are closed until you find a way in. Right-click the Compass of Chaos: it points to the nearest Ruined Gate.",
+        "This handbook is always here: open the Codex and choose Handbook.",
+    ]),
+    ("way_in", "Finding the way in", [
+        "A Ruined Gate is a broken stone plaza with a dead arch and a campfire still smoking. You will see the smoke first.",
+        "Its chest holds three seekers. Each is a compass for one keystone: right-click it and it tells you how far and which way the shrine is.",
+        "The Shrine of the Sky is a white temple. The Shrine of the Tides is a ring of prismarine round a pool. The Shrine of the Shades is a crypt under standing stones.",
+        "Bring the three keystones back and right-click the pedestal with each. The arch fills. Step through, and the gate knows you: from then on the compass carries you to the hub from anywhere.",
+    ]),
+    ("hub", "The Hub of Realms", [
+        "Three gates lead to three towers: Zeus to the north, Poseidon to the east, Hades to the west. The south gate takes you home.",
+        "The Oracle's Flame burns just north of where you arrive. Right-click it for the story so far and for what to do next.",
+        "Two Forges of Chaos stand south of the middle. The figures beside the gates are echoes of the gods. They only watch.",
+        "Nothing in the realms can be broken or built on. You get your tools back the moment you leave.",
+    ]),
+    ("trials", "Towers and trials", [
+        "Each tower has fifteen floors and one god to a floor. Floor 1 is the gentlest; the king waits on floor 15.",
+        "Right-click the Trial Altar on a floor to see who waits there, what their move is and what they drop, and to begin the trial.",
+        "Beat the god and the Gate of Ascent opens at the far side of the floor. It leads into the passage to the next floor.",
+        "A god you have beaten can be called back from its altar for a rematch. Rematches drop forge materials.",
+    ]),
+    ("fights", "Reading a fight", [
+        "Every god has a signature move with a name. When a god raises its arms, the name appears above your hotbar: that is your warning.",
+        "Rings on the ground mean it is about to erupt there. Step out. A hex bursts two seconds after it lands unless you get well away.",
+        "At half health a god is enraged: it glows, moves faster, and the floor starts to throw itself up under your feet. Keep moving when you see dust.",
+        "At a fifth of its health it makes a last stand: for two seconds nothing can hurt it, sentinels answer its call, and then it uses everything it has.",
+        "The floor itself changes shape as the fight goes on. If a god beats you, it comes back a little weaker next time.",
+    ]),
+    ("passages", "Passages", [
+        "Between every two floors lies a passage: two or three levels, each a maze of rooms. No two worlds have the same ones.",
+        "The gate at the end of a level is sealed. Find every seal on that level and break it. The bar at the top counts them.",
+        "A sealed chamber wakes its sentinels when you walk in. When they have fallen, right-click the seal and strike it: click when the hammer is on the yellow mark.",
+        "The Codex opens a map of the level you are on. The Compass of Chaos points to the nearest seal, then to the gate.",
+        "Treasure caches give every player their own share. Shrines heal you. Arenas hold an elite, and a better cache. Each level up is harder than the last.",
+    ]),
+    ("sentinels", "Sentinels", [
+        "Soldiers close in. Casters keep their distance and shoot. Skirmishers are quick and leap at you. Brutes are slow and send you flying.",
+        "Mystics hang back and help the rest: the Storm Augur quickens them, the Tide Priest heals them, the Necromancer raises more. Deal with the mystic first.",
+        "A Keeper guards every seal and now and then makes a small version of one of its tower's moves. Elites glow, take half as much again to bring down, and always drop forge material.",
+    ]),
+    ("relics", "Relics and their moves", [
+        "Every god drops its relic the first time you beat it. Each relic has a kind - blade, dagger, polearm, heavy, scythe, staff, bow, thrown or relic - and a power on every hit.",
+        "A relic casts its god's signature move. Right-click with a melee relic; sneak and right-click with a ranged one. It recharges in twelve seconds.",
+        "Every fourth hit in a row is a flourish for half as much damage again. Relics gain experience from kills and level up to 10.",
+    ]),
+    ("forge", "The Forge of Chaos", [
+        "Hold a relic and right-click a Forge of Chaos. Stars cost forge materials from the relic's own tower, and each needs the relic to be a high enough level.",
+        "Forging is struck, not clicked: three strikes, timed on the bar. No misses and two perfect strikes is a masterwork, which tempers the star for extra damage.",
+        "Three stars empower the relic's move. Five make it echo. You can pour your own experience levels into a relic with Infuse.",
+    ]),
+    ("party", "Playing together", [
+        "Form a party of up to four from the Codex. A party enters a tower on the floor of its highest member.",
+        "Your progress is your own: you go up past a floor only when you have beaten its god yourself - with help or without - and walked its passage.",
+        "Everyone who fights gets their own loot. Trials are harder with more of you.",
+    ]),
+    ("cards", "Tarot and dolls", [
+        "The gods of the tower of Hades drop tarot cards. Right-click to play one; each does something different. Hades himself drops the Deck of Fate, which never runs out.",
+        "Voodoo dolls are stitched from wheat and string round a pin. Bind one to a creature and stabbing the doll hurts the creature from afar.",
+    ]),
+    ("commands", "Commands", [
+        "/roc - this menu.  /roc hub - go to the hub.  /roc leave - go home.  /roc forge - the forge screen.",
+        "/roc party invite <player>, /roc party accept, /roc party leave.",
+    ]),
+]
+
+# One-time tips: shown on screen the first time each thing happens to a player.
+TIPS = [
+    ("ruin", "A Ruined Gate. Look in its chest: the seekers lead to the keystones it needs"),
+    ("hub", "The Oracle's Flame is just north. Right-click it. Each gate leads to a tower"),
+    ("floor", "Right-click the Trial Altar to see who waits here and to begin"),
+    ("trial", "When the god raises its arms, its move is named above your hotbar"),
+    ("victory", "Pick up your relic. The Gate of Ascent at the far side is open"),
+    ("passage", "Break every seal on this level. The Codex is a map; the compass points the way"),
+    ("seal", "Clear the sentinels, then right-click the seal and strike on the yellow mark"),
+    ("forge", "Stars cost materials from the relic's own tower. Strike on the yellow mark"),
+    ("upheaval", "Dust under your feet means the floor is about to erupt. Move"),
+]
+
 SENTINELS = [
     ("storm_hoplite", "Storm Hoplite", "ZEUS", ("armor", BRONZE, GOLD, (60, 44, 30), TAN, "helmet", GOLD, False, False)),
     ("sky_archer", "Sky Archer", "ZEUS", ("toga", (150, 192, 232), SILVER, (190, 150, 90), LIGHT, "circlet", SILVER, False, True)),
@@ -331,6 +415,12 @@ SENTINELS = [
     ("lampad", "Lampad", "HADES", ("dress", (60, 30, 80), (255, 140, 40), (30, 20, 40), (190, 170, 200), "circlet", (255, 140, 40), False, True)),
     ("tartarus_brute", "Tartarus Brute", "HADES", ("armor", (50, 40, 50), (200, 60, 40), (20, 16, 20), (120, 110, 120), "horns", (200, 60, 40), True, False)),
     ("keeper_shades", "Keeper of the Shades", "HADES", ("robe", (24, 20, 32), (190, 80, 250), (210, 210, 225), (200, 200, 215), "crown", (190, 80, 250), True, False)),
+    ("harpy", "Harpy", "ZEUS", ("wild", (120, 96, 70), (236, 220, 170), (90, 60, 40), (226, 196, 160), "wings", (236, 220, 170), False, True)),
+    ("storm_augur", "Storm Augur", "ZEUS", ("robe", (90, 110, 170), (250, 205, 70), (230, 230, 240), LIGHT, "hood", (90, 110, 170), True, False)),
+    ("telchine", "Telchine", "POSEIDON", ("wild", (30, 60, 80), (220, 170, 70), (20, 40, 50), (110, 150, 150), "circlet", (220, 170, 70), True, False)),
+    ("tide_priest", "Tide Priest", "POSEIDON", ("robe", (220, 240, 245), (60, 190, 215), (180, 220, 225), (170, 215, 210), "circlet", (60, 190, 215), False, True)),
+    ("fury", "Fury", "HADES", ("dress", (110, 20, 30), (20, 16, 20), (30, 10, 14), (170, 150, 160), "wings", (40, 30, 40), False, True)),
+    ("necromancer", "Necromancer", "HADES", ("robe", (30, 44, 36), (110, 220, 130), (20, 30, 24), (160, 175, 165), "hood", (30, 44, 36), True, False)),
 ]
 for _sid, _name, _line, _look in SENTINELS:
     LOOKS[_sid] = _look
@@ -454,6 +544,25 @@ def gen_atlases():
     lines.append(f"| `items-animated.png` | {len(animated)} rows | 16 x 16 | every frame of every animated item, one item per row |")
     w(os.path.join(out, "README.md"), "\n".join(lines) + "\n")
 
+def gen_handbook_java():
+    rows = [f"        new Topic({jstr(hid)}, {len(lines)})" for hid, _title, lines in HANDBOOK]
+    src = f"""package {JAVA_PKG}.ui;
+
+import java.util.List;
+
+/** GENERATED by tools/generate.py - do not edit by hand. The topics of the Climber's Handbook: id, number of lines. */
+public final class HandbookData {{
+    private HandbookData() {{}}
+
+    public record Topic(String id, int lines) {{}}
+
+    public static final List<Topic> ALL = List.of(
+{(",\n").join(rows)}
+    );
+}}
+"""
+    w(os.path.join(ROOT, "common/src/main/java", *JAVA_PKG.split("."), "ui", "HandbookData.java"), src)
+
 def gen_story_java():
     rows = [f"        new Entry({jstr(sid)}, {jstr(title)}, {len(pages)})" for sid, title, _blurb, pages in STORY]
     src = f"""package {JAVA_PKG}.story;
@@ -515,6 +624,70 @@ def gen_lang():
         "entity.realms_of_chaos.god_boss": "God of the Realms",
         "block.realms_of_chaos.chaos_forge": "Forge of Chaos",
         "block.realms_of_chaos.passage_cache": "Treasure Cache",
+        "hud.realms_of_chaos.tip": "Tip",
+        "hud.realms_of_chaos.upheaval": "The floor erupts!",
+        "hud.realms_of_chaos.laststand": "%s's last stand",
+        "hud.realms_of_chaos.laststand.sub": "Nothing can touch it for a moment. Brace",
+        "hud.realms_of_chaos.passage.level": "Level %s of %s - break the %s seals",
+        "hud.realms_of_chaos.passage.level.open": "Level %s of %s - the gate stands open",
+        "hud.realms_of_chaos.passage.open.deeper": "The gate leads up to level %s of %s",
+        "hud.realms_of_chaos.passage.room.arena": "An arena - an elite and its pack guard the cache",
+        "hud.realms_of_chaos.passage.room.garden": "A garden",
+        "hud.realms_of_chaos.passage.room.library": "A library - the table still works",
+        "hud.realms_of_chaos.passage.room.pool": "Pools",
+        "hud.realms_of_chaos.passage.room.exit.deeper": "The gate up to the next level stands open",
+        "menu.realms_of_chaos.passage.kind.garden": "Garden",
+        "menu.realms_of_chaos.passage.kind.library": "Library",
+        "menu.realms_of_chaos.passage.kind.pool": "Pools",
+        "menu.realms_of_chaos.passage.kind.arena": "Arena",
+        "menu.realms_of_chaos.passage.info.level": "Level %s of %s",
+        "screen.realms_of_chaos.home": "Codex of Chaos",
+        "screen.realms_of_chaos.home.thanks": "Thank you for using our mod. - TheFarawayDev",
+        "screen.realms_of_chaos.home.awake": "Gods awake: %s of 45",
+        "screen.realms_of_chaos.home.tower": "%s: floor %s",
+        "screen.realms_of_chaos.home.next": "What now?",
+        "screen.realms_of_chaos.home.towers": "Towers and travel",
+        "screen.realms_of_chaos.home.towers.tip": "Every floor of every tower, and travel to the ones you have reached",
+        "screen.realms_of_chaos.home.chronicle": "The Oracle's Chronicle",
+        "screen.realms_of_chaos.home.chronicle.tip": "The story so far",
+        "screen.realms_of_chaos.home.handbook": "Handbook",
+        "screen.realms_of_chaos.home.handbook.tip": "How everything works",
+        "screen.realms_of_chaos.home.party": "Party",
+        "screen.realms_of_chaos.home.party.tip": "Climb together",
+        "screen.realms_of_chaos.home.forge": "Forge of Chaos",
+        "screen.realms_of_chaos.home.forge.tip": "For the relic in your hand",
+        "screen.realms_of_chaos.home.hub": "Go to the hub",
+        "screen.realms_of_chaos.home.leave": "Leave the realms",
+        "screen.realms_of_chaos.home.map": "Passage map",
+        "screen.realms_of_chaos.close": "Close",
+        "screen.realms_of_chaos.back": "Back",
+        "screen.realms_of_chaos.handbook": "Climber's Handbook",
+        "screen.realms_of_chaos.handbook.intro": "Choose a topic.",
+        "screen.realms_of_chaos.chronicle": "The Oracle's Chronicle",
+        "screen.realms_of_chaos.chronicle.count": "%s of %s chapters written",
+        "screen.realms_of_chaos.chronicle.locked": "Not yet written: %s",
+        "screen.realms_of_chaos.chronicle.none": "Nothing more to read yet",
+        "screen.realms_of_chaos.chapter.take": "Take as a book",
+        "screen.realms_of_chaos.altar": "Trial Altar",
+        "screen.realms_of_chaos.altar.floor": "%s - floor %s of 15 - %s",
+        "screen.realms_of_chaos.altar.rank": "%s. Rank %s of 15",
+        "screen.realms_of_chaos.altar.move": "Signature move: %s. %s",
+        "screen.realms_of_chaos.altar.drops": "Drops: %s x %s, and %s the first time you beat it",
+        "screen.realms_of_chaos.altar.scaling": "The trial is harder for every extra challenger on the floor",
+        "screen.realms_of_chaos.altar.state.ready": "The altar is ready",
+        "screen.realms_of_chaos.altar.state.defeated": "You have beaten this god",
+        "screen.realms_of_chaos.altar.state.underway": "A trial is underway on this floor",
+        "screen.realms_of_chaos.altar.state.locked": "This floor is not yours to challenge yet",
+        "screen.realms_of_chaos.altar.state.peaceful": "The gods do not answer on Peaceful",
+        "screen.realms_of_chaos.altar.state.complete": "Every god of this line has fallen to you",
+        "screen.realms_of_chaos.altar.begin": "Begin the trial",
+        "screen.realms_of_chaos.altar.ascend": "Go up",
+        "screen.realms_of_chaos.altar.rematch": "Rematch",
+        "screen.realms_of_chaos.party": "Party",
+        "screen.realms_of_chaos.party.member": "%s - %s",
+        "screen.realms_of_chaos.party.floors": "floors %s / %s / %s",
+        "screen.realms_of_chaos.party.invite": "Invite %s",
+        "screen.realms_of_chaos.party.refresh": "Refresh",
         "hud.realms_of_chaos.cache.taken": "You have already taken your share of this cache",
         "hud.realms_of_chaos.cache.loot": "Your share of the treasure: %s stacks",
         "hud.realms_of_chaos.cache.empty": "This cache holds nothing here",
@@ -590,7 +763,7 @@ def gen_lang():
         "hud.realms_of_chaos.passage.title": "Passage to floor %s",
         "hud.realms_of_chaos.passage.sub": "Break the %s seals to open the gate",
         "hud.realms_of_chaos.passage.sub.open": "The gate at the far end stands open",
-        "hud.realms_of_chaos.passage.bar": "%s - Passage to floor %s - Seals %s / %s",
+        "hud.realms_of_chaos.passage.bar": "%s - Passage to floor %s - Level %s of %s - Seals %s / %s",
         "hud.realms_of_chaos.passage.seal.broken": "Seal broken: %s left",
         "hud.realms_of_chaos.passage.open": "The way is open",
         "hud.realms_of_chaos.passage.open.sub": "The gate to floor %s awaits",
@@ -861,6 +1034,13 @@ def gen_lang():
         "advancement.realms_of_chaos.root.desc": "Thank you for using our mod! Open the Codex of Chaos to begin. - TheFarawayDev",
     }
     lang["entity.realms_of_chaos.sentinel"] = "Sentinel"
+    lang["entity.realms_of_chaos.sentinel.elite"] = "Elite %s"
+    for hid, htitle, hlines in HANDBOOK:
+        lang[f"handbook.realms_of_chaos.{hid}.title"] = htitle
+        for n, hline in enumerate(hlines, start=1):
+            lang[f"handbook.realms_of_chaos.{hid}.line{n}"] = hline
+    for tid, ttext in TIPS:
+        lang[f"tip.realms_of_chaos.{tid}"] = ttext
     for sid, sname, _line, _look in SENTINELS:
         lang[f"entity.realms_of_chaos.sentinel.{sid}"] = sname
     for sid, title, blurb, pages in STORY:
@@ -1023,6 +1203,10 @@ def gen_models():
             wj(os.path.join(ASSETS, f"models/block/{b}.json"),
                station_model(f"{MOD}:block/chaos_forge_top", f"{MOD}:block/altar_base", f"{MOD}:block/chaos_forge_side",
                              [(1, 0, 1, 15, 4, 15), (3, 4, 3, 13, 9, 13), (0, 9, 0, 16, 16, 16)]))
+        elif b == "passage_seal":
+            wj(os.path.join(ASSETS, f"models/block/{b}.json"),
+               station_model(f"{MOD}:block/passage_seal_top", f"{MOD}:block/altar_base", f"{MOD}:block/passage_seal",
+                             [(2, 0, 2, 14, 2, 14), (4, 2, 4, 12, 13, 12), (6, 13, 6, 10, 16, 10)]))
         elif b == "gate_pedestal":
             wj(os.path.join(ASSETS, f"models/block/{b}.json"),
                station_model(f"{MOD}:block/gate_pedestal_top", f"{MOD}:block/altar_base", f"{MOD}:block/gate_pedestal_side",
@@ -2351,6 +2535,24 @@ def gen_block_textures():
         shrine_frames.append(shrine)
     os.makedirs(T, exist_ok=True)
     save_strip(seal_frames, os.path.join(T, "passage_seal.png"), {"animation": {"frametime": 3, "interpolate": True}})
+    # the top of the seal's crystal: a bright eye that opens and closes
+    top_frames = []
+    for f in range(8):
+        k = 0.5 + 0.5 * math.sin(f / 8 * math.tau)
+        top = Image.new("RGBA", (16, 16))
+        for y in range(16):
+            for x in range(16):
+                r = math.hypot(x - 7.5, y - 7.5)
+                c = shade((44, 40, 66), grain[y][x])
+                if r < 2.0 + 2.0 * k:
+                    c = mix((240, 190, 70), (255, 255, 235), k)
+                elif r < 5.5:
+                    c = mix((40, 110, 140), (120, 220, 240), max(0.0, 1 - (r - 2) / 3.5) * (0.5 + 0.5 * k))
+                elif r < 6.5:
+                    c = (200, 250, 255)
+                top.putpixel((x, y), c + (255,))
+        top_frames.append(top)
+    save_strip(top_frames, os.path.join(T, "passage_seal_top.png"), {"animation": {"frametime": 3, "interpolate": True}})
     save_strip(shrine_frames, os.path.join(T, "passage_shrine.png"), {"animation": {"frametime": 4, "interpolate": True}})
 
     # keystone pedestal: weathered stone with three coloured sockets; the Oracle's flame: a brazier of violet fire
@@ -3052,6 +3254,7 @@ if __name__ == "__main__":
     gen_recipes()
     gen_tags()
     gen_story_java()
+    gen_handbook_java()
     previews = gen_skins()
     gen_pack()
     gen_data()

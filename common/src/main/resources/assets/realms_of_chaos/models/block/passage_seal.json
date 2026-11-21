@@ -1,6 +1,215 @@
 {
-  "parent": "minecraft:block/cube_all",
+  "parent": "minecraft:block/block",
   "textures": {
-    "all": "realms_of_chaos:block/passage_seal"
-  }
+    "particle": "realms_of_chaos:block/passage_seal",
+    "top": "realms_of_chaos:block/passage_seal_top",
+    "bottom": "realms_of_chaos:block/altar_base",
+    "side": "realms_of_chaos:block/passage_seal"
+  },
+  "elements": [
+    {
+      "from": [
+        2,
+        0,
+        2
+      ],
+      "to": [
+        14,
+        2,
+        14
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            2,
+            14,
+            14,
+            16
+          ],
+          "texture": "#side"
+        },
+        "south": {
+          "uv": [
+            2,
+            14,
+            14,
+            16
+          ],
+          "texture": "#side"
+        },
+        "west": {
+          "uv": [
+            2,
+            14,
+            14,
+            16
+          ],
+          "texture": "#side"
+        },
+        "east": {
+          "uv": [
+            2,
+            14,
+            14,
+            16
+          ],
+          "texture": "#side"
+        },
+        "up": {
+          "uv": [
+            2,
+            2,
+            14,
+            14
+          ],
+          "texture": "#top"
+        },
+        "down": {
+          "uv": [
+            2,
+            2,
+            14,
+            14
+          ],
+          "texture": "#bottom"
+        }
+      }
+    },
+    {
+      "from": [
+        4,
+        2,
+        4
+      ],
+      "to": [
+        12,
+        13,
+        12
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            4,
+            3,
+            12,
+            14
+          ],
+          "texture": "#side"
+        },
+        "south": {
+          "uv": [
+            4,
+            3,
+            12,
+            14
+          ],
+          "texture": "#side"
+        },
+        "west": {
+          "uv": [
+            4,
+            3,
+            12,
+            14
+          ],
+          "texture": "#side"
+        },
+        "east": {
+          "uv": [
+            4,
+            3,
+            12,
+            14
+          ],
+          "texture": "#side"
+        },
+        "up": {
+          "uv": [
+            4,
+            4,
+            12,
+            12
+          ],
+          "texture": "#top"
+        },
+        "down": {
+          "uv": [
+            4,
+            4,
+            12,
+            12
+          ],
+          "texture": "#bottom"
+        }
+      }
+    },
+    {
+      "from": [
+        6,
+        13,
+        6
+      ],
+      "to": [
+        10,
+        16,
+        10
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            6,
+            0,
+            10,
+            3
+          ],
+          "texture": "#side"
+        },
+        "south": {
+          "uv": [
+            6,
+            0,
+            10,
+            3
+          ],
+          "texture": "#side"
+        },
+        "west": {
+          "uv": [
+            6,
+            0,
+            10,
+            3
+          ],
+          "texture": "#side"
+        },
+        "east": {
+          "uv": [
+            6,
+            0,
+            10,
+            3
+          ],
+          "texture": "#side"
+        },
+        "up": {
+          "uv": [
+            6,
+            6,
+            10,
+            10
+          ],
+          "texture": "#top"
+        },
+        "down": {
+          "uv": [
+            6,
+            6,
+            10,
+            10
+          ],
+          "texture": "#bottom"
+        }
+      }
+    }
+  ]
 }

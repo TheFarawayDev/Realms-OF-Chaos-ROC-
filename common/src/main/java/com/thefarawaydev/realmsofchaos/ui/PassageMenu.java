@@ -22,7 +22,8 @@ import net.minecraft.world.level.ItemLike;
  * door leading on, if a room already explored opens onto it.
  */
 public class PassageMenu extends ButtonMenu {
-    public static final int SLOT_CODEX = slot(5, 0), SLOT_INFO = slot(5, 4), SLOT_CLOSE = slot(5, 8);
+    // the buttons stand in the side columns, which the maze never uses: the biggest mazes need all six rows
+    public static final int SLOT_CODEX = slot(0, 0), SLOT_INFO = slot(2, 0), SLOT_CLOSE = slot(0, 8);
     private static final String NS = "menu." + RealmsOfChaos.MOD_ID + ".passage.";
 
     private final Passages.Spot spot;
@@ -38,16 +39,17 @@ public class PassageMenu extends ButtonMenu {
         render();
     }
 
-    /** The slot a room is drawn in: the maze sits in the middle five columns, north at the top. */
+    /** The slot a room is drawn in: the maze sits in the middle columns, north at the top. */
     public static int slotOf(Passages.Plan plan, Passages.Cell cell) {
-        return slot(cell.z(), 2 + cell.x());
+        return slot(cell.z(), (plan.size >= 6 ? 1 : 2) + cell.x());
     }
 
     @Override
     protected void press(int slot) {
         if (slot == SLOT_CODEX) {
             clickSound();
-            CodexMenu.open(viewer);
+            viewer.closeContainer();
+            Screens.show(viewer, Screens.home(viewer));
         } else if (slot == SLOT_CLOSE) {
             clickSound();
             viewer.closeContainer();
@@ -73,7 +75,7 @@ public class PassageMenu extends ButtonMenu {
     protected void render() {
         fill(DyeColor.BLACK);
         if (!(viewer.level() instanceof ServerLevel level)) return;
-        Passages.Plan plan = Passages.plan(level, spot.line(), spot.index());
+        Passages.Plan plan = Passages.plan(level, spot);
         Set<Passages.Cell> seen = Passages.visited(viewer, plan);
         Passages.Cell here = plan.cellAt(viewer.blockPosition());
         for (Passages.Cell c : plan.cells()) {
@@ -95,6 +97,10 @@ public class PassageMenu extends ButtonMenu {
                 case TRAP -> Items.MAGMA_BLOCK;
                 case HALL -> Items.STONE_BRICK_STAIRS;
                 case ROOM -> Items.STONE_BRICKS;
+                case GARDEN -> Items.FLOWERING_AZALEA;
+                case LIBRARY -> Items.BOOKSHELF;
+                case POOL -> Items.LILY_PAD;
+                case ARENA -> Items.IRON_SWORD;
             };
             String name = kind == Passages.Kind.SEAL ? (sealed ? "seal" : "seal.broken") : kind.name().toLowerCase();
             List<Component> lore = new ArrayList<>();
@@ -106,6 +112,7 @@ public class PassageMenu extends ButtonMenu {
         }
         int total = plan.seals.size(), broken = total - Passages.sealsLeft(level, plan);
         view.setItem(SLOT_INFO, icon(ModContent.CHAOS_COMPASS.get(), text(NS + "info", spot.line().color(), spot.index() + 1), false, List.of(
+                text(NS + "info.level", 0xFFFFFF, plan.stage + 1, plan.stages),
                 text(NS + "info.seals", broken == total ? 0x55FF55 : 0x55FFFF, broken, total),
                 text(NS + "info.rooms", 0xAAAAAA, seen.size(), plan.size * plan.size),
                 text(NS + "info.compass", 0xAAAAAA))));

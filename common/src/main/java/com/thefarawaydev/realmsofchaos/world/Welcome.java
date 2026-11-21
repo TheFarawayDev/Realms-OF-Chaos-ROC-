@@ -30,6 +30,7 @@ public final class Welcome {
         give(player, new ItemStack(ModContent.CHAOS_CODEX.get()));
         give(player, new ItemStack(ModContent.CHAOS_COMPASS.get()));
         give(player, com.thefarawaydev.realmsofchaos.story.Story.Chapter.PROLOGUE.book());
+        com.thefarawaydev.realmsofchaos.ui.Tutorial.welcome(player);
     }
 
     private static void give(ServerPlayer player, ItemStack stack) {

@@ -48,7 +48,7 @@ public final class RealmSafety {
             if (spot != null) {
                 // between floors: the passage looks after its own rooms, bar and guardians
                 Passages.service(player, level, spot);
-                boolean out = player.getY() < Passages.Y - 6 || player.getY() > Passages.Y + Passages.HEADROOM + 8;
+                boolean out = Passages.outside(player, spot);
                 int held = player.isAlive() && !player.isSpectator() && player.isInWall() ? STUCK_SECONDS.merge(player.getUUID(), 1, Integer::sum) : 0;
                 if (held == 0) STUCK_SECONDS.remove(player.getUUID());
                 if (player.isAlive() && !player.isSpectator() && (out || held >= 2)) {
@@ -107,7 +107,7 @@ public final class RealmSafety {
         ServerBossEvent bar = BARS.computeIfAbsent(player.getUUID(), id -> new ServerBossEvent(
                 UUID.randomUUID(), Component.empty(), BossEvent.BossBarColor.WHITE, BossEvent.BossBarOverlay.NOTCHED_20));
         int total = plan.seals.size();
-        bar.setName(Component.translatable("hud." + RealmsOfChaos.MOD_ID + ".passage.bar", Tower.towerName(plan.line), plan.index + 1, broken, total));
+        bar.setName(Component.translatable("hud." + RealmsOfChaos.MOD_ID + ".passage.bar", Tower.towerName(plan.line), plan.index + 1, plan.stage + 1, plan.stages, broken, total));
         bar.setColor(plan.line.barColor());
         bar.setProgress(total == 0 ? 1.0F : broken / (float) total);
         if (!bar.getPlayers().contains(player)) {
@@ -131,8 +131,8 @@ public final class RealmSafety {
             RealmBuilder.makeSafe(level, pos.x, pos.y, pos.z);
         } else if (Passages.locate(player) != null) {
             Passages.Spot spot = Passages.locate(player);
-            Passages.ensure(level, spot.line(), spot.index());
-            pos = Passages.plan(level, spot.line(), spot.index()).arrival();
+            Passages.ensure(level, spot.line(), spot.index(), spot.stage());
+            pos = Passages.plan(level, spot).arrival();
             yaw = 0.0F;
         } else {
             int floor = Tower.floorAt(player.getY());
