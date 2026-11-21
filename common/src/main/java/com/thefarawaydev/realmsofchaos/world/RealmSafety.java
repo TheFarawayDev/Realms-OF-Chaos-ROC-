@@ -33,6 +33,8 @@ public final class RealmSafety {
         Scheduler.tick(server);
         Ruins.tick(server);
         HubLife.tick(server);
+        Scanner.tick(server);
+        Waygates.tick(server);
         com.thefarawaydev.realmsofchaos.item.TarotEffects.tick(server);
         if (++ticker % 20 != 0) return;
         for (ServerPlayer player : server.getPlayerList().getPlayers()) {
@@ -59,7 +61,10 @@ public final class RealmSafety {
             }
             int floor = line == null ? 0 : Tower.floorAt(player.getY());
             // someone who logged out inside a realm before an update still gets the current layout
-            if (line == null) RealmBuilder.ensureHub(level);
+            if (line == null) {
+                RealmBuilder.ensureHub(level);
+                HubTiers.sanctuary(player, level);
+            }
             else TowerBuilder.ensureFloor(level, line, floor);
             updateBar(player, line, floor);
 

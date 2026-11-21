@@ -66,7 +66,7 @@ public class CodexMenu extends ButtonMenu {
     @Override
     protected void press(int slot) {
         if (page == null) {
-            if (slot == SLOT_HUB) { close(); Teleports.toHub(viewer); return; }
+            if (slot == SLOT_HUB) { close(); Teleports.recall(viewer); return; }
             if (slot == SLOT_LEAVE) { close(); Teleports.leave(viewer); return; }
             if (slot == SLOT_FORGE) { clickSound(); ForgeMenu.open(viewer); return; }
             if (slot == SLOT_STORY) { clickSound(); StoryMenu.open(viewer); return; }
@@ -83,6 +83,7 @@ public class CodexMenu extends ButtonMenu {
         } else if (slot == SLOT_TRAVEL) {
             Line line = page;
             close();
+            if (Teleports.barredOutside(viewer)) return;
             Teleports.enterTower(viewer, line);
         } else {
             ProgressData data = ProgressData.get(viewer.level().getServer());
@@ -90,6 +91,7 @@ public class CodexMenu extends ButtonMenu {
                 if (slotOfFloor(floor) == slot && Teleports.canTravel(viewer, page, floor)) {
                     Line line = page;
                     close();
+                    if (Teleports.barredOutside(viewer)) return;
                     Teleports.toFloor(viewer, line, floor);
                     return;
                 }

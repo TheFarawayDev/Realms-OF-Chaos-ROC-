@@ -11,6 +11,10 @@ public final class HandbookData {
     public static final List<Topic> ALL = List.of(
         new Topic("start", 4),
         new Topic("way_in", 4),
+        new Topic("compass", 4),
+        new Topic("network", 3),
+        new Topic("hub_tiers", 3),
+        new Topic("phases", 4),
         new Topic("hub", 4),
         new Topic("trials", 4),
         new Topic("fights", 5),

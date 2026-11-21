@@ -16,7 +16,19 @@ import com.thefarawaydev.realmsofchaos.world.FloorShifts;
 import com.thefarawaydev.realmsofchaos.world.Tower;
 import com.thefarawaydev.realmsofchaos.ui.Hud;
 import com.thefarawaydev.realmsofchaos.world.RocAdvancements;
+import com.thefarawaydev.realmsofchaos.world.Adapt;
+import com.thefarawaydev.realmsofchaos.world.Arena;
+import com.thefarawaydev.realmsofchaos.world.Fx;
+import com.thefarawaydev.realmsofchaos.world.Scheduler;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
+import java.util.Map;
+import net.minecraft.tags.DamageTypeTags;
+import net.minecraft.util.Mth;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.state.BlockState;
 import java.util.Set;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleOptions;
@@ -64,12 +76,38 @@ import net.minecraft.world.phys.Vec3;
 /**
  * One entity type for all 45 gods: which god it is lives in a synced data field. Health, armour, weapon, boss bar
  * and special ability all derive from the god's line and rank.
+ *
+ * <p>A trial has three phases. The god fights as itself down to 65% of its health. There it raises its
+ * <b>aegis</b>: nothing can hurt it while its shield pylons stand around the floor, and the challengers have to
+ * break them. Once the aegis is down the god is enraged, and at 30% comes its <b>wrath</b>: a last stand, the
+ * floor lost ring by ring from the wall inward, and strikes from above that are marked a moment before they land.
+ * No single blow carries a god through a phase: its health stops at each threshold. Between phases the god looks
+ * at how it was fought - from a distance or hand to hand, quickly or slowly - and changes its stance to answer.
  */
 public class GodBoss extends Monster implements RangedAttackMob {
     private static final EntityDataAccessor<Integer> DATA_GOD = SynchedEntityData.defineId(GodBoss.class, EntityDataSerializers.INT);
     private static final EntityDataAccessor<Boolean> DATA_CASTING = SynchedEntityData.defineId(GodBoss.class, EntityDataSerializers.BOOLEAN);
+    private static final EntityDataAccessor<Integer> DATA_PHASE = SynchedEntityData.defineId(GodBoss.class, EntityDataSerializers.INT);
     private static final String MINION_TAG = "realms_of_chaos_minion";
     private static final int WINDUP_TICKS = 24;
+    /** The share of its health at which a god raises its aegis, and at which its wrath begins. */
+    public static final float AEGIS_AT = 0.65F, WRATH_AT = 0.30F;
+    /** How many blows a shield pylon takes, and how long an aegis holds if nobody breaks it. */
+    public static final int PYLON_HITS = 3, AEGIS_LIMIT = 20 * 75;
+    /** How long a pylon has to be left between blows that count, in ticks: it cannot be broken in one flurry. */
+    public static final int PYLON_REST = 8;
+    /** How long a strike from above is marked on the floor before it lands. */
+    public static final int STRIKE_WARNING = 30;
+
+    /** How a god answers the way it has been fought. */
+    public enum Stance {
+        /** Fought every way at once: it simply presses harder. */
+        BALANCED,
+        /** Fought from a distance: shots are turned aside and it closes in. */
+        DEFLECT,
+        /** Fought hand to hand: its guard lashes back and the floor erupts more often. */
+        BRISTLE
+    }
 
     private final ServerBossEvent bossEvent = new ServerBossEvent(
             UUID.randomUUID(), Component.empty(), BossEvent.BossBarColor.WHITE, BossEvent.BossBarOverlay.NOTCHED_10);
@@ -94,6 +132,30 @@ public class GodBoss extends Monster implements RangedAttackMob {
     /** Below a fifth of its health a god makes one last stand. */
     private boolean lastStand;
     public static final int UPHEAVAL_WARNING = 20;
+    // ---- phases
+    private boolean aegis;
+    private int aegisTicks;
+    /** Where this god's shield pylons stand, and how many blows each can still take. */
+    private final Map<BlockPos, Integer> pylons = new LinkedHashMap<>();
+    private final Map<BlockPos, Long> pylonStruck = new HashMap<>();
+    private Stance stance = Stance.BALANCED;
+    /** Damage taken this phase by how it was dealt, and how long the phase has lasted. */
+    private float meleeTaken, rangedTaken;
+    private int phaseTicks;
+    /** +1 after a phase that was over quickly, -1 after a long one: it sets pylons and strikes for the next. */
+    private int tempo;
+    /** How the challengers' gear measured against the floor when the trial was called. */
+    private double might = 1.0, guard = 1.0;
+    /** True only while a blow is being applied: health then stops at the current phase's threshold. */
+    private boolean gating;
+    /** Server tick until which nothing can hurt this god (the opening of its last stand). */
+    private long guardUntil;
+    private long bristleReady, hintReady;
+    // ---- wrath
+    private double safeRadius = -1.0;
+    private int collapseTicks, strikeCooldown = 80;
+    /** Paving the wrath has taken, and what it was before. */
+    private final Map<BlockPos, BlockState> scorched = new HashMap<>();
     // the attack goal follows the god's weapon: melee for blades and the like, ranged for bows, staffs and relics
     private Goal attackGoal;
 
@@ -129,6 +191,37 @@ public class GodBoss extends Monster implements RangedAttackMob {
         super.defineSynchedData(builder);
         builder.define(DATA_GOD, 0);
         builder.define(DATA_CASTING, false);
+        builder.define(DATA_PHASE, 1);
+    }
+
+    /** 1 = the god as itself, 2 = aegis and rage, 3 = wrath. Synced, so the god's look changes with it. */
+    public int phase() {
+        return this.entityData.get(DATA_PHASE);
+    }
+
+    public boolean aegisUp() {
+        return aegis;
+    }
+
+    public Stance stance() {
+        return stance;
+    }
+
+    public int tempo() {
+        return tempo;
+    }
+
+    public java.util.Set<BlockPos> pylons() {
+        return java.util.Collections.unmodifiableSet(pylons.keySet());
+    }
+
+    public boolean ownsPylon(BlockPos pos) {
+        return pylons.containsKey(pos);
+    }
+
+    /** How far from the middle of the floor is still safe in the god's wrath; negative before it. */
+    public double safeRadius() {
+        return safeRadius;
     }
 
     /** True while the boss winds up its line ability (the renderer raises its arms). */
@@ -152,22 +245,27 @@ public class GodBoss extends Monster implements RangedAttackMob {
     }
 
     /**
-     * Living floors: the terrain shifts into its alternate shape when the god drops below two thirds health and
-     * back below one third; on the upper floors it also keeps shifting on a timer.
+     * Living floors: the terrain shifts into its alternate shape when the god's aegis breaks and back when its
+     * wrath begins; on the upper floors it also keeps shifting on a timer.
      */
     public void updateFloorShift(ServerLevel level) {
         Realm realm = Realm.of(level.dimension());
         if (realm == null || realm.line() == null) return;
         int floor = Tower.floorAt(home().y);
-        float hp = getHealth() / getMaxHealth();
-        int stage = hp < 0.33F ? 2 : hp < 0.66F ? 1 : 0;
+        int stage = phase() >= 3 ? 2 : phase() == 2 && !aegis ? 1 : 0;
         if (stage > shiftStage) {
             shiftStage = stage;
             FloorShifts.set(level, realm.line(), floor, stage == 1);
         }
-        if (Tower.tier(floor) >= 3 && tickCount > 0 && tickCount % 500 == 0) {
+        if (Tower.tier(floor) >= 3 && phase() < 3 && !aegis && tickCount > 0 && tickCount % 500 == 0) {
             FloorShifts.toggle(level, realm.line(), floor);
         }
+    }
+
+    /** The tower line whose floor this god is fighting on, or null when it was called somewhere else. */
+    private Line towerLine() {
+        Realm realm = Realm.of(level().dimension());
+        return realm == null ? null : realm.line();
     }
 
     private double leashRadius() {
@@ -214,10 +312,28 @@ public class GodBoss extends Monster implements RangedAttackMob {
 
     /** Sets how hard this trial is: scaled up for a group, eased for a player the god keeps beating. */
     public void setTrial(int challengers, int mercy) {
-        this.challengers = Math.max(1, Math.min(com.thefarawaydev.realmsofchaos.world.Adapt.MAX_CHALLENGERS, challengers));
-        this.mercy = Math.max(0, Math.min(com.thefarawaydev.realmsofchaos.world.Adapt.MAX_MERCY, mercy));
+        setTrial(challengers, mercy, Adapt.Measure.NONE);
+    }
+
+    /** As {@link #setTrial(int, int)}, and risen to match what the challengers carry. */
+    public void setTrial(int challengers, int mercy, Adapt.Measure measure) {
+        this.challengers = Math.max(1, Math.min(Adapt.MAX_CHALLENGERS, challengers));
+        this.mercy = Math.max(0, Math.min(Adapt.MAX_MERCY, mercy));
+        this.might = measure.might();
+        this.guard = measure.guard();
+        // a group that comes with bows is met by a god already braced for them
+        if (measure.ranged() && Adapt.gearHealth(might) > 1.0) stance = Stance.DEFLECT;
         getAttribute(Attributes.MAX_HEALTH).setBaseValue(trialHealth(god()));
         setHealth(getMaxHealth());
+    }
+
+    public double might() {
+        return might;
+    }
+
+    /** How many times its own health this god has for this trial. */
+    public double trialScale() {
+        return getMaxHealth() / god().bossHealth();
     }
 
     public int challengers() {
@@ -229,12 +345,13 @@ public class GodBoss extends Monster implements RangedAttackMob {
     }
 
     private double trialHealth(God god) {
-        return god.bossHealth() * com.thefarawaydev.realmsofchaos.world.Adapt.healthScale(challengers) * com.thefarawaydev.realmsofchaos.world.Adapt.mercyScale(mercy);
+        return god.bossHealth() * Adapt.healthScale(challengers) * Adapt.mercyScale(mercy)
+                * Adapt.gearHealth(might) * Adapt.difficultyHealth(level().getDifficulty());
     }
 
-    /** How much harder this god's moves and shots hit because of the size of the group it faces. */
+    /** How much harder this god's moves and shots hit: for the size of the group, and for armour past what the floor expects. */
     public float damageScale() {
-        return com.thefarawaydev.realmsofchaos.world.Adapt.damageScale(challengers);
+        return Adapt.damageScale(challengers) * Adapt.gearDamage(guard);
     }
 
     /** A god that fells a player remembers it: the next trial that player calls is a little gentler. */
@@ -414,17 +531,19 @@ public class GodBoss extends Monster implements RangedAttackMob {
             return;
         }
 
-        if (!enraged && getHealth() < getMaxHealth() * 0.5F) enrage(level, god);
-        if (!lastStand && getHealth() < getMaxHealth() * 0.2F) lastStand(level);
+        updatePhase(level);
+        phaseTicks++;
+        if (aegis) tendAegis(level);
+        if (phase() >= 3) tendWrath(level);
         if (enraged && --upheavalCooldown <= 0) {
-            upheavalCooldown = lastStand ? 140 : 220;
+            upheavalCooldown = (int) ((lastStand ? 140 : 220) * (stance == Stance.BRISTLE ? 0.7 : 1.0));
             upheaval(level);
         }
 
         if (tickCount % 20 == 0) keepUnstuck(level);
         if (tickCount % 10 == 0) updateFloorShift(level);
         if (tickCount % 6 == 0) {
-            level.sendParticles(lineParticle(), getX(), getY() + 1.1, getZ(), enraged ? 4 : 2, 0.35, 0.7, 0.35, 0.02);
+            level.sendParticles(lineParticle(), getX(), getY() + 1.1, getZ(), phase() * 2, 0.35, 0.7, 0.35, 0.02);
         }
 
         LivingEntity target = getTarget();
@@ -437,6 +556,7 @@ public class GodBoss extends Monster implements RangedAttackMob {
             throwCard(level, target);
         }
         if (tickCount % 20 == 0 && !isCasting()) maneuver(level, target);
+        if (stance == Stance.DEFLECT && tickCount % 60 == 0 && !isCasting()) close(level, target);
 
         if (abilityCooldown > 0) {
             abilityCooldown--;
@@ -464,7 +584,7 @@ public class GodBoss extends Monster implements RangedAttackMob {
             return;
         }
         double base = 220.0 - (Line.RANKS - god.rank()) * 8.0;
-        abilityCooldown = (int) Math.max(70.0, enraged ? base * 0.6 : base);
+        abilityCooldown = castInterval(base);
         if (!nextIsSignature() || !castSignature(level)) castAbility(level, god);
         casts++;
         this.entityData.set(DATA_CASTING, false);
@@ -482,18 +602,189 @@ public class GodBoss extends Monster implements RangedAttackMob {
         return god.signature().perform(level, this, god, (3.0F + 6.0F * s) * damageScale());
     }
 
-    /** Below half health a god is enraged: it glows, moves faster, casts sooner - and answers at once. */
-    private void enrage(ServerLevel level, God god) {
+    /** How long this god waits between moves: shorter in each phase, on Hard, and when it has no stance to lean on. */
+    public int castInterval(double base) {
+        double pace = phase() >= 3 ? 0.5 : enraged ? 0.65 : 1.0;
+        if (stance == Stance.BALANCED && phase() > 1) pace *= 0.9;
+        return (int) Math.max(60.0, base * pace * Adapt.difficultyPace(level().getDifficulty()));
+    }
+
+    // ---- phases ---------------------------------------------------------------------------------------------
+
+    private void setPhase(int phase) {
+        this.entityData.set(DATA_PHASE, phase);
+        God god = god();
+        String key = "boss." + RealmsOfChaos.MOD_ID + ".phase.";
+        bossEvent.setName(phase >= 3 ? Component.translatable(key + "wrath", god.bossName())
+                : phase == 2 ? Component.translatable(key + (aegis ? "aegis" : "rage"), god.bossName()) : god.bossName());
+        bossEvent.setDarkenScreen(god.rank() <= 3 || phase >= 3);
+        bossEvent.setCreateWorldFog(phase >= 3);
+    }
+
+    /** Moves the trial on when the god's health has reached the next threshold. Safe to call at any time. */
+    public void updatePhase(ServerLevel level) {
+        if (statue || !isAlive()) return;
+        float max = getMaxHealth();
+        if (phase() == 1 && getHealth() <= max * AEGIS_AT + 0.001F) beginAegis(level);
+        else if (phase() == 2 && !aegis && getHealth() <= max * WRATH_AT + 0.001F) lastStand(level);
+    }
+
+    /** The health a blow cannot take this god below: the threshold of the phase it is in. */
+    private float healthGate() {
+        return switch (phase()) {
+            case 1 -> getMaxHealth() * AEGIS_AT;
+            case 2 -> getMaxHealth() * WRATH_AT;
+            default -> 0.0F;
+        };
+    }
+
+    @Override
+    public void setHealth(float health) {
+        if (gating) health = Math.max(health, healthGate());
+        super.setHealth(health);
+    }
+
+    private boolean shielded() {
+        return aegis || (level() instanceof ServerLevel level && level.getServer().getTickCount() < guardUntil);
+    }
+
+    @Override
+    public boolean isInvulnerable() {
+        return super.isInvulnerable() || (!statue && shielded());
+    }
+
+    private static boolean fromAfar(DamageSource source) {
+        return source.is(DamageTypeTags.IS_PROJECTILE) || (source.getDirectEntity() != null && source.getDirectEntity() != source.getEntity());
+    }
+
+    @Override
+    public boolean hurtServer(ServerLevel level, DamageSource source, float amount) {
+        if (statue || source.is(DamageTypeTags.BYPASSES_INVULNERABILITY)) return super.hurtServer(level, source, amount);
+        if (shielded()) {
+            // the aegis rings like a bell and tells whoever struck it what to do instead
+            if (aegis && source.getEntity() instanceof ServerPlayer player && level.getServer().getTickCount() >= hintReady) {
+                hintReady = level.getServer().getTickCount() + 30;
+                level.playSound(null, blockPosition(), SoundEvents.SHIELD_BLOCK.value(), SoundSource.HOSTILE, 1.2F, 0.7F);
+                level.sendParticles(ParticleTypes.ENCHANTED_HIT, getX(), getY() + 1.2, getZ(), 14, 0.5, 0.8, 0.5, 0.2);
+                Hud.actionBar(player, Hud.colored(Component.translatable("hud." + RealmsOfChaos.MOD_ID + ".aegis.shielded", pylons.size()), 0x55FFFF));
+            }
+            return false;
+        }
+        boolean afar = fromAfar(source);
+        if (afar && stance == Stance.DEFLECT) {
+            amount *= 0.4F;
+            level.sendParticles(ParticleTypes.ENCHANTED_HIT, getX(), getY() + 1.2, getZ(), 8, 0.4, 0.7, 0.4, 0.2);
+        }
+        float before = getHealth();
+        boolean hurt;
+        gating = true;
+        try {
+            hurt = super.hurtServer(level, source, amount);
+        } finally {
+            gating = false;
+        }
+        if (hurt && isAlive()) {
+            float dealt = Math.max(0.0F, before - getHealth());
+            if (afar) rangedTaken += dealt;
+            else meleeTaken += dealt;
+            if (!afar && stance == Stance.BRISTLE && source.getEntity() instanceof LivingEntity attacker) bristle(level, attacker);
+            updatePhase(level);
+        }
+        return hurt;
+    }
+
+    /** A braced god's guard lashing back at whoever struck it hand to hand: a shove and a sting, every few seconds. */
+    private void bristle(ServerLevel level, LivingEntity attacker) {
+        long now = level.getServer().getTickCount();
+        if (now < bristleReady || !(attacker instanceof Player player) || player.isCreative()) return;
+        bristleReady = now + 50;
+        Vec3 away = attacker.position().subtract(position());
+        double d = Math.max(0.01, Math.sqrt(away.x * away.x + away.z * away.z));
+        attacker.hurtServer(level, damageSources().thorns(this), 2.0F * damageScale());
+        attacker.setDeltaMovement(away.x / d * 1.1, 0.4, away.z / d * 1.1);
+        attacker.needsSync = true;
+        level.sendParticles(lineParticle(), getX(), getY() + 1.0, getZ(), 40, 0.8, 0.6, 0.8, 0.3);
+        level.playSound(null, blockPosition(), SoundEvents.THORNS_HIT, SoundSource.HOSTILE, 1.2F, 0.7F);
+    }
+
+    /** A god that has learnt to turn shots aside does not wait to be shot: it throws itself at whoever stands off. */
+    public boolean close(ServerLevel level, LivingEntity target) {
+        if (!onGround() || !hasLineOfSight(target) || distanceToSqr(target) < 49.0) return false;
+        Vec3 to = target.position().subtract(position());
+        Vec3 dir = new Vec3(to.x, 0, to.z).normalize();
+        setDeltaMovement(dir.x * 1.25, 0.45, dir.z * 1.25);
+        needsSync = true;
+        level.sendParticles(lineParticle(), getX(), getY() + 0.4, getZ(), 16, 0.3, 0.2, 0.3, 0.1);
+        level.playSound(null, blockPosition(), SoundEvents.PLAYER_ATTACK_SWEEP, SoundSource.HOSTILE, 1.2F, 0.5F);
+        return true;
+    }
+
+    /**
+     * Between phases a god looks at how the last one went. Mostly shot at: it turns shots aside and closes in.
+     * Mostly struck hand to hand: its guard lashes back. A phase that was over quickly makes the next one heavier,
+     * a long one lighter.
+     */
+    private void adapt(ServerLevel level) {
+        float total = meleeTaken + rangedTaken;
+        Stance next = total < 1.0F ? stance : rangedTaken / total > 0.6F ? Stance.DEFLECT : meleeTaken / total > 0.75F ? Stance.BRISTLE : Stance.BALANCED;
+        // (a phase shorter than two seconds says nothing about pace)
+        tempo = phaseTicks < 40 ? 0 : phaseTicks < 20 * 25 ? 1 : phaseTicks > 20 * 110 ? -1 : 0;
+        boolean changed = next != stance;
+        stance = next;
+        meleeTaken = rangedTaken = 0.0F;
+        phaseTicks = 0;
+        if (changed && stance != Stance.BALANCED) {
+            Component told = Hud.colored(Component.translatable("hud." + RealmsOfChaos.MOD_ID + ".adapt." + stance.name().toLowerCase(java.util.Locale.ROOT),
+                    god().displayName()), 0xFFAA00);
+            for (Player p : nearbyPlayers(level, 48)) {
+                if (p instanceof ServerPlayer sp) sp.sendSystemMessage(told);
+            }
+        }
+    }
+
+    /** Test hook: what the god has taken this phase, as if it had been fought that way. */
+    public void recordDamage(float melee, float ranged) {
+        this.meleeTaken += melee;
+        this.rangedTaken += ranged;
+    }
+
+    /**
+     * At 65% the god raises its aegis. Shield pylons rise around the floor and nothing can hurt it while one of
+     * them stands. It roars, everyone near is shoved back a step, and it goes on fighting from behind its shield.
+     */
+    public void beginAegis(ServerLevel level) {
+        if (phase() != 1 || statue) return;
+        God god = god();
+        adapt(level);
         enraged = true;
+        aegis = true;
+        aegisTicks = 0;
+        setPhase(2);
         setGlowingTag(true);
         addEffect(new MobEffectInstance(MobEffects.SPEED, 20 * 600, 0));
         abilityCooldown = Math.min(abilityCooldown, WINDUP_TICKS + 10);
         level.playSound(null, blockPosition(), SoundEvents.WITHER_AMBIENT, SoundSource.HOSTILE, 1.5F, 0.6F);
         level.playSound(null, blockPosition(), SoundEvents.RAVAGER_ROAR, SoundSource.HOSTILE, 1.5F, 0.8F);
+        level.playSound(null, blockPosition(), SoundEvents.BEACON_ACTIVATE, SoundSource.HOSTILE, 2.0F, 0.6F);
         level.sendParticles(lineParticle(), getX(), getY() + 1.2, getZ(), 120, 0.8, 1.2, 0.8, 0.25);
         level.sendParticles(ParticleTypes.ANGRY_VILLAGER, getX(), getY() + getBbHeight() + 0.3, getZ(), 6, 0.4, 0.2, 0.4, 0.0);
+        Arena.shockwave(level, position(), lineParticle(), 5);
+        BlockState pylon = ModContent.SHIELD_PYLON.get().defaultBlockState();
+        for (BlockPos spot : pylonSpots(level, Adapt.pylons(level.getDifficulty(), challengers, tempo))) {
+            level.setBlock(spot, pylon, 3);
+            pylons.put(spot, PYLON_HITS);
+            level.sendParticles(ParticleTypes.END_ROD, spot.getX() + 0.5, spot.getY() + 0.5, spot.getZ() + 0.5, 30, 0.2, 1.2, 0.2, 0.05);
+            LightningBolt bolt = EntityTypes.LIGHTNING_BOLT.create(level, EntitySpawnReason.TRIGGERED);
+            if (bolt != null) {
+                bolt.setPos(spot.getX() + 0.5, spot.getY(), spot.getZ() + 0.5);
+                bolt.setVisualOnly(true);
+                level.addFreshEntity(bolt);
+            }
+        }
+        setPhase(2);
+        String hud = "hud." + RealmsOfChaos.MOD_ID + ".";
         for (Player p : nearbyPlayers(level, 40)) {
-            // the roar shoves everyone back a step: a breath before the second half of the fight
+            // the roar shoves everyone back a step: a breath before the second part of the fight
             Vec3 away = p.position().subtract(position());
             double d = Math.sqrt(away.x * away.x + away.z * away.z);
             if (d > 0.01 && d < 7.0) {
@@ -501,9 +792,344 @@ public class GodBoss extends Monster implements RangedAttackMob {
                 p.needsSync = true;
             }
             if (p instanceof ServerPlayer sp) {
-                Hud.actionBar(sp, Hud.colored(Component.translatable("hud." + RealmsOfChaos.MOD_ID + ".enraged", god.displayName()), 0xFF5555));
+                Hud.title(sp, Hud.colored(Component.translatable(hud + "aegis", god.displayName()), god.line().color()),
+                        Hud.colored(Component.translatable(hud + "aegis.sub", pylons.size()), 0xCCCCCC), 5, 60, 15);
+                com.thefarawaydev.realmsofchaos.ui.Tutorial.tip(sp, com.thefarawaydev.realmsofchaos.ui.Tutorial.Tip.AEGIS);
             }
         }
+        if (pylons.isEmpty()) endAegis(level, false);       // nowhere to stand one: no aegis
+    }
+
+    /** Where the pylons go: evenly round the god's home, on open ground, clear of the altar and the gates. */
+    private List<BlockPos> pylonSpots(ServerLevel level, int count) {
+        Vec3 h = home();
+        boolean tower = towerLine() != null;
+        double radius = tower ? 12.5 : 7.0, start = random.nextDouble() * Math.PI * 2;
+        List<BlockPos> spots = new ArrayList<>();
+        for (int i = 0; i < count; i++) {
+            for (int attempt = 0; attempt < 10; attempt++) {
+                double a = start + Math.PI * 2 * i / count + attempt * 0.3, r = radius - attempt / 2;
+                int x = Mth.floor(h.x + Math.cos(a) * r), z = Mth.floor(h.z + Math.sin(a) * r);
+                if (tower && Math.abs(x) <= 4 && Math.abs(z) >= 8) continue;
+                BlockPos spot = Arena.standing(level, x, Mth.floor(h.y), z);
+                if (spot == null || spots.contains(spot)) continue;
+                spots.add(spot);
+                break;
+            }
+        }
+        return spots;
+    }
+
+    /**
+     * One blow against a shield pylon. @return true if this god owned it. The last blow breaks it, and when the
+     * last pylon breaks the aegis is gone.
+     */
+    public boolean strikePylon(ServerLevel level, BlockPos pos, Player by) {
+        Integer left = pylons.get(pos);
+        if (left == null) return false;
+        long now = level.getServer().getTickCount();
+        Long last = pylonStruck.get(pos);
+        if (last != null && now >= last && now - last < PYLON_REST) return true;       // too soon: this blow glances off
+        pylonStruck.put(pos, now);
+        double x = pos.getX() + 0.5, y = pos.getY() + 0.6, z = pos.getZ() + 0.5;
+        level.sendParticles(ParticleTypes.CRIT, x, y, z, 14, 0.3, 0.5, 0.3, 0.3);
+        if (left > 1) {
+            pylons.put(pos, left - 1);
+            level.playSound(null, pos, SoundEvents.AMETHYST_BLOCK_HIT, SoundSource.BLOCKS, 1.6F, 0.6F + 0.25F * (PYLON_HITS - left));
+            if (by instanceof ServerPlayer sp) {
+                Hud.actionBar(sp, Hud.colored(Component.translatable("hud." + RealmsOfChaos.MOD_ID + ".pylon.cracks", left - 1), 0x55FFFF));
+            }
+            return true;
+        }
+        pylons.remove(pos);
+        level.setBlock(pos, Blocks.AIR.defaultBlockState(), 3);
+        if (by instanceof ServerPlayer breaker) {
+            com.thefarawaydev.realmsofchaos.world.Bounties.count(breaker, com.thefarawaydev.realmsofchaos.world.Bounties.Kind.PYLONS, 1);
+        }
+        level.playSound(null, pos, SoundEvents.GLASS_BREAK, SoundSource.BLOCKS, 2.0F, 0.6F);
+        level.playSound(null, pos, SoundEvents.BEACON_DEACTIVATE, SoundSource.BLOCKS, 1.5F, 1.2F);
+        level.sendParticles(ParticleTypes.EXPLOSION, x, y, z, 2, 0.2, 0.3, 0.2, 0.0);
+        level.sendParticles(lineParticle(), x, y, z, 50, 0.4, 0.8, 0.4, 0.25);
+        Fx.impact(level, new Vec3(x, pos.getY(), z), 5);
+        // the god feels it: it reels, and its next move comes later
+        level.sendParticles(ParticleTypes.DAMAGE_INDICATOR, getX(), getY() + 1.4, getZ(), 10, 0.4, 0.5, 0.4, 0.1);
+        abilityCooldown += 30;
+        for (Player p : nearbyPlayers(level, 48)) {
+            if (p instanceof ServerPlayer sp && !pylons.isEmpty()) {
+                Hud.actionBar(sp, Hud.colored(Component.translatable("hud." + RealmsOfChaos.MOD_ID + ".aegis.left", pylons.size(), god().displayName()), 0x55FFFF));
+            }
+        }
+        if (pylons.isEmpty()) endAegis(level, true);
+        return true;
+    }
+
+    /** Lowers the aegis: because its pylons were broken, or because it could not be held any longer. */
+    public void endAegis(ServerLevel level, boolean broken) {
+        if (!aegis) return;
+        aegis = false;
+        clearPylons(level);
+        setPhase(2);
+        abilityCooldown = Math.max(abilityCooldown, broken ? 90 : 50);
+        level.playSound(null, blockPosition(), SoundEvents.GLASS_BREAK, SoundSource.HOSTILE, 2.0F, 0.4F);
+        level.playSound(null, blockPosition(), SoundEvents.TRIDENT_THUNDER.value(), SoundSource.HOSTILE, 1.0F, 1.5F);
+        level.sendParticles(ParticleTypes.ENCHANTED_HIT, getX(), getY() + 1.2, getZ(), 80, 0.8, 1.0, 0.8, 0.5);
+        Arena.shockwave(level, position(), lineParticle(), 3);
+        for (Player p : nearbyPlayers(level, 48)) {
+            if (p instanceof ServerPlayer sp) {
+                Hud.title(sp, Hud.colored(Component.translatable("hud." + RealmsOfChaos.MOD_ID + (broken ? ".aegis.broken" : ".aegis.faded")), 0x55FF55),
+                        Hud.colored(Component.translatable("hud." + RealmsOfChaos.MOD_ID + ".aegis.broken.sub", god().displayName()), 0xCCCCCC), 5, 40, 10);
+            }
+        }
+        updateFloorShift(level);
+    }
+
+    private void clearPylons(ServerLevel level) {
+        for (BlockPos pos : pylons.keySet()) {
+            if (level.getBlockState(pos).is(ModContent.SHIELD_PYLON.get())) level.setBlock(pos, Blocks.AIR.defaultBlockState(), 3);
+        }
+        pylons.clear();
+        pylonStruck.clear();
+    }
+
+    /** Every tick of an aegis: light runs from each pylon to the god, pylons the floor moved are stood up again. */
+    private void tendAegis(ServerLevel level) {
+        aegisTicks++;
+        if (aegisTicks % 10 == 0) {
+            for (BlockPos pos : pylons.keySet()) {
+                Vec3 from = new Vec3(pos.getX() + 0.5, pos.getY() + 1.1, pos.getZ() + 0.5), to = position().add(0, 1.2, 0);
+                for (int i = 0; i <= 10; i++) {
+                    Vec3 at = from.lerp(to, i / 10.0);
+                    level.sendParticles(lineParticle(), at.x, at.y, at.z, 1, 0.02, 0.02, 0.02, 0.0);
+                }
+            }
+        }
+        if (aegisTicks % 20 == 0) reseatPylons(level);
+        if (aegisTicks % 100 == 0) {
+            for (Player p : nearbyPlayers(level, 48)) {
+                if (p instanceof ServerPlayer sp) {
+                    Hud.actionBar(sp, Hud.colored(Component.translatable("hud." + RealmsOfChaos.MOD_ID + ".aegis.left", pylons.size(), god().displayName()), 0x55FFFF));
+                }
+            }
+        }
+        if (pylons.isEmpty() || aegisTicks >= AEGIS_LIMIT) endAegis(level, pylons.isEmpty());
+    }
+
+    /** A pylon the shifting floor swallowed or left hanging is stood on the new ground, still as cracked as it was. */
+    public void reseatPylons(ServerLevel level) {
+        Map<BlockPos, Integer> moved = new LinkedHashMap<>();
+        BlockState pylon = ModContent.SHIELD_PYLON.get().defaultBlockState();
+        for (Map.Entry<BlockPos, Integer> entry : pylons.entrySet()) {
+            BlockPos pos = entry.getKey();
+            BlockState below = level.getBlockState(pos.below());
+            boolean stands = level.getBlockState(pos).is(pylon.getBlock()) && below.isCollisionShapeFullBlock(level, pos.below());
+            if (stands) {
+                moved.put(pos, entry.getValue());
+                continue;
+            }
+            if (level.getBlockState(pos).is(pylon.getBlock())) level.setBlock(pos, Blocks.AIR.defaultBlockState(), 3);
+            BlockPos spot = Arena.standing(level, pos.getX(), pos.getY(), pos.getZ());
+            if (spot == null) continue;                    // nowhere left for it: one pylon fewer
+            level.setBlock(spot, pylon, 3);
+            moved.put(spot, entry.getValue());
+        }
+        pylons.clear();
+        pylons.putAll(moved);
+    }
+
+    // ---- wrath ----------------------------------------------------------------------------------------------
+
+    /** Every tick of a god's wrath: the floor is lost from the wall inward, and strikes fall from above. */
+    private void tendWrath(ServerLevel level) {
+        collapseTicks++;
+        if (collapseTicks % collapseInterval() == 0) collapse(level);
+        Vec3 h = home();
+        if (collapseTicks % 10 == 0 && safeRadius > 0) {
+            // the edge of what is left, drawn in the line's own hazard
+            int points = (int) (safeRadius * 4);
+            for (int i = 0; i < points; i++) {
+                double a = Math.PI * 2 * i / points + collapseTicks * 0.01;
+                level.sendParticles(Arena.hazardParticle(god().line()), h.x + Math.cos(a) * (safeRadius + 0.5), h.y + 0.3,
+                        h.z + Math.sin(a) * (safeRadius + 0.5), 1, 0.05, 0.1, 0.05, 0.0);
+            }
+        }
+        if (collapseTicks % 20 == 0) burnOutside(level);
+        if (--strikeCooldown <= 0) {
+            strikeCooldown = strikeInterval();
+            strikes(level);
+        }
+    }
+
+    private int collapseInterval() {
+        return Math.max(30, (int) ((60 - tempo * 15) * Adapt.difficultyPace(level().getDifficulty())));
+    }
+
+    private int strikeInterval() {
+        return Math.max(50, (int) ((110 - tempo * 20) * Adapt.difficultyPace(level().getDifficulty())));
+    }
+
+    /** The radius the floor starts being lost from: the tower wall, or a wide ring round a god called elsewhere. */
+    private double collapseStart() {
+        return towerLine() != null ? Tower.WALL_INNER : 16.0;
+    }
+
+    /**
+     * Takes one more ring of the floor. In a tower the paving of that ring turns to the line's hazard; anywhere
+     * the ground outside the ring simply hurts to stand on. The middle of the floor is never lost.
+     * @return the radius that is still safe
+     */
+    public double collapse(ServerLevel level) {
+        if (safeRadius < 0) safeRadius = collapseStart();
+        if (safeRadius <= Arena.MIN_SAFE) return safeRadius;
+        safeRadius -= 1.0;
+        Line line = towerLine();
+        Vec3 h = home();
+        if (line != null) {
+            Arena.scorch(level, line, Tower.floorAt(h.y), safeRadius + 0.5, collapseStart() + 1.0, scorched);
+        }
+        level.playSound(null, BlockPos.containing(h), SoundEvents.DEEPSLATE_BREAK, SoundSource.BLOCKS, 2.0F, 0.5F);
+        level.playSound(null, BlockPos.containing(h), SoundEvents.FIRE_AMBIENT, SoundSource.BLOCKS, 2.0F, 0.6F);
+        return safeRadius;
+    }
+
+    /** Anyone standing on the lost part of the floor is hurt, once a second, and told to move in. */
+    public int burnOutside(ServerLevel level) {
+        if (safeRadius < 0) return 0;
+        Vec3 h = home();
+        int hurt = 0;
+        float s = (Line.RANKS + 1 - god().rank()) / (float) Line.RANKS;
+        for (Player p : nearbyPlayers(level, 40)) {
+            double dx = p.getX() - h.x, dz = p.getZ() - h.z;
+            if (dx * dx + dz * dz <= (safeRadius + 0.5) * (safeRadius + 0.5) || Math.abs(p.getY() - h.y) > 8) continue;
+            p.hurtServer(level, damageSources().indirectMagic(this, this), (1.5F + 2.5F * s) * damageScale());
+            switch (god().line()) {
+                case ZEUS -> level.sendParticles(ParticleTypes.ELECTRIC_SPARK, p.getX(), p.getY() + 1, p.getZ(), 20, 0.3, 0.6, 0.3, 0.2);
+                case POSEIDON -> p.addEffect(new MobEffectInstance(MobEffects.SLOWNESS, 40, 1));
+                case HADES -> p.setRemainingFireTicks(60);
+            }
+            if (p instanceof ServerPlayer sp) {
+                Hud.actionBar(sp, Hud.colored(Component.translatable("hud." + RealmsOfChaos.MOD_ID + ".collapse"), 0xFF5555));
+            }
+            hurt++;
+        }
+        return hurt;
+    }
+
+    /**
+     * Strikes from above: lightning under Zeus, the sea bursting up under Poseidon, burning stone under Hades. One
+     * is marked beside every challenger and a few more are scattered over what is left of the floor. The marks
+     * show for a second and a half, then every one of them lands. @return how many were marked
+     */
+    public int strikes(ServerLevel level) {
+        God god = god();
+        Vec3 h = home();
+        float s = (Line.RANKS + 1 - god.rank()) / (float) Line.RANKS;
+        float damage = (3.0F + 6.0F * s) * damageScale();
+        List<Vec3> marks = new ArrayList<>();
+        String key = "hud." + RealmsOfChaos.MOD_ID + ".strike." + god.line().id();
+        for (Player p : nearbyPlayers(level, 30)) {
+            marks.add(new Vec3(p.getX() + (random.nextDouble() - 0.5) * 2.0, p.getY(), p.getZ() + (random.nextDouble() - 0.5) * 2.0));
+            if (p instanceof ServerPlayer sp) {
+                Hud.actionBar(sp, Hud.colored(Component.translatable(key), 0xFFAA00));
+                com.thefarawaydev.realmsofchaos.ui.Tutorial.tip(sp, com.thefarawaydev.realmsofchaos.ui.Tutorial.Tip.WRATH);
+            }
+        }
+        if (marks.isEmpty()) return 0;
+        int extra = Math.max(1, 2 + tempo + (level.getDifficulty() == net.minecraft.world.Difficulty.HARD ? 1 : 0));
+        double reach = safeRadius > 0 ? safeRadius : 12.0;
+        for (int i = 0; i < extra; i++) {
+            double a = random.nextDouble() * Math.PI * 2, r = Math.sqrt(random.nextDouble()) * reach;
+            BlockPos spot = Arena.standing(level, Mth.floor(h.x + Math.cos(a) * r), Mth.floor(h.y), Mth.floor(h.z + Math.sin(a) * r));
+            if (spot != null) marks.add(new Vec3(spot.getX() + 0.5, spot.getY(), spot.getZ() + 0.5));
+        }
+        level.playSound(null, blockPosition(), SoundEvents.WARDEN_SONIC_CHARGE, SoundSource.HOSTILE, 1.5F, 1.2F);
+        for (int delay = 0; delay < STRIKE_WARNING; delay += 5) {
+            final double shrink = 1.0 - delay / (double) STRIKE_WARNING * 0.6;
+            Runnable warn = () -> {
+                for (Vec3 m : marks) {
+                    for (int i = 0; i < 16; i++) {
+                        double a = Math.PI * 2 * i / 16;
+                        level.sendParticles(Arena.hazardParticle(god.line()), m.x + Math.cos(a) * 2.5 * shrink, m.y + 0.15,
+                                m.z + Math.sin(a) * 2.5 * shrink, 1, 0, 0, 0, 0);
+                    }
+                    level.sendParticles(lineParticle(), m.x, m.y + 6.0 * shrink, m.z, 3, 0.1, 0.1, 0.1, 0.0);
+                }
+            };
+            if (delay == 0) warn.run();
+            else Scheduler.after(level.getServer(), delay, warn);
+        }
+        if (god.line() == Line.HADES) {
+            // the stone itself is seen coming
+            Scheduler.after(level.getServer(), STRIKE_WARNING - 12, () -> {
+                for (Vec3 m : marks) {
+                    BlockPos from = BlockPos.containing(m.x, m.y + 9.0, m.z);
+                    if (!level.getBlockState(from).isAir()) continue;
+                    var stone = net.minecraft.world.entity.item.FallingBlockEntity.fall(level, from, Blocks.MAGMA_BLOCK.defaultBlockState());
+                    stone.dropItem = false;
+                    stone.disableDrop();
+                    stone.setDeltaMovement(0, -0.9, 0);
+                    stone.needsSync = true;
+                }
+            });
+        }
+        Scheduler.after(level.getServer(), STRIKE_WARNING, () -> {
+            if (!isAlive() || level() != level) return;
+            java.util.Set<Player> struck = new java.util.HashSet<>();
+            for (Vec3 m : marks) {
+                land(level, god.line(), m);
+                for (Player p : level.getEntitiesOfClass(Player.class, new AABB(m.x - 2.6, m.y - 2.0, m.z - 2.6, m.x + 2.6, m.y + 3.0, m.z + 2.6),
+                        e -> e.isAlive() && !e.isSpectator() && !e.isCreative())) {
+                    if (!struck.add(p)) continue;
+                    p.hurtServer(level, damageSources().indirectMagic(this, this), damage);
+                    if (god.line() == Line.POSEIDON) {
+                        p.setDeltaMovement(p.getDeltaMovement().x * 0.5, 0.9, p.getDeltaMovement().z * 0.5);
+                        p.needsSync = true;
+                    } else if (god.line() == Line.HADES) {
+                        p.setRemainingFireTicks(80);
+                    }
+                }
+            }
+        });
+        return marks.size();
+    }
+
+    private void land(ServerLevel level, Line line, Vec3 m) {
+        Fx.impact(level, m, 6);
+        switch (line) {
+            case ZEUS -> {
+                LightningBolt bolt = EntityTypes.LIGHTNING_BOLT.create(level, EntitySpawnReason.TRIGGERED);
+                if (bolt != null) {
+                    bolt.setPos(m.x, m.y, m.z);
+                    bolt.setVisualOnly(true);
+                    level.addFreshEntity(bolt);
+                }
+            }
+            case POSEIDON -> {
+                level.sendParticles(ParticleTypes.SPLASH, m.x, m.y + 0.5, m.z, 120, 1.0, 1.5, 1.0, 0.5);
+                level.sendParticles(ParticleTypes.BUBBLE_POP, m.x, m.y + 1.5, m.z, 60, 0.8, 1.5, 0.8, 0.1);
+                level.playSound(null, BlockPos.containing(m), SoundEvents.GENERIC_SPLASH, SoundSource.HOSTILE, 2.0F, 0.5F);
+            }
+            case HADES -> {
+                level.sendParticles(ParticleTypes.LAVA, m.x, m.y + 0.3, m.z, 30, 1.0, 0.2, 1.0, 0.0);
+                level.sendParticles(ParticleTypes.FLAME, m.x, m.y + 0.3, m.z, 60, 1.0, 0.3, 1.0, 0.08);
+                level.sendParticles(ParticleTypes.EXPLOSION, m.x, m.y + 0.5, m.z, 2, 0.5, 0.2, 0.5, 0.0);
+                level.playSound(null, BlockPos.containing(m), SoundEvents.GENERIC_EXPLODE.value(), SoundSource.HOSTILE, 1.2F, 0.7F);
+            }
+        }
+    }
+
+    /** Takes down everything a fight put on the floor: pylons, and the paving the wrath took. */
+    private void clearArena(ServerLevel level) {
+        clearPylons(level);
+        Line line = towerLine();
+        if (line != null && !scorched.isEmpty()) Arena.restore(level, line, Tower.floorAt(home().y), scorched);
+        scorched.clear();
+    }
+
+    @Override
+    public void remove(RemovalReason reason) {
+        // a god that is gone for good leaves the floor as it found it (one that is only unloaded keeps its fight)
+        if (reason.shouldDestroy() && !statue && level() instanceof ServerLevel level) clearArena(level);
+        super.remove(reason);
     }
 
     /**
@@ -560,16 +1186,26 @@ public class GodBoss extends Monster implements RangedAttackMob {
     }
 
     /**
-     * A god's last stand, once, at a fifth of its health. For two seconds nothing can touch it. It calls two
-     * sentinels of its tower to its side, the ground breaks round it, and then its signature move and its line's
-     * ability follow one after the other. From here on the floor erupts more often.
+     * A god's wrath opens with its last stand, once, at 30% of its health. For two seconds nothing can touch it.
+     * It calls two sentinels of its tower to its side, the ground breaks round it, and then its signature move and
+     * its line's ability follow one after the other. From here on the floor erupts more often, the floor is lost
+     * ring by ring from the wall inward, and strikes fall from above.
      */
     public void lastStand(ServerLevel level) {
         if (lastStand || statue) return;
         lastStand = true;
         God god = god();
-        setPermanentlyInvulnerable(true);
-        com.thefarawaydev.realmsofchaos.world.Scheduler.after(level.getServer(), 40, () -> setPermanentlyInvulnerable(false));
+        if (aegis) endAegis(level, false);
+        adapt(level);
+        enraged = true;
+        setGlowingTag(true);
+        setPhase(3);
+        addEffect(new MobEffectInstance(MobEffects.SPEED, 20 * 600, 1));
+        safeRadius = collapseStart();
+        collapseTicks = 0;
+        strikeCooldown = 100;
+        guardUntil = level.getServer().getTickCount() + 40;
+        Arena.shockwave(level, position(), lineParticle(), 6);
         level.playSound(null, blockPosition(), SoundEvents.WITHER_SPAWN, SoundSource.HOSTILE, 1.2F, 0.7F);
         level.sendParticles(lineParticle(), getX(), getY() + 1.2, getZ(), 200, 1.0, 1.4, 1.0, 0.4);
         com.thefarawaydev.realmsofchaos.world.Fx.impact(level, position(), 8);
@@ -603,6 +1239,7 @@ public class GodBoss extends Monster implements RangedAttackMob {
         });
         abilityCooldown = 120;
         upheavalCooldown = 100;
+        updateFloorShift(level);
     }
 
     /**
@@ -732,6 +1369,8 @@ public class GodBoss extends Monster implements RangedAttackMob {
         super.die(source);
         if (level() instanceof ServerLevel serverLevel) {
             onDefeated(serverLevel, source);
+            // the floor is given back the moment the god falls, not when its body has faded
+            if (!statue) clearArena(serverLevel);
         }
     }
 
@@ -751,6 +1390,7 @@ public class GodBoss extends Monster implements RangedAttackMob {
             if (first) com.thefarawaydev.realmsofchaos.story.Story.onDefeated(player, god);
             com.thefarawaydev.realmsofchaos.ui.Tutorial.tip(player, com.thefarawaydev.realmsofchaos.ui.Tutorial.Tip.VICTORY);
             com.thefarawaydev.realmsofchaos.world.Adapt.clearLosses(player.getUUID(), god);
+            com.thefarawaydev.realmsofchaos.world.Bounties.count(player, com.thefarawaydev.realmsofchaos.world.Bounties.Kind.GODS, 1);
             dropFor(level, player, god, first);
             if (god.isFinalBoss()) {
                 Hud.title(player, Hud.colored(Component.translatable(hud + "line_complete"), god.line().color()),
@@ -817,6 +1457,19 @@ public class GodBoss extends Monster implements RangedAttackMob {
         output.putBoolean("Rematch", rematch);
         output.putBoolean("Statue", statue);
         output.putBoolean("LastStand", lastStand);
+        output.putInt("Phase", phase());
+        output.putBoolean("Aegis", aegis);
+        output.putInt("AegisTicks", aegisTicks);
+        StringBuilder stood = new StringBuilder();
+        for (Map.Entry<BlockPos, Integer> e : pylons.entrySet()) {
+            stood.append(e.getKey().getX()).append(',').append(e.getKey().getY()).append(',').append(e.getKey().getZ()).append(',').append(e.getValue()).append(';');
+        }
+        output.putString("Pylons", stood.toString());
+        output.putString("Stance", stance.name());
+        output.putInt("Tempo", tempo);
+        output.putDouble("Might", might);
+        output.putDouble("Guard", guard);
+        output.putDouble("SafeRadius", safeRadius);
         output.putInt("Challengers", challengers);
         output.putInt("Mercy", mercy);
         Vec3 h = home();
@@ -834,6 +1487,28 @@ public class GodBoss extends Monster implements RangedAttackMob {
         this.casts = input.getIntOr("Casts", 0);
         this.rematch = input.getBooleanOr("Rematch", false);
         this.lastStand = input.getBooleanOr("LastStand", false);
+        this.aegis = input.getBooleanOr("Aegis", false);
+        this.aegisTicks = input.getIntOr("AegisTicks", 0);
+        this.pylons.clear();
+        for (String part : input.getStringOr("Pylons", "").split(";")) {
+            String[] f = part.split(",");
+            if (f.length != 4) continue;
+            try {
+                this.pylons.put(new BlockPos(Integer.parseInt(f[0]), Integer.parseInt(f[1]), Integer.parseInt(f[2])), Integer.parseInt(f[3]));
+            } catch (NumberFormatException ignored) {
+                // a pylon that cannot be read is simply not this god's any more
+            }
+        }
+        try {
+            this.stance = Stance.valueOf(input.getStringOr("Stance", "BALANCED"));
+        } catch (IllegalArgumentException e) {
+            this.stance = Stance.BALANCED;
+        }
+        this.tempo = input.getIntOr("Tempo", 0);
+        this.might = input.getDoubleOr("Might", 1.0);
+        this.guard = input.getDoubleOr("Guard", 1.0);
+        this.safeRadius = input.getDoubleOr("SafeRadius", -1.0);
+        int savedPhase = Math.max(1, Math.min(3, input.getIntOr("Phase", lastStand ? 3 : enraged ? 2 : 1)));
         this.challengers = Math.max(1, input.getIntOr("Challengers", 1));
         this.mercy = input.getIntOr("Mercy", 0);
         double hy = input.getDoubleOr("HomeY", Double.NaN);
@@ -841,6 +1516,7 @@ public class GodBoss extends Monster implements RangedAttackMob {
             this.home = new Vec3(input.getDoubleOr("HomeX", getX()), hy, input.getDoubleOr("HomeZ", getZ()));
         }
         configure(god(), false);
+        setPhase(savedPhase);
         if (input.getBooleanOr("Statue", false)) setStatue(true);
     }
 }

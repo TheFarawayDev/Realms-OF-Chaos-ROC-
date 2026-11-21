@@ -114,6 +114,7 @@ public final class TowerBuilder {
         if (data.isBuilt(key)) {
             // a floor left mid-shift by a server stop is put back to its own design
             FloorShifts.repairIfStale(level, line, floor);
+            Arena.repairIfStale(level, line, floor);
             return;
         }
         buildFloor(level, line, floor);
@@ -276,6 +277,11 @@ public final class TowerBuilder {
         // ---- gates: home to the hub on the south side, up to the next floor on the north side
         gate(level, 0, y0, 19, p, ModContent.GATE_HUB.get());
         if (!summit) gate(level, 0, y0, -19, p, ModContent.GATE_ASCEND.get());
+    }
+
+    /** The paving block a column of the fight ring has under the given height map. */
+    public static Block surfaceAt(Line line, int floor, int x, int z, HeightFn hf) {
+        return surface(palette(line, Tower.tier(floor)), hf, floor, x, z, Math.sqrt(x * x + z * z), hf.at(x, z));
     }
 
     private static Block surface(Palette p, HeightFn hf, int floor, int x, int z, double r, int h) {

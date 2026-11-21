@@ -240,6 +240,14 @@ public final class Screens {
             ItemStack material = new ItemStack(ModContent.materialItem(line, Tower.tier(floor)));
             body.add(text(tr("altar.drops", 0x55FFFF, GodBoss.materialDrop(god), material.getHoverName(), relic.getHoverName())));
             body.add(text(tr("altar.scaling", 0x888888)));
+            // what the god would make of this player's arms, were the trial begun now
+            com.thefarawaydev.realmsofchaos.world.Adapt.Measure measure = AltarBlock.measure(level, player, altar, line, god);
+            double scale = com.thefarawaydev.realmsofchaos.world.Adapt.gearHealth(measure.might())
+                    * com.thefarawaydev.realmsofchaos.world.Adapt.difficultyHealth(level.getDifficulty());
+            body.add(text(tr("altar.strength", scale > 1.05 ? 0xFFAA00 : 0xAAAAAA,
+                    Component.translatable("hud." + RealmsOfChaos.MOD_ID + ".might." + com.thefarawaydev.realmsofchaos.world.Adapt.mightKey(measure.might())),
+                    String.format(java.util.Locale.ROOT, "%.2f", scale))));
+            body.add(text(tr("altar.phases", 0x888888)));
         }
         body.add(text(tr("altar.state." + state.name().toLowerCase(), state == AltarBlock.State.READY ? 0x55FF55 : state == AltarBlock.State.DEFEATED ? 0x55FFFF : 0xFF5555)));
         Component title = god == null ? tr("altar", line.color()) : god.displayName().copy().withStyle(Style.EMPTY.withColor(line.color()));
@@ -284,5 +292,80 @@ public final class Screens {
         if (inParty) actions.add(button(Component.translatable(menuNs + "leave").withStyle(Style.EMPTY.withColor(0xFF5555)), null, "/roc ui party leave"));
         actions.add(button(tr("party.refresh", 0xFFFFFF), null, "/roc ui party"));
         return menu(tr("party", 0x55FFFF), body, actions, back("/roc ui home"), 2);
+    }
+
+    // ---- the field network -----------------------------------------------------------------------------------
+
+    /** A Waygate Obelisk: where it can send you, what it costs, and how the channel works. */
+    public static Dialog waygate(ServerPlayer player, ServerLevel level, BlockPos pos) {
+        MinecraftServer server = level.getServer();
+        String at = pos.getX() + " " + pos.getY() + " " + pos.getZ();
+        List<DialogBody> body = new ArrayList<>();
+        int price = com.thefarawaydev.realmsofchaos.world.Waygates.price(server);
+        ItemStack cost = new ItemStack(com.thefarawaydev.realmsofchaos.world.Waygates.cost());
+        body.add(text(tr("waygate.how", 0xAAAAAA, com.thefarawaydev.realmsofchaos.world.HubTiers.channelTicks(server) / 20)));
+        body.add(price > 0 ? item(cost, tr("waygate.cost", 0xF5B82E, price, cost.getHoverName())) : text(tr("waygate.free", 0x55FF55)));
+        List<ActionButton> actions = new ArrayList<>();
+        if (com.thefarawaydev.realmsofchaos.world.Access.attuned(player)) {
+            actions.add(button(tr("waygate.hub", 0xA55AD6), null, "/roc ui waygate " + at + " " + com.thefarawaydev.realmsofchaos.world.Waygates.HUB));
+        } else {
+            body.add(text(tr("waygate.unattuned", 0xFF5555)));
+        }
+        List<com.thefarawaydev.realmsofchaos.world.Network.Node> known = com.thefarawaydev.realmsofchaos.world.Waygates.destinations(player, pos);
+        for (com.thefarawaydev.realmsofchaos.world.Network.Node node : known) {
+            if (actions.size() >= 12) break;
+            actions.add(button(tr("waygate.to", 0x55FFFF, node.pos().getX(), node.pos().getY(), node.pos().getZ()),
+                    Component.literal(node.dimension()), "/roc ui waygate " + at + " " + node.code()));
+        }
+        if (known.isEmpty()) body.add(text(tr("waygate.alone", 0x888888)));
+        return actions.isEmpty() ? notice(tr("waygate", 0xA55AD6), body, close()) : menu(tr("waygate", 0xA55AD6), body, actions, close(), 2);
+    }
+
+    /** Hub Command, at the Heart of the Hub: the hub's tier, what each tier does, and what the next one asks for. */
+    public static Dialog hubCommand(ServerPlayer player) {
+        MinecraftServer server = player.level().getServer();
+        int tier = com.thefarawaydev.realmsofchaos.world.HubTiers.tier(server);
+        List<DialogBody> body = new ArrayList<>();
+        body.add(text(tr("hub.tier", 0xA55AD6, tier, com.thefarawaydev.realmsofchaos.world.HubTiers.MAX, com.thefarawaydev.realmsofchaos.world.HubTiers.tierName(tier))));
+        for (int t = 1; t <= com.thefarawaydev.realmsofchaos.world.HubTiers.MAX; t++) {
+            body.add(text(tr(t <= tier ? "hub.perk.have" : "hub.perk.next", t <= tier ? 0x55FF55 : 0x888888,
+                    com.thefarawaydev.realmsofchaos.world.HubTiers.tierName(t), com.thefarawaydev.realmsofchaos.world.HubTiers.perk(t))));
+        }
+        List<ActionButton> actions = new ArrayList<>();
+        if (tier < com.thefarawaydev.realmsofchaos.world.HubTiers.MAX) {
+            body.add(text(tr("hub.asks", 0xF5B82E, com.thefarawaydev.realmsofchaos.world.HubTiers.tierName(tier + 1))));
+            for (com.thefarawaydev.realmsofchaos.world.HubTiers.Cost cost : com.thefarawaydev.realmsofchaos.world.HubTiers.costs(tier)) {
+                int have = com.thefarawaydev.realmsofchaos.world.HubTiers.deposited(server, cost);
+                body.add(item(cost.icon(), tr("hub.cost", have >= cost.count() ? 0x55FF55 : 0xFFFFFF, cost.name(), have, cost.count())));
+            }
+            actions.add(button(tr("hub.deposit", 0x55FF55), tr("hub.deposit.tip", 0xAAAAAA), "/roc ui hubcore deposit"));
+        } else {
+            body.add(text(tr("hub.complete", 0xF5B82E)));
+        }
+        actions.add(button(tr("hub.bounties", 0xFFAA00), null, "/roc ui bounty"));
+        return menu(tr("hub", 0xA55AD6), body, actions, close(), 2);
+    }
+
+    /** The Bounty Board: today's three bounties, how far along this player is, and the buttons that pay out. */
+    public static Dialog bounties(ServerPlayer player) {
+        MinecraftServer server = player.level().getServer();
+        List<DialogBody> body = new ArrayList<>();
+        List<ActionButton> actions = new ArrayList<>();
+        if (!com.thefarawaydev.realmsofchaos.world.Bounties.open(server)) {
+            body.add(text(tr("bounty.closed", 0xFF5555, com.thefarawaydev.realmsofchaos.world.HubTiers.tierName(com.thefarawaydev.realmsofchaos.world.Bounties.NEEDS_TIER))));
+            return notice(tr("bounty", 0xFFAA00), body, close());
+        }
+        body.add(text(tr("bounty.intro", 0xAAAAAA)));
+        for (com.thefarawaydev.realmsofchaos.world.Bounties.Bounty bounty : com.thefarawaydev.realmsofchaos.world.Bounties.today(server)) {
+            int done = com.thefarawaydev.realmsofchaos.world.Bounties.progress(player, bounty);
+            boolean claimed = com.thefarawaydev.realmsofchaos.world.Bounties.claimed(player, bounty);
+            ItemStack pay = bounty.payment();
+            body.add(item(pay, tr(claimed ? "bounty.line.claimed" : done >= bounty.goal() ? "bounty.line.done" : "bounty.line",
+                    claimed ? 0x888888 : done >= bounty.goal() ? 0x55FF55 : 0xFFFFFF, bounty.text(), done, bounty.goal(), pay.getCount(), pay.getHoverName())));
+            if (!claimed && done >= bounty.goal()) {
+                actions.add(button(tr("bounty.claim", 0x55FF55, bounty.text()), null, "/roc ui bounty claim " + bounty.index()));
+            }
+        }
+        return actions.isEmpty() ? notice(tr("bounty", 0xFFAA00), body, close()) : menu(tr("bounty", 0xFFAA00), body, actions, close(), 1);
     }
 }

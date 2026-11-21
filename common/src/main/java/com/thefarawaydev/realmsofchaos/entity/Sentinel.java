@@ -397,6 +397,9 @@ public class Sentinel extends Monster implements RangedAttackMob {
     protected void dropCustomDeathLoot(ServerLevel level, DamageSource source, boolean killedByPlayer) {
         super.dropCustomDeathLoot(level, source, killedByPlayer);
         if (!killedByPlayer) return;
+        if (source.getEntity() instanceof net.minecraft.server.level.ServerPlayer killer) {
+            com.thefarawaydev.realmsofchaos.world.Bounties.count(killer, com.thefarawaydev.realmsofchaos.world.Bounties.Kind.SENTINELS, 1);
+        }
         // a Keeper always gives up a piece of this tier's forge material; the rest do now and then
         if (kind().role == Role.KEEPER || isElite() || random.nextFloat() < 0.15F) {
             spawnAtLocation(level, new ItemStack(ModContent.materialItem(kind().line, tier)));

@@ -60,6 +60,26 @@ public final class RocCommands {
                                                                         com.mojang.brigadier.arguments.IntegerArgumentType.getInteger(ctx, "y"),
                                                                         com.mojang.brigadier.arguments.IntegerArgumentType.getInteger(ctx, "z")),
                                                                         com.mojang.brigadier.arguments.StringArgumentType.getString(ctx, "what")))))))))
+                        .then(Commands.literal("hubcore")
+                                .executes(ctx -> ui(ctx.getSource().getPlayerOrException(), p -> Screens.show(p, Screens.hubCommand(p))))
+                                .then(Commands.literal("deposit").executes(ctx -> ui(ctx.getSource().getPlayerOrException(), RocCommands::deposit))))
+                        .then(Commands.literal("bounty")
+                                .executes(ctx -> ui(ctx.getSource().getPlayerOrException(), p -> Screens.show(p, Screens.bounties(p))))
+                                .then(Commands.literal("claim").then(Commands.argument("index", com.mojang.brigadier.arguments.IntegerArgumentType.integer(0, 9)).executes(ctx ->
+                                        ui(ctx.getSource().getPlayerOrException(), p -> {
+                                            com.thefarawaydev.realmsofchaos.world.Bounties.claim(p, com.mojang.brigadier.arguments.IntegerArgumentType.getInteger(ctx, "index"));
+                                            Screens.show(p, Screens.bounties(p));
+                                        })))))
+                        .then(Commands.literal("waygate")
+                                .then(Commands.argument("x", com.mojang.brigadier.arguments.IntegerArgumentType.integer())
+                                        .then(Commands.argument("y", com.mojang.brigadier.arguments.IntegerArgumentType.integer())
+                                                .then(Commands.argument("z", com.mojang.brigadier.arguments.IntegerArgumentType.integer())
+                                                        .then(Commands.argument("to", com.mojang.brigadier.arguments.StringArgumentType.word()).executes(ctx ->
+                                                                ui(ctx.getSource().getPlayerOrException(), p -> com.thefarawaydev.realmsofchaos.world.Waygates.begin(p,
+                                                                        new net.minecraft.core.BlockPos(com.mojang.brigadier.arguments.IntegerArgumentType.getInteger(ctx, "x"),
+                                                                                com.mojang.brigadier.arguments.IntegerArgumentType.getInteger(ctx, "y"),
+                                                                                com.mojang.brigadier.arguments.IntegerArgumentType.getInteger(ctx, "z")),
+                                                                        com.mojang.brigadier.arguments.StringArgumentType.getString(ctx, "to")))))))))
                         .then(Commands.literal("party")
                                 .executes(ctx -> ui(ctx.getSource().getPlayerOrException(), p -> Screens.show(p, Screens.party(p))))
                                 .then(Commands.literal("invite").then(Commands.argument("player", net.minecraft.commands.arguments.EntityArgument.player()).executes(ctx -> {
@@ -82,7 +102,12 @@ public final class RocCommands {
                                 })))))
                 .then(Commands.literal("hub").executes(ctx -> {
                     ServerPlayer player = ctx.getSource().getPlayerOrException();
-                    Teleports.toHub(player);
+                    Teleports.recall(player);
+                    return 1;
+                }))
+                .then(Commands.literal("scan").executes(ctx -> {
+                    ServerPlayer player = ctx.getSource().getPlayerOrException();
+                    com.thefarawaydev.realmsofchaos.item.ChaosCompassItem.scan(player);
                     return 1;
                 }))
                 .then(Commands.literal("forge").executes(ctx -> {
@@ -115,6 +140,16 @@ public final class RocCommands {
                     CodexMenu.open(ctx.getSource().getPlayerOrException());
                     return 1;
                 })));
+    }
+
+    /**
+     * The button on the Heart of the Hub's screen. The heart only stands in the hub, so that is where things are
+     * handed over.
+     */
+    private static void deposit(ServerPlayer player) {
+        if (com.thefarawaydev.realmsofchaos.world.Realm.of(player.level().dimension()) != com.thefarawaydev.realmsofchaos.world.Realm.HUB) return;
+        com.thefarawaydev.realmsofchaos.world.HubTiers.deposit(player);
+        Screens.show(player, Screens.hubCommand(player));
     }
 
     private static int ui(ServerPlayer player, java.util.function.Consumer<ServerPlayer> action) {

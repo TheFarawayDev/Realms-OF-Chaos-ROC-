@@ -1,0 +1,8 @@
+{
+  "replace": false,
+  "values": [
+    "realms_of_chaos:relay_core",
+    "realms_of_chaos:signal_jammer",
+    "realms_of_chaos:waygate_obelisk"
+  ]
+}

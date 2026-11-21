@@ -74,12 +74,19 @@ public final class ModContent {
     public static final Ref<Block> GATE_PEDESTAL = new Ref<>();
     public static final Ref<Block> ORACLE = new Ref<>();
     public static final Ref<Block> PASSAGE_CACHE = new Ref<>();
+    public static final Ref<Block> SHIELD_PYLON = new Ref<>();
+    public static final Ref<Block> RELAY_CORE = new Ref<>();
+    public static final Ref<Block> SIGNAL_JAMMER = new Ref<>();
+    public static final Ref<Block> WAYGATE_OBELISK = new Ref<>();
+    public static final Ref<Block> HUB_HEART = new Ref<>();
+    public static final Ref<Block> BOUNTY_BOARD = new Ref<>();
 
     public static final List<Def<Block>> BLOCK_DEFS = new ArrayList<>();
 
     // ---- items --------------------------------------------------------------------------------
     public static final Ref<Item> CHAOS_COMPASS = new Ref<>();
     public static final Ref<Item> CHAOS_CODEX = new Ref<>();
+    public static final Ref<Item> FIELD_BAG = new Ref<>();
     public static final Map<String, Ref<Item>> WEAPONS = new HashMap<>();
     public static final Map<String, Ref<Item>> BLOCK_ITEMS = new HashMap<>();
     public static final Ref<Item> TAROT_DECK = new Ref<>();
@@ -127,9 +134,24 @@ public final class ModContent {
         block("passage_cache", PASSAGE_CACHE, key -> new com.thefarawaydev.realmsofchaos.block.CacheBlock(
                 unbreakable(key).mapColor(MapColor.WOOD).lightLevel(s -> 6).sound(SoundType.WOOD)));
 
+        // a god's shield pylons, and the blocks of the field network - the only blocks here a player makes and breaks
+        block("shield_pylon", SHIELD_PYLON, key -> new com.thefarawaydev.realmsofchaos.block.ShieldPylonBlock(
+                unbreakable(key).mapColor(MapColor.COLOR_LIGHT_BLUE).lightLevel(s -> 13).noOcclusion().sound(SoundType.AMETHYST)));
+        block("relay_core", RELAY_CORE, key -> new com.thefarawaydev.realmsofchaos.block.FieldBlock(com.thefarawaydev.realmsofchaos.world.Network.Kind.RELAY,
+                field(key).mapColor(MapColor.COLOR_CYAN).lightLevel(s -> 10)));
+        block("signal_jammer", SIGNAL_JAMMER, key -> new com.thefarawaydev.realmsofchaos.block.FieldBlock(com.thefarawaydev.realmsofchaos.world.Network.Kind.JAMMER,
+                field(key).mapColor(MapColor.COLOR_RED).lightLevel(s -> 6)));
+        block("waygate_obelisk", WAYGATE_OBELISK, key -> new com.thefarawaydev.realmsofchaos.block.FieldBlock(com.thefarawaydev.realmsofchaos.world.Network.Kind.WAYGATE,
+                field(key).mapColor(MapColor.COLOR_PURPLE).lightLevel(s -> 12)));
+        block("hub_heart", HUB_HEART, key -> new com.thefarawaydev.realmsofchaos.block.HubStationBlock(com.thefarawaydev.realmsofchaos.block.HubStationBlock.Kind.HEART,
+                unbreakable(key).mapColor(MapColor.COLOR_PURPLE).lightLevel(s -> 15).noOcclusion().sound(SoundType.AMETHYST)));
+        block("bounty_board", BOUNTY_BOARD, key -> new com.thefarawaydev.realmsofchaos.block.HubStationBlock(com.thefarawaydev.realmsofchaos.block.HubStationBlock.Kind.BOUNTIES,
+                unbreakable(key).mapColor(MapColor.WOOD).lightLevel(s -> 8).sound(SoundType.WOOD)));
+
         // items: codex, compass, 45 god weapons (ordered by line, rank 1 -> 15), then the block items
         item("chaos_codex", CHAOS_CODEX, key -> new CodexItem(new Item.Properties().setId(key).stacksTo(1)));
         item("chaos_compass", CHAOS_COMPASS, key -> new ChaosCompassItem(new Item.Properties().setId(key).stacksTo(1)));
+        item("field_bag", FIELD_BAG, key -> new com.thefarawaydev.realmsofchaos.item.FieldBagItem(new Item.Properties().setId(key).stacksTo(1)));
         for (Line line : Line.values()) {
             for (God god : Gods.ofLine(line)) {
                 Ref<Item> ref = new Ref<>();
@@ -194,6 +216,12 @@ public final class ModContent {
 
     private static BlockBehaviour.Properties unbreakable(ResourceKey<Block> key) {
         return BlockBehaviour.Properties.of().setId(key).strength(-1.0F, 3600000.0F).noLootTable();
+    }
+
+    /** A block of the field network: it can be broken by hand, drops itself, and shrugs off explosions. */
+    private static BlockBehaviour.Properties field(ResourceKey<Block> key) {
+        return BlockBehaviour.Properties.of().setId(key).strength(2.5F, 1200.0F).noOcclusion().sound(SoundType.AMETHYST)
+                .pushReaction(net.minecraft.world.level.material.PushReaction.IMMOVEABLE);
     }
 
     private static Block gate(GateBlock.Kind kind, ResourceKey<Block> key) {
@@ -291,6 +319,7 @@ public final class ModContent {
         List<Item> out = new ArrayList<>();
         out.add(CHAOS_CODEX.get());
         out.add(CHAOS_COMPASS.get());
+        out.add(FIELD_BAG.get());
         for (Line line : Line.values()) {
             for (God god : Gods.ofLine(line)) {
                 out.add(WEAPONS.get(god.id()).get());

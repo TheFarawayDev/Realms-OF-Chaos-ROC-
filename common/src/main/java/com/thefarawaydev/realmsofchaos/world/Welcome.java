@@ -19,6 +19,13 @@ public final class Welcome {
         ProgressData data = ProgressData.get(server);
         boolean first = data.markWelcomed(player.getUUID());
         RocAdvancements.sync(player, data);
+        // someone who joined before the Field Tower Bag existed is handed one the next time they come in
+        String kit = "fieldkit/" + player.getUUID();
+        if (!first && !data.isBuilt(kit)) {
+            give(player, com.thefarawaydev.realmsofchaos.item.FieldBagItem.starter());
+            Hud.actionBar(player, Hud.colored(Component.translatable("hud." + RealmsOfChaos.MOD_ID + ".bag.given"), 0x55FFFF));
+        }
+        data.markBuilt(kit);
         if (!first) return;
 
         String ns = "welcome." + RealmsOfChaos.MOD_ID + ".";
@@ -29,6 +36,7 @@ public final class Welcome {
 
         give(player, new ItemStack(ModContent.CHAOS_CODEX.get()));
         give(player, new ItemStack(ModContent.CHAOS_COMPASS.get()));
+        give(player, com.thefarawaydev.realmsofchaos.item.FieldBagItem.starter());
         give(player, com.thefarawaydev.realmsofchaos.story.Story.Chapter.PROLOGUE.book());
         com.thefarawaydev.realmsofchaos.ui.Tutorial.welcome(player);
     }

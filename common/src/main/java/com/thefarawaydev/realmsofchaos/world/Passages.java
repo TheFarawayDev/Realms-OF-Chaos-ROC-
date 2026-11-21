@@ -725,6 +725,7 @@ public final class Passages {
             return false;
         }
         data.markBuilt(key);
+        Bounties.count(player, Bounties.Kind.CACHES, 1);
         List<ItemStack> loot = lootFor(plan, cell, player.getUUID());
         int stacks = loot.size();
         for (ItemStack stack : loot) {
@@ -866,6 +867,7 @@ public final class Passages {
     public static void breakSeal(ServerLevel level, BlockPos pos, ServerPlayer breaker) {
         if (!level.getBlockState(pos).is(ModContent.PASSAGE_SEAL.get())) return;
         level.setBlock(pos, Blocks.AIR.defaultBlockState(), 3);
+        if (breaker != null) Bounties.count(breaker, Bounties.Kind.SEALS, 1);
         double x = pos.getX() + 0.5, y = pos.getY() + 0.5, z = pos.getZ() + 0.5;
         level.sendParticles(ParticleTypes.END_ROD, x, y, z, 60, 0.3, 0.3, 0.3, 0.15);
         level.sendParticles(ParticleTypes.ENCHANT, x, y + 0.5, z, 80, 0.6, 0.6, 0.6, 0.5);

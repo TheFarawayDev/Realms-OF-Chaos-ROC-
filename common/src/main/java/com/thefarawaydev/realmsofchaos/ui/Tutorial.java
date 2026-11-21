@@ -19,7 +19,7 @@ public final class Tutorial {
     public static final int DELAY = 50;
 
     public enum Tip {
-        RUIN, HUB, FLOOR, TRIAL, VICTORY, PASSAGE, SEAL, FORGE, UPHEAVAL;
+        RUIN, HUB, FLOOR, TRIAL, VICTORY, PASSAGE, SEAL, FORGE, UPHEAVAL, AEGIS, WRATH, SCAN, WAYGATE;
 
         public String id() {
             return name().toLowerCase();

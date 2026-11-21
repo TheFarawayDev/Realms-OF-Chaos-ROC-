@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "E": "minecraft:ender_eye",
+    "A": "minecraft:amethyst_shard",
+    "P": "minecraft:ender_pearl",
+    "O": "minecraft:obsidian"
+  },
+  "pattern": [
+    " E ",
+    "APA",
+    "OOO"
+  ],
+  "result": {
+    "id": "realms_of_chaos:waygate_obelisk"
+  }
+}

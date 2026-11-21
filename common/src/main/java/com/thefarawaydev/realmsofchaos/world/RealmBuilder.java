@@ -17,9 +17,11 @@ public final class RealmBuilder {
     public static final int Y = 64;
     private static final int HUB_RADIUS = 26;
     /** The hub has its own design number, so it can be rebuilt without rebuilding the towers. */
-    public static final int HUB_VERSION = 2;
+    public static final int HUB_VERSION = 3;
     /** The Oracle's Flame: just north of where arrivals appear, on the way to the gate of Zeus. */
     public static final BlockPos ORACLE = new BlockPos(0, Y + 1, -5);
+    /** The Heart of the Hub stands south of the middle, facing the Oracle; the Bounty Board north-east of it. */
+    public static final BlockPos HEART = new BlockPos(0, Y + 1, 5), BOUNTIES = new BlockPos(6, Y + 1, -6);
     /** The canal that rings the plaza, bridged where the four paths cross it. */
     public static final double CANAL_INNER = 11.0, CANAL_OUTER = 13.0;
 
@@ -214,6 +216,11 @@ public final class RealmBuilder {
         // the Oracle's Flame, on gilded stone
         for (int dx = -1; dx <= 1; dx++) for (int dz = -1; dz <= 1; dz++) set(level, ORACLE.getX() + dx, Y, ORACLE.getZ() + dz, Blocks.GILDED_BLACKSTONE);
         set(level, ORACLE.getX(), ORACLE.getY(), ORACLE.getZ(), ModContent.ORACLE.get().defaultBlockState());
+        // the Heart of the Hub on amethyst, and the Bounty Board on its post
+        for (int dx = -1; dx <= 1; dx++) for (int dz = -1; dz <= 1; dz++) set(level, HEART.getX() + dx, Y, HEART.getZ() + dz, Blocks.AMETHYST_BLOCK);
+        set(level, HEART.getX(), HEART.getY(), HEART.getZ(), ModContent.HUB_HEART.get().defaultBlockState());
+        set(level, BOUNTIES.getX(), Y, BOUNTIES.getZ(), Blocks.CHISELED_STONE_BRICKS);
+        set(level, BOUNTIES.getX(), BOUNTIES.getY(), BOUNTIES.getZ(), ModContent.BOUNTY_BOARD.get().defaultBlockState());
         // plinths either side of each tower gate, for the echoes of its gods
         for (com.thefarawaydev.realmsofchaos.god.Line line : com.thefarawaydev.realmsofchaos.god.Line.values()) {
             for (BlockPos plinth : HubLife.plinths(line)) {

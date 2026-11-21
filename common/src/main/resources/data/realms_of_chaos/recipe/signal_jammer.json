@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "redstone",
+  "key": {
+    "R": "minecraft:redstone",
+    "E": "minecraft:ender_eye",
+    "I": "minecraft:iron_ingot",
+    "O": "minecraft:obsidian"
+  },
+  "pattern": [
+    " R ",
+    "IEI",
+    "OOO"
+  ],
+  "result": {
+    "id": "realms_of_chaos:signal_jammer"
+  }
+}

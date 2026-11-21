@@ -60,6 +60,12 @@ import com.thefarawaydev.realmsofchaos.world.Welcome;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.effect.MobEffectInstance;
+import net.minecraft.world.effect.MobEffects;
+import net.minecraft.world.level.block.Block;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -256,6 +262,32 @@ public final class SelfTest {
         check(seen.contains(plan.gatePositions().get(0)), at + "the gate cannot be walked into");
     }
 
+    /** A god's health for a trial nobody has scaled: its own, at the world's difficulty. */
+    private static double base(ServerLevel level, God god) {
+        return god.bossHealth() * Adapt.difficultyHealth(level.getDifficulty());
+    }
+
+    /**
+     * Brings a god down the short way. No blow carries one through a phase, so this is a blow to each threshold,
+     * its aegis struck away in between and the opening of its last stand waited out.
+     */
+    private static void slay(MinecraftServer server, ServerLevel level, GodBoss boss, ServerPlayer by) throws Exception {
+        for (int i = 0; i < 8 && boss.isAlive(); i++) {
+            if (boss.aegisUp()) boss.endAegis(level, true);
+            if (boss.isInvulnerable()) advance(server, 45);
+            boss.damageCooldownTime = 0;
+            boss.hurtServer(level, level.damageSources().playerAttack(by), 1.0e5F);
+        }
+    }
+
+    /** Strikes a shield pylon, leaving it the rest it needs between blows that count. */
+    private static void strikePylon(MinecraftServer server, ServerLevel level, BlockPos pylon, ServerPlayer by, int blows) throws Exception {
+        for (int i = 0; i < blows; i++) {
+            advance(server, GodBoss.PYLON_REST);
+            com.thefarawaydev.realmsofchaos.block.ShieldPylonBlock.strike(level, pylon, by);
+        }
+    }
+
     private static void clearBosses(ServerLevel level) {
         for (GodBoss b : level.getEntitiesOfClass(GodBoss.class, new AABB(-64, -64, -64, 64, 400, 64), e -> true)) b.discard();
     }
@@ -353,6 +385,21 @@ public final class SelfTest {
             }
             check(level.getBlockState(new BlockPos(HubLife.GARDEN, 65, HubLife.GARDEN)).is(Blocks.CHERRY_LOG)
                     && level.getBlockState(new BlockPos(-HubLife.GARDEN, 69, -HubLife.GARDEN)).is(Blocks.CHERRY_LEAVES), "garden trees");
+            // the Heart of the Hub and the Bounty Board stand in the plaza, can be walked up to, and open their screens
+            BlockPos heart = RealmBuilder.HEART, board = RealmBuilder.BOUNTIES;
+            check(level.getBlockState(heart).is(ModContent.HUB_HEART.get()) && level.getBlockState(board).is(ModContent.BOUNTY_BOARD.get()), "the heart and the board stand in the plaza");
+            for (BlockPos station : new BlockPos[]{heart, board}) {
+                boolean reachable = false;
+                for (net.minecraft.core.Direction d : net.minecraft.core.Direction.Plane.HORIZONTAL) {
+                    reachable |= open(level, station.relative(d)) && open(level, station.relative(d).above()) && solid(level, station.relative(d).below());
+                }
+                check(reachable, "a player can walk up to the station at " + station);
+            }
+            ServerPlayer visitor = fakePlayer(server, level, "RocVisitor");
+            level.getBlockState(heart).useWithoutItem(level, visitor, new net.minecraft.world.phys.BlockHitResult(Vec3.atCenterOf(heart), net.minecraft.core.Direction.NORTH, heart, false));
+            check(Screens.last(visitor) != null && Screens.commands(Screens.last(visitor)).contains("/roc ui hubcore deposit"), "right-clicking the heart opens Hub Command");
+            level.getBlockState(board).useWithoutItem(level, visitor, new net.minecraft.world.phys.BlockHitResult(Vec3.atCenterOf(board), net.minecraft.core.Direction.NORTH, board, false));
+            check(Screens.bodyLines(Screens.last(visitor)) >= 1 && Screens.commands(Screens.last(visitor)).isEmpty(), "right-clicking the board opens it (shut, at the hub's first tier)");
             settle(level);
             List<net.minecraft.world.entity.Entity> residents = HubLife.residents(level);
             List<GodBoss> echoes = residents.stream().filter(e -> e instanceof GodBoss).map(e -> (GodBoss) e).toList();
@@ -474,9 +521,15 @@ public final class SelfTest {
             Welcome.onJoin(player);
             check(count(player, ModContent.CHAOS_CODEX.get()) == 1, "codex given");
             check(count(player, ModContent.CHAOS_COMPASS.get()) == 1, "compass given");
+            check(count(player, ModContent.FIELD_BAG.get()) == 1, "field bag given");
             check(Story.holds(player, Story.Chapter.PROLOGUE), "the Oracle's letter given");
             Welcome.onJoin(player);
-            check(count(player, ModContent.CHAOS_CODEX.get()) == 1, "not given twice");
+            check(count(player, ModContent.CHAOS_CODEX.get()) == 1 && count(player, ModContent.FIELD_BAG.get()) == 1, "not given twice");
+            // a player who joined before the bag existed is handed one, once
+            data.unmarkBuilt("fieldkit/" + player.getUUID());
+            Welcome.onJoin(player);
+            Welcome.onJoin(player);
+            check(count(player, ModContent.FIELD_BAG.get()) == 2 && count(player, ModContent.CHAOS_CODEX.get()) == 1, "an old hand gets the new bag once");
             check(player.getAdvancements().getOrStartProgress(server.getAdvancements().get(RocAdvancements.ROOT)).isDone(), "root advancement granted");
         });
 
@@ -557,7 +610,7 @@ public final class SelfTest {
                     check(bosses.size() == 1, at + "one boss, got " + bosses.size());
                     GodBoss boss = bosses.get(0);
                     check(boss.god() == god, at + "boss is " + god.id() + ", got " + boss.god().id());
-                    check(Math.abs(boss.getMaxHealth() - god.bossHealth()) < 0.01, at + "health");
+                    check(Math.abs(boss.getMaxHealth() - base(level, god)) < 0.01, at + "health: " + boss.getMaxHealth() + " against " + base(level, god));
                     check(boss.getMainHandItem().is(ModContent.weaponItem(god)), at + "holds its relic");
                     check(!boss.isInWall() && level.noCollision(boss), at + "boss spawned in free space at " + boss.position());
                     check(boss.position().distanceTo(Tower.centre(level, floor)) < 0.1, at + "boss stands on the floor centre");
@@ -567,10 +620,18 @@ public final class SelfTest {
                     check(boss.position().distanceTo(Tower.centre(level, floor)) < 0.1, at + "boss at home is left alone");
 
                     if (floor == 2 || floor == 8 || floor == 15) {
-                        // living floor: wounding the god makes the terrain shift, then shift back
+                        // at 65% the god raises its aegis; the floor holds still until its pylons are down, then shifts
                         boss.setHealth(boss.getMaxHealth() * 0.6F);
-                        boss.updateFloorShift(level);
-                        check(FloorShifts.isShifted(line, floor), at + "floor shifts when the god is wounded");
+                        boss.updatePhase(level);
+                        check(boss.phase() == 2 && boss.aegisUp() && boss.isInvulnerable() && !boss.pylons().isEmpty(), at + "the aegis is raised at 65%");
+                        check(!FloorShifts.isShifted(line, floor), at + "the floor holds still behind the aegis");
+                        for (BlockPos pylon : new ArrayList<>(boss.pylons())) {
+                            check(level.getBlockState(pylon).is(ModContent.SHIELD_PYLON.get()) && solid(level, pylon.below()), at + "a pylon stands at " + pylon);
+                            strikePylon(server, level, pylon, player, GodBoss.PYLON_HITS);
+                            check(level.getBlockState(pylon).isAir(), at + "three blows break a pylon");
+                        }
+                        check(!boss.aegisUp() && !boss.isInvulnerable(), at + "the aegis is down with its last pylon");
+                        check(FloorShifts.isShifted(line, floor), at + "floor shifts when the aegis breaks");
                         for (int i = 0; i < TowerBuilder.MORPH_STEPS; i++) {
                             FloorShifts.stepAll(server, false);
                             check(level.noCollision(boss) && !boss.isInWall(), at + "boss buried by the shift");
@@ -580,12 +641,13 @@ public final class SelfTest {
                         Vec3 c = Tower.centre(level, floor);
                         check(Math.hypot(boss.getX() - c.x, boss.getZ() - c.z) < 1.0 && boss.getY() >= c.y - 0.01, at + "boss still above the centre after the shift");
                         boss.setHealth(boss.getMaxHealth() * 0.3F);
-                        boss.updateFloorShift(level);
-                        check(!FloorShifts.isShifted(line, floor), at + "floor shifts back when the god is nearly beaten");
+                        boss.updatePhase(level);
+                        check(boss.phase() == 3 && boss.madeLastStand(), at + "its wrath begins at 30%");
+                        check(!FloorShifts.isShifted(line, floor), at + "floor shifts back when its wrath begins");
                         for (int i = 0; i < TowerBuilder.MORPH_STEPS + 1; i++) FloorShifts.stepAll(server, false);
                         check(level.noCollision(boss), at + "boss buried by the return shift");
                     }
-                    boss.hurtServer(level, level.damageSources().playerAttack(player), 100000.0F);
+                    slay(server, level, boss, player);
                     check(!boss.isAlive(), at + "boss died");
                     check(data.isDefeated(player.getUUID(), god), at + "progress saved");
                     check(!level.getEntitiesOfClass(ItemEntity.class, room, e -> e.getItem().is(ModContent.weaponItem(god))).isEmpty(), at + "relic dropped");
@@ -614,7 +676,7 @@ public final class SelfTest {
                         List<GodBoss> risen = level.getEntitiesOfClass(GodBoss.class, room, GodBoss::isAlive);
                         check(risen.size() == 1 && risen.get(0).isRematch() && risen.get(0).god() == god, at + "the god rises again");
                         check(!AltarBlock.canRematch(level, player, altar, line) && AltarBlock.rematch(level, player, altar, line) == null, at + "one rematch at a time");
-                        risen.get(0).hurtServer(level, level.damageSources().playerAttack(player), 100000.0F);
+                        slay(server, level, risen.get(0), player);
                         check(!risen.get(0).isAlive(), at + "rematch won");
                         check(level.getEntitiesOfClass(ItemEntity.class, room, e -> e.getItem().is(material))
                                 .stream().anyMatch(e -> e.getItem().getCount() == GodBoss.materialDrop(god)), at + "rematch drops forge material");
@@ -1631,7 +1693,7 @@ public final class SelfTest {
                 check(Screens.bodyLines(screen) >= 1, "a screen with nothing on it");
                 for (String command : Screens.commands(screen)) check(command.startsWith("/roc"), "a button that does not run a /roc command: " + command);
             }
-            check(HandbookData.ALL.size() == 12, "handbook topics: " + HandbookData.ALL.size());
+            check(HandbookData.ALL.size() == 16, "handbook topics: " + HandbookData.ALL.size());
 
             // the Codex item opens its home screen; every one of its buttons does something
             ModContent.CHAOS_CODEX.get().use(level, hero, InteractionHand.MAIN_HAND);
@@ -1669,7 +1731,7 @@ public final class SelfTest {
             level.getBlockState(altar).useWithoutItem(level, hero, new BlockHitResult(Vec3.atCenterOf(altar), net.minecraft.core.Direction.UP, altar, false));
             String begin = "/roc ui altar " + altar.getX() + " " + altar.getY() + " " + altar.getZ() + " begin";
             check(Screens.commands(Screens.last(hero)).equals(List.of(begin)), "the altar's screen offers to begin: " + Screens.commands(Screens.last(hero)));
-            check(Screens.bodyLines(Screens.last(hero)) == 6, "who waits, where, its move, its drops, the rule about groups, and the state");
+            check(Screens.bodyLines(Screens.last(hero)) == 8, "who waits, where, its move, its drops, the rules, what it makes of your arms, its phases, and the state: " + Screens.bodyLines(Screens.last(hero)));
             int y0 = Tower.floorY(1);
             AABB room = new AABB(-24, y0 - 3, -24, 24, y0 + 17, 24);
             hero.setPos(500, 100, 500);
@@ -1683,7 +1745,7 @@ public final class SelfTest {
             check(risen.size() == 1 && risen.get(0).god() == Tower.god(Line.ZEUS, 1), "the button begins the trial: " + risen.size() + " rose, altar state "
                     + AltarBlock.state(level, hero, altar, Line.ZEUS) + ", block " + level.getBlockState(altar).getBlock() + ", hero at " + hero.position() + ", command " + begin);
             check(Screens.commands(Screens.altar(hero, level, Line.ZEUS, altar)).isEmpty(), "while a trial is underway the screen has nothing to press");
-            risen.get(0).hurtServer(level, level.damageSources().playerAttack(hero), 100000.0F);
+            slay(server, level, risen.get(0), hero);
             List<String> after = Screens.commands(Screens.altar(hero, level, Line.ZEUS, altar));
             check(after.size() == 2 && after.get(0).endsWith(" ascend") && after.get(1).endsWith(" rematch"), "once the god has fallen: go up, or a rematch: " + after);
             commands.performPrefixedCommand(hero.createCommandSourceStack(), after.get(1));
@@ -1818,7 +1880,7 @@ public final class SelfTest {
                 god.lastStand(level);
                 check(level.getEntitiesOfClass(Sentinel.class, near, e -> e.entityTags().contains("realms_of_chaos_minion")).size() == 2, "a last stand is made once");
                 // when the god falls, the sentinels it called go with it
-                god.hurtServer(level, level.damageSources().playerAttack(target), 100000.0F);
+                slay(server, level, god, target);
                 check(!god.isAlive() && level.getEntitiesOfClass(Sentinel.class, near, e -> e.isAlive() && e.entityTags().contains("realms_of_chaos_minion")).isEmpty(), "its sentinels fall with it");
             } finally {
                 target.remove(net.minecraft.world.entity.Entity.RemovalReason.DISCARDED);
@@ -1964,7 +2026,7 @@ public final class SelfTest {
                 // two on the floor: a harder god
                 GodBoss boss = AltarBlock.begin(level, one, altar, Line.ZEUS);
                 check(boss != null && boss.challengers() == 2, "the trial counts its challengers: " + (boss == null ? "none" : boss.challengers()));
-                check(Math.abs(boss.getMaxHealth() - god.bossHealth() * 1.6) < 0.01 && boss.getHealth() == boss.getMaxHealth(), "two challengers: 60% more health");
+                check(Math.abs(boss.getMaxHealth() - base(level, god) * 1.6) < 0.01 && boss.getHealth() == boss.getMaxHealth(), "two challengers: 60% more health");
                 check(Math.abs(boss.damageScale() - 1.15F) < 1e-4, "and 15% harder hits");
                 // it fells one of them: that is remembered
                 check(Adapt.losses(two.getUUID(), god) == 0, "no losses yet");
@@ -1972,7 +2034,7 @@ public final class SelfTest {
                 check(Adapt.losses(two.getUUID(), god) == 1 && Adapt.losses(one.getUUID(), god) == 0, "a defeat is remembered for the player who fell");
 
                 // both win: both get credit, and each their own loot that only they can pick up
-                boss.hurtServer(level, level.damageSources().playerAttack(one), 100000.0F);
+                slay(server, level, boss, one);
                 check(!boss.isAlive() && data.isDefeated(one.getUUID(), god) && data.isDefeated(two.getUUID(), god), "everyone on the floor shares the victory");
                 check(Adapt.losses(two.getUUID(), god) == 0, "a victory wipes the slate");
                 List<ItemEntity> relics = level.getEntitiesOfClass(ItemEntity.class, room, e -> e.getItem().is(ModContent.weaponItem(god)));
@@ -2002,7 +2064,7 @@ public final class SelfTest {
                     check(AltarBlock.state(level, learner, altar, Line.ZEUS) == AltarBlock.State.READY, "the friend's own trial is still theirs to begin");
                     GodBoss again = AltarBlock.begin(level, learner, altar, Line.ZEUS);
                     check(again != null && again.challengers() == 2, "helper and friend face it together");
-                    again.hurtServer(level, level.damageSources().playerAttack(helper), 100000.0F);
+                    slay(server, level, again, helper);
                     check(data.isDefeated(learner.getUUID(), god), "the friend is credited though the helper struck the last blow");
                     check(level.getEntitiesOfClass(ItemEntity.class, room, e -> e.getItem().is(ModContent.weaponItem(god))).size() == 1, "one relic: the friend's first");
                     check(level.getEntitiesOfClass(ItemEntity.class, room, e -> e.getItem().is(ModContent.materialItem(Line.ZEUS, 1))).size() == 2, "materials for both");
@@ -2019,7 +2081,7 @@ public final class SelfTest {
                 settle(level);
                 GodBoss gentler = AltarBlock.begin(level, one, altar, Line.ZEUS);
                 check(gentler != null && gentler.challengers() == 1 && gentler.mercy() == 2, "the tower relents after two defeats");
-                check(Math.abs(gentler.getMaxHealth() - god.bossHealth() * 0.84) < 0.01, "16% less health");
+                check(Math.abs(gentler.getMaxHealth() - base(level, god) * 0.84) < 0.01, "16% less health");
                 gentler.discard();
                 Adapt.clearLosses(one.getUUID(), god);
             } finally {
@@ -2079,7 +2141,9 @@ public final class SelfTest {
                 Ruins.Site gateSite = Ruins.nearest(level.getSeed(), Ruins.Kind.GATE, hero.getX(), hero.getZ());
                 check(gateSite.equals(Ruins.point(hero, Ruins.Kind.GATE)), "the compass points at the nearest Ruined Gate");
                 ModContent.CHAOS_COMPASS.get().use(level, hero, InteractionHand.MAIN_HAND);
-                check(hero.position().distanceTo(new Vec3(5000.5, 100, 5000.5)) < 0.01, "the Compass of Chaos does not travel yet");
+                check(hero.position().distanceTo(new Vec3(5000.5, 100, 5000.5)) < 0.01, "the Compass of Chaos does not travel: it scans");
+                check(com.thefarawaydev.realmsofchaos.world.Scanner.scanning(hero), "right-click begins a scan");
+                com.thefarawaydev.realmsofchaos.world.Scanner.reset();
 
                 // the Ruined Gate is raised once, where the seed says
                 check(Ruins.centre(level, gateSite) == null, "not raised until someone comes");
@@ -2602,6 +2666,651 @@ public final class SelfTest {
                 dummy.discard();
             }
             for (var bolt : level.getEntitiesOfClass(net.minecraft.world.entity.LightningBolt.class, new AABB(-24, 0, -24, 24, 400, 24), e -> true)) bolt.discard();
+        });
+
+        step("a trial has three phases: no blow skips one, the aegis needs its pylons broken, the wrath takes the floor and gives it back", () -> {
+            Realm.testAlias(Level.OVERWORLD, Realm.OLYMPUS);
+            final int floor = 7;
+            TowerBuilder.buildFloor(level, Line.ZEUS, floor);
+            God god = Tower.god(Line.ZEUS, floor);
+            Vec3 home = Tower.centre(level, floor);
+            int y0 = Tower.floorY(floor);
+            AABB room = new AABB(-24, y0 - 3, -24, 24, y0 + 17, 24);
+            clearBosses(level);
+            for (var e : level.getEntitiesOfClass(net.minecraft.world.entity.item.FallingBlockEntity.class, room, e -> true)) e.discard();
+            ServerPlayer hero = fakePlayer(server, level, "RocPhases");
+            level.addNewPlayer(hero);
+            Block pylonBlock = ModContent.SHIELD_PYLON.get();
+            // what the floor looks like before the fight, to compare with afterwards
+            Map<BlockPos, BlockState> before = new HashMap<>();
+            for (int x = -21; x <= 21; x++) {
+                for (int z = -21; z <= 21; z++) {
+                    for (int y = y0 - 2; y <= y0 + 3; y++) before.put(new BlockPos(x, y, z), level.getBlockState(new BlockPos(x, y, z)));
+                }
+            }
+            try {
+                hero.setPos(home.x + 5, ground(level, floor, home.x + 5, home.z), home.z);
+                settle(level);
+                GodBoss boss = ModContent.GOD_BOSS.get().create(level, EntitySpawnReason.TRIGGERED);
+                boss.setGod(god);
+                boss.setPos(home.x, home.y, home.z);
+                boss.setHome(home);
+                level.addFreshEntity(boss);
+                boss.setTarget(hero);
+                float max = boss.getMaxHealth();
+                check(boss.phase() == 1 && !boss.aegisUp() && !boss.isInvulnerable(), "a trial begins in its first phase");
+
+                // ---- a blow that would kill it outright only carries it to the threshold
+                boss.hurtServer(level, level.damageSources().playerAttack(hero), 100000.0F);
+                check(boss.isAlive() && Math.abs(boss.getHealth() - max * GodBoss.AEGIS_AT) < 0.01, "no blow carries a god past 65%: " + boss.getHealth() + " of " + max);
+                check(boss.phase() == 2 && boss.aegisUp() && boss.isInvulnerable() && boss.isEnraged(), "there it raises its aegis");
+                int expected = Adapt.pylons(level.getDifficulty(), 1, 0);
+                check(boss.pylons().size() == expected, "as many pylons as the difficulty asks: " + boss.pylons().size() + " of " + expected);
+                for (BlockPos pylon : boss.pylons()) {
+                    check(level.getBlockState(pylon).is(pylonBlock) && solid(level, pylon.below()) && level.getBlockState(pylon.above()).isAir(), "a pylon stands on open ground at " + pylon);
+                    check(!(Math.abs(pylon.getX()) <= 4 && Math.abs(pylon.getZ()) >= 8), "clear of the altar and the gates: " + pylon);
+                    double r = Math.hypot(pylon.getX() + 0.5 - home.x, pylon.getZ() + 0.5 - home.z);
+                    check(r > 5 && r < 15, "out on the floor, inside the fight ring: " + r);
+                }
+                boss.damageCooldownTime = 0;
+                float held = boss.getHealth();
+                check(!boss.hurtServer(level, level.damageSources().playerAttack(hero), 50.0F) && boss.getHealth() == held, "nothing hurts it behind its aegis");
+
+                // ---- the pylons: three blows each
+                List<BlockPos> stood = new ArrayList<>(boss.pylons());
+                BlockPos first = stood.get(0);
+                check(com.thefarawaydev.realmsofchaos.block.ShieldPylonBlock.strike(level, first, hero) && boss.ownsPylon(first) && level.getBlockState(first).is(pylonBlock), "one blow only cracks it");
+                com.thefarawaydev.realmsofchaos.block.ShieldPylonBlock.strike(level, first, hero);
+                com.thefarawaydev.realmsofchaos.block.ShieldPylonBlock.strike(level, first, hero);
+                check(boss.ownsPylon(first) && level.getBlockState(first).is(pylonBlock), "blows in one flurry glance off: a pylon has to be stood at");
+                strikePylon(server, level, first, hero, 2);
+                check(!boss.ownsPylon(first) && level.getBlockState(first).isAir() && boss.aegisUp(), "the third breaks it, and the aegis holds while others stand");
+                // a pylon the shifting floor took is stood up again
+                BlockPos second = stood.get(1);
+                level.setBlock(second, Blocks.AIR.defaultBlockState(), 3);
+                boss.reseatPylons(level);
+                check(boss.pylons().size() == expected - 1, "no pylon is lost to the floor: " + boss.pylons().size());
+                for (BlockPos pylon : boss.pylons()) check(level.getBlockState(pylon).is(pylonBlock), "every pylon it counts is really there: " + pylon);
+                for (BlockPos pylon : new ArrayList<>(boss.pylons())) {
+                    strikePylon(server, level, pylon, hero, GodBoss.PYLON_HITS);
+                }
+                check(!boss.aegisUp() && boss.pylons().isEmpty() && !boss.isInvulnerable() && boss.phase() == 2, "all pylons down: the aegis is gone");
+                check(FloorShifts.isShifted(Line.ZEUS, floor), "and the floor begins to shift");
+                BlockPos orphan = BlockPos.containing(home.x + 3, ground(level, floor, home.x + 3, home.z + 3), home.z + 3);
+                level.setBlock(orphan, pylonBlock.defaultBlockState(), 3);
+                check(!com.thefarawaydev.realmsofchaos.block.ShieldPylonBlock.strike(level, orphan, hero) && level.getBlockState(orphan).isAir(), "a pylon no god owns crumbles at a touch");
+
+                // ---- the god has been fought hand to hand so far, and says so
+                check(boss.stance() == GodBoss.Stance.BRISTLE, "fought hand to hand, it braces: " + boss.stance());
+                // ...then it is shot at for a whole phase
+                boss.recordDamage(0.0F, 5000.0F);
+                boss.damageCooldownTime = 0;
+                boss.hurtServer(level, level.damageSources().playerAttack(hero), 100000.0F);
+                check(boss.isAlive() && Math.abs(boss.getHealth() - max * GodBoss.WRATH_AT) < 0.01, "the next blow stops at 30%: " + boss.getHealth());
+                check(boss.phase() == 3 && boss.madeLastStand() && boss.isInvulnerable(), "there its wrath begins, with a last stand");
+                check(boss.stance() == GodBoss.Stance.DEFLECT, "shot at for a whole phase, it has learnt to turn shots aside: " + boss.stance());
+                check(!FloorShifts.isShifted(Line.ZEUS, floor), "the floor turns back for the wrath");
+                advance(server, 90);
+                Scheduler.tick(server);                 // its last stand plays out
+                check(!boss.isInvulnerable(), "then it can be hurt again");
+                var snowball = EntityTypes.SNOWBALL.create(level, EntitySpawnReason.TRIGGERED);
+                float hp = boss.getHealth();
+                boss.damageCooldownTime = 0;
+                boss.hurtServer(level, level.damageSources().thrown(snowball, hero), 12.0F);
+                float byShot = hp - boss.getHealth();
+                hp = boss.getHealth();
+                boss.damageCooldownTime = 0;
+                boss.hurtServer(level, level.damageSources().playerAttack(hero), 12.0F);
+                float byBlade = hp - boss.getHealth();
+                check(byShot > 0 && byBlade > byShot * 2.0F, "a shot now does less than half of what a blow does: " + byShot + " against " + byBlade);
+
+                // ---- the wrath takes the floor, ring by ring, from the wall inward
+                check(boss.safeRadius() == Tower.WALL_INNER, "the whole floor to begin with: " + boss.safeRadius());
+                for (int i = 0; i < 3; i++) boss.collapse(level);
+                check(boss.safeRadius() == Tower.WALL_INNER - 3, "three rings gone: " + boss.safeRadius());
+                Block hazard = com.thefarawaydev.realmsofchaos.world.Arena.hazard(Line.ZEUS);
+                int lost = 0;
+                for (BlockPos pos : before.keySet()) {
+                    if (!level.getBlockState(pos).is(hazard)) continue;
+                    lost++;
+                    check(Math.hypot(pos.getX(), pos.getZ()) >= boss.safeRadius() + 0.5 && level.getBlockState(pos.above()).isAir(), "only paving outside the safe ring is lost: " + pos);
+                }
+                check(lost > 60, "the outer rings have turned: " + lost + " blocks");
+                check(level.getBlockState(Tower.altarPos(floor)).getBlock() instanceof AltarBlock && before.get(Tower.altarPos(floor).below()) == level.getBlockState(Tower.altarPos(floor).below()),
+                        "the altar and its dais are left alone");
+                check(data.isBuilt(com.thefarawaydev.realmsofchaos.world.Arena.scorchKey(Line.ZEUS, floor)), "and the floor is marked for repair, should the server stop now");
+                // standing on the lost part hurts; the middle does not
+                hero.setPos(19.5, ground(level, floor, 19.5, 4.5), 4.5);
+                hero.setHealth(hero.getMaxHealth());
+                hero.damageCooldownTime = 0;
+                float b4 = hero.getHealth();
+                check(boss.burnOutside(level) == 1 && hero.getHealth() < b4, "standing on the lost floor hurts");
+                hero.setPos(home.x + 4, ground(level, floor, home.x + 4, home.z), home.z);
+                hero.setHealth(hero.getMaxHealth());
+                hero.damageCooldownTime = 0;
+                check(boss.burnOutside(level) == 0 && hero.getHealth() == hero.getMaxHealth(), "the middle is safe");
+                for (int i = 0; i < 40; i++) boss.collapse(level);
+                check(boss.safeRadius() == com.thefarawaydev.realmsofchaos.world.Arena.MIN_SAFE, "the middle of the floor is never lost: " + boss.safeRadius());
+
+                // ---- strikes from above: marked first, then they land
+                int marks = boss.strikes(level);
+                check(marks >= 2 && hero.getHealth() == hero.getMaxHealth(), "strikes are only marked at first: " + marks);
+                advance(server, GodBoss.STRIKE_WARNING + 1);
+                Scheduler.tick(server);
+                check(hero.getHealth() < hero.getMaxHealth(), "then they land on whoever stayed in the ring");
+                hero.setHealth(hero.getMaxHealth());
+                hero.damageCooldownTime = 0;
+                boss.strikes(level);
+                hero.setPos(home.x + 14, ground(level, floor, home.x + 14, home.z), home.z);      // out of every ring
+                advance(server, GodBoss.STRIKE_WARNING + 1);
+                Scheduler.tick(server);
+                check(hero.getHealth() == hero.getMaxHealth(), "stepping out of the ring is all it takes");
+
+                // ---- when the god falls the floor is given back exactly as it was
+                slay(server, level, boss, hero);
+                check(!boss.isAlive(), "the god falls");
+                for (int i = 0; i < TowerBuilder.MORPH_STEPS + 2; i++) FloorShifts.stepAll(server, true);
+                for (Map.Entry<BlockPos, BlockState> e : before.entrySet()) {
+                    check(level.getBlockState(e.getKey()) == e.getValue(), "the floor is as it was at " + e.getKey() + ": " + level.getBlockState(e.getKey()) + " was " + e.getValue());
+                }
+                check(!data.isBuilt(com.thefarawaydev.realmsofchaos.world.Arena.scorchKey(Line.ZEUS, floor)), "with nothing left to repair");
+
+                // ---- a floor left scorched by a server stop is rebuilt when someone next sets foot on it
+                Map<BlockPos, BlockState> scratch = new HashMap<>();
+                check(com.thefarawaydev.realmsofchaos.world.Arena.scorch(level, Line.ZEUS, floor, 15.5, 22.0, scratch) > 60, "test setup: scorch the floor");
+                data.markBuilt(TowerBuilder.floorKey(Line.ZEUS, floor));
+                TowerBuilder.ensureFloor(level, Line.ZEUS, floor);
+                for (Map.Entry<BlockPos, BlockState> e : before.entrySet()) check(level.getBlockState(e.getKey()) == e.getValue(), "rebuilt at " + e.getKey());
+                check(!data.isBuilt(com.thefarawaydev.realmsofchaos.world.Arena.scorchKey(Line.ZEUS, floor)), "and no longer marked");
+            } finally {
+                hero.remove(net.minecraft.world.entity.Entity.RemovalReason.DISCARDED);
+                clearBosses(level);
+                for (var e : level.getEntitiesOfClass(net.minecraft.world.entity.item.FallingBlockEntity.class, room, e -> true)) e.discard();
+                for (ItemEntity drop : level.getEntitiesOfClass(ItemEntity.class, room, e -> true)) drop.discard();
+                for (var bolt : level.getEntitiesOfClass(net.minecraft.world.entity.LightningBolt.class, room, e -> true)) bolt.discard();
+                for (var m : level.getEntitiesOfClass(net.minecraft.world.entity.Mob.class, room, e -> e.entityTags().contains("realms_of_chaos_minion"))) m.discard();
+                data.reset(hero.getUUID());
+            }
+        });
+
+        step("gods rise to match what their challengers carry - weapon, enchantments, forging - and the difficulty sets health and pace", () -> {
+            var enchantments = level.registryAccess().lookupOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT);
+            ItemStack iron = new ItemStack(net.minecraft.world.item.Items.IRON_SWORD), diamond = new ItemStack(net.minecraft.world.item.Items.DIAMOND_SWORD);
+            check(Math.abs(Adapt.offence(iron) - 6.0) < 0.01, "an iron sword hits for 6: " + Adapt.offence(iron));
+            diamond.enchant(enchantments.getOrThrow(net.minecraft.world.item.enchantment.Enchantments.SHARPNESS), 5);
+            check(Adapt.enchantLevels(diamond) == 5 && Math.abs(Adapt.offence(diamond) - 10.0) < 0.01, "a diamond sword with Sharpness V counts its enchantment: " + Adapt.offence(diamond));
+            check(Adapt.offence(new ItemStack(net.minecraft.world.item.Items.BREAD)) == 0.0 && Adapt.offence(ItemStack.EMPTY) == 0.0, "bread is not a weapon");
+            ItemStack bow = new ItemStack(net.minecraft.world.item.Items.BOW);
+            check(Adapt.offence(bow) == 8.0 && Adapt.isRanged(bow) && !Adapt.isRanged(iron), "a bow counts, as a weapon that fights from a distance");
+            ItemStack relic = new ItemStack(ModContent.weaponItem(Gods.byId("zeus")));
+            double plain = Adapt.offence(relic);
+            WeaponProgress.setLevel(relic, WeaponProgress.MAX_LEVEL);
+            WeaponProgress.setStars(relic, WeaponProgress.MAX_STARS);
+            check(plain > 6.0 && Adapt.offence(relic) > plain * 1.5, "a relic counts for what has been forged into it: " + plain + " -> " + Adapt.offence(relic));
+            ItemStack plate = new ItemStack(net.minecraft.world.item.Items.DIAMOND_CHESTPLATE);
+            plate.enchant(enchantments.getOrThrow(net.minecraft.world.item.enchantment.Enchantments.PROTECTION), 4);
+
+            check(Adapt.gearHealth(0.0) == 1.0 && Adapt.gearHealth(1.0) == 1.0, "a god is never weaker for poor gear");
+            check(Adapt.gearHealth(1.5) > 1.3 && Adapt.gearHealth(1.5) < Adapt.gearHealth(2.0) && Adapt.gearHealth(50.0) == Adapt.MAX_GEAR_HEALTH, "it rises with gear past what the floor expects, to a cap");
+            check(Adapt.gearDamage(0.5) == 1.0F && Adapt.gearDamage(2.0) > 1.3F && Adapt.gearDamage(99.0) == (float) Adapt.MAX_GEAR_DAMAGE, "and strikes harder at armour past what the floor expects");
+            check(Adapt.expectedOffence(15) > Adapt.expectedOffence(1) && Adapt.expectedDefence(15) > Adapt.expectedDefence(1), "the higher floors expect more");
+            check(Adapt.difficultyHealth(net.minecraft.world.Difficulty.EASY) < 1.0 && Adapt.difficultyHealth(net.minecraft.world.Difficulty.NORMAL) == 1.0
+                    && Adapt.difficultyHealth(net.minecraft.world.Difficulty.HARD) > 1.0, "health follows the difficulty");
+            check(Adapt.difficultyPace(net.minecraft.world.Difficulty.EASY) > 1.0 && Adapt.difficultyPace(net.minecraft.world.Difficulty.HARD) < 1.0, "and so does how long it waits between moves");
+            check(Adapt.pylons(net.minecraft.world.Difficulty.EASY, 1, 0) == 2 && Adapt.pylons(net.minecraft.world.Difficulty.NORMAL, 1, 0) == 3
+                    && Adapt.pylons(net.minecraft.world.Difficulty.HARD, 1, 0) == 4, "two, three or four pylons");
+            check(Adapt.pylons(net.minecraft.world.Difficulty.NORMAL, 3, 0) == 4 && Adapt.pylons(net.minecraft.world.Difficulty.NORMAL, 1, 1) == 4
+                    && Adapt.pylons(net.minecraft.world.Difficulty.EASY, 1, -1) == 2 && Adapt.pylons(net.minecraft.world.Difficulty.HARD, 4, 1) == 6, "one more for a group or a quick phase, never fewer than two");
+
+            Realm.testAlias(Level.OVERWORLD, Realm.OLYMPUS);
+            ServerPlayer bare = fakePlayer(server, level, "RocBareHanded"), armed = fakePlayer(server, level, "RocOverArmed");
+            data.reset(bare.getUUID());
+            data.reset(armed.getUUID());
+            God god = Tower.god(Line.ZEUS, 1);
+            BlockPos altar = Tower.altarPos(1);
+            clearBosses(level);
+            try {
+                level.addNewPlayer(bare);
+                bare.setPos(Tower.arrival(1).x, Tower.arrival(1).y, Tower.arrival(1).z);
+                settle(level);
+                Adapt.Measure none = AltarBlock.measure(level, bare, altar, Line.ZEUS, god);
+                check(none.might() == 0.0 && Adapt.gearHealth(none.might()) == 1.0, "empty hands measure as nothing: " + none.might());
+                GodBoss asItIs = AltarBlock.begin(level, bare, altar, Line.ZEUS);
+                check(asItIs != null && Math.abs(asItIs.getMaxHealth() - base(level, god)) < 0.01 && asItIs.stance() == GodBoss.Stance.BALANCED, "against bare hands the god is as it is");
+                float plainHits = asItIs.damageScale();
+                int plainWait = asItIs.castInterval(200.0);
+                asItIs.discard();
+                bare.remove(net.minecraft.world.entity.Entity.RemovalReason.DISCARDED);
+
+                level.addNewPlayer(armed);
+                armed.setPos(Tower.arrival(1).x, Tower.arrival(1).y, Tower.arrival(1).z);
+                armed.getInventory().add(diamond.copy());
+                settle(level);
+                Adapt.Measure some = AltarBlock.measure(level, armed, altar, Line.ZEUS, god);
+                check(Math.abs(some.might() - 0.65 * 10.0 / Adapt.expectedOffence(1)) < 1e-6, "an enchanted diamond sword on floor 1: " + some.might());
+                armed.getInventory().add(relic.copy());
+                Adapt.Measure much = AltarBlock.measure(level, armed, altar, Line.ZEUS, god);
+                check(much.might() > some.might() && Adapt.gearHealth(much.might()) > 1.5, "the best weapon in the pack is the one that counts: " + much.might());
+                GodBoss risen = AltarBlock.begin(level, armed, altar, Line.ZEUS);
+                check(risen != null && Math.abs(risen.getMaxHealth() - base(level, god) * Adapt.gearHealth(much.might())) < 0.01 && risen.getHealth() == risen.getMaxHealth(),
+                        "the god has risen to match: " + (risen == null ? "none" : risen.getMaxHealth()) + " for might " + much.might());
+                check(Math.abs(risen.trialScale() - Adapt.gearHealth(much.might()) * Adapt.difficultyHealth(level.getDifficulty())) < 0.001, "and can say by how much");
+                check(risen.damageScale() == plainHits, "armour, not weapons, is what makes it hit harder");
+                // the altar's screen says so before the trial is begun
+                check(Screens.bodyLines(Screens.altar(armed, level, Line.ZEUS, altar)) >= 7, "the altar's screen tells what the god will make of your arms");
+                // phases quicken it
+                check(risen.castInterval(200.0) == plainWait, "in its first phase it keeps its own pace");
+                risen.setHealth(risen.getMaxHealth() * 0.6F);
+                risen.updatePhase(level);
+                risen.endAegis(level, true);
+                int enraged = risen.castInterval(200.0);
+                risen.setHealth(risen.getMaxHealth() * 0.25F);
+                risen.updatePhase(level);
+                check(enraged < plainWait && risen.castInterval(200.0) < enraged, "each phase shortens the wait between its moves: " + plainWait + " > " + enraged + " > " + risen.castInterval(200.0));
+                // a god keeps its trial through a save
+                var saved = net.minecraft.world.level.storage.TagValueOutput.createWithContext(net.minecraft.util.ProblemReporter.DISCARDING, server.registryAccess());
+                risen.saveWithoutId(saved);
+                check(saved.buildResult().getIntOr("Phase", 0) == 3 && saved.buildResult().getStringOr("Stance", "").equals(risen.stance().name()), "its phase and stance are saved");
+                risen.discard();
+            } finally {
+                bare.remove(net.minecraft.world.entity.Entity.RemovalReason.DISCARDED);
+                armed.remove(net.minecraft.world.entity.Entity.RemovalReason.DISCARDED);
+                clearBosses(level);
+                AABB room = new AABB(-24, Tower.floorY(1) - 3, -24, 24, Tower.floorY(1) + 17, 24);
+                for (var m : level.getEntitiesOfClass(net.minecraft.world.entity.Mob.class, room, e -> e.entityTags().contains("realms_of_chaos_minion"))) m.discard();
+                for (var bolt : level.getEntitiesOfClass(net.minecraft.world.entity.LightningBolt.class, room, e -> true)) bolt.discard();
+                for (int i = 0; i < TowerBuilder.MORPH_STEPS + 2; i++) FloorShifts.stepAll(server, true);
+            }
+        });
+
+        step("the compass scans and carries nobody: rolls, clean locks and static, steadied by relays and the hub, spoiled by a jammer", () -> {
+            Realm.testAlias(Level.OVERWORLD, null);
+            com.thefarawaydev.realmsofchaos.world.Scanner.reset();
+            com.thefarawaydev.realmsofchaos.world.HubTiers.setTier(server, 1);
+            data.unmarkPrefix("net|");
+            ServerPlayer hero = fakePlayer(server, level, "RocScanner"), rival = fakePlayer(server, level, "RocRival");
+            Vec3 spot = new Vec3(7000.5, 100, 7000.5);
+            hero.setPos(spot.x, spot.y, spot.z);
+            Block relayBlock = ModContent.RELAY_CORE.get(), jammerBlock = ModContent.SIGNAL_JAMMER.get();
+            BlockPos[] relays = {new BlockPos(7010, 100, 7000), new BlockPos(7000, 100, 7020), new BlockPos(6990, 100, 7000), new BlockPos(7000, 100, 6980)};
+            BlockPos jammer = new BlockPos(7030, 100, 7030), farRelay = new BlockPos(7400, 100, 7000);
+            try {
+                check(!Teleports.recall(hero) && hero.position().distanceTo(spot) < 0.01, "nothing carries a player to the hub from the world outside");
+                ItemStack compass = new ItemStack(ModContent.CHAOS_COMPASS.get());
+                hero.setItemInHand(InteractionHand.MAIN_HAND, compass);
+                check(com.thefarawaydev.realmsofchaos.world.Scanner.mode(compass) == com.thefarawaydev.realmsofchaos.world.Scanner.Mode.HUB, "a new compass looks for the way to the hub");
+
+                // ---- signal
+                double weather = level.isThundering() ? 0.2 : level.isRaining() ? 0.1 : 0.0, bare = 0.35 - weather;
+                check(Math.abs(com.thefarawaydev.realmsofchaos.world.Scanner.quality(level, hero) - bare) < 1e-9, "a bare compass reads a poor signal: " + com.thefarawaydev.realmsofchaos.world.Scanner.quality(level, hero));
+                level.setBlock(relays[0], relayBlock.defaultBlockState(), 3);
+                relayBlock.setPlacedBy(level, relays[0], relayBlock.defaultBlockState(), hero, ItemStack.EMPTY);
+                var node = com.thefarawaydev.realmsofchaos.world.Network.at(level, relays[0], com.thefarawaydev.realmsofchaos.world.Network.Kind.RELAY);
+                check(node != null && node.owner().equals(hero.getUUID()), "a relay set down joins the network under its owner");
+                check(com.thefarawaydev.realmsofchaos.world.Scanner.relays(level, hero) == 1 && Math.abs(com.thefarawaydev.realmsofchaos.world.Scanner.quality(level, hero) - (bare + 0.15)) < 1e-9, "one relay in range steadies it");
+                for (int i = 1; i < relays.length; i++) {
+                    level.setBlock(relays[i], relayBlock.defaultBlockState(), 3);
+                    relayBlock.setPlacedBy(level, relays[i], relayBlock.defaultBlockState(), hero, ItemStack.EMPTY);
+                }
+                level.setBlock(farRelay, relayBlock.defaultBlockState(), 3);
+                relayBlock.setPlacedBy(level, farRelay, relayBlock.defaultBlockState(), hero, ItemStack.EMPTY);
+                check(com.thefarawaydev.realmsofchaos.world.Scanner.relays(level, hero) == 3 && Math.abs(com.thefarawaydev.realmsofchaos.world.Scanner.quality(level, hero) - (bare + 0.45)) < 1e-9,
+                        "three count; a fourth adds nothing and one 400 blocks off is out of range");
+                // a relay that is gone is forgotten the next time anything looks
+                level.setBlock(relays[3], Blocks.AIR.defaultBlockState(), 3);
+                check(com.thefarawaydev.realmsofchaos.world.Network.near(level, com.thefarawaydev.realmsofchaos.world.Network.Kind.RELAY, spot.x, spot.z, 96).size() == 3
+                        && com.thefarawaydev.realmsofchaos.world.Network.at(level, relays[3], com.thefarawaydev.realmsofchaos.world.Network.Kind.RELAY) == null, "a relay that is gone is forgotten");
+                // someone else's jammer
+                level.setBlock(jammer, jammerBlock.defaultBlockState(), 3);
+                jammerBlock.setPlacedBy(level, jammer, jammerBlock.defaultBlockState(), rival, ItemStack.EMPTY);
+                rival.setPos(spot.x, spot.y, spot.z);
+                check(com.thefarawaydev.realmsofchaos.world.Scanner.jammed(level, hero) && !com.thefarawaydev.realmsofchaos.world.Scanner.jammed(level, rival), "a jammer spoils everyone's scans but its owner's");
+                check(Math.abs(com.thefarawaydev.realmsofchaos.world.Scanner.quality(level, hero) - Math.max(0.05, bare + 0.45 - 0.5)) < 1e-9, "by half the dial");
+                jammerBlock.playerWillDestroy(level, jammer, jammerBlock.defaultBlockState(), rival);
+                level.setBlock(jammer, Blocks.AIR.defaultBlockState(), 3);
+                check(!com.thefarawaydev.realmsofchaos.world.Scanner.jammed(level, hero), "breaking it takes it out of the network");
+                com.thefarawaydev.realmsofchaos.world.HubTiers.setTier(server, 5);
+                check(Math.abs(com.thefarawaydev.realmsofchaos.world.Scanner.quality(level, hero) - Math.min(1.0, bare + 0.45 + 0.2)) < 1e-9, "every hub tier steadies it a little more");
+                com.thefarawaydev.realmsofchaos.world.HubTiers.setTier(server, 1);
+
+                // ---- what there is to find
+                var hubTargets = com.thefarawaydev.realmsofchaos.world.Scanner.targets(level, hero, com.thefarawaydev.realmsofchaos.world.Scanner.Mode.HUB);
+                Ruins.Site gate = Ruins.nearest(level.getSeed(), Ruins.Kind.GATE, hero.getX(), hero.getZ());
+                check(hubTargets.size() == 1 && hubTargets.get(0).x() == gate.x() + 0.5 && hubTargets.get(0).z() == gate.z() + 0.5, "set to the hub it looks for the nearest Ruined Gate");
+                check(com.thefarawaydev.realmsofchaos.world.Scanner.targets(level, hero, com.thefarawaydev.realmsofchaos.world.Scanner.Mode.KEYSTONES).size() == 3, "set to keystones, for the three shrines");
+                check(com.thefarawaydev.realmsofchaos.world.Scanner.targets(level, hero, com.thefarawaydev.realmsofchaos.world.Scanner.Mode.NETWORK).size() == 4, "set to the network, for every relay that stands");
+
+                // ---- the needle
+                check(com.thefarawaydev.realmsofchaos.world.Scanner.surgeChance(1.0) < com.thefarawaydev.realmsofchaos.world.Scanner.surgeChance(0.1), "a poor signal surges more");
+                check(com.thefarawaydev.realmsofchaos.world.Scanner.lockChance(1.0, 1.0) > com.thefarawaydev.realmsofchaos.world.Scanner.lockChance(1.0, 0.0)
+                        && com.thefarawaydev.realmsofchaos.world.Scanner.lockChance(1.0, 0.0) > com.thefarawaydev.realmsofchaos.world.Scanner.lockChance(0.1, 0.0), "a good signal and a long scan lock more");
+                check(com.thefarawaydev.realmsofchaos.world.Scanner.scatterDegrees(1.0, 0.0) == 0.0
+                        && com.thefarawaydev.realmsofchaos.world.Scanner.scatterDegrees(0.35, 1.0) < com.thefarawaydev.realmsofchaos.world.Scanner.scatterDegrees(0.35, 0.0), "the longer a scan runs the truer it reads");
+                var rng = net.minecraft.util.RandomSource.create(42L);
+                double tx = hubTargets.get(0).x() - hero.getX(), tz = hubTargets.get(0).z() - hero.getZ(), trueDist = Math.hypot(tx, tz);
+                int locks = 0, surges = 0, rough = 0;
+                double q = 0.5, maxTurn = com.thefarawaydev.realmsofchaos.world.Scanner.scatterDegrees(q, 0.0), maxStretch = com.thefarawaydev.realmsofchaos.world.Scanner.scatterShare(q, 0.0);
+                for (int i = 0; i < 3000; i++) {
+                    var reading = com.thefarawaydev.realmsofchaos.world.Scanner.roll(hubTargets, hero.getX(), hero.getZ(), q, 0.0, rng);
+                    switch (reading.roll()) {
+                        case CLEAN_LOCK -> {
+                            locks++;
+                            check(Math.abs(reading.dx() - tx) < 1e-9 && Math.abs(reading.dz() - tz) < 1e-9, "a clean lock is exact");
+                        }
+                        case STATIC_SURGE -> surges++;
+                        default -> {
+                            rough++;
+                            double turn = Math.toDegrees(Math.abs(Math.atan2(reading.dx() * tz - reading.dz() * tx, reading.dx() * tx + reading.dz() * tz)));
+                            check(turn <= maxTurn + 1e-6, "a rough reading is off by no more than the signal allows: " + turn + " of " + maxTurn);
+                            check(Math.abs(reading.distance() / trueDist - 1.0) <= maxStretch + 1e-6, "in distance too: " + reading.distance() + " for " + trueDist);
+                        }
+                    }
+                }
+                check(locks > 50 && surges > 50 && rough > 2000, "mostly rough readings, with clean locks and static among them: " + rough + " / " + locks + " / " + surges);
+                hero.setYRot(0.0F);         // facing south
+                check(com.thefarawaydev.realmsofchaos.world.Scanner.arrow(hero, 0, 100).equals("↑") && com.thefarawaydev.realmsofchaos.world.Scanner.arrow(hero, 0, -100).equals("↓")
+                        && com.thefarawaydev.realmsofchaos.world.Scanner.arrow(hero, 100, 0).equals("←") && com.thefarawaydev.realmsofchaos.world.Scanner.arrow(hero, -100, 100).equals("↗"),
+                        "the arrow is given as the player faces: up is straight ahead");
+                check(com.thefarawaydev.realmsofchaos.world.Scanner.bars(0.0).equals("▯▯▯▯▯") && com.thefarawaydev.realmsofchaos.world.Scanner.bars(1.0).equals("▮▮▮▮▮"), "five bars of signal");
+
+                // ---- a scan, start to finish, by right-click
+                ModContent.CHAOS_COMPASS.get().use(level, hero, InteractionHand.MAIN_HAND);
+                check(com.thefarawaydev.realmsofchaos.world.Scanner.scanning(hero) && hero.position().distanceTo(spot) < 0.01, "right-click begins a scan and goes nowhere");
+                check(com.thefarawaydev.realmsofchaos.world.Scanner.last(hero) == null, "nothing is read until the needle first rolls");
+                var read = com.thefarawaydev.realmsofchaos.world.Scanner.pulse(hero, level, com.thefarawaydev.realmsofchaos.world.Scanner.Mode.HUB);
+                check(read != null && com.thefarawaydev.realmsofchaos.world.Scanner.last(hero) == read, "each roll is the reading shown");
+                check(com.thefarawaydev.realmsofchaos.world.Scanner.line(hero, level, com.thefarawaydev.realmsofchaos.world.Scanner.Mode.HUB, read, 60) != null, "and has its line above the hotbar");
+                advance(server, 25);
+                com.thefarawaydev.realmsofchaos.world.Scanner.tick(server);
+                check(com.thefarawaydev.realmsofchaos.world.Scanner.scanning(hero), "a scan runs for a minute or more");
+                com.thefarawaydev.realmsofchaos.world.Scanner.expire(hero);
+                com.thefarawaydev.realmsofchaos.world.Scanner.tick(server);
+                check(!com.thefarawaydev.realmsofchaos.world.Scanner.scanning(hero), "then it is over");
+                check(!com.thefarawaydev.realmsofchaos.world.Scanner.start(hero, com.thefarawaydev.realmsofchaos.world.Scanner.Mode.HUB), "and the needle needs a moment to settle");
+                advance(server, com.thefarawaydev.realmsofchaos.world.Scanner.COOLDOWN + 1);
+                // sneaking turns the compass to its next setting instead
+                hero.setShiftKeyDown(true);
+                ModContent.CHAOS_COMPASS.get().use(level, hero, InteractionHand.MAIN_HAND);
+                check(com.thefarawaydev.realmsofchaos.world.Scanner.mode(hero.getMainHandItem()) == com.thefarawaydev.realmsofchaos.world.Scanner.Mode.KEYSTONES && !com.thefarawaydev.realmsofchaos.world.Scanner.scanning(hero),
+                        "sneak and right-click turns it to the keystone shrines");
+                hero.setShiftKeyDown(false);
+                check(com.thefarawaydev.realmsofchaos.item.ChaosCompassItem.scan(hero) && com.thefarawaydev.realmsofchaos.world.Scanner.scanning(hero), "/roc scan begins one too");
+                com.thefarawaydev.realmsofchaos.world.Scanner.reset();
+                // inside the realms there is nothing to scan for
+                Realm.testAlias(Level.OVERWORLD, Realm.HUB);
+                ModContent.CHAOS_COMPASS.get().use(level, hero, InteractionHand.MAIN_HAND);
+                check(!com.thefarawaydev.realmsofchaos.world.Scanner.scanning(hero), "inside the realms the compass has nothing to scan for");
+            } finally {
+                Realm.testAlias(Level.OVERWORLD, null);
+                for (BlockPos relay : relays) level.setBlock(relay, Blocks.AIR.defaultBlockState(), 3);
+                level.setBlock(farRelay, Blocks.AIR.defaultBlockState(), 3);
+                level.setBlock(jammer, Blocks.AIR.defaultBlockState(), 3);
+                data.unmarkPrefix("net|");
+                com.thefarawaydev.realmsofchaos.world.Scanner.reset();
+                com.thefarawaydev.realmsofchaos.world.HubTiers.setTier(server, 1);
+            }
+        });
+
+        step("waygates: touch one to learn it, stand still five seconds, a pearl a journey, and the hub only for the attuned", () -> {
+            Realm.testAlias(Level.OVERWORLD, null);
+            com.thefarawaydev.realmsofchaos.world.Waygates.reset();
+            com.thefarawaydev.realmsofchaos.world.HubTiers.setTier(server, 1);
+            data.unmarkPrefix("net|");
+            data.unmarkPrefix("seen|");
+            ServerPlayer hero = fakePlayer(server, level, "RocTraveller");
+            data.reset(hero.getUUID());
+            data.unmarkBuilt("attuned/" + hero.getUUID());
+            Block obelisk = ModContent.WAYGATE_OBELISK.get();
+            BlockPos a = new BlockPos(7100, 120, 7100), b = new BlockPos(7300, 120, 7100);
+            var pearl = net.minecraft.world.item.Items.ENDER_PEARL;
+            try {
+                for (BlockPos at : new BlockPos[]{a, b}) {
+                    for (int dx = -2; dx <= 2; dx++) {
+                        for (int dz = -2; dz <= 2; dz++) {
+                            level.setBlock(at.offset(dx, -1, dz), Blocks.STONE.defaultBlockState(), 3);
+                            for (int dy = 0; dy <= 2; dy++) level.setBlock(at.offset(dx, dy, dz), Blocks.AIR.defaultBlockState(), 3);
+                        }
+                    }
+                    level.setBlock(at, obelisk.defaultBlockState(), 3);
+                }
+                Vec3 byA = new Vec3(a.getX() + 0.5, a.getY(), a.getZ() + 1.5);
+                hero.setPos(byA.x, byA.y, byA.z);
+                obelisk.setPlacedBy(level, a, obelisk.defaultBlockState(), hero, ItemStack.EMPTY);
+                check(com.thefarawaydev.realmsofchaos.world.Network.discovered(hero).size() == 1, "whoever raises an obelisk knows it");
+                check(com.thefarawaydev.realmsofchaos.world.Waygates.destinations(hero, a).isEmpty(), "an obelisk on its own leads nowhere");
+                check(Screens.commands(Screens.waygate(hero, level, a)).isEmpty(), "and its screen offers nothing to someone no gate knows");
+                // touching a second one makes it a place to go
+                com.thefarawaydev.realmsofchaos.block.FieldBlock.inspect(level, b, hero, com.thefarawaydev.realmsofchaos.world.Network.Kind.WAYGATE);
+                check(com.thefarawaydev.realmsofchaos.world.Waygates.destinations(hero, a).size() == 1 && com.thefarawaydev.realmsofchaos.world.Waygates.destinations(hero, b).size() == 1, "touching an obelisk makes it a place to travel to");
+                String code = com.thefarawaydev.realmsofchaos.world.Network.at(level, b, com.thefarawaydev.realmsofchaos.world.Network.Kind.WAYGATE).code();
+                String command = "roc ui waygate " + a.getX() + " " + a.getY() + " " + a.getZ() + " " + code;
+                check(Screens.commands(Screens.waygate(hero, level, a)).contains("/" + command), "and it is on the first one's screen");
+
+                check(!com.thefarawaydev.realmsofchaos.world.Waygates.begin(hero, a, code), "no pearl, no journey");
+                hero.getInventory().add(new ItemStack(pearl, 2));
+                hero.setPos(byA.x + 30, byA.y, byA.z);
+                check(!com.thefarawaydev.realmsofchaos.world.Waygates.begin(hero, a, code), "the traveller has to stand by the obelisk");
+                hero.setPos(byA.x, byA.y, byA.z);
+                check(!com.thefarawaydev.realmsofchaos.world.Waygates.begin(hero, a, "1_2_3"), "and name a waygate they know");
+
+                // moving breaks the channel, and costs nothing
+                server.getCommands().performPrefixedCommand(hero.createCommandSourceStack(), command);
+                check(com.thefarawaydev.realmsofchaos.world.Waygates.channelling(hero), "the screen's button begins the channel");
+                for (int i = 0; i < 10; i++) com.thefarawaydev.realmsofchaos.world.Waygates.tick(server);
+                check(com.thefarawaydev.realmsofchaos.world.Waygates.channelling(hero) && hero.position().distanceTo(byA) < 0.01, "nothing happens at once");
+                hero.setPos(byA.x + 2, byA.y, byA.z);
+                com.thefarawaydev.realmsofchaos.world.Waygates.tick(server);
+                check(!com.thefarawaydev.realmsofchaos.world.Waygates.channelling(hero) && count(hero, pearl) == 2, "moving breaks the channel and costs nothing");
+                // so does being hit
+                hero.setPos(byA.x, byA.y, byA.z);
+                check(com.thefarawaydev.realmsofchaos.world.Waygates.begin(hero, a, code), "begun again");
+                hero.setHealth(hero.getHealth() - 3.0F);
+                com.thefarawaydev.realmsofchaos.world.Waygates.tick(server);
+                check(!com.thefarawaydev.realmsofchaos.world.Waygates.channelling(hero) && hero.position().distanceTo(byA) < 0.01, "being hit breaks it too");
+                // five seconds undisturbed
+                hero.setHealth(hero.getMaxHealth());
+                check(com.thefarawaydev.realmsofchaos.world.Waygates.begin(hero, a, code), "and again");
+                int needed = com.thefarawaydev.realmsofchaos.world.HubTiers.channelTicks(server);
+                check(needed == 100, "five seconds: " + needed);
+                for (int i = 0; i < needed - 1; i++) com.thefarawaydev.realmsofchaos.world.Waygates.tick(server);
+                check(com.thefarawaydev.realmsofchaos.world.Waygates.channelling(hero) && hero.position().distanceTo(byA) < 0.01, "not a tick sooner");
+                com.thefarawaydev.realmsofchaos.world.Waygates.tick(server);
+                check(!com.thefarawaydev.realmsofchaos.world.Waygates.channelling(hero) && hero.position().distanceTo(Vec3.atBottomCenterOf(b)) < 2.0, "then the traveller stands by the other obelisk: " + hero.position());
+                check(open(level, hero.blockPosition()) && open(level, hero.blockPosition().above()) && solid(level, hero.blockPosition().below()), "on free ground");
+                check(count(hero, pearl) == 1, "one pearl paid on arrival");
+
+                check(!com.thefarawaydev.realmsofchaos.world.Waygates.begin(hero, b, com.thefarawaydev.realmsofchaos.world.Waygates.HUB), "the hub is closed to someone no gate knows");
+                Access.attune(hero);
+                String toHub = "/roc ui waygate " + b.getX() + " " + b.getY() + " " + b.getZ() + " " + com.thefarawaydev.realmsofchaos.world.Waygates.HUB;
+                check(Screens.commands(Screens.waygate(hero, level, b)).contains(toHub), "once a gate knows them the obelisk offers the hub");
+                check(com.thefarawaydev.realmsofchaos.world.Waygates.begin(hero, b, com.thefarawaydev.realmsofchaos.world.Waygates.HUB), "and begins the channel there");
+                com.thefarawaydev.realmsofchaos.world.Waygates.reset();
+
+                com.thefarawaydev.realmsofchaos.world.HubTiers.setTier(server, 4);
+                check(com.thefarawaydev.realmsofchaos.world.HubTiers.channelTicks(server) == 60 && com.thefarawaydev.realmsofchaos.world.Waygates.price(server) == 1, "tier IV: three seconds");
+                com.thefarawaydev.realmsofchaos.world.HubTiers.setTier(server, 5);
+                hero.getInventory().clearContent();
+                check(com.thefarawaydev.realmsofchaos.world.Waygates.price(server) == 0 && com.thefarawaydev.realmsofchaos.world.Waygates.canPay(hero), "tier V: the waygates ask for nothing");
+                // an obelisk that is broken is nowhere to go
+                obelisk.playerWillDestroy(level, a, obelisk.defaultBlockState(), hero);
+                level.setBlock(a, Blocks.AIR.defaultBlockState(), 3);
+                check(com.thefarawaydev.realmsofchaos.world.Waygates.destinations(hero, b).isEmpty() && com.thefarawaydev.realmsofchaos.world.Network.discovered(hero).size() == 1, "a broken obelisk is forgotten by everyone");
+            } finally {
+                for (BlockPos at : new BlockPos[]{a, b}) {
+                    for (int dx = -2; dx <= 2; dx++) {
+                        for (int dz = -2; dz <= 2; dz++) {
+                            for (int dy = -1; dy <= 2; dy++) level.setBlock(at.offset(dx, dy, dz), Blocks.AIR.defaultBlockState(), 3);
+                        }
+                    }
+                }
+                com.thefarawaydev.realmsofchaos.world.Waygates.reset();
+                com.thefarawaydev.realmsofchaos.world.HubTiers.setTier(server, 1);
+                data.unmarkPrefix("net|");
+                data.unmarkPrefix("seen|");
+                data.unmarkBuilt("attuned/" + hero.getUUID());
+            }
+        });
+
+        step("the Field Tower Bag: a starter kit, contents that stay in the bag, no bag in a bag, quick-deploy, six rows at tier III", () -> {
+            Realm.testAlias(Level.OVERWORLD, null);
+            com.thefarawaydev.realmsofchaos.world.HubTiers.setTier(server, 1);
+            data.unmarkPrefix("net|");
+            ServerPlayer hero = fakePlayer(server, level, "RocPacker");
+            Item relayItem = ModContent.BLOCK_ITEMS.get("relay_core").get(), gateItem = ModContent.BLOCK_ITEMS.get("waygate_obelisk").get();
+            BlockPos ground = new BlockPos(7400, 119, 7400);
+            try {
+                ItemStack bag = com.thefarawaydev.realmsofchaos.item.FieldBagItem.starter();
+                var inside = com.thefarawaydev.realmsofchaos.item.FieldBagItem.contents(bag);
+                check(com.thefarawaydev.realmsofchaos.item.FieldBagItem.used(bag) == 2 && inside.get(0).is(relayItem) && inside.get(0).getCount() == 2 && inside.get(1).is(gateItem),
+                        "a new bag holds two relay cores and a waygate obelisk");
+                hero.setItemInHand(InteractionHand.MAIN_HAND, bag);
+                com.thefarawaydev.realmsofchaos.ui.BagMenu.open(hero, InteractionHand.MAIN_HAND);
+                check(hero.containerMenu instanceof com.thefarawaydev.realmsofchaos.ui.BagMenu, "right-click opens the bag");
+                var menu = (com.thefarawaydev.realmsofchaos.ui.BagMenu) hero.containerMenu;
+                check(menu.rows() == 3 && menu.slots.size() == 27 + 36 && menu.getSlot(0).getItem().is(relayItem), "three rows, showing what the bag holds");
+                menu.setCarried(new ItemStack(net.minecraft.world.item.Items.DIAMOND, 3));
+                menu.clicked(5, 0, ContainerInput.PICKUP, hero);
+                check(menu.getCarried().isEmpty() && com.thefarawaydev.realmsofchaos.item.FieldBagItem.contents(bag).get(5).is(net.minecraft.world.item.Items.DIAMOND)
+                        && com.thefarawaydev.realmsofchaos.item.FieldBagItem.contents(bag).get(5).getCount() == 3, "what is put in a slot is written straight into the bag");
+                // the open bag cannot be moved, by any kind of click
+                int selected = hero.getInventory().getSelectedSlot(), bagSlot = -1;
+                for (int i = 0; i < menu.slots.size(); i++) {
+                    if (menu.slots.get(i).container == hero.getInventory() && menu.slots.get(i).getContainerSlot() == selected) bagSlot = i;
+                }
+                check(bagSlot >= 27, "test setup: the bag's own slot is on screen");
+                check(menu.forbidden(bagSlot, 0, ContainerInput.PICKUP) && menu.forbidden(bagSlot, 0, ContainerInput.THROW) && menu.forbidden(bagSlot, 0, ContainerInput.QUICK_MOVE)
+                        && menu.forbidden(3, selected, ContainerInput.SWAP), "the open bag cannot be picked up, thrown, shift-clicked or swapped away");
+                menu.clicked(bagSlot, 0, ContainerInput.PICKUP, hero);
+                check(menu.getCarried().isEmpty() && hero.getMainHandItem() == bag, "it stays in the hand");
+                ItemStack other = new ItemStack(ModContent.FIELD_BAG.get());
+                menu.setCarried(other);
+                menu.clicked(7, 0, ContainerInput.PICKUP, hero);
+                check(menu.getCarried() == other && com.thefarawaydev.realmsofchaos.item.FieldBagItem.contents(bag).get(7).isEmpty(), "no bag goes inside a bag");
+                menu.setCarried(ItemStack.EMPTY);
+                check(!menu.forbidden(2, 0, ContainerInput.PICKUP) && !menu.forbidden(30, 0, ContainerInput.QUICK_MOVE), "everything else moves as in any chest");
+                hero.closeContainer();
+                check(com.thefarawaydev.realmsofchaos.item.FieldBagItem.contents(hero.getMainHandItem()).get(5).is(net.minecraft.world.item.Items.DIAMOND), "closed, the bag still holds it");
+
+                // quick-deploy: sneaking, the first network block in the bag is set down
+                level.setBlock(ground, Blocks.STONE.defaultBlockState(), 3);
+                for (int dy = 1; dy <= 3; dy++) level.setBlock(ground.above(dy), Blocks.AIR.defaultBlockState(), 3);
+                hero.setPos(7400.5, 120, 7403.5);
+                var hit = new net.minecraft.world.phys.BlockHitResult(Vec3.atCenterOf(ground).add(0, 0.5, 0), net.minecraft.core.Direction.UP, ground, false);
+                var click = new net.minecraft.world.item.context.UseOnContext(level, hero, InteractionHand.MAIN_HAND, bag, hit);
+                check(bag.getItem().useOn(click) == InteractionResult.PASS && level.getBlockState(ground.above()).isAir(), "without sneaking the bag leaves the block alone");
+                hero.setShiftKeyDown(true);
+                bag.getItem().useOn(click);
+                hero.setShiftKeyDown(false);
+                check(level.getBlockState(ground.above()).is(ModContent.RELAY_CORE.get()), "sneak and right-click sets down the first relay in the bag");
+                check(com.thefarawaydev.realmsofchaos.item.FieldBagItem.contents(bag).get(0).getCount() == 1, "taken out of the bag");
+                var set = com.thefarawaydev.realmsofchaos.world.Network.at(level, ground.above(), com.thefarawaydev.realmsofchaos.world.Network.Kind.RELAY);
+                check(set != null && set.owner().equals(hero.getUUID()), "and it joins the network under its owner");
+
+                // six rows from tier III; what is in the lower rows is kept if the hub should ever stand lower
+                com.thefarawaydev.realmsofchaos.world.HubTiers.setTier(server, 3);
+                com.thefarawaydev.realmsofchaos.ui.BagMenu.open(hero, InteractionHand.MAIN_HAND);
+                menu = (com.thefarawaydev.realmsofchaos.ui.BagMenu) hero.containerMenu;
+                check(menu.rows() == 6 && menu.slots.size() == 54 + 36, "six rows once the hub has reached its third tier");
+                menu.setCarried(new ItemStack(net.minecraft.world.item.Items.EMERALD));
+                menu.clicked(40, 0, ContainerInput.PICKUP, hero);
+                hero.closeContainer();
+                com.thefarawaydev.realmsofchaos.world.HubTiers.setTier(server, 1);
+                com.thefarawaydev.realmsofchaos.ui.BagMenu.open(hero, InteractionHand.MAIN_HAND);
+                check(((com.thefarawaydev.realmsofchaos.ui.BagMenu) hero.containerMenu).rows() == 3, "test setup: back to three rows");
+                hero.closeContainer();
+                check(com.thefarawaydev.realmsofchaos.item.FieldBagItem.contents(bag).get(40).is(net.minecraft.world.item.Items.EMERALD), "the lower rows are kept, only out of sight");
+            } finally {
+                hero.closeContainer();
+                for (int dy = 0; dy <= 3; dy++) level.setBlock(ground.above(dy), Blocks.AIR.defaultBlockState(), 3);
+                data.unmarkPrefix("net|");
+                com.thefarawaydev.realmsofchaos.world.HubTiers.setTier(server, 1);
+            }
+        });
+
+        step("the hub rises through five tiers on what players hand over, and the Bounty Board pays for work done", () -> {
+            com.thefarawaydev.realmsofchaos.world.HubTiers.setTier(server, 1);
+            data.clearCounters("bounty/");
+            data.unmarkPrefix("bountyclaim/");
+            ServerPlayer giver = fakePlayer(server, level, "RocGiver");
+            var iron = net.minecraft.world.item.Items.IRON_INGOT;
+            try {
+                check(com.thefarawaydev.realmsofchaos.world.HubTiers.tier(server) == 1 && com.thefarawaydev.realmsofchaos.world.HubTiers.costs(1).size() == 2
+                        && com.thefarawaydev.realmsofchaos.world.HubTiers.costs(5).isEmpty(), "the hub starts at its first tier, and the fifth asks for nothing more");
+                check(!com.thefarawaydev.realmsofchaos.world.Bounties.open(server) && Screens.commands(Screens.bounties(giver)).isEmpty(), "the Bounty Board is shut until the second");
+                giver.getInventory().add(new ItemStack(iron, 10));
+                giver.getInventory().add(new ItemStack(ModContent.materialItem(Line.HADES, 1), 8));
+                giver.getInventory().add(new ItemStack(net.minecraft.world.item.Items.DIRT, 5));
+                check(com.thefarawaydev.realmsofchaos.world.HubTiers.deposit(giver) == 18 && com.thefarawaydev.realmsofchaos.world.HubTiers.tier(server) == 1, "what is asked for is taken; ten ingots are not sixteen");
+                check(count(giver, iron) == 0 && count(giver, net.minecraft.world.item.Items.DIRT) == 5, "and nothing else is");
+                check(com.thefarawaydev.realmsofchaos.world.HubTiers.deposited(server, com.thefarawaydev.realmsofchaos.world.HubTiers.costs(1).get(0)) == 10, "the pile is kept");
+                giver.getInventory().add(new ItemStack(iron, 20));
+                check(com.thefarawaydev.realmsofchaos.world.HubTiers.deposit(giver) == 6 && count(giver, iron) == 14, "only what is still missing is taken");
+                check(com.thefarawaydev.realmsofchaos.world.HubTiers.tier(server) == 2, "the pile complete, the hub rises");
+                check(com.thefarawaydev.realmsofchaos.world.HubTiers.deposited(server, com.thefarawaydev.realmsofchaos.world.HubTiers.costs(2).get(0)) == 0, "and the pile is spent");
+                check(Math.abs(com.thefarawaydev.realmsofchaos.world.HubTiers.calibration(server) - 0.05) < 1e-9 && com.thefarawaydev.realmsofchaos.world.HubTiers.bagRows(server) == 3
+                        && com.thefarawaydev.realmsofchaos.world.Bounties.open(server), "tier II: a steadier compass, and the Bounty Board opens");
+                List<String> buttons = Screens.commands(Screens.hubCommand(giver));
+                check(buttons.contains("/roc ui hubcore deposit") && buttons.contains("/roc ui bounty"), "Hub Command has the button that hands things over: " + buttons);
+                // the button only works at the heart, in the hub
+                giver.getInventory().add(new ItemStack(net.minecraft.world.item.Items.GOLD_INGOT, 16));
+                Realm.testAlias(Level.OVERWORLD, null);
+                server.getCommands().performPrefixedCommand(giver.createCommandSourceStack(), "roc ui hubcore deposit");
+                check(count(giver, net.minecraft.world.item.Items.GOLD_INGOT) == 16, "nothing is handed over from outside the hub");
+                Realm.testAlias(Level.OVERWORLD, Realm.HUB);
+                server.getCommands().performPrefixedCommand(giver.createCommandSourceStack(), "roc ui hubcore deposit");
+                check(count(giver, net.minecraft.world.item.Items.GOLD_INGOT) == 0 && com.thefarawaydev.realmsofchaos.world.HubTiers.tier(server) == 2, "in the hub it is");
+
+                // sanctuary
+                giver.addEffect(new MobEffectInstance(MobEffects.POISON, 200));
+                com.thefarawaydev.realmsofchaos.world.HubTiers.sanctuary(giver, level);
+                check(giver.hasEffect(MobEffects.REGENERATION) && giver.hasEffect(MobEffects.POISON), "from tier II the hub mends whoever stands in it");
+                com.thefarawaydev.realmsofchaos.world.HubTiers.setTier(server, 3);
+                com.thefarawaydev.realmsofchaos.world.HubTiers.sanctuary(giver, level);
+                check(!giver.hasEffect(MobEffects.POISON) && com.thefarawaydev.realmsofchaos.world.HubTiers.bagRows(server) == 6, "from tier III it lifts every harm, and bags grow");
+                com.thefarawaydev.realmsofchaos.world.HubTiers.setTier(server, 5);
+                check(com.thefarawaydev.realmsofchaos.world.HubTiers.deposit(giver) == 0 && com.thefarawaydev.realmsofchaos.world.HubTiers.waygatesFree(server)
+                        && com.thefarawaydev.realmsofchaos.world.HubTiers.rise(server) == 5, "the fifth tier is the last");
+
+                // ---- bounties
+                com.thefarawaydev.realmsofchaos.world.HubTiers.setTier(server, 2);
+                var posted = com.thefarawaydev.realmsofchaos.world.Bounties.today(server);
+                check(posted.size() == 3 && posted.equals(com.thefarawaydev.realmsofchaos.world.Bounties.today(server)), "three bounties, the same every time you look");
+                check(posted.get(0).kind() != posted.get(1).kind() && posted.get(1).kind() != posted.get(2).kind() && posted.get(0).kind() != posted.get(2).kind(), "each of a different kind");
+                boolean changes = false;
+                for (long day = 1; day <= 6; day++) changes |= !com.thefarawaydev.realmsofchaos.world.Bounties.on(level.getSeed(), day).equals(com.thefarawaydev.realmsofchaos.world.Bounties.on(level.getSeed(), 0));
+                check(changes, "and different ones on other days");
+                var bounty = posted.get(0);
+                check(com.thefarawaydev.realmsofchaos.world.Bounties.claim(giver, 0).isEmpty(), "nothing is paid before the work is done");
+                com.thefarawaydev.realmsofchaos.world.Bounties.count(giver, bounty.kind(), bounty.goal() - 1);
+                check(com.thefarawaydev.realmsofchaos.world.Bounties.progress(giver, bounty) == bounty.goal() - 1 && com.thefarawaydev.realmsofchaos.world.Bounties.claim(giver, 0).isEmpty(), "nor one short of it");
+                com.thefarawaydev.realmsofchaos.world.Bounties.count(giver, bounty.kind(), 5);
+                check(com.thefarawaydev.realmsofchaos.world.Bounties.progress(giver, bounty) == bounty.goal(), "work past the goal is not counted");
+                check(Screens.commands(Screens.bounties(giver)).contains("/roc ui bounty claim 0"), "a finished bounty has its button on the board");
+                int had = count(giver, bounty.payment().getItem());
+                server.getCommands().performPrefixedCommand(giver.createCommandSourceStack(), "roc ui bounty claim 0");
+                check(count(giver, bounty.payment().getItem()) == had + bounty.payment().getCount() && com.thefarawaydev.realmsofchaos.world.Bounties.claimed(giver, bounty), "the button pays it out");
+                check(com.thefarawaydev.realmsofchaos.world.Bounties.claim(giver, 0).isEmpty() && com.thefarawaydev.realmsofchaos.world.Bounties.claim(giver, 7).isEmpty(), "once");
+                ServerPlayer other = fakePlayer(server, level, "RocOtherHunter");
+                check(com.thefarawaydev.realmsofchaos.world.Bounties.progress(other, bounty) == 0, "everyone earns their own");
+                // real work counts: a sentinel felled by a player
+                var sentinels = posted.stream().filter(p -> p.kind() == com.thefarawaydev.realmsofchaos.world.Bounties.Kind.SENTINELS).findFirst();
+                if (sentinels.isPresent()) {
+                    Sentinel guard = ModContent.SENTINEL.get().create(level, EntitySpawnReason.TRIGGERED);
+                    guard.setUp(Sentinel.Kind.of(Line.ZEUS, Sentinel.Role.SOLDIER), 1);
+                    guard.setPos(0.5, Tower.floorY(3) + 1, 0.5);
+                    level.addFreshEntity(guard);
+                    int done = com.thefarawaydev.realmsofchaos.world.Bounties.progress(other, sentinels.get());
+                    guard.hurtServer(level, level.damageSources().playerAttack(other), 100000.0F);
+                    check(com.thefarawaydev.realmsofchaos.world.Bounties.progress(other, sentinels.get()) == done + 1, "a sentinel felled counts towards the bounty");
+                    for (ItemEntity drop : level.getEntitiesOfClass(ItemEntity.class, new AABB(-4, Tower.floorY(3) - 2, -4, 4, Tower.floorY(3) + 4, 4), e -> true)) drop.discard();
+                }
+            } finally {
+                giver.removeAllEffects();
+                com.thefarawaydev.realmsofchaos.world.HubTiers.setTier(server, 1);
+                data.clearCounters("bounty/");
+                data.unmarkPrefix("bountyclaim/");
+                Realm.testAlias(Level.OVERWORLD, Realm.ABYSS);
+            }
         });
 
         step("live ticking: bosses of every line are left in the world mid-ability for the server to tick", () -> {

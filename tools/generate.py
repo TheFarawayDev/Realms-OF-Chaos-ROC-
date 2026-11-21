@@ -324,14 +324,36 @@ HANDBOOK = [
     ("start", "Getting started", [
         "Welcome to Realms of Chaos, and thank you for using our mod.",
         "You have been given three things: the Codex of Chaos (this menu), the Compass of Chaos, and a letter from the Oracle. Read the letter - it is the start of the story.",
-        "The realms of the gods are closed until you find a way in. Right-click the Compass of Chaos: it points to the nearest Ruined Gate.",
+        "The realms of the gods are closed until you find a way in. Right-click the Compass of Chaos: it scans for the nearest Ruined Gate. You also carry a Field Tower Bag with two Relay Tower Cores and a Waygate Obelisk in it.",
         "This handbook is always here: open the Codex and choose Handbook.",
     ]),
     ("way_in", "Finding the way in", [
         "A Ruined Gate is a broken stone plaza with a dead arch and a campfire still smoking. You will see the smoke first.",
         "Its chest holds three seekers. Each is a compass for one keystone: right-click it and it tells you how far and which way the shrine is.",
         "The Shrine of the Sky is a white temple. The Shrine of the Tides is a ring of prismarine round a pool. The Shrine of the Shades is a crypt under standing stones.",
-        "Bring the three keystones back and right-click the pedestal with each. The arch fills. Step through, and the gate knows you: from then on the compass carries you to the hub from anywhere.",
+        "Bring the three keystones back and right-click the pedestal with each. The arch fills. Step through, and the gate knows you. Nothing carries you to the hub in an instant: you walk through a gate, or you channel at a Waygate Obelisk.",
+    ]),
+    ("compass", "The compass scans", [
+        "The Compass of Chaos does not carry you anywhere. Right-click and it scans for a minute to a minute and a half. Keep it in hand and read the line above your hotbar: an arrow (up is straight ahead), a distance, the signal, the time left.",
+        "Every two or three seconds the needle rolls. Most rolls are rough - off by more the poorer the signal. A Clean Lock (green, with a trail of light) is exact. A Static Surge (red) is nonsense. The longer a scan runs, the truer it gets, and its best reading is written to chat at the end.",
+        "Sneak and right-click turns the compass to what it looks for: the way to the hub, the keystone shrines, or relays and waygates.",
+        "Signal: Relay Towers within 96 blocks steady it (up to three). A higher hub tier steadies it. Rain, thunder and being deep underground spoil it, and so does another player's Signal Jammer.",
+    ]),
+    ("network", "Relays, jammers, waygates", [
+        "Your Field Tower Bag starts with two Relay Tower Cores and a Waygate Obelisk. Right-click opens the bag; sneak and right-click a block sets down the first of them without opening it. All three can be crafted, broken and carried.",
+        "A Relay Tower Core steadies every compass within 96 blocks. A Signal Jammer spoils the scans of everyone within 64 blocks except its owner and their party.",
+        "A Waygate Obelisk is a place to travel from and to. Right-click it and choose: the Hub of Realms (once a Ruined Gate knows you) or any other obelisk you have touched. Then stand still for five seconds - move or be hit and it lets go. Each journey costs one ender pearl.",
+    ]),
+    ("hub_tiers", "The hub grows", [
+        "The Heart of the Hub stands south of the middle of the plaza. Right-click it for Hub Command: the hub's tier, what each tier does, and what the next one asks for. Everyone on the world shares one hub and anyone can add to the pile.",
+        "Tier II: steadier compasses, a hub that mends you, and the Bounty Board. Tier III: six-row Field Bags, and the hub lifts every harm. Tier IV: three-second waygates, and the needle rolls every two seconds. Tier V: free waygates.",
+        "The Bounty Board posts three bounties a day, the same for everyone. Each player earns them for themselves and claims forge materials at the board.",
+    ]),
+    ("phases", "A trial's three phases", [
+        "A god fights as itself down to 65% of its health. No single blow carries it past that mark, or the next.",
+        "At 65% it raises its aegis: nothing can hurt it while its shield pylons stand. Find them round the floor and right-click each until it breaks. Left alone, an aegis fades after 75 seconds.",
+        "At 30% comes its wrath: a last stand, the floor lost ring by ring from the wall inward, and strikes from above. Each strike is marked by a ring on the floor for a second and a half first.",
+        "A god watches how it is fought. Shoot it and it turns shots aside and closes in; stay hand to hand and its guard lashes back. It also measures your best weapon, its enchantments and your armour when the trial begins, and rises to match. The world's difficulty sets its health and pace.",
     ]),
     ("hub", "The Hub of Realms", [
         "Three gates lead to three towers: Zeus to the north, Poseidon to the east, Hades to the west. The south gate takes you home.",
@@ -384,7 +406,7 @@ HANDBOOK = [
         "Voodoo dolls are stitched from wheat and string round a pin. Bind one to a creature and stabbing the doll hurts the creature from afar.",
     ]),
     ("commands", "Commands", [
-        "/roc - this menu.  /roc hub - go to the hub.  /roc leave - go home.  /roc forge - the forge screen.",
+        "/roc - this menu.  /roc hub - back to the hub from inside the realms.  /roc leave - go home.  /roc forge - the forge screen.  /roc scan - begin a compass scan.",
         "/roc party invite <player>, /roc party accept, /roc party leave.",
     ]),
 ]
@@ -400,6 +422,10 @@ TIPS = [
     ("seal", "Clear the sentinels, then right-click the seal and strike on the yellow mark"),
     ("forge", "Stars cost materials from the relic's own tower. Strike on the yellow mark"),
     ("upheaval", "Dust under your feet means the floor is about to erupt. Move"),
+    ("aegis", "Shield pylons stand round the floor. Right-click each until it breaks"),
+    ("wrath", "Rings on the floor mark where a strike lands. The edge of the floor is lost: stay in"),
+    ("scan", "Keep the compass in hand and read above your hotbar. Sneak-click changes its target"),
+    ("waygate", "Choose where to go, then stand still while the obelisk gathers"),
 ]
 
 SENTINELS = [
@@ -531,14 +557,29 @@ def gen_atlases():
     portraits.resize((portraits.width * 4, portraits.height * 4), Image.NEAREST).save(os.path.join(out, "portraits@4x.png"))
     index["portraits"] = {"tile": [16, 32], "columns": cols, "count": len(people), "tiles": cells}
 
+    # every god in each phase of its trial: a row of three for each
+    gods = [g[0] for _, _line, _rank, g in all_gods()]
+    cols = 9
+    phases = Image.new("RGBA", (cols * 48, ((len(gods) + cols - 1) // cols) * 32), (0, 0, 0, 0))
+    cells = {}
+    for i, n in enumerate(gods):
+        for ph, suffix in enumerate(("", "_p2", "_p3")):
+            f = os.path.join(ASSETS, f"textures/entity/god/{n}{suffix}.png")
+            phases.paste(skin_preview(Image.open(f).convert("RGBA"), 1), ((i % cols) * 48 + ph * 16, (i // cols) * 32))
+        cells[n] = [i % cols, i // cols]
+    phases.save(os.path.join(out, "phases.png"))
+    phases.resize((phases.width * 4, phases.height * 4), Image.NEAREST).save(os.path.join(out, "phases@4x.png"))
+    index["phases"] = {"tile": [48, 32], "columns": cols, "count": len(gods), "tiles": cells}
+
     wj(os.path.join(out, "index.json"), index)
     lines = ["# Texture atlases", "", "Generated by `tools/generate.py` from the textures the mod ships. Each sheet comes at its own pixel size and",
              "again four times larger (`@4x`). `index.json` maps every texture name to its column and row.", "",
              "| Atlas | Tiles | Tile size | What |", "| --- | --- | --- | --- |"]
     what = {"items": "every item texture (first frame of animated ones)", "weapon-designs": "weapon designs drawn ahead for future mythologies",
-            "blocks": "every block texture (first frame)", "skins": "the raw 64x64 skins of the gods and the passage sentinels",
-            "portraits": "the gods and sentinels as they look from the front"}
-    for name in ("items", "weapon-designs", "blocks", "skins", "portraits"):
+            "blocks": "every block texture (first frame)", "skins": "the raw 64x64 skins of the gods (one for each phase of a trial) and the passage sentinels",
+            "portraits": "the gods and sentinels as they look from the front",
+            "phases": "every god in the three phases of its trial, side by side: itself, its aegis, its wrath"}
+    for name in ("items", "weapon-designs", "blocks", "skins", "portraits", "phases"):
         e = index[name]
         lines.append(f"| `{name}.png` | {e['count']} | {e['tile'][0]} x {e['tile'][1]} | {what[name]} |")
     lines.append(f"| `items-animated.png` | {len(animated)} rows | 16 x 16 | every frame of every animated item, one item per row |")
@@ -611,7 +652,137 @@ def gen_lang():
     lang = {
         "itemGroup.realms_of_chaos.main": "Realms of Chaos",
         "item.realms_of_chaos.chaos_compass": "Compass of Chaos",
-        "item.realms_of_chaos.chaos_compass.tooltip": "Right-click: points to the nearest Ruined Gate. Once a gate knows you, it carries you to the Hub of Realms. In a passage it points to the nearest seal (sneak to travel)",
+        "item.realms_of_chaos.chaos_compass.tooltip": "Right-click: scan. Read it above your hotbar for a minute or more. In a passage it points to the nearest seal",
+        "item.realms_of_chaos.chaos_compass.mode": "Looking for: %s",
+        "item.realms_of_chaos.chaos_compass.sneak": "Sneak and right-click to change what it looks for",
+        "item.realms_of_chaos.field_bag": "Field Tower Bag",
+        "item.realms_of_chaos.field_bag.tooltip": "Right-click to open. What is in it stays in it",
+        "item.realms_of_chaos.field_bag.deploy": "Sneak and right-click a block: sets down the first relay, jammer or waygate inside",
+        "item.realms_of_chaos.field_bag.used": "%s stacks inside",
+        "menu.realms_of_chaos.bag": "Field Tower Bag (%s slots)",
+        "block.realms_of_chaos.shield_pylon": "Shield Pylon",
+        "block.realms_of_chaos.relay_core": "Relay Tower Core",
+        "block.realms_of_chaos.signal_jammer": "Signal Jammer",
+        "block.realms_of_chaos.waygate_obelisk": "Waygate Obelisk",
+        "block.realms_of_chaos.hub_heart": "Heart of the Hub",
+        "block.realms_of_chaos.bounty_board": "Bounty Board",
+        # ---- a trial's three phases
+        "boss.realms_of_chaos.phase.aegis": "%s - Aegis",
+        "boss.realms_of_chaos.phase.rage": "%s - Enraged",
+        "boss.realms_of_chaos.phase.wrath": "%s - Wrath",
+        "hud.realms_of_chaos.aegis": "%s raises its aegis",
+        "hud.realms_of_chaos.aegis.sub": "Break the %s shield pylons: right-click them",
+        "hud.realms_of_chaos.aegis.left": "%s pylons still shield %s",
+        "hud.realms_of_chaos.aegis.shielded": "Shielded! %s pylons still stand: right-click them",
+        "hud.realms_of_chaos.aegis.broken": "The aegis breaks",
+        "hud.realms_of_chaos.aegis.faded": "The aegis fades",
+        "hud.realms_of_chaos.aegis.broken.sub": "%s can be hurt again",
+        "hud.realms_of_chaos.pylon.cracks": "The pylon cracks: %s more",
+        "hud.realms_of_chaos.collapse": "The floor is lost here - move in!",
+        "hud.realms_of_chaos.strike.zeus": "Lightning gathers - leave the rings!",
+        "hud.realms_of_chaos.strike.poseidon": "The deep surges - leave the rings!",
+        "hud.realms_of_chaos.strike.hades": "Burning stone falls - leave the rings!",
+        "hud.realms_of_chaos.adapt.deflect": "%s has read your shots: it turns them aside and closes in. Fight it hand to hand",
+        "hud.realms_of_chaos.adapt.bristle": "%s braces against your blade: its guard lashes back. Strike and step away, or fight from range",
+        "hud.realms_of_chaos.adapt.gear": "%s has measured your arms. The trial rises to match: %s",
+        "hud.realms_of_chaos.might.even": "Even",
+        "hud.realms_of_chaos.might.armed": "Well armed",
+        "hud.realms_of_chaos.might.mighty": "Mighty",
+        "hud.realms_of_chaos.might.legendary": "Legendary",
+        "screen.realms_of_chaos.altar.strength": "Your arms: %s. This god will have %s times its health",
+        "screen.realms_of_chaos.altar.phases": "Three phases: itself, then at 65% its aegis (break the pylons), then at 30% its wrath",
+        # ---- the compass scans
+        "hud.realms_of_chaos.scan.mode": "The compass now looks for %s",
+        "hud.realms_of_chaos.scan.mode.hub": "the way to the hub",
+        "hud.realms_of_chaos.scan.mode.keystones": "keystone shrines",
+        "hud.realms_of_chaos.scan.mode.network": "relays and waygates",
+        "hud.realms_of_chaos.scan.nowhere": "Nothing to scan for here: the compass reads the world outside",
+        "hud.realms_of_chaos.scan.nocompass": "You have no Compass of Chaos",
+        "hud.realms_of_chaos.scan.settling": "The needle is settling: %s s",
+        "hud.realms_of_chaos.scan.nothing": "Nothing to find: %s",
+        "hud.realms_of_chaos.scan.start": "Scanning for %s: %s s",
+        "hud.realms_of_chaos.scan.target.relay": "Relay Tower",
+        "hud.realms_of_chaos.scan.target.waygate": "Waygate (%s, %s)",
+        "hud.realms_of_chaos.scan.line": "%s  %s  ~%s blocks  |  signal %s  |  %s s",
+        "hud.realms_of_chaos.scan.line.lock": "CLEAN LOCK  %s  %s  %s blocks  |  signal %s  |  %s s",
+        "hud.realms_of_chaos.scan.line.surge": "STATIC SURGE - the needle spins  |  signal %4$s  |  %5$s s",
+        "hud.realms_of_chaos.scan.line.waiting": "Scanning for %s  |  signal %s  |  %s s",
+        "hud.realms_of_chaos.scan.done": "Scan over. Best reading (rough): %s, about %s blocks to the %s. Clean locks: %s",
+        "hud.realms_of_chaos.scan.done.lock": "Scan over. Clean lock: %s, %s blocks to the %s. Clean locks: %s",
+        "hud.realms_of_chaos.scan.done.none": "Scan over: nothing found for %s",
+        "hud.realms_of_chaos.recall.outside": "The hub cannot be reached from here. Walk through a Ruined Gate or channel at a Waygate Obelisk",
+        # ---- the field network
+        "hud.realms_of_chaos.bag.nothing": "Nothing in the bag to set down",
+        "hud.realms_of_chaos.bag.given": "You have been handed a Field Tower Bag. The compass scans now; a Waygate Obelisk takes you to the hub",
+        "hud.realms_of_chaos.field.placed.relay": "Relay Tower raised: it steadies every compass within %s blocks",
+        "hud.realms_of_chaos.field.placed.jammer": "Signal Jammer set: it spoils other players' scans within %s blocks",
+        "hud.realms_of_chaos.field.placed.waygate": "Waygate Obelisk raised. Right-click it to travel",
+        "hud.realms_of_chaos.field.status.relay": "A Relay Tower: it steadies every compass within %s blocks",
+        "hud.realms_of_chaos.field.status.relay.mine": "Your Relay Tower: it steadies every compass within %s blocks",
+        "hud.realms_of_chaos.field.status.jammer": "A Signal Jammer: it spoils your scans within %s blocks, unless you are in its owner's party",
+        "hud.realms_of_chaos.field.status.jammer.mine": "Your Signal Jammer: it spoils other players' scans within %s blocks",
+        "hud.realms_of_chaos.waygate.found": "Waygate found: you can travel here from any other",
+        "hud.realms_of_chaos.waygate.far": "Stand by the obelisk",
+        "hud.realms_of_chaos.waygate.unknown": "That waygate is gone, or you have never touched it",
+        "hud.realms_of_chaos.waygate.cost": "The journey costs %s x %s",
+        "hud.realms_of_chaos.waygate.moved": "You moved: the waygate lets go",
+        "hud.realms_of_chaos.waygate.hurt": "You were hit: the waygate lets go",
+        "hud.realms_of_chaos.waygate.unpaid": "You can no longer pay for the journey",
+        "hud.realms_of_chaos.waygate.channel": "Channelling %s",
+        "hud.realms_of_chaos.waygate.arrived": "Arrived at the waygate at %s",
+        "screen.realms_of_chaos.waygate": "Waygate Obelisk",
+        "screen.realms_of_chaos.waygate.how": "Choose where to go, then stand still for %s seconds. Moving or being hit breaks the channel",
+        "screen.realms_of_chaos.waygate.cost": "Each journey costs %s x %s, taken when you arrive",
+        "screen.realms_of_chaos.waygate.free": "The hub has made the waygates free",
+        "screen.realms_of_chaos.waygate.hub": "To the Hub of Realms",
+        "screen.realms_of_chaos.waygate.unattuned": "No Ruined Gate knows you yet: the hub is closed to you",
+        "screen.realms_of_chaos.waygate.to": "To the waygate at %s, %s, %s",
+        "screen.realms_of_chaos.waygate.alone": "Touch another obelisk and it will be listed here",
+        # ---- the hub's tiers and the bounty board
+        "screen.realms_of_chaos.hub": "Hub Command",
+        "screen.realms_of_chaos.hub.tier": "The Hub of Realms stands at tier %s of %s: %s",
+        "screen.realms_of_chaos.hub.perk.have": "%s: %s",
+        "screen.realms_of_chaos.hub.perk.next": "%s (not yet): %s",
+        "screen.realms_of_chaos.hub.asks": "%s asks for:",
+        "screen.realms_of_chaos.hub.cost": "%s: %s / %s",
+        "screen.realms_of_chaos.hub.deposit": "Hand over what I carry",
+        "screen.realms_of_chaos.hub.deposit.tip": "Takes whatever the next tier still needs from your pack. Anyone can add to the pile",
+        "screen.realms_of_chaos.hub.complete": "The hub stands at its highest tier",
+        "screen.realms_of_chaos.hub.bounties": "Bounty Board",
+        "hubtier.realms_of_chaos.1": "Waystation",
+        "hubtier.realms_of_chaos.2": "Outpost",
+        "hubtier.realms_of_chaos.3": "Sanctuary",
+        "hubtier.realms_of_chaos.4": "Citadel",
+        "hubtier.realms_of_chaos.5": "Throne of Realms",
+        "hubtier.realms_of_chaos.1.perk": "A place to stand between the towers",
+        "hubtier.realms_of_chaos.2.perk": "Compasses read steadier. The hub mends whoever stands in it. The Bounty Board opens",
+        "hubtier.realms_of_chaos.3.perk": "Field Tower Bags hold six rows. The hub lifts every harm you carry in",
+        "hubtier.realms_of_chaos.4.perk": "Waygates channel in three seconds. The compass needle rolls every two",
+        "hubtier.realms_of_chaos.5.perk": "Waygates ask for nothing. The steadiest compass there is",
+        "hubtier.realms_of_chaos.cost.iron": "Iron ingots",
+        "hubtier.realms_of_chaos.cost.gold": "Gold ingots",
+        "hubtier.realms_of_chaos.cost.amethyst": "Amethyst shards",
+        "hubtier.realms_of_chaos.cost.diamond": "Diamonds",
+        "hubtier.realms_of_chaos.cost.pearl": "Ender pearls",
+        "hubtier.realms_of_chaos.cost.netherite": "Netherite ingots",
+        "hubtier.realms_of_chaos.cost.material_1": "Forge materials from floors 1-5 (any tower)",
+        "hubtier.realms_of_chaos.cost.material_2": "Forge materials from floors 6-10 (any tower)",
+        "hubtier.realms_of_chaos.cost.material_3": "Forge materials from floors 11-14 (any tower)",
+        "hubtier.realms_of_chaos.cost.material_4": "Summit essences (any tower)",
+        "hud.realms_of_chaos.hubtier": "The hub rises: %s",
+        "screen.realms_of_chaos.bounty": "Bounty Board",
+        "screen.realms_of_chaos.bounty.closed": "The board opens when the hub reaches its second tier: %s",
+        "screen.realms_of_chaos.bounty.intro": "Three bounties a day, the same for everyone. Each of you earns them for yourself",
+        "screen.realms_of_chaos.bounty.line": "%s: %s / %s. Pays %s x %s",
+        "screen.realms_of_chaos.bounty.line.done": "Done - %s: %s / %s. Claim %s x %s",
+        "screen.realms_of_chaos.bounty.line.claimed": "Claimed - %s",
+        "screen.realms_of_chaos.bounty.claim": "Claim: %s",
+        "bounty.realms_of_chaos.sentinels": "Fell %s sentinels",
+        "bounty.realms_of_chaos.seals": "Break %s passage seals",
+        "bounty.realms_of_chaos.gods": "Win %s trials",
+        "bounty.realms_of_chaos.pylons": "Shatter %s shield pylons",
+        "bounty.realms_of_chaos.caches": "Open %s treasure caches",
+        "hud.realms_of_chaos.bounty.done": "Bounty done: %s. Claim it at the Bounty Board",
         "item.realms_of_chaos.chaos_codex": "Codex of Chaos",
         "item.realms_of_chaos.chaos_codex.tooltip": "Right-click to open the Codex: your progress, the gods and fast travel.",
         "block.realms_of_chaos.gate_hub": "Gate to the Hub",
@@ -627,7 +798,7 @@ def gen_lang():
         "hud.realms_of_chaos.tip": "Tip",
         "hud.realms_of_chaos.upheaval": "The floor erupts!",
         "hud.realms_of_chaos.laststand": "%s's last stand",
-        "hud.realms_of_chaos.laststand.sub": "Nothing can touch it for a moment. Brace",
+        "hud.realms_of_chaos.laststand.sub": "Its wrath begins. The floor will be lost from the wall inward",
         "hud.realms_of_chaos.passage.level": "Level %s of %s - break the %s seals",
         "hud.realms_of_chaos.passage.level.open": "Level %s of %s - the gate stands open",
         "hud.realms_of_chaos.passage.open.deeper": "The gate leads up to level %s of %s",
@@ -673,7 +844,7 @@ def gen_lang():
         "screen.realms_of_chaos.altar.rank": "%s. Rank %s of 15",
         "screen.realms_of_chaos.altar.move": "Signature move: %s. %s",
         "screen.realms_of_chaos.altar.drops": "Drops: %s x %s, and %s the first time you beat it",
-        "screen.realms_of_chaos.altar.scaling": "The trial is harder for every extra challenger on the floor",
+        "screen.realms_of_chaos.altar.scaling": "The trial is harder for every extra challenger, and rises to match your weapons, enchantments and armour",
         "screen.realms_of_chaos.altar.state.ready": "The altar is ready",
         "screen.realms_of_chaos.altar.state.defeated": "You have beaten this god",
         "screen.realms_of_chaos.altar.state.underway": "A trial is underway on this floor",
@@ -731,7 +902,7 @@ def gen_lang():
         "hud.realms_of_chaos.point.overworld": "It only finds its way in the Overworld",
         "hud.realms_of_chaos.access.closed": "The realms are closed to you. Follow the Compass of Chaos to a Ruined Gate",
         "hud.realms_of_chaos.access.attuned": "Attuned",
-        "hud.realms_of_chaos.access.attuned.sub": "The gate knows you now. The compass will carry you to the hub",
+        "hud.realms_of_chaos.access.attuned.sub": "The gate knows you now. A Waygate Obelisk will carry you back here",
         "hud.realms_of_chaos.pedestal.set": "The %s is set: %s of 3",
         "hud.realms_of_chaos.pedestal.already": "That keystone is already set",
         "hud.realms_of_chaos.pedestal.need": "The gate sleeps. Still missing: %s",
@@ -1098,7 +1269,20 @@ KEYSTONES = {
 }
 
 BLOCKS = ["gate_hub", "gate_zeus", "gate_poseidon", "gate_hades", "gate_ascend", "gate_leave",
-          "altar_zeus", "altar_poseidon", "altar_hades", "chaos_forge", "passage_seal", "passage_shrine", "gate_pedestal", "oracle", "passage_cache"]
+          "altar_zeus", "altar_poseidon", "altar_hades", "chaos_forge", "passage_seal", "passage_shrine", "gate_pedestal", "oracle", "passage_cache",
+          "shield_pylon", "relay_core", "signal_jammer", "waygate_obelisk", "hub_heart", "bounty_board"]
+
+# Blocks shaped from stacked boxes with their own top and side textures: id -> boxes
+FIELD_MODELS = {
+    "shield_pylon": [(3, 0, 3, 13, 2, 13), (5, 2, 5, 11, 13, 11), (4, 13, 4, 12, 16, 12)],
+    "relay_core": [(2, 0, 2, 14, 4, 14), (5, 4, 5, 11, 12, 11), (7, 12, 7, 9, 16, 9)],
+    "signal_jammer": [(1, 0, 1, 15, 6, 15), (4, 6, 4, 12, 10, 12), (6, 10, 6, 10, 12, 10)],
+    "waygate_obelisk": [(1, 0, 1, 15, 3, 15), (4, 3, 4, 12, 13, 12), (5, 13, 5, 11, 16, 11)],
+    "hub_heart": [(0, 0, 0, 16, 4, 16), (3, 4, 3, 13, 7, 13), (5, 7, 5, 11, 12, 11), (3, 12, 3, 13, 16, 13)],
+    "bounty_board": [(0, 0, 0, 16, 16, 16)],
+}
+# Field blocks a player can break: they drop themselves
+FIELD_DROPS = ["relay_core", "signal_jammer", "waygate_obelisk"]
 
 # The 22 Major Arcana: (id, numeral, name, what the card does, 8x8 symbol (# ink, + colour), colour)
 TAROT = [
@@ -1189,7 +1373,7 @@ def gen_models():
         item_def(iid, f"item/{iid}")
         parent = "minecraft:item/generated" if g[4] in GENERATED_SHAPES else "minecraft:item/handheld"
         wj(os.path.join(ASSETS, f"models/item/{iid}.json"), {"parent": parent, "textures": {"layer0": f"{MOD}:item/{iid}"}})
-    extra = ["chaos_compass", "chaos_codex", "tarot_deck"] + [f"tarot_{c[0]}" for c in TAROT] + [f"voodoo_doll_{d[0]}" for d in DOLLS] \
+    extra = ["chaos_compass", "chaos_codex", "field_bag", "tarot_deck"] + [f"tarot_{c[0]}" for c in TAROT] + [f"voodoo_doll_{d[0]}" for d in DOLLS] \
         + [f"essence_{l.lower()}" for l in LINES] + [f"orb_{o}" for o in ORBS] \
         + [f"material_{l.lower()}_{t}" for l in LINES for t in (1, 2, 3)] \
         + [f"keystone_{l.lower()}" for l in LINES] + [f"seeker_{l.lower()}" for l in LINES]
@@ -1215,6 +1399,9 @@ def gen_models():
             wj(os.path.join(ASSETS, f"models/block/{b}.json"),
                station_model(f"{MOD}:block/oracle_top", f"{MOD}:block/altar_base", f"{MOD}:block/oracle_side",
                              [(0, 0, 0, 16, 4, 16), (3, 4, 3, 13, 8, 13), (1, 8, 1, 15, 12, 15), (4, 12, 4, 12, 16, 12)]))
+        elif b in FIELD_MODELS:
+            wj(os.path.join(ASSETS, f"models/block/{b}.json"),
+               station_model(f"{MOD}:block/{b}_top", f"{MOD}:block/altar_base", f"{MOD}:block/{b}_side", FIELD_MODELS[b]))
         elif b.startswith("altar"):
             wj(os.path.join(ASSETS, f"models/block/{b}.json"),
                station_model(f"{MOD}:block/{b}_top", f"{MOD}:block/altar_base", f"{MOD}:block/{b}_side",
@@ -2462,6 +2649,29 @@ def gen_recipes():
             "result": {"id": f"{MOD}:voodoo_doll_{did}"},
         })
 
+def gen_field_data():
+    """The field network is made by hand: recipes for its three blocks and the bag, loot tables so the blocks drop
+    themselves, and the pickaxe tag so they come up quickly."""
+    recipes = {
+        "relay_core": ({"A": "minecraft:amethyst_shard", "C": "minecraft:copper_ingot", "R": "minecraft:redstone_block", "I": "minecraft:iron_ingot"},
+                       [" A ", "CRC", "III"], "redstone"),
+        "signal_jammer": ({"R": "minecraft:redstone", "E": "minecraft:ender_eye", "I": "minecraft:iron_ingot", "O": "minecraft:obsidian"},
+                          [" R ", "IEI", "OOO"], "redstone"),
+        "waygate_obelisk": ({"E": "minecraft:ender_eye", "A": "minecraft:amethyst_shard", "P": "minecraft:ender_pearl", "O": "minecraft:obsidian"},
+                            [" E ", "APA", "OOO"], "misc"),
+        "field_bag": ({"S": "minecraft:string", "L": "minecraft:leather", "C": "minecraft:chest"}, ["SLS", "LCL", "LLL"], "equipment"),
+    }
+    for rid, (key, pattern, category) in recipes.items():
+        wj(os.path.join(DATA, f"recipe/{rid}.json"), {"type": "minecraft:crafting_shaped", "category": category, "key": key, "pattern": pattern,
+                                                       "result": {"id": f"{MOD}:{rid}"}})
+    for b in FIELD_DROPS:
+        wj(os.path.join(DATA, f"loot_table/blocks/{b}.json"), {
+            "type": "minecraft:block",
+            "pools": [{"rolls": 1, "entries": [{"type": "minecraft:item", "name": f"{MOD}:{b}"}],
+                       "conditions": [{"condition": "minecraft:survives_explosion"}]}],
+        })
+    wj(os.path.join(RES, "data/minecraft/tags/block/mineable/pickaxe.json"), {"replace": False, "values": [f"{MOD}:{b}" for b in FIELD_DROPS]})
+
 def gen_tags():
     """Item tags: realms_of_chaos:relics/<tower> holds the relic weapons won in that tower, and realms_of_chaos:relics
     holds them all. The Tower card reads these to send a player to the tower whose relics they hold fewest of."""
@@ -2670,6 +2880,109 @@ def gen_block_textures():
             top_frames.append(top)
         save_strip(side_frames, os.path.join(T, f"{name}_side.png"), {"animation": {"frametime": 4, "interpolate": True}})
         save_strip(top_frames, os.path.join(T, f"{name}_top.png"), {"animation": {"frametime": 4, "interpolate": True}})
+
+def gen_field_textures():
+    """Side and top textures of the shield pylon, the three field-network blocks, the Heart of the Hub and the
+    Bounty Board, and the Field Tower Bag's icon. The glowing ones pulse."""
+    T = os.path.join(ASSETS, "textures/block")
+    os.makedirs(T, exist_ok=True)
+
+    def stone_pair(name, body, glow, sigil, frames=8, band_rows=(3, 12)):
+        """A carved block: noisy stone, darker edges, glowing bands and a sigil (8x8, '#') on every side."""
+        rnd = random.Random(hsh("field" + name))
+        noise = [[1 + rnd.uniform(-0.07, 0.07) for _ in range(16)] for _ in range(16)]
+        sides, tops = [], []
+        for f in range(frames):
+            k = 0.5 + 0.5 * math.sin(f / frames * math.tau)
+            g = mix(shade(glow, 0.6), mix(glow, (255, 255, 255), 0.4), k)
+            side = Image.new("RGBA", (16, 16))
+            top = Image.new("RGBA", (16, 16))
+            for y in range(16):
+                for x in range(16):
+                    c = shade(body, noise[y][x] * (1.1 if y < 2 else 0.84 if y > 13 else 1.0))
+                    if x in (0, 15):
+                        c = shade(c, 0.78)
+                    if y in band_rows:
+                        c = shade(g, 0.85 if x % 2 else 1.0)
+                    sy, sx = y - 4, x - 4
+                    if 0 <= sy < 8 and 0 <= sx < 8 and sigil[sy][sx] == "#":
+                        c = g
+                    side.putpixel((x, y), c + (255,))
+                    r = math.hypot(x - 7.5, y - 7.5)
+                    t = shade(body, noise[x][y])
+                    if max(abs(x - 7.5), abs(y - 7.5)) > 6.6:
+                        t = shade(body, 0.7)
+                    if 3.4 <= r < 4.6:
+                        t = g
+                    if r < 1.8:
+                        t = mix(g, (255, 255, 255), 0.4 * k)
+                    top.putpixel((x, y), t + (255,))
+            sides.append(side)
+            tops.append(top)
+        meta = {"animation": {"frametime": 4, "interpolate": True}}
+        save_strip(sides, os.path.join(T, f"{name}_side.png"), meta)
+        save_strip(tops, os.path.join(T, f"{name}_top.png"), meta)
+
+    shield = ["..####..", ".#....#.", "#..##..#", "#.#..#.#", "#.#..#.#", ".#.##.#.", "..#..#..", "...##..."]
+    waves = ["...##...", "..#..#..", ".#....#.", "#..##..#", "..#..#..", ".#....#.", "...##...", "........"]
+    cross = ["#......#", ".#....#.", "..#..#..", "...##...", "...##...", "..#..#..", ".#....#.", "#......#"]
+    arch = ["..####..", ".#....#.", "#......#", "#......#", "#......#", "#......#", "#......#", "#......#"]
+    heart = ["........", ".##..##.", "########", "########", ".######.", "..####..", "...##...", "........"]
+    stone_pair("shield_pylon", (70, 96, 140), (130, 220, 255), shield)
+    stone_pair("relay_core", (58, 78, 92), (90, 240, 230), waves)
+    stone_pair("signal_jammer", (64, 44, 50), (255, 90, 80), cross)
+    stone_pair("waygate_obelisk", (40, 30, 62), (190, 110, 255), arch)
+    stone_pair("hub_heart", (74, 52, 110), (245, 184, 46), heart, band_rows=(2, 13))
+
+    # the Bounty Board: a plank board with three pinned notes
+    rnd = random.Random(hsh("bounty_board"))
+    side = Image.new("RGBA", (16, 16))
+    top = Image.new("RGBA", (16, 16))
+    for y in range(16):
+        for x in range(16):
+            wood = shade((122, 84, 50), (0.9 if y % 4 == 3 else 1.0) * (1 + rnd.uniform(-0.06, 0.06)))
+            if x in (0, 15) or y in (0, 15):
+                wood = shade((84, 56, 34), 1 + rnd.uniform(-0.05, 0.05))
+            side.putpixel((x, y), wood + (255,))
+            top.putpixel((x, y), shade((96, 66, 40), (0.9 if x % 4 == 3 else 1.0) * (1 + rnd.uniform(-0.06, 0.06))) + (255,))
+    for (nx, ny, col) in ((2, 2, (238, 228, 204)), (9, 3, (226, 214, 180)), (5, 9, (240, 232, 210))):
+        for y in range(5):
+            for x in range(5):
+                c = shade(col, 0.9 if y == 4 or x == 4 else 1.0)
+                if y in (1, 3) and 1 <= x <= 3:
+                    c = (96, 84, 70)
+                side.putpixel((nx + x, ny + y), c + (255,))
+        side.putpixel((nx + 2, ny), (200, 50, 50, 255))
+    side.save(os.path.join(T, "bounty_board_side.png"))
+    top.save(os.path.join(T, "bounty_board_top.png"))
+
+    # the Field Tower Bag
+    bag = """
+................
+.....oooooo.....
+....oSSSSSSo....
+...oSooooooSo...
+...oLLLLLLLLo...
+..oLLhLLLLLLLo..
+..oLhLLLLLLLLo..
+..oLLLLggLLLLo..
+..oDDDDggDDDDo..
+..oLLLLLLLLLLo..
+..oLLtLLLLtLLo..
+..oLLtttttLLLo..
+..oLLLLLLLLLLo..
+...oDDDDDDDDo...
+....oooooooo....
+................"""
+    pal = {"o": (40, 26, 18), "S": (170, 150, 120), "L": (140, 92, 54), "h": (176, 124, 78), "D": (104, 66, 38), "g": (236, 196, 84),
+           "t": (90, 240, 230)}
+    rows = [(r + "." * 16)[:16] for r in bag.strip("\n").split("\n")]
+    img = Image.new("RGBA", (16, 16), (0, 0, 0, 0))
+    for y, row in enumerate(rows):
+        for x, ch in enumerate(row):
+            if ch in pal:
+                img.putpixel((x, y), pal[ch] + (255,))
+    img.save(os.path.join(ASSETS, "textures/item/field_bag.png"))
 
 # ----------------------------------------------------------------------------
 # Boss skins: 64x64 humanoid layout, per-god outfit, hair, face and headgear (hat layer)
@@ -2935,6 +3248,200 @@ def make_skin(gid, line, rank):
         s.put("hat", "left", 1, 0, g); s.put("hat", "right", 6, 0, g)
     return s.img
 
+# What a god's aegis lights it with, what its wrath burns with, and the colour of the cape its three greatest wear
+PHASE_GLOW = {"ZEUS": (255, 238, 140), "POSEIDON": (110, 240, 255), "HADES": (196, 120, 255)}
+WRATH_CORE = {"ZEUS": (255, 255, 224), "POSEIDON": (214, 255, 255), "HADES": (255, 122, 70)}
+CAPE = {"ZEUS": (116, 58, 150), "POSEIDON": (22, 84, 112), "HADES": (88, 22, 34)}
+BACK_MOTIF = {
+    "ZEUS": ["...##...", "..##....", ".####...", "...##...", "..##....", ".#......"],             # a thunderbolt
+    "POSEIDON": [".#.##.#.", ".#.##.#.", ".######.", "...##...", "...##...", "...##..."],        # a trident
+    "HADES": ["..####..", ".#.##.#.", ".######.", "..#..#..", "..####..", "........"],            # a skull
+}
+
+class SkinEdit:
+    """Reads and writes a finished skin part by part, for the passes that run over what make_skin drew."""
+    def __init__(self, img, seed):
+        self.img = img
+        self.px = img.load()
+        self.rnd = random.Random(seed)
+
+    def size(self, part, face):
+        return PARTS[part][face][2], PARTS[part][face][3]
+
+    def get(self, part, face, x, y):
+        u, v, wd, ht = PARTS[part][face]
+        return self.px[u + x, v + y] if 0 <= x < wd and 0 <= y < ht else None
+
+    def put(self, part, face, x, y, c):
+        u, v, wd, ht = PARTS[part][face]
+        if 0 <= x < wd and 0 <= y < ht:
+            self.px[u + x, v + y] = tuple(int(k) for k in c[:3]) + (255,)
+
+    def scale(self, part, face, x, y, f):
+        c = self.get(part, face, x, y)
+        if c is not None and c[3] > 0:
+            self.put(part, face, x, y, shade(c[:3], f))
+
+    def tint(self, part, face, x, y, col, t):
+        c = self.get(part, face, x, y)
+        if c is not None and c[3] > 0:
+            self.put(part, face, x, y, mix(c[:3], col, t))
+
+def polish_skin(img, gid, line, rank):
+    """Detail every god's skin gets: shadow under the chin, shaded hands and feet, strands in the hair, the mark of
+    its tower on its back, gold on the arms of the stronger gods and a cape on the three greatest."""
+    outfit, cloth, trim, hair, skin, gear, gear_col, beard, long_hair = LOOKS[gid]
+    e = SkinEdit(img, hsh("polish" + gid))
+    # shadow the head casts on the shoulders, and the body on the tops of the legs
+    for face in SIDES:
+        wd, _ = e.size("body", face)
+        for x in range(wd):
+            if not (rank <= 3 and x % 2 == 0):                       # (leave the gold collar bright)
+                e.scale("body", face, x, 0, 0.86)
+        for leg in ("rleg", "lleg"):
+            for x in range(4):
+                e.scale(leg, face, x, 0, 0.88)
+    # hands and feet a touch darker than the limb, the inside of each arm darker still
+    for face in SIDES:
+        for arm in ("rarm", "larm"):
+            for x in range(4):
+                e.scale(arm, face, x, 11, 0.86)
+                e.scale(arm, face, x, 10, 0.94)
+        for leg in ("rleg", "lleg"):
+            for x in range(4):
+                e.scale(leg, face, x, 11, 0.9)
+    for y in range(12):
+        e.scale("rarm", "left", 0, y, 0.88); e.scale("larm", "right", 3, y, 0.88)
+    # strands in the hair
+    for y in range(8):
+        for x in range(8):
+            if (x * 5 + y * 3) % 7 == 0:
+                e.scale("head", "top", x, y, 0.86)
+            elif (x * 3 + y * 5) % 11 == 0:
+                e.scale("head", "top", x, y, 1.12)
+    for x in range(8):
+        for y in range(8 if long_hair else 4):
+            if x % 3 == 1:
+                e.scale("head", "back", x, y, 0.88)
+    # shadow under the brow and along the jaw
+    e.scale("head", "front", 0, 4, 0.9); e.scale("head", "front", 7, 4, 0.9)
+    e.scale("head", "front", 0, 7, 0.88); e.scale("head", "front", 7, 7, 0.88)
+    # the mark of its tower, carried on its back
+    motif_col = mix(trim, (255, 255, 255), 0.2) if sum(trim) > sum(cloth) else shade(trim, 0.8)
+    if rank <= 3:
+        # the three greatest of each tower wear a cape over it all, hemmed in gold
+        top_row = 4 if long_hair else 1
+        for y in range(top_row, 12):
+            for x in range(8):
+                c = shade(CAPE[line], 1.0 - 0.03 * y + (0.06 if x in (2, 5) else 0.0))
+                if x in (0, 7) or y == 11:
+                    c = GOLD if (x + y) % 2 == 0 else shade(GOLD, 0.8)
+                e.put("body", "back", x, y, c)
+        motif_col = GOLD
+    for my, row in enumerate(BACK_MOTIF[line]):
+        for mx, ch in enumerate(row):
+            if ch == "#":
+                e.put("body", "back", mx, my + (5 if long_hair else 3), motif_col)
+    # gold on the arms of the stronger gods
+    if rank <= 5 and outfit != "armor":
+        for arm in ("rarm", "larm"):
+            for face in SIDES:
+                for x in range(4):
+                    e.put(arm, face, x, 4, GOLD if x % 2 == 0 else shade(GOLD, 0.78))
+    return img
+
+def phase_skin(base, gid, line, rank, phase):
+    """
+    The same god in a later phase of its trial. Phase 2, its aegis: lines of its tower's light run down its arms and
+    legs, a sigil burns on its chest, its eyes are lit and a ring of light stands over its head. Phase 3, its
+    wrath: its cloth darkens, cracks open across it with fire inside, its eyes blaze and flames ring its head.
+    """
+    img = base.copy()
+    e = SkinEdit(img, hsh(f"phase{phase}" + gid))
+    glow = PHASE_GLOW[line]
+    bright = mix(glow, (255, 255, 255), 0.45)
+    body_parts = ("body", "rarm", "larm", "rleg", "lleg")
+    if phase == 2:
+        for part in body_parts:
+            for face in PARTS[part]:
+                wd, ht = e.size(part, face)
+                for y in range(ht):
+                    for x in range(wd):
+                        e.tint(part, face, x, y, glow, 0.07)
+        # runes: a broken line of light down each limb
+        for limb in ("rarm", "larm", "rleg", "lleg"):
+            for face in ("front", "back"):
+                for y in range(1, 11):
+                    if y % 3 != 0:
+                        e.put(limb, face, 1 if limb[0] == "r" else 2, y, glow if y % 3 == 1 else bright)
+        # the sigil on its chest: a diamond with a bright heart
+        for (x, y) in ((3, 1), (4, 1), (2, 2), (5, 2), (2, 3), (5, 3), (3, 4), (4, 4)):
+            e.put("body", "front", x, y, glow)
+        e.put("body", "front", 3, 2, bright); e.put("body", "front", 4, 2, bright)
+        e.put("body", "front", 3, 3, bright); e.put("body", "front", 4, 3, bright)
+        for y in range(5, 11):
+            e.put("body", "front", 3 if y % 2 else 4, y, glow)
+        # eyes lit
+        for x in (1, 2, 5, 6):
+            e.put("head", "front", x, 4, bright if x in (2, 5) else glow)
+        # a ring of light over the head, wherever its headgear leaves room
+        for face in SIDES:
+            for x in range(8):
+                c = e.get("hat", face, x, 0)
+                if c is not None and c[3] == 0 and x % 2 == 0:
+                    e.put("hat", face, x, 0, bright)
+        return img
+    core = WRATH_CORE[line]
+    ember = mix(glow, core, 0.5) if line != "HADES" else (255, 84, 40)
+    for part in body_parts + ("head",):
+        for face in PARTS[part]:
+            wd, ht = e.size(part, face)
+            for y in range(ht):
+                for x in range(wd):
+                    c = e.get(part, face, x, y)
+                    if c is None or c[3] == 0:
+                        continue
+                    grey = sum(c[:3]) / 3
+                    ash = mix(c[:3], (grey, grey, grey), 0.35)
+                    e.put(part, face, x, y, shade(ash, 0.72 if part != "head" else 0.86))
+
+    def crack(part, face, x, y0, y1):
+        wd, _ = e.size(part, face)
+        for y in range(y0, y1):
+            x = max(0, min(wd - 1, x + e.rnd.choice((-1, 0, 0, 1))))
+            for nx in (x - 1, x + 1):
+                e.scale(part, face, nx, y, 0.74)
+            e.put(part, face, x, y, core if y % 2 == 0 else ember)
+
+    crack("body", "front", 2, 0, 12); crack("body", "front", 5, 2, 10)
+    crack("body", "back", 4, 1, 12)
+    for limb in ("rarm", "larm", "rleg", "lleg"):
+        crack(limb, "front", 1 + e.rnd.randrange(2), 1, 12)
+        crack(limb, "back", 1 + e.rnd.randrange(2), 3, 10)
+    for face in ("left", "right"):
+        crack("body", face, 2, 2, 11)
+    # a crack down one cheek, and eyes that blaze
+    for y in range(2, 7):
+        e.put("head", "front", 7 if y < 4 else 6, y, ember if y % 2 else core)
+    for x in (1, 2, 5, 6):
+        e.put("head", "front", x, 4, core)
+    e.put("head", "front", 1, 5, ember); e.put("head", "front", 6, 5, ember)
+    for x in (1, 2, 5, 6):
+        e.scale("head", "front", x, 3, 0.55)                          # brows drawn down, dark
+    # flames round the head, wherever its headgear leaves room
+    for face in SIDES:
+        for x in range(8):
+            for y in (0, 1):
+                c = e.get("hat", face, x, y)
+                if c is not None and c[3] == 0 and (x + y) % 2 == 0 and (y == 0 or e.rnd.random() < 0.5):
+                    e.put("hat", face, x, y, core if y == 0 else ember)
+    for x in range(8):
+        for y in range(8):
+            c = e.get("hat", "top", x, y)
+            if c is not None and c[3] == 0 and (x in (0, 7) or y in (0, 7)) and (x + y) % 2 == 0:
+                e.put("hat", "top", x, y, ember)
+    return img
+
 def skin_preview(img, scale=6):
     """Front view of the assembled character, for eyeballing designs and for the website."""
     out = Image.new("RGBA", (16, 32), (0, 0, 0, 0))
@@ -2957,10 +3464,13 @@ def gen_sentinel_skins():
 def gen_skins():
     previews = {}
     for _, line, rank, g in all_gods():
-        img = make_skin(g[0], line, rank)
+        img = polish_skin(make_skin(g[0], line, rank), g[0], line, rank)
         path = os.path.join(ASSETS, f"textures/entity/god/{g[0]}.png")
         os.makedirs(os.path.dirname(path), exist_ok=True)
         img.save(path)
+        # the same god with its aegis up, and in its wrath
+        for phase in (2, 3):
+            phase_skin(img, g[0], line, rank, phase).save(os.path.join(ASSETS, f"textures/entity/god/{g[0]}_p{phase}.png"))
         previews[g[0]] = skin_preview(img, 1)
     return previews
 
@@ -3243,6 +3753,7 @@ if __name__ == "__main__":
     first = gen_weapons()
     gen_flat_items()
     gen_block_textures()
+    gen_field_textures()
     gen_tarot()
     gen_dolls()
     gen_essences_and_orbs()
@@ -3252,6 +3763,7 @@ if __name__ == "__main__":
     gen_concepts()
     gen_forge_textures()
     gen_recipes()
+    gen_field_data()
     gen_tags()
     gen_story_java()
     gen_handbook_java()

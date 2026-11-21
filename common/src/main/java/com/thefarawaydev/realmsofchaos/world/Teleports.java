@@ -69,6 +69,27 @@ public final class Teleports {
         else enterTower(player, to.line());
     }
 
+    /**
+     * The Codex, the compass and the commands asking to go to the hub. From inside the realms that is a walk the
+     * mod will make for you. From the world outside it is not: there the hub is reached through a woken Ruined
+     * Gate or by channelling at a Waygate Obelisk. @return true if the player was taken.
+     */
+    public static boolean recall(ServerPlayer player) {
+        if (barredOutside(player)) return false;
+        toHub(player);
+        return true;
+    }
+
+    /**
+     * True - and the player is told why - when they stand outside the realms, from where neither the Codex nor a
+     * command takes anyone in. (Creative mode is let through, for building and testing.)
+     */
+    public static boolean barredOutside(ServerPlayer player) {
+        if (Realm.of(player.level().dimension()) != null || player.isCreative()) return false;
+        Hud.actionBar(player, Hud.colored(Component.translatable(HUD + "recall.outside"), 0xFFAA00));
+        return true;
+    }
+
     public static void toHub(ServerPlayer player) {
         MinecraftServer server = player.level().getServer();
         if (server == null || !Access.check(player) || throttled(LAST_TRAVEL, player, server)) return;

@@ -16,11 +16,67 @@ The current build is an **Alpha**.
 
 ## What's in 1.2.0
 
+* **Trials in three phases.** A god fights as itself down to 65% of its health, and no single blow carries it past
+  that mark or the next.
+  * **Aegis (65%).** It raises shield pylons round the floor - two on Easy, three on Normal, four on Hard, one more
+    for a group of three - and nothing can hurt it while one stands. Right-click a pylon to strike it; three blows
+    break it. The boss bar says *Aegis*, light runs from each pylon to the god, and an aegis nobody breaks fades
+    after 75 seconds. When it goes, the floor starts to shift.
+  * **Wrath (30%).** A last stand (two seconds untouchable, two sentinels, its signature move and its line's
+    ability back to back), and then the floor is lost ring by ring from the wall inward: the paving turns to
+    charged stone under Zeus, black ice under Poseidon, magma under Hades, and standing on it hurts. Strikes fall
+    from above - lightning, the sea bursting up, burning stone - each marked by a ring on the floor for a second
+    and a half before it lands. The middle nine blocks are never lost.
+  * **The floor is given back.** Every block a fight changes is put back the moment the god falls, and a floor
+    left scorched by a server stop is rebuilt the next time anyone sets foot on it.
+* **Gods that adapt.**
+  * **To your gear.** When a trial is called the god measures everyone on the floor: the hardest-hitting weapon in
+    each pack (a relic counts for its level, stars and temper), the enchantments on it, and armour with its
+    enchantments. The strongest challenger sets the bar. Gear past what the floor expects gives the god up to 2.2
+    times its health and up to 1.6 times its damage; poor gear never makes it weaker. The Trial Altar's screen
+    tells you what it will make of you before you begin.
+  * **To how you fight.** Between phases it looks at how the last one went. Mostly shot at: it turns shots aside
+    (they do 40%) and throws itself at whoever stands off. Mostly struck hand to hand: its guard lashes back and
+    the floor erupts more often. A phase that was over quickly makes the next one heavier - another pylon, more
+    strikes, a faster collapse - and a long one lighter.
+  * **To the difficulty.** Easy, Normal and Hard set its health (85%, 100%, 125%), how long it waits between
+    moves, and how many pylons it raises.
+  * **In its looks.** Every god's skin has been redrawn with more detail - the mark of its tower on its back, gold
+    on the arms of the stronger gods, a cape on the three greatest of each tower - and each god now has three
+    skins: itself, lit with runes behind its aegis, and cracked open with fire inside in its wrath.
+* **The compass scans. Nothing warps.** The Compass of Chaos no longer carries anyone to the hub, and neither do
+  the Codex or `/roc hub` from the world outside.
+  * Right-click begins a **scan** of 60 to 90 seconds, read above the hotbar while the compass is in hand: an
+    arrow (up is straight ahead), a distance, five bars of signal and the time left. Every two or three seconds the
+    needle rolls and picks a target - the nearer and weightier, the likelier.
+  * Most rolls are rough, off by as much as the signal is poor. Now and then one is a **Clean Lock** (exact, with
+    a trail of light) or a **Static Surge** (nonsense). The longer a scan runs the truer it reads, and its best
+    reading is written to chat when it ends.
+  * Sneak and right-click turns it to what it looks for: the way to the hub, the keystone shrines, or relays and
+    waygates.
+  * **Signal:** a bare compass reads 0.35. Each **Relay Tower Core** within 96 blocks adds 0.15 (up to three) and
+    each hub tier 0.05; rain costs 0.1, thunder 0.2, being deep underground 0.15, and another player's **Signal
+    Jammer** within 64 blocks costs 0.5 (not its owner's or their party's).
+* **A field network.** New players get a **Field Tower Bag** holding two Relay Tower Cores and a **Waygate
+  Obelisk**. All three blocks can be crafted, set down, broken and carried, and where they stand is saved with the
+  world.
+  * The bag keeps its contents in itself, so they survive wherever the bag goes. Sneak and right-click a block to
+    set down the first network block inside without opening it. A bag cannot go inside a bag.
+  * A waygate sends you to any other obelisk you have touched, or - once a Ruined Gate knows you - to the Hub of
+    Realms. Choose on its screen, then stand still for **five seconds**: move or be hit and it lets go. A journey
+    costs one ender pearl, taken on arrival.
+* **The hub grows.** The **Heart of the Hub** opens Hub Command. Everyone on the world shares one hub and anyone
+  can hand over what the next of its **five tiers** asks for.
+  * II: steadier compasses, a hub that mends whoever stands in it, and the **Bounty Board**. III: six-row Field
+    Bags, and the hub lifts every harm. IV: three-second waygates and a needle that rolls every two seconds. V: free
+    waygates.
+  * The Bounty Board posts three bounties a day, the same for everyone - sentinels felled, seals broken, trials
+    won, pylons shattered, caches opened. Each player earns them for themselves and is paid in forge materials.
 * **Custom screens, not just chests.** The Codex, the Climber's Handbook, the Oracle's Chronicle, the Trial Altar
   and the party are real screens - a title, text, pictures of items and buttons - built on the game's own dialog
   system, so they work the same on Fabric and Forge. Chapters of the story are read on screen, page by page. The
   screens with moving parts (the forge's strike bar, the passage map, a tower's floor plan) are still chest menus.
-* **A tutorial.** A new player is shown the **Climber's Handbook** a few seconds after they first join: twelve
+* **A tutorial.** A new player is shown the **Climber's Handbook** a few seconds after they first join: sixteen
   topics, from getting in to reading a fight, always there in the Codex. After that, a **tip** appears the first
   time each thing happens - the first Ruined Gate, the first altar, the first seal, the first eruption - once each.
 * **Climb together.** Up to four players can form a **party** (Codex -> Party, or `/roc party invite <player>`,
@@ -71,15 +127,15 @@ The current build is an **Alpha**.
   epilogue. **The Oracle's Chronicle** (her flame in the hub, or the Codex) lists them, hands out the ones you
   have earned, and always says what to do next.
 * **The way in has to be found.** The gates were broken on purpose. Until a gate knows you, the realms are closed
-  and the **Compass of Chaos** points to the nearest **Ruined Gate** in the Overworld instead of travelling.
+  and the **Compass of Chaos** scans for the nearest **Ruined Gate** in the Overworld.
   * A Ruined Gate is a broken plaza round a dead arch, with a campfire still smoking. Its chest holds the story so
     far and three **seekers** - compasses that each point to the nearest shrine of one keystone.
   * The three **keystones** lie in three kinds of shrine elsewhere in the world: the **Shrine of the Sky** (a
     white temple), the **Shrine of the Tides** (a ring of prismarine round a pool) and the **Shrine of the Shades**
     (standing stones round a crypt you walk down into).
   * Right-click the gate's **pedestal** with each keystone to set it in the arch. Three keystones wake the gate
-    (for everyone); stepping through it **attunes** you, and from then on the compass, the Codex and `/roc hub`
-    carry you to the hub from anywhere.
+    (for everyone); stepping through it **attunes** you: from then on every gate lets you through and a Waygate
+    Obelisk will send you to the hub.
   * Ruins are placed from the world seed - there is always a Ruined Gate within about 800 blocks and each kind of
     shrine within about 700 - and are raised on the surface when a player first comes near. Players who had
     already woken a god before this update, and players in creative mode, are let in without a gate.
@@ -268,17 +324,19 @@ Signature moves, floor by floor:
   * **Tower bar**: a bar at the top of the screen shows the tower, floor and tier you are on.
   * **Titles and action bar** for arrivals, trials, victories and short notices.
   * **Advancements tab** with one advancement per god.
-* **First-join welcome** - a thank-you title, plus the Codex and the Compass of Chaos.
+* **First-join welcome** - a thank-you title, plus the Codex, the Compass of Chaos and a Field Tower Bag.
 
 ## How to play
 
-1. Join a world. You are given the Codex, the Compass of Chaos and the Oracle's letter. Read the letter, then
-   right-click the **Compass of Chaos**: it points to the nearest **Ruined Gate**. Take the three seekers from its
-   chest, follow each to its shrine for a keystone, set the keystones at the pedestal and step through the gate.
-   (After that the compass, the Codex and `/roc hub` take you straight to the hub.)
+1. Join a world. You are given the Codex, the Compass of Chaos, a Field Tower Bag and the Oracle's letter. Read
+   the letter, then right-click the **Compass of Chaos** and follow its scan to the nearest **Ruined Gate**. Take
+   the three seekers from its chest, follow each to its shrine for a keystone, set the keystones at the pedestal
+   and step through the gate. (To come back later, walk through the gate again or set down a Waygate Obelisk near
+   home and channel at it.)
 2. In the hub, walk into a tower gate. You arrive on the floor you are working on.
 3. Right-click the floor's **Trial Altar** and press **Begin the trial**. (Trials need a difficulty above Peaceful.)
-4. Defeat the god: it drops its **relic weapon** (scaled by rank, with a hit power of its own and its god's
+4. Defeat the god - break its shield pylons when it raises its aegis at 65%, and stay off the lost edge of the
+   floor and out of the marked rings in its wrath at 30%. It drops its **relic weapon** (scaled by rank, with a hit power of its own and its god's
    signature move) and its tier's forge material, and the **Gate of Ascent** at the far side of the floor opens for you.
 5. Step through the gate into the **passage**: explore it, break its seals, and take the gate at its far end up to
    the next floor.
@@ -287,7 +345,7 @@ Signature moves, floor by floor:
 
 Each line fights differently: **Zeus** calls lightning, **Poseidon** drags you in and crashes tidal waves over you,
 **Hades** drains your life and (for the top gods) raises wither skeletons. Bosses raise their arms and gather
-particles for about a second before a big attack, and enrage at half health.
+particles for about a second before a big attack.
 
 **No getting stuck:** no step on any floor is taller than one block and nothing stands inside the fight ring, floors
 are fully enclosed, bosses that end up off their floor, inside a block or unable to reach you are put back, and a
@@ -330,7 +388,8 @@ The mod contains a developer self-test that only runs when the JVM has `-Droc.se
 on a real server: data loading, the hub, building and walking every floor of every tower, a full climb of all three
 towers through the altar menu (with rematches) and all 42 passages, the Ruined Gate and its keystones, the story's
 chapters, the hub's residents, all eighteen sentinels, the custom screens and their buttons, the tutorial, impacts, the
-floor's eruptions and the gods' last stands, parties, group scaling and per-player loot, the wall protection (built, checked room by room for reachability,
+floor's eruptions and the gods' last stands, the three phases of a trial (health gates, pylons, stances, the collapsing floor and its restoration, strikes), gear and difficulty scaling,
+the compass scanner, relays and jammers, waygates, the Field Tower Bag, hub tiers and bounties, parties, group scaling and per-player loot, the wall protection (built, checked room by room for reachability,
 seals struck, guardians, shrine, map), every god's signature move, the relic moves, the forging quick-time rounds,
 tier materials, each tarot card, the Codex, leaving the realms, the welcome and the anti-stuck safeguards.
 

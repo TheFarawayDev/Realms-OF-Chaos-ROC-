@@ -13,8 +13,8 @@ import net.minecraft.sounds.SoundSource;
 
 /**
  * Who may travel to the realms. The gates were broken: a player has to find a Ruined Gate in the Overworld, wake it
- * with the three keystones and step through. From then on they are attuned, and the Compass of Chaos, the Codex and
- * the commands will carry them to the hub from anywhere.
+ * with the three keystones and step through. From then on they are attuned: every gate lets them through, and a
+ * Waygate Obelisk will send them to the hub. Nothing carries anyone in from the world outside in an instant.
  */
 public final class Access {
     private static final Map<UUID, Long> LAST_NOTICE = new HashMap<>();

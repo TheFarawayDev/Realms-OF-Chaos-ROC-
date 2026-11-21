@@ -10,7 +10,7 @@ import net.minecraft.client.renderer.entity.HumanoidMobRenderer;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.HumanoidArm;
 
-/** Draws every god boss as a humanoid with its own generated skin. */
+/** Draws every god boss as a humanoid with its own generated skin - one for each phase of its trial. */
 public class GodBossRenderer extends HumanoidMobRenderer<GodBoss, GodBossRenderState, HumanoidModel<GodBossRenderState>> {
 
     public GodBossRenderer(EntityRendererProvider.Context context) {
@@ -26,6 +26,7 @@ public class GodBossRenderer extends HumanoidMobRenderer<GodBoss, GodBossRenderS
     public void extractRenderState(GodBoss entity, GodBossRenderState state, float partialTicks) {
         super.extractRenderState(entity, state, partialTicks);
         state.godIndex = entity.godIndex();
+        state.phase = entity.phase();
     }
 
     /** While a god winds up its ability both arms are thrown up, as if calling down its power. */
@@ -36,6 +37,8 @@ public class GodBossRenderer extends HumanoidMobRenderer<GodBoss, GodBossRenderS
 
     @Override
     public Identifier getTextureLocation(GodBossRenderState state) {
-        return RealmsOfChaos.id("textures/entity/god/" + Gods.byIndex(state.godIndex).id() + ".png");
+        // a god looks different in each phase of its trial: its aegis lights it up, its wrath cracks it open
+        String phase = state.phase >= 3 ? "_p3" : state.phase == 2 ? "_p2" : "";
+        return RealmsOfChaos.id("textures/entity/god/" + Gods.byIndex(state.godIndex).id() + phase + ".png");
     }
 }

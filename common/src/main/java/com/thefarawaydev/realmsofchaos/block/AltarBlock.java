@@ -117,6 +117,14 @@ public class AltarBlock extends Block {
         return summon(level, player, altar, line, godFor(level, player, altar, line), true);
     }
 
+    /** How everyone who would be in this trial measures against its floor: the caller, and whoever stands on the floor with them. */
+    public static com.thefarawaydev.realmsofchaos.world.Adapt.Measure measure(ServerLevel level, ServerPlayer player, BlockPos altar, Line line, God god) {
+        java.util.Set<ServerPlayer> challengers = new java.util.LinkedHashSet<>(level.getEntitiesOfClass(ServerPlayer.class, fightArea(level, altar, line),
+                p -> p.isAlive() && !p.isSpectator()));
+        challengers.add(player);
+        return com.thefarawaydev.realmsofchaos.world.Adapt.measure(challengers, Tower.floorOf(god));
+    }
+
     private static GodBoss summon(ServerLevel level, ServerPlayer player, BlockPos altar, Line line, God god, boolean rematch) {
         GodBoss boss = ModContent.GOD_BOSS.get().create(level, EntitySpawnReason.TRIGGERED);
         if (boss == null) return null;
@@ -127,7 +135,9 @@ public class AltarBlock extends Block {
         // the trial adapts: harder for every extra challenger on the floor, a little easier for someone it keeps beating
         int challengers = Math.max(1, level.getEntitiesOfClass(ServerPlayer.class, fightArea(level, altar, line), p -> p.isAlive() && !p.isSpectator()).size());
         int mercy = rematch ? 0 : Math.min(com.thefarawaydev.realmsofchaos.world.Adapt.MAX_MERCY, com.thefarawaydev.realmsofchaos.world.Adapt.losses(player.getUUID(), god));
-        boss.setTrial(challengers, mercy);
+        // ...and it rises to match what they carry: their best weapon and its enchantments, and their armour
+        com.thefarawaydev.realmsofchaos.world.Adapt.Measure measure = measure(level, player, altar, line, god);
+        boss.setTrial(challengers, mercy, measure);
         com.thefarawaydev.realmsofchaos.ui.Tutorial.tip(player, com.thefarawaydev.realmsofchaos.ui.Tutorial.Tip.TRIAL);
         boss.setPos(spawn.x, spawn.y, spawn.z);
         boss.setHome(spawn);
@@ -150,6 +160,11 @@ public class AltarBlock extends Block {
             if (challengers > 1) Hud.actionBar(witness, Hud.colored(Component.translatable(hud + "adapt.party", challengers), 0xFFAA00));
         }
         if (mercy > 0) Hud.actionBar(player, Hud.colored(Component.translatable(hud + "adapt.mercy", god.displayName()), 0x55FF55));
+        if (com.thefarawaydev.realmsofchaos.world.Adapt.gearHealth(measure.might()) > 1.0) {
+            Component told = Hud.colored(Component.translatable(hud + "adapt.gear", god.displayName(),
+                    Component.translatable(hud + "might." + com.thefarawaydev.realmsofchaos.world.Adapt.mightKey(measure.might()))), 0xFFAA00);
+            for (ServerPlayer witness : level.getEntitiesOfClass(ServerPlayer.class, fightArea(level, altar, line), Player::isAlive)) witness.sendSystemMessage(told);
+        }
         return boss;
     }
 

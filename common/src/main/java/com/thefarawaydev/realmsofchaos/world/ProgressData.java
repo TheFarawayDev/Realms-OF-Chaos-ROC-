@@ -37,7 +37,8 @@ public class ProgressData extends SavedData {
             Codec.STRING.listOf().optionalFieldOf("welcomed", List.of()).forGetter(d -> new ArrayList<>(d.welcomed)),
             Codec.unboundedMap(Codec.STRING, ReturnPoint.CODEC).optionalFieldOf("returns", Map.of()).forGetter(d -> new HashMap<>(d.returns)),
             Codec.STRING.listOf().optionalFieldOf("shifted", List.of()).forGetter(d -> new ArrayList<>(d.shifted)),
-            Codec.STRING.listOf().optionalFieldOf("hermits", List.of()).forGetter(d -> new ArrayList<>(d.hermits))
+            Codec.STRING.listOf().optionalFieldOf("hermits", List.of()).forGetter(d -> new ArrayList<>(d.hermits)),
+            Codec.unboundedMap(Codec.STRING, Codec.INT).optionalFieldOf("counters", Map.of()).forGetter(d -> new HashMap<>(d.counters))
     ).apply(i, ProgressData::new));
 
     public static final SavedDataType<ProgressData> TYPE = new SavedDataType<>(
@@ -50,14 +51,45 @@ public class ProgressData extends SavedData {
     private final Set<String> shifted = new HashSet<>();
     /** Players who own an island in the Hermitage; a player's position in this list is their island's number. */
     private final List<String> hermits = new ArrayList<>();
+    /** Named numbers: hub deposits, bounty progress and the like. */
+    private final Map<String, Integer> counters = new HashMap<>();
 
     public ProgressData() {}
 
     private ProgressData(Map<String, List<String>> defeated, List<String> built, List<String> welcomed, Map<String, ReturnPoint> returns,
-                         List<String> shifted, List<String> hermits) {
+                         List<String> shifted, List<String> hermits, Map<String, Integer> counters) {
         this(defeated, built, welcomed, returns);
         this.shifted.addAll(shifted);
         this.hermits.addAll(hermits);
+        this.counters.putAll(counters);
+    }
+
+    public int counter(String key) {
+        return counters.getOrDefault(key, 0);
+    }
+
+    public void setCounter(String key, int value) {
+        Integer old = value == 0 ? counters.remove(key) : counters.put(key, value);
+        if (old == null ? value != 0 : old != value) setDirty();
+    }
+
+    /** @return the new value. */
+    public int addCounter(String key, int amount) {
+        int value = counter(key) + amount;
+        setCounter(key, value);
+        return value;
+    }
+
+    /** Forgets every counter whose name starts with {@code prefix}. */
+    public void clearCounters(String prefix) {
+        if (counters.keySet().removeIf(key -> key.startsWith(prefix))) setDirty();
+    }
+
+    /** Every build key that starts with {@code prefix}. */
+    public List<String> keys(String prefix) {
+        List<String> out = new ArrayList<>();
+        for (String key : built) if (key.startsWith(prefix)) out.add(key);
+        return out;
     }
 
     /** The number of this player's Hermitage island, assigning the next free one the first time. */
