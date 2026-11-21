@@ -28,10 +28,11 @@ import net.minecraft.world.phys.Vec3;
  * the higher the relic's level, with the stone that was in it thrown into the air and everything near the rim
  * shaken. The bolt does not have to find anyone - the ground is enough.
  *
- * <p>A crater does not stay. Ten seconds later the ground closes again, lifting anyone who stood in it, so nothing
- * is ever lost from the world: not a tower floor, not a passage, not somebody's house. Only plain, breakable
- * blocks are taken - never a chest, an altar or anything that cannot be mined - never from under the last layer of
- * a floor, and a crater that was open when the server stopped is closed when it starts again.
+ * <p>Out in the world a crater stays: the stone is gone, as after any blast - but only where the one who made it
+ * could have dug it out themselves (not in adventure mode, not inside spawn protection). Inside the realms the
+ * towers mend themselves: there a crater closes again after ten seconds, lifting anyone who stood in it, and one
+ * that was open when the server stopped is closed when it starts again. Either way only plain, breakable blocks
+ * are taken - never a chest, an altar or anything that cannot be mined - and never the last layer of a floor.
  */
 public final class Craters {
     public static final int RESTORE_TICKS = 20 * 10, MAX_RADIUS = 4;
@@ -79,6 +80,8 @@ public final class Craters {
         radius = Math.max(1, Math.min(MAX_RADIUS, radius));
         // inside the realms the ground is only a few blocks thick: a crater there is one block deep, whatever its width
         boolean thin = Realm.of(level.dimension()) != null;
+        // out in the world a player's crater stays; anything else - and anything in the realms - closes again
+        boolean lasting = !thin && by instanceof net.minecraft.server.level.ServerPlayer digger && digger.mayBuild();
         Map<BlockPos, BlockState> taken = new LinkedHashMap<>();
         BlockPos centre = BlockPos.containing(at.x, at.y + 0.2, at.z);
         ProgressData data = ProgressData.get(level.getServer());
@@ -99,6 +102,7 @@ public final class Craters {
                     BlockState state = level.getBlockState(p);
                     // never the last layer: there is always ground left under a crater
                     if (!takeable(level, p, state) || !level.getBlockState(p.below()).isCollisionShapeFullBlock(level, p.below())) break;
+                    if (lasting && !level.mayInteract(by, p)) break;
                     // (floor a god's wrath has already taken is the fight's to give back, not a crater's)
                     if (thin && (state.is(Blocks.OCHRE_FROGLIGHT) || state.is(Blocks.BLUE_ICE) || state.is(Blocks.MAGMA_BLOCK))) break;
                     taken.put(p, state);
@@ -107,8 +111,8 @@ public final class Craters {
         }
         int thrown = 0;
         for (Map.Entry<BlockPos, BlockState> e : taken.entrySet()) {
-            data.markBuilt(key(level, e.getKey(), e.getValue()));
-            level.setBlock(e.getKey(), Blocks.AIR.defaultBlockState(), 2);
+            if (!lasting) data.markBuilt(key(level, e.getKey(), e.getValue()));
+            level.setBlock(e.getKey(), Blocks.AIR.defaultBlockState(), lasting ? 3 : 2);
             if (thrown < 4 + radius * 2 && level.getRandom().nextInt(3) == 0) {
                 // some of what was there goes up - for show: it vanishes when it lands
                 FallingBlockEntity chunk = FallingBlockEntity.fall(level, e.getKey(), e.getValue());
@@ -119,7 +123,7 @@ public final class Craters {
                 thrown++;
             }
         }
-        if (!taken.isEmpty()) OPEN.add(new Crater(level, taken));
+        if (!taken.isEmpty() && !lasting) OPEN.add(new Crater(level, taken));
         level.sendParticles(ParticleTypes.EXPLOSION, at.x, at.y + 0.3, at.z, 1 + radius, radius * 0.4, 0.2, radius * 0.4, 0.0);
         level.sendParticles(new BlockParticleOption(ParticleTypes.BLOCK, Fx.ground(level, centre)), at.x, at.y + 0.3, at.z, 20 * radius, radius * 0.5, 0.3, radius * 0.5, 0.2);
         level.playSound(null, centre, SoundEvents.GENERIC_EXPLODE.value(), SoundSource.PLAYERS, 0.5F + 0.2F * radius, 1.3F - 0.15F * radius);

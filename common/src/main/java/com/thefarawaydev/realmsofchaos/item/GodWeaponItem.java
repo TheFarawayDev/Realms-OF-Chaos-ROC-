@@ -238,7 +238,8 @@ public class GodWeaponItem extends Item {
             return false;
         }
         int cooldown = moveCooldown(stack);
-        MOVE_READY.put(player.getUUID() + "/" + god.id(), now + cooldown);
+        // (the Focus skill brings it back sooner)
+        MOVE_READY.put(player.getUUID() + "/" + god.id(), now + Math.round(cooldown * (player instanceof ServerPlayer skilled ? com.thefarawaydev.realmsofchaos.world.Skills.moveScale(skilled) : 1.0)));
         // melee kinds have no shots to time, so the recharge can show on the item itself
         if (!god.kind().ranged()) player.getCooldowns().addCooldown(stack, cooldown);
         level.playSound(null, player.blockPosition(), SoundEvents.BEACON_ACTIVATE, SoundSource.PLAYERS, 0.7F, 1.6F);

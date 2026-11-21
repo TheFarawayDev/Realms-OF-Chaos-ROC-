@@ -1,0 +1,13 @@
+{
+  "variants": {
+    "tower=0": {
+      "model": "realms_of_chaos:block/tower_brazier_zeus"
+    },
+    "tower=1": {
+      "model": "realms_of_chaos:block/tower_brazier_poseidon"
+    },
+    "tower=2": {
+      "model": "realms_of_chaos:block/tower_brazier_hades"
+    }
+  }
+}

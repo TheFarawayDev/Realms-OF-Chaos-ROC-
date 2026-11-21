@@ -1,0 +1,10 @@
+{
+  "variants": {
+    "lit=false": {
+      "model": "realms_of_chaos:block/memory_plate"
+    },
+    "lit=true": {
+      "model": "realms_of_chaos:block/memory_plate_lit"
+    }
+  }
+}

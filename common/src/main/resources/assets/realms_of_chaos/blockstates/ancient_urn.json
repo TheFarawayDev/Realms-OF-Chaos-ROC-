@@ -1,0 +1,10 @@
+{
+  "variants": {
+    "lit=false": {
+      "model": "realms_of_chaos:block/ancient_urn"
+    },
+    "lit=true": {
+      "model": "realms_of_chaos:block/ancient_urn"
+    }
+  }
+}

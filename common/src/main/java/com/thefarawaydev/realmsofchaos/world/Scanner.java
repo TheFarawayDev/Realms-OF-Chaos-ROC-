@@ -136,7 +136,7 @@ public final class Scanner {
      * underground 0.15, and someone else's jammer 0.5.
      */
     public static double quality(ServerLevel level, ServerPlayer player) {
-        double q = 0.35 + 0.15 * relays(level, player) + HubTiers.calibration(level.getServer());
+        double q = 0.35 + 0.15 * relays(level, player) + HubTiers.calibration(level.getServer()) + Skills.signal(player);
         if (level.isThundering()) q -= 0.2;
         else if (level.isRaining()) q -= 0.1;
         if (player.getY() < 30 && !level.canSeeSky(player.blockPosition())) q -= 0.15;

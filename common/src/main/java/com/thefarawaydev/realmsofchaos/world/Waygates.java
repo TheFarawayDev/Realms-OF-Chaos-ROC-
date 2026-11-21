@@ -128,7 +128,7 @@ public final class Waygates {
         channel.dimension = Network.dimension(level);
         channel.from = player.position();
         channel.health = player.getHealth();
-        channel.needed = HubTiers.channelTicks(server);
+        channel.needed = (int) Math.max(20, Math.round(HubTiers.channelTicks(server) * Skills.channelScale(player)));
         ACTIVE.put(player.getUUID(), channel);
         level.playSound(null, obelisk, SoundEvents.BEACON_ACTIVATE, SoundSource.BLOCKS, 1.0F, 1.2F);
         return true;

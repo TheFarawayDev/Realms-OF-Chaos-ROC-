@@ -173,7 +173,7 @@ public final class Traps {
         ACTIVE.put(key(plan, cell), trap);
         ProgressData.get(level.getServer()).markBuilt(flag(plan, cell));
         BlockPos m = plan.centre(cell);
-        BlockState glass = TowerBuilder.palette(plan.line, plan.tier).glass().defaultBlockState();
+        BlockState glass = plan.palette().glass().defaultBlockState();
         // anyone caught in a doorway is pulled into the room rather than shut in the wall
         for (ServerPlayer p : level.getEntitiesOfClass(ServerPlayer.class, plan.cellBox(cell).inflate(1.0, 0, 1.0), e -> e.isAlive() && !e.isSpectator())) {
             double dx = p.getX() - (m.getX() + 0.5), dz = p.getZ() - (m.getZ() + 0.5);
@@ -237,7 +237,7 @@ public final class Traps {
                 }
             }
         }
-        Block glass = TowerBuilder.palette(plan.line, plan.tier).glass();
+        Block glass = plan.palette().glass();
         for (BlockPos door : doors(plan, cell)) {
             if (level.getBlockState(door).is(glass)) level.setBlock(door, Blocks.AIR.defaultBlockState(), 3);
         }

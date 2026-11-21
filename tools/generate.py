@@ -349,6 +349,18 @@ HANDBOOK = [
         "The runes light up in an order, again and again. Right-click them in that order and the room drains, opens, and gives each of you forge material (once). A wrong rune starts the order again and the water leaps up a layer.",
         "It is a trap, not a grave: once full it hurts whoever is inside for a quarter of a minute, then lets go by itself, with no reward. It never springs for someone who has already solved it.",
     ]),
+    ("rooms", "Levels, puzzles and traps", [
+        "A passage has anywhere from one to ten levels - more the higher in a tower - and each is named: 7-B2 is passage 7, wing B, level 2. Wings are three levels long and each is built of different stone.",
+        "You are handed a Passage Chart: a map that starts blank and inks in each room as you walk into it. The next level is built while you explore the one you are on.",
+        "Puzzle rooms keep a cache locked. A vault: press the glyph tiles until all nine are lit (each turns its neighbours too). A chime room: ring all four crystals before the first falls silent. A beam room: turn the two mirrors until the light reaches the receiver. A trembling floor: only one path of plates holds - it glimmers every few seconds, and has to be walked from its first plate.",
+        "Trap halls are only to be got through. A crusher hall marks a row, and a breath later brings the ceiling down on it. A dart hall has marked tiles that loose arrows from the walls.",
+        "Urns can be smashed for a little loot - or for the sentinel hiding inside. Lore tablets tell a line of the tower's story.",
+    ]),
+    ("mastery", "Mastery", [
+        "You earn a point for every god you wake and every passage you walk for the first time. Spend them in the Codex under Mastery, or with /roc skills.",
+        "Combat: Might, Swiftness, Focus (relic moves return sooner), Reach. Survival: Vigor, Guard, Steadiness, Second Wind. Exploration: Cartographer, Signal, Scavenger, Pathfinder.",
+        "Every skill has three ranks. Nothing is ever lost: the tree can be taken apart and the points spent again.",
+    ]),
     ("hub_tiers", "The hub grows", [
         "The Heart of the Hub stands south of the middle of the plaza. Right-click it for Hub Command: the hub's tier, what each tier does, and what the next one asks for. Everyone on the world shares one hub and anyone can add to the pile.",
         "Tier II: steadier compasses, a hub that mends you, and the Bounty Board. Tier III: six-row Field Bags, and the hub lifts every harm. Tier IV: three-second waygates, and the needle rolls every two seconds. Tier V: free waygates.",
@@ -413,7 +425,7 @@ HANDBOOK = [
         "Voodoo dolls are stitched from wheat and string round a pin. Bind one to a creature and stabbing the doll hurts the creature from afar.",
     ]),
     ("commands", "Commands", [
-        "/roc - this menu.  /roc hub - back to the hub from inside the realms.  /roc leave - go home.  /roc forge - the forge screen.  /roc scan - begin a compass scan.  /roc sidebar - the side panel on or off.",
+        "/roc - this menu.  /roc hub - back to the hub from inside the realms.  /roc leave - go home.  /roc forge - the forge screen.  /roc scan - begin a compass scan.  /roc sidebar - the side panel on or off.  /roc skills - the mastery tree.  /roc chart - a new Passage Chart.",
         "/roc party invite <player>, /roc party accept, /roc party leave.",
     ]),
 ]
@@ -752,6 +764,86 @@ def gen_lang():
         "block.realms_of_chaos.hub_heart": "Heart of the Hub",
         "block.realms_of_chaos.bounty_board": "Bounty Board",
         "block.realms_of_chaos.rune_stone": "Rune Stone",
+        "block.realms_of_chaos.glyph_tile": "Glyph Tile",
+        "block.realms_of_chaos.chime_crystal": "Chime Crystal",
+        "block.realms_of_chaos.memory_plate": "Trembling Plate",
+        "block.realms_of_chaos.beam_mirror": "Beam Mirror",
+        "block.realms_of_chaos.beam_emitter": "Beam Emitter",
+        "block.realms_of_chaos.beam_receiver": "Beam Receiver",
+        "block.realms_of_chaos.dart_tile": "Dart Tile",
+        "block.realms_of_chaos.ancient_urn": "Ancient Urn",
+        "block.realms_of_chaos.lore_tablet": "Lore Tablet",
+        "block.realms_of_chaos.tower_brazier": "Tower Brazier",
+        "item.realms_of_chaos.passage_chart": "Passage Chart",
+        "hud.realms_of_chaos.room.solved": "Solved",
+        "hud.realms_of_chaos.room.solved.sub": "The cache unlocks",
+        "hud.realms_of_chaos.room.already": "This room is already solved",
+        "hud.realms_of_chaos.room.chimes.start": "Ring all four within %s seconds",
+        "hud.realms_of_chaos.room.chimes.slow": "Too slow - the crystals fall silent",
+        "hud.realms_of_chaos.room.plates.wrong": "The floor gives. Watch the path, and begin at its first plate",
+        "hud.realms_of_chaos.room.urn.ambush": "Something was hiding in the urn!",
+        "hud.realms_of_chaos.cache.locked": "Locked. Solve this room's puzzle first",
+        "hud.realms_of_chaos.passage.chart": "You have been handed a Passage Chart: it draws itself as you explore",
+        "hud.realms_of_chaos.passage.room.vault": "A vault. Press the glyph tiles until all nine are lit",
+        "hud.realms_of_chaos.passage.room.chimes": "A chime room. Ring all four crystals before the first falls silent",
+        "hud.realms_of_chaos.passage.room.beam": "A beam room. Turn the mirrors until the light reaches the receiver",
+        "hud.realms_of_chaos.passage.room.plates": "A trembling floor. Only one path holds - watch it show itself",
+        "hud.realms_of_chaos.passage.room.crusher": "A crusher hall. Get off the marked row",
+        "hud.realms_of_chaos.passage.room.darts": "A dart hall. Keep off the marked tiles",
+        "menu.realms_of_chaos.passage.kind.vault": "Vault",
+        "menu.realms_of_chaos.passage.kind.chimes": "Chime room",
+        "menu.realms_of_chaos.passage.kind.beam": "Beam room",
+        "menu.realms_of_chaos.passage.kind.plates": "Trembling floor",
+        "menu.realms_of_chaos.passage.kind.crusher": "Crusher hall",
+        "menu.realms_of_chaos.passage.kind.darts": "Dart hall",
+        "screen.realms_of_chaos.home.skills": "Mastery (%s to spend)",
+        "screen.realms_of_chaos.home.skills.tip": "Spend the points you have earned on combat, survival and exploration",
+        "screen.realms_of_chaos.skills": "Mastery",
+        "screen.realms_of_chaos.skills.points": "Points to spend: %s (earned %s - one for every god woken and every passage walked)",
+        "screen.realms_of_chaos.skills.how": "Every skill has three ranks. Points are never lost: the tree can be taken apart and spent again",
+        "screen.realms_of_chaos.skills.branch.combat": "- Combat -",
+        "screen.realms_of_chaos.skills.branch.survival": "- Survival -",
+        "screen.realms_of_chaos.skills.branch.exploration": "- Exploration -",
+        "screen.realms_of_chaos.skills.line": "%s  %s / %s  -  %s",
+        "screen.realms_of_chaos.skills.raise": "%s to rank %s",
+        "screen.realms_of_chaos.skills.reset": "Take the tree apart",
+        "screen.realms_of_chaos.skills.reset.tip": "Every point comes back",
+        "skill.realms_of_chaos.might": "Might", "skill.realms_of_chaos.might.desc": "6% more damage with every blow, each rank",
+        "skill.realms_of_chaos.swift": "Swiftness", "skill.realms_of_chaos.swift.desc": "4% faster on your feet, each rank",
+        "skill.realms_of_chaos.focus": "Focus", "skill.realms_of_chaos.focus.desc": "A relic's move comes back 8% sooner, each rank",
+        "skill.realms_of_chaos.reach": "Reach", "skill.realms_of_chaos.reach.desc": "A quarter of a block more reach in a fight, each rank",
+        "skill.realms_of_chaos.vigor": "Vigor", "skill.realms_of_chaos.vigor.desc": "One more heart, each rank",
+        "skill.realms_of_chaos.guard": "Guard", "skill.realms_of_chaos.guard.desc": "A point and a half of armour, each rank",
+        "skill.realms_of_chaos.steady": "Steadiness", "skill.realms_of_chaos.steady.desc": "Thrown back 15% less, each rank",
+        "skill.realms_of_chaos.second_wind": "Second Wind", "skill.realms_of_chaos.second_wind.desc": "Below half health you start to mend - more often each rank",
+        "skill.realms_of_chaos.cartographer": "Cartographer", "skill.realms_of_chaos.cartographer.desc": "Your chart sketches the rooms next to those you have seen; from rank 2 it knows what they are",
+        "skill.realms_of_chaos.signal": "Signal", "skill.realms_of_chaos.signal.desc": "A steadier compass: +0.05 signal, each rank",
+        "skill.realms_of_chaos.scavenger": "Scavenger", "skill.realms_of_chaos.scavenger.desc": "Urns give up forge material more often, each rank",
+        "skill.realms_of_chaos.pathfinder": "Pathfinder", "skill.realms_of_chaos.pathfinder.desc": "Waygates channel 15% faster, each rank",
+        "lore.realms_of_chaos.zeus.1": "Olympus was not always a tower. It was a mountain, and the gods stacked it floor on floor when Chaos came for the sky.",
+        "lore.realms_of_chaos.zeus.2": "The Storm Hoplites do not remember being men. They remember an oath, and nothing before it.",
+        "lore.realms_of_chaos.zeus.3": "Hebe poured the last cup of ambrosia the night the gates were broken. Nobody has grown older here since.",
+        "lore.realms_of_chaos.zeus.4": "Athena drew the passages herself. She is said to have laughed only once while she did it.",
+        "lore.realms_of_chaos.zeus.5": "A Keeper is not set to guard a seal. A Keeper is what is left of whoever broke the one before it.",
+        "lore.realms_of_chaos.zeus.6": "The aegis was a shield once, and one god's. Now every god raises one, and none of them recalls being taught.",
+        "lore.realms_of_chaos.zeus.7": "Hermes still runs messages between floors. There has been nobody to read them for a very long time.",
+        "lore.realms_of_chaos.zeus.8": "When the floor shifts under you, that is Olympus turning in its sleep.",
+        "lore.realms_of_chaos.poseidon.1": "The Abyss was the bed of the first sea. Poseidon drowned it a second time to keep Chaos out.",
+        "lore.realms_of_chaos.poseidon.2": "Sirens sing the same song they sang to sailors. Down here it is a lullaby for something much larger.",
+        "lore.realms_of_chaos.poseidon.3": "Every pearl in these halls was a promise made to the sea. The sea keeps promises. It keeps everything.",
+        "lore.realms_of_chaos.poseidon.4": "The Telchines forged the trident, and were cast down for boasting of it. They forge still, and say nothing.",
+        "lore.realms_of_chaos.poseidon.5": "Tide Priests mend what is broken because the tide does: it takes, and then it brings back.",
+        "lore.realms_of_chaos.poseidon.6": "No light reaches the Trench. What glows there has learnt to do without.",
+        "lore.realms_of_chaos.poseidon.7": "Amphitrite counts the waves. If she ever finishes, they say, the sea will stop.",
+        "lore.realms_of_chaos.poseidon.8": "The water in the rune chambers is older than the towers. It remembers being rain.",
+        "lore.realms_of_chaos.hades.1": "Nobody is kept in the Underworld. They simply cannot think of anywhere else to go.",
+        "lore.realms_of_chaos.hades.2": "Charon was paid once for every soul. He has spent none of it, and will not say what he is saving for.",
+        "lore.realms_of_chaos.hades.3": "The Lethe runs through the lowest passages. Those who drink of it fight on without knowing why.",
+        "lore.realms_of_chaos.hades.4": "Shades do not hate the living. They are trying to remember what warmth was.",
+        "lore.realms_of_chaos.hades.5": "Persephone planted the gardens in these halls. They flower in the dark, out of spite.",
+        "lore.realms_of_chaos.hades.6": "Thanatos has never hurried, and has never been late.",
+        "lore.realms_of_chaos.hades.7": "The Furies were sent after oath-breakers. Since the gates fell, everyone here is one.",
+        "lore.realms_of_chaos.hades.8": "A soul warden carries its charges' wounds because it could not carry them in life.",
         "hud.realms_of_chaos.sentinel.disarmed": "Your weapon is knocked from your hand - it is in your pack",
         "hud.realms_of_chaos.sentinel.horn": "The %s sounds the alarm - more are coming!",
         "hud.realms_of_chaos.sentinel.silenced": "Silenced: your relic's move will not answer for %s s",
@@ -1057,10 +1149,10 @@ def gen_lang():
         "entity.realms_of_chaos.echo": "Echo of %s",
         "block.realms_of_chaos.passage_seal": "Passage Seal",
         "block.realms_of_chaos.passage_shrine": "Passage Shrine",
-        "hud.realms_of_chaos.passage.title": "Passage to floor %s",
+        "hud.realms_of_chaos.passage.title": "Passage %s - to floor %s",
         "hud.realms_of_chaos.passage.sub": "Break the %s seals to open the gate",
         "hud.realms_of_chaos.passage.sub.open": "The gate at the far end stands open",
-        "hud.realms_of_chaos.passage.bar": "%s - Passage to floor %s - Level %s of %s - Seals %s / %s",
+        "hud.realms_of_chaos.passage.bar": "%s - Passage %s - Level %s of %s - Seals %s / %s",
         "hud.realms_of_chaos.passage.seal.broken": "Seal broken: %s left",
         "hud.realms_of_chaos.passage.open": "The way is open",
         "hud.realms_of_chaos.passage.open.sub": "The gate to floor %s awaits",
@@ -1396,7 +1488,17 @@ KEYSTONES = {
 
 BLOCKS = ["gate_hub", "gate_zeus", "gate_poseidon", "gate_hades", "gate_ascend", "gate_leave",
           "altar_zeus", "altar_poseidon", "altar_hades", "chaos_forge", "passage_seal", "passage_shrine", "gate_pedestal", "oracle", "passage_cache",
-          "shield_pylon", "relay_core", "signal_jammer", "waygate_obelisk", "hub_heart", "bounty_board", "rune_stone"]
+          "shield_pylon", "relay_core", "signal_jammer", "waygate_obelisk", "hub_heart", "bounty_board", "rune_stone",
+          "glyph_tile", "chime_crystal", "memory_plate", "beam_mirror", "beam_emitter", "beam_receiver", "dart_tile", "ancient_urn", "lore_tablet", "tower_brazier"]
+
+# The passages' room blocks: id -> (boxes or None for a plain cube, whether it looks different when lit)
+ROOM_BLOCKS = {
+    "glyph_tile": (None, True), "memory_plate": (None, True), "dart_tile": (None, False), "beam_emitter": (None, False), "beam_receiver": (None, True),
+    "chime_crystal": ([(5, 0, 5, 11, 2, 11), (6, 2, 6, 10, 11, 10), (7, 11, 7, 9, 15, 9)], True),
+    "beam_mirror": ([(2, 0, 2, 14, 2, 14), (3, 2, 3, 13, 16, 13)], True),
+    "ancient_urn": ([(5, 0, 5, 11, 1, 11), (3, 1, 3, 13, 10, 13), (5, 10, 5, 11, 12, 11), (4, 12, 4, 12, 14, 12)], False),
+    "lore_tablet": ([(2, 0, 4, 14, 2, 12), (3, 2, 6, 13, 16, 10)], False),
+}
 
 # Blocks shaped from stacked boxes with their own top and side textures: id -> boxes
 FIELD_MODELS = {
@@ -1529,6 +1631,34 @@ def gen_models():
             wj(os.path.join(ASSETS, f"models/block/{b}.json"),
                station_model(f"{MOD}:block/oracle_top", f"{MOD}:block/altar_base", f"{MOD}:block/oracle_side",
                              [(0, 0, 0, 16, 4, 16), (3, 4, 3, 13, 8, 13), (1, 8, 1, 15, 12, 15), (4, 12, 4, 12, 16, 12)]))
+        elif b in ROOM_BLOCKS:
+            boxes, lit = ROOM_BLOCKS[b]
+            variants = {}
+            for on in (False, True):
+                name = b + ("_lit" if on and lit else "")
+                if boxes is None:
+                    model = {"parent": "minecraft:block/cube_all", "textures": {"all": f"{MOD}:block/{name}"}}
+                else:
+                    model = station_model(f"{MOD}:block/{name}_top", f"{MOD}:block/altar_base", f"{MOD}:block/{name}_side", boxes)
+                wj(os.path.join(ASSETS, f"models/block/{name}.json"), model)
+                variants[f"lit={'true' if on else 'false'}"] = {"model": f"{MOD}:block/{name}"}
+            wj(os.path.join(ASSETS, f"blockstates/{b}.json"), {"variants": variants})
+            item_def(b, f"block/{b}")
+            continue
+        elif b == "tower_brazier":
+            variants = {}
+            for n, line in enumerate(LINES):
+                name = f"tower_brazier_{line.lower()}"
+                wj(os.path.join(ASSETS, f"models/block/{name}.json"),
+                   station_model(f"{MOD}:block/{name}_top", f"{MOD}:block/altar_base", f"{MOD}:block/tower_brazier_side",
+                                 [(5, 0, 5, 11, 2, 11), (7, 2, 7, 9, 7, 9), (3, 7, 3, 13, 12, 13)]))
+                variants[f"tower={n}"] = {"model": f"{MOD}:block/{name}"}
+            wj(os.path.join(ASSETS, f"blockstates/{b}.json"), {"variants": variants})
+            wj(os.path.join(ASSETS, f"models/block/{b}.json"),
+               station_model(f"{MOD}:block/tower_brazier_zeus_top", f"{MOD}:block/altar_base", f"{MOD}:block/tower_brazier_side",
+                             [(5, 0, 5, 11, 2, 11), (7, 2, 7, 9, 7, 9), (3, 7, 3, 13, 12, 13)]))
+            item_def(b, f"block/{b}")
+            continue
         elif b == "rune_stone":
             # four runes, each lit or dark: eight looks from one block
             variants = {}
@@ -3093,6 +3223,43 @@ def gen_field_textures():
     stone_pair("signal_jammer", (64, 44, 50), (255, 90, 80), cross)
     stone_pair("waygate_obelisk", (40, 30, 62), (190, 110, 255), arch)
     stone_pair("hub_heart", (74, 52, 110), (245, 184, 46), heart, band_rows=(2, 13))
+
+    # ---- the passages' room blocks
+    def tile(name, base, draw, noise=0.07):
+        rnd_ = random.Random(hsh("room" + name))
+        img = Image.new("RGBA", (16, 16))
+        for y in range(16):
+            for x in range(16):
+                c = shade(base, (1 + rnd_.uniform(-noise, noise)) * (0.78 if x in (0, 15) or y in (0, 15) else 1.0))
+                d = draw(x, y)
+                img.putpixel((x, y), (d if d is not None else c) + (255,))
+        img.save(os.path.join(T, name + ".png"))
+
+    spiral = ["................", "..############..", "..#..........#..", "..#.########.#..", "..#.#......#.#..", "..#.#.####.#.#..", "..#.#.#..#.#.#..", "..#.#.#.##.#.#..",
+              "..#.#.#....#.#..", "..#.#.######.#..", "..#.#........#..", "..#.##########..", "..#.............", "..#############.", "................", "................"]
+    for lit in (False, True):
+        g = (120, 240, 250) if lit else (60, 84, 96)
+        tile("glyph_tile" + ("_lit" if lit else ""), (70, 72, 84), lambda x, y: g if spiral[y][x] == "#" else ((84, 110, 120) if lit and 2 <= x <= 13 and 2 <= y <= 13 else None))
+        gold = (250, 215, 90) if lit else (118, 104, 70)
+        tile("memory_plate" + ("_lit" if lit else ""), (96, 96, 104), lambda x, y: gold if (x in (3, 12) and 3 <= y <= 12) or (y in (3, 12) and 3 <= x <= 12) else
+             (mix((96, 96, 104), gold, 0.45) if lit and 4 <= x <= 11 and 4 <= y <= 11 else (shade((96, 96, 104), 0.86) if 4 <= x <= 11 and 4 <= y <= 11 else None)))
+        ring = (255, 250, 200) if lit else (40, 40, 48)
+        tile("beam_receiver" + ("_lit" if lit else ""), (60, 62, 76), lambda x, y: ring if math.hypot(x - 7.5, y - 7.5) < 3.2 else ((200, 170, 80) if math.hypot(x - 7.5, y - 7.5) < 4.6 else None))
+        crystal = (214, 170, 255) if lit else (120, 90, 170)
+        tile("chime_crystal" + ("_lit_side" if lit else "_side"), crystal, lambda x, y: mix(crystal, (255, 255, 255), 0.55) if (x + y) % 5 == 0 else (shade(crystal, 0.75) if (x - y) % 4 == 0 else None), 0.04)
+        tile("chime_crystal" + ("_lit_top" if lit else "_top"), mix(crystal, (255, 255, 255), 0.3), lambda x, y: (255, 255, 255) if 6 <= x <= 9 and 6 <= y <= 9 else None, 0.04)
+        # a mirror seen from above: a bright line corner to corner, one way or the other
+        tile("beam_mirror" + ("_lit_top" if lit else "_top"), (50, 52, 64), lambda x, y: (230, 240, 250) if abs((x if not lit else 15 - x) - y) <= 1 else None)
+        tile("beam_mirror" + ("_lit_side" if lit else "_side"), (70, 74, 90), lambda x, y: (200, 215, 230) if 3 <= x <= 12 and 3 <= y <= 13 and (x + y) % 6 != 0 else None)
+    tile("beam_emitter", (60, 62, 76), lambda x, y: (255, 240, 150) if math.hypot(x - 7.5, y - 7.5) < 2.4 else ((230, 180, 70) if math.hypot(x - 7.5, y - 7.5) < 4.2 else None))
+    tile("dart_tile", (104, 100, 96), lambda x, y: (24, 22, 22) if (x in (4, 5, 10, 11) and y in (4, 5, 10, 11)) else ((150, 60, 50) if x in (1, 14) and y in (1, 14) else None))
+    tile("ancient_urn_side", (176, 112, 74), lambda x, y: (236, 208, 150) if y in (5, 6) and (x + y) % 3 != 0 else ((110, 64, 44) if y in (4, 7) else ((90, 54, 38) if y > 13 else None)))
+    tile("ancient_urn_top", (150, 94, 62), lambda x, y: (40, 24, 18) if math.hypot(x - 7.5, y - 7.5) < 3.0 else None)
+    tile("lore_tablet_side", (128, 126, 118), lambda x, y: (70, 68, 64) if y in (4, 6, 8, 10, 12) and 4 <= x <= 11 and (x * 3 + y) % 5 != 0 else ((236, 196, 84) if y == 2 and 5 <= x <= 10 else None))
+    tile("lore_tablet_top", (120, 118, 110), lambda x, y: None)
+    tile("tower_brazier_side", (84, 70, 56), lambda x, y: (150, 120, 70) if y in (4, 5) else ((54, 44, 36) if y > 12 else None))
+    for line, fire in (("zeus", (255, 240, 140)), ("poseidon", (90, 230, 240)), ("hades", (170, 110, 255))):
+        tile(f"tower_brazier_{line}_top", (60, 50, 42), lambda x, y: mix(fire, (255, 255, 255), max(0.0, 0.7 - math.hypot(x - 7.5, y - 7.5) / 6)) if math.hypot(x - 7.5, y - 7.5) < 5.2 else None)
 
     # rune stones: four runes carved in grey stone, dark or alight
     runes = [["#......#", "##....##", "#.#..#.#", "#..##..#", "#..##..#", "#.#..#.#", "##....##", "#......#"],

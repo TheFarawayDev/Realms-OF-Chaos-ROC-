@@ -146,6 +146,7 @@ public final class Screens {
         actions.add(button(tr("home.handbook", 0x55FFFF), tr("home.handbook.tip", 0xAAAAAA), "/roc ui handbook"));
         actions.add(button(tr("home.party", 0x55FF55), tr("home.party.tip", 0xAAAAAA), "/roc ui party"));
         actions.add(button(tr("home.forge", 0xFFAA00), tr("home.forge.tip", 0xAAAAAA), "/roc forge"));
+        actions.add(button(tr("home.skills", 0xF5B82E, com.thefarawaydev.realmsofchaos.world.Skills.available(player)), tr("home.skills.tip", 0xAAAAAA), "/roc ui skills"));
         actions.add(button(tr(Sidebar.enabled(player) ? "home.sidebar.on" : "home.sidebar.off", 0x55FFFF), tr("home.sidebar.tip", 0xAAAAAA), "/roc ui sidebar"));
         actions.add(button(tr("home.hub", 0xFFFFFF), null, "/roc hub"));
         actions.add(button(tr("home.leave", 0xFFFFFF), null, "/roc leave"));
@@ -368,5 +369,30 @@ public final class Screens {
             }
         }
         return actions.isEmpty() ? notice(tr("bounty", 0xFFAA00), body, close()) : menu(tr("bounty", 0xFFAA00), body, actions, close(), 1);
+    }
+
+    // ---- mastery ---------------------------------------------------------------------------------------------
+
+    /** The mastery tree: points to spend, the twelve skills in their three branches, and a button to raise each. */
+    public static Dialog skills(ServerPlayer player) {
+        int free = com.thefarawaydev.realmsofchaos.world.Skills.available(player);
+        List<DialogBody> body = new ArrayList<>();
+        body.add(text(tr("skills.points", 0xF5B82E, free, com.thefarawaydev.realmsofchaos.world.Skills.earned(player))));
+        body.add(text(tr("skills.how", 0x888888)));
+        List<ActionButton> actions = new ArrayList<>();
+        com.thefarawaydev.realmsofchaos.world.Skills.Branch branch = null;
+        for (com.thefarawaydev.realmsofchaos.world.Skills.Skill skill : com.thefarawaydev.realmsofchaos.world.Skills.Skill.values()) {
+            if (skill.branch != branch) {
+                branch = skill.branch;
+                body.add(text(tr("skills.branch." + branch.name().toLowerCase(), 0x55FFFF)));
+            }
+            int rank = com.thefarawaydev.realmsofchaos.world.Skills.rank(player, skill);
+            body.add(text(tr("skills.line", rank > 0 ? 0x55FF55 : 0xFFFFFF, skill.displayName(), rank, com.thefarawaydev.realmsofchaos.world.Skills.MAX_RANK, skill.description())));
+            if (free > 0 && rank < com.thefarawaydev.realmsofchaos.world.Skills.MAX_RANK) {
+                actions.add(button(tr("skills.raise", 0x55FF55, skill.displayName(), rank + 1), skill.description(), "/roc ui skills raise " + skill.id()));
+            }
+        }
+        if (com.thefarawaydev.realmsofchaos.world.Skills.spent(player) > 0) actions.add(button(tr("skills.reset", 0xFFAA00), tr("skills.reset.tip", 0xAAAAAA), "/roc ui skills reset"));
+        return actions.isEmpty() ? notice(tr("skills", 0xF5B82E), body, back("/roc ui home")) : menu(tr("skills", 0xF5B82E), body, actions, back("/roc ui home"), 2);
     }
 }

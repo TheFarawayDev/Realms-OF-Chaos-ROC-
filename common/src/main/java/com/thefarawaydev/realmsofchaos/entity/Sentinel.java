@@ -254,9 +254,9 @@ public class Sentinel extends Monster implements RangedAttackMob {
         configure(true);
     }
 
-    /** The threat of a place: each floor further up the tower adds one, each level deeper into a passage one and a half. */
+    /** The threat of a place: each floor further up the tower adds one, each level deeper into a passage three quarters. */
     public static double threat(int passage, int stage) {
-        return Math.max(0, passage - 1) + 1.5 * Math.max(0, stage);
+        return Math.max(0, passage - 1) + 0.75 * Math.max(0, stage);
     }
 
     /** A kind's health: its role's, shifted by its trait - a bomber is frail, a shield-bearer and a warden stout. */

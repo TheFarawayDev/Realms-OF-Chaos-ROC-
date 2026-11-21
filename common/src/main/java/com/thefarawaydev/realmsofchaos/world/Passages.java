@@ -63,11 +63,11 @@ public final class Passages {
     public static final int HEADROOM = 5;
     public static final int MAX_SIZE = 6;
     public static final int X0 = 600, PITCH = 160;
-    public static final int LAYOUT_VERSION = 4;
+    public static final int LAYOUT_VERSION = 5;
     public static final String GUARDIAN_TAG = "realms_of_chaos_guardian";
     private static final String HUD = "hud." + RealmsOfChaos.MOD_ID + ".passage.";
 
-    public enum Kind { START, EXIT, SEAL, TREASURE, SHRINE, HALL, ROOM, TRAP, GARDEN, LIBRARY, POOL, ARENA }
+    public enum Kind { START, EXIT, SEAL, TREASURE, SHRINE, HALL, ROOM, TRAP, GARDEN, LIBRARY, POOL, ARENA, VAULT, CHIMES, BEAM, PLATES, CRUSHER, DARTS }
 
     public record Cell(int x, int z) {}
 
@@ -83,9 +83,25 @@ public final class Passages {
 
     private Passages() {}
 
-    /** How many levels passage {@code index} has: two in the lower third of a tower, three above. */
-    public static int stages(int index) {
-        return Tower.tier(index) == 1 ? 2 : 3;
+    /** The most levels a passage can have. */
+    public static final int MAX_STAGES = 10;
+
+    /**
+     * How many levels a passage has: anything from one to ten, decided by the world's seed - one to four in the
+     * lower third of a tower, two to seven in the middle, four to ten near the top.
+     */
+    public static int stages(long worldSeed, Line line, int index) {
+        Random random = new Random(worldSeed ^ (0x5DEECE66DL * (line.ordinal() * 100L + index + 7)));
+        random.nextInt();
+        return switch (Tower.tier(index)) {
+            case 1 -> 1 + random.nextInt(4);
+            case 2 -> 2 + random.nextInt(6);
+            default -> 4 + random.nextInt(7);
+        };
+    }
+
+    public static int stages(ServerLevel level, Line line, int index) {
+        return stages(level.getSeed(), line, index);
     }
 
     // ---- the plan --------------------------------------------------------------------------------------------
@@ -108,11 +124,15 @@ public final class Passages {
         Plan(long worldSeed, Line line, int index, int stage) {
             this.line = line;
             this.index = index;
-            this.stages = stages(index);
+            this.stages = stages(worldSeed, line, index);
             this.stage = Math.max(0, Math.min(stages - 1, stage));
             this.tier = Tower.tier(index);
-            // rooms: 4 x 4 low in the tower, 5 x 5 higher, and 6 x 6 for the last level of the highest passages
-            this.size = tier == 1 ? 4 : tier == 3 && this.stage == stages - 1 ? 6 : 5;
+            // rooms: 4 x 4 low in the tower and 5 x 5 higher; any level after a passage's first may be a row and a
+            // column larger, and the last level of the highest passages always is
+            Random shape = new Random(worldSeed ^ (0xD1B54A32D192ED03L * (line.ordinal() * 1000L + index * 16L + this.stage + 1)));
+            int base = tier == 1 ? 4 : 5;
+            boolean grand = tier == 3 && this.stage == stages - 1;
+            this.size = Math.min(MAX_SIZE, base + (grand || (this.stage > 0 && shape.nextFloat() < 0.4F) ? 1 : 0));
             this.threat = Sentinel.threat(index, this.stage);
             this.seed = worldSeed ^ (0x9E3779B97F4A7C15L * (line.ordinal() * 100L + index + 1)) ^ (0xC2B2AE3D27D4EB4FL * this.stage);
             this.kinds = new Kind[size][size];
@@ -123,6 +143,21 @@ public final class Passages {
 
         public boolean last() {
             return stage == stages - 1;
+        }
+
+        /** Levels come in wings of three: A, B, C and - for a passage of ten - D. Each wing is built of different stone. */
+        public int wing() {
+            return stage / 3;
+        }
+
+        /** The level's name, as on its bar and its chart: passage, wing, level - "3-B2". */
+        public String label() {
+            return index + "-" + (char) ('A' + wing()) + (stage % 3 + 1);
+        }
+
+        /** What this level is built of: its tower's stone, a different set for each wing. */
+        TowerBuilder.Palette palette() {
+            return TowerBuilder.palette(line, (tier - 1 + wing()) % 4 + 1);
         }
 
         private void open(Cell a, Cell b) {
@@ -243,13 +278,20 @@ public final class Passages {
                 Cell c = free.remove(0);
                 kinds[c.x][c.z] = Kind.ARENA;
             }
+            // puzzle rooms: one on a small level, up to three on the largest, never the same kind twice
+            List<Kind> puzzles = new ArrayList<>(List.of(Kind.VAULT, Kind.CHIMES, Kind.BEAM, Kind.PLATES));
+            Collections.shuffle(puzzles, random);
+            for (int i = 0; i < size - 3 && !free.isEmpty(); i++) {
+                Cell c = free.remove(0);
+                kinds[c.x][c.z] = puzzles.get(i);
+            }
             for (Cell c : free) {
                 float roll = random.nextFloat();
-                kinds[c.x][c.z] = roll < 0.30F ? Kind.HALL : roll < 0.52F ? Kind.ROOM : roll < 0.68F ? Kind.TRAP
-                        : roll < 0.79F ? Kind.GARDEN : roll < 0.90F ? Kind.LIBRARY : Kind.POOL;
+                kinds[c.x][c.z] = roll < 0.28F ? Kind.HALL : roll < 0.48F ? Kind.ROOM : roll < 0.56F ? Kind.TRAP : roll < 0.63F ? Kind.CRUSHER
+                        : roll < 0.70F ? Kind.DARTS : roll < 0.80F ? Kind.GARDEN : roll < 0.90F ? Kind.LIBRARY : Kind.POOL;
             }
             // a third of the ordinary rooms have a patrol in them, and more on the levels further in
-            float chance = 0.35F + 0.10F * stage;
+            float chance = Math.min(0.75F, 0.35F + 0.06F * stage);
             for (Cell c : free) {
                 if (random.nextFloat() < chance) patrols.add(c);
             }
@@ -278,6 +320,12 @@ public final class Passages {
                         case LIBRARY -> 'b';
                         case POOL -> '~';
                         case ARENA -> 'A';
+                        case VAULT -> 'v';
+                        case CHIMES -> 'c';
+                        case BEAM -> '/';
+                        case PLATES -> 'p';
+                        case CRUSHER -> '=';
+                        case DARTS -> ':';
                     });
                     if (x + 1 < size) rooms.append(east[x][z] ? "--" : "  ");
                     below.append(z + 1 < size && south[x][z] ? "|  " : "   ");
@@ -381,8 +429,8 @@ public final class Passages {
     }
 
     /** Which level of a passage a height belongs to. */
-    public static int stageAt(int index, double y) {
-        return Math.max(0, Math.min(stages(index) - 1, Math.floorDiv((int) Math.floor(y) - (Y - 2), LEVEL_PITCH)));
+    public static int stageAt(ServerLevel level, Line line, int index, double y) {
+        return Math.max(0, Math.min(stages(level, line, index) - 1, Math.floorDiv((int) Math.floor(y) - (Y - 2), LEVEL_PITCH)));
     }
 
     /** The passage and level a player is standing in, or null. */
@@ -390,13 +438,13 @@ public final class Passages {
         Realm realm = Realm.of(player.level().dimension());
         if (realm == null || realm.line() == null) return null;
         int index = indexAt(player.getX());
-        return index == 0 ? null : new Spot(realm.line(), index, stageAt(index, player.getY()));
+        return index == 0 || !(player.level() instanceof ServerLevel level) ? null : new Spot(realm.line(), index, stageAt(level, realm.line(), index, player.getY()));
     }
 
     /** True if a player in a passage has got outside the level they are on: fallen out, or risen through a ceiling. */
     public static boolean outside(ServerPlayer player, Spot spot) {
         int y = Y + spot.stage() * LEVEL_PITCH;
-        return player.getY() < Y - 6 || player.getY() > Y + stages(spot.index()) * LEVEL_PITCH + 6
+        return player.getY() < Y - 6 || player.getY() > Y + MAX_STAGES * LEVEL_PITCH + 6
                 || player.getY() < y - 1 || player.getY() > y + HEADROOM + 3;
     }
 
@@ -419,8 +467,65 @@ public final class Passages {
         ProgressData data = ProgressData.get(level.getServer());
         String key = builtKey(line, index, stage);
         if (data.isBuilt(key)) return;
-        build(level, plan(level, line, index, stage));
+        Job job = JOBS.remove(key);
+        if (job != null) {
+            // it was being built ahead: only what is left has to be done now
+            while (!job.steps.isEmpty()) job.steps.poll().run();
+            levelsBuilt++;
+        } else {
+            build(level, plan(level, line, index, stage));
+        }
         data.markBuilt(key);
+    }
+
+    // ---- building ahead --------------------------------------------------------------------------------------
+
+    /** A level being built a little at a time, so that nobody has to wait for it at the gate. */
+    private static final class Job {
+        final java.util.ArrayDeque<Runnable> steps;
+
+        Job(java.util.ArrayDeque<Runnable> steps) {
+            this.steps = steps;
+        }
+    }
+
+    private static final Map<String, Job> JOBS = new java.util.LinkedHashMap<>();
+    /** How much of a tick building ahead may take, in nanoseconds. */
+    public static final long BUDGET_NANOS = 4_000_000L;
+    /** How long the last level built in one go took, and how many levels have been built since the server started. */
+    public static long lastBuildMillis;
+    public static int levelsBuilt;
+
+    /**
+     * Starts building a level in the background, a few milliseconds a tick. Called for the level after the one a
+     * player has just reached, and for a passage's first level when the trial below it begins.
+     * @return true if a job was started
+     */
+    public static boolean prepare(ServerLevel level, Line line, int index, int stage) {
+        if (index < 1 || index > COUNT || stage < 0 || stage >= stages(level, line, index)) return false;
+        String key = builtKey(line, index, stage);
+        if (ProgressData.get(level.getServer()).isBuilt(key) || JOBS.containsKey(key)) return false;
+        JOBS.put(key, new Job(steps(level, plan(level, line, index, stage))));
+        return true;
+    }
+
+    public static int pending() {
+        return JOBS.size();
+    }
+
+    /** Called every server tick: a few milliseconds' worth of whatever is being built ahead. */
+    public static void tick(MinecraftServer server) {
+        if (JOBS.isEmpty()) return;
+        long until = System.nanoTime() + BUDGET_NANOS;
+        var it = JOBS.entrySet().iterator();
+        var entry = it.next();
+        Job job = entry.getValue();
+        while (!job.steps.isEmpty() && System.nanoTime() < until) job.steps.poll().run();
+        if (job.steps.isEmpty()) {
+            ProgressData.get(server).markBuilt(entry.getKey());
+            it.remove();
+            levelsBuilt++;
+        }
     }
 
     public static void ensure(ServerLevel level, Line line, int index) {
@@ -431,34 +536,61 @@ public final class Passages {
         level.setBlock(pos, block.defaultBlockState(), 2);
     }
 
-    /** Builds the whole level: a solid block of wall, carved into rooms and halls, then furnished. */
+    /** Builds the whole level at once: a solid block of wall, carved into rooms and halls, then furnished. */
     public static void build(ServerLevel level, Plan plan) {
-        TowerBuilder.Palette p = TowerBuilder.palette(plan.line, plan.tier);
+        long began = System.nanoTime();
+        JOBS.remove(builtKey(plan));
+        for (Runnable step : steps(level, plan)) step.run();
+        lastBuildMillis = (System.nanoTime() - began) / 1_000_000L;
+        levelsBuilt++;
+    }
+
+    /**
+     * Everything building a level takes, cut into small pieces that can be done one after another on different
+     * ticks: the solid block four columns at a time, then each room carved, the doorways, and each room furnished.
+     */
+    private static java.util.ArrayDeque<Runnable> steps(ServerLevel level, Plan plan) {
+        java.util.ArrayDeque<Runnable> steps = new java.util.ArrayDeque<>();
+        TowerBuilder.Palette p = plan.palette();
         Random random = new Random(plan.seed * 31 + 7);
         BlockPos o = plan.origin();
         int w = plan.width();
         // stale sentinels of an earlier layout go first
-        for (Mob m : level.getEntitiesOfClass(Mob.class, plan.box().inflate(2), e -> e.entityTags().contains(GUARDIAN_TAG))) m.discard();
-        for (int x = 0; x < w; x++) {
-            for (int z = 0; z < w; z++) {
-                for (int y = -1; y <= HEADROOM + 2; y++) {
-                    set(level, o.offset(x, y, z), y <= 0 || y >= HEADROOM + 1 ? p.fill() : p.wall());
+        steps.add(() -> {
+            for (Mob m : level.getEntitiesOfClass(Mob.class, plan.box().inflate(2), e -> e.entityTags().contains(GUARDIAN_TAG))) m.discard();
+        });
+        for (int from = 0; from < w; from += 4) {
+            final int x0 = from;
+            steps.add(() -> {
+                BlockPos.MutableBlockPos at = new BlockPos.MutableBlockPos();
+                for (int x = x0; x < Math.min(w, x0 + 4); x++) {
+                    for (int z = 0; z < w; z++) {
+                        for (int y = -1; y <= HEADROOM + 2; y++) {
+                            Block block = y <= 0 || y >= HEADROOM + 1 ? p.fill() : p.wall();
+                            at.set(o.getX() + x, o.getY() + y, o.getZ() + z);
+                            // (what already stands is left alone: a rebuild only pays for what changed)
+                            if (!level.getBlockState(at).is(block)) level.setBlock(at, block.defaultBlockState(), 2);
+                        }
+                    }
+                }
+            });
+        }
+        for (Cell c : plan.cells()) steps.add(() -> carve(level, plan, c, p));
+        // doorways: three wide, three high, through the wall between two cells, under a lintel of trim
+        steps.add(() -> {
+            for (Cell c : plan.cells()) {
+                BlockPos m = plan.centre(c);
+                Cell e = new Cell(c.x + 1, c.z), s = new Cell(c.x, c.z + 1);
+                if (c.x + 1 < plan.size && plan.connected(c, e)) {
+                    for (int d = 5; d <= 7; d++) for (int k = -1; k <= 1; k++) doorway(level, m.offset(d, 0, k), p);
+                }
+                if (c.z + 1 < plan.size && plan.connected(c, s)) {
+                    for (int d = 5; d <= 7; d++) for (int k = -1; k <= 1; k++) doorway(level, m.offset(k, 0, d), p);
                 }
             }
-        }
-        for (Cell c : plan.cells()) carve(level, plan, c, p);
-        // doorways: three wide, three high, through the wall between two cells, under a lintel of trim
-        for (Cell c : plan.cells()) {
-            BlockPos m = plan.centre(c);
-            Cell e = new Cell(c.x + 1, c.z), s = new Cell(c.x, c.z + 1);
-            if (c.x + 1 < plan.size && plan.connected(c, e)) {
-                for (int d = 5; d <= 7; d++) for (int k = -1; k <= 1; k++) doorway(level, m.offset(d, 0, k), p);
-            }
-            if (c.z + 1 < plan.size && plan.connected(c, s)) {
-                for (int d = 5; d <= 7; d++) for (int k = -1; k <= 1; k++) doorway(level, m.offset(k, 0, d), p);
-            }
-        }
-        for (Cell c : plan.cells()) furnish(level, plan, c, p, random);
+        });
+        for (Cell c : plan.cells()) steps.add(() -> furnish(level, plan, c, p, random));
+        return steps;
     }
 
     private static void doorway(ServerLevel level, BlockPos floor, TowerBuilder.Palette p) {
@@ -582,6 +714,13 @@ public final class Passages {
                 for (int[] k : CORNERS) set(level, m.offset(k[0], 1, k[1]), Blocks.FLOWERING_AZALEA);
                 for (int[] k : CORNERS) set(level, m.offset(k[0], 0, k[1]), Blocks.MOSS_BLOCK);
             }
+            case VAULT, CHIMES, BEAM, PLATES, DARTS -> Rooms.build(level, plan, c, random);
+            case CRUSHER -> {
+                // a crusher hall: its floor is striped row by row, so the row that is marked can be told from the next
+                for (int dx = -4; dx <= 4; dx++) {
+                    for (int dz = -4; dz <= 4; dz++) set(level, m.offset(dx, 0, dz), (dz & 1) == 0 ? p.trim() : p.inlay());
+                }
+            }
             case TRAP -> {
                 // a rune chamber: a rune stone on a pillar in each corner, and a floor that says "do not stand here"
                 Traps.build(level, plan, c, p.pillar());
@@ -665,6 +804,32 @@ public final class Passages {
             }
             case HALL -> { }
         }
+        extras(level, plan, c, random);
+    }
+
+    /** The small things that make a room a place: the tower's braziers, urns to smash, a tablet to read. */
+    private static void extras(ServerLevel level, Plan plan, Cell c, Random random) {
+        Kind kind = plan.kind(c);
+        if (kind != Kind.ROOM && kind != Kind.GARDEN && kind != Kind.LIBRARY && kind != Kind.POOL && kind != Kind.ARENA && kind != Kind.SHRINE) return;
+        BlockPos m = plan.centre(c);
+        // against the walls, clear of the lanes that run door to door
+        int[][] spots = {{4, 2}, {-4, -2}, {2, 4}, {-2, -4}, {4, -2}, {-4, 2}, {-2, 4}, {2, -4}};
+        int from = random.nextInt(spots.length), urns = random.nextInt(3), braziers = random.nextInt(2);
+        int tablets = kind == Kind.LIBRARY || random.nextFloat() < 0.15F ? 1 : 0;
+        for (int i = 0; i < spots.length && urns + braziers + tablets > 0; i++) {
+            BlockPos at = m.offset(spots[(from + i) % spots.length][0], 1, spots[(from + i) % spots.length][1]);
+            if (!level.getBlockState(at).isAir() || !level.getBlockState(at.below()).isCollisionShapeFullBlock(level, at.below())) continue;
+            if (braziers > 0) {
+                braziers--;
+                level.setBlock(at, ModContent.TOWER_BRAZIER.get().defaultBlockState().setValue(com.thefarawaydev.realmsofchaos.block.BrazierBlock.TOWER, plan.line.ordinal()), 2);
+            } else if (tablets > 0) {
+                tablets--;
+                set(level, at, ModContent.LORE_TABLET.get());
+            } else {
+                urns--;
+                set(level, at, ModContent.ANCIENT_URN.get());
+            }
+        }
     }
 
     // ---- treasure --------------------------------------------------------------------------------------------
@@ -672,7 +837,8 @@ public final class Passages {
     /** One player's share of a cache: always some of this tier's forge material, then a mixed handful. Arenas pay better. */
     public static List<ItemStack> lootFor(Plan plan, Cell cell, UUID player) {
         Random random = new Random(plan.seed ^ player.getLeastSignificantBits() ^ (cell.x * 131L + cell.z * 17L + 5));
-        boolean arena = plan.kind(cell) == Kind.ARENA;
+        // an arena's cache and a puzzle's are the richer ones
+        boolean arena = plan.kind(cell) == Kind.ARENA || Rooms.isPuzzle(plan.kind(cell));
         List<ItemStack> loot = new ArrayList<>();
         loot.add(new ItemStack(ModContent.materialItem(plan.line, plan.tier), 1 + random.nextInt(2) + (arena ? 1 : 0)));
         loot.add(new ItemStack(Items.EXPERIENCE_BOTTLE, 2 + random.nextInt(3) + plan.tier + plan.stage));
@@ -706,8 +872,12 @@ public final class Passages {
         String hud = "hud." + RealmsOfChaos.MOD_ID + ".cache.";
         Plan plan = planAt(level, pos);
         Cell cell = plan == null ? null : plan.cellAt(pos);
-        if (cell == null || (plan.kind(cell) != Kind.TREASURE && plan.kind(cell) != Kind.ARENA)) {
+        if (cell == null || (plan.kind(cell) != Kind.TREASURE && plan.kind(cell) != Kind.ARENA && !Rooms.isPuzzle(plan.kind(cell)))) {
             Hud.actionBar(player, Hud.colored(Component.translatable(hud + "empty"), 0xAAAAAA));
+            return false;
+        }
+        if (Rooms.isPuzzle(plan.kind(cell)) && !Rooms.solved(level, plan, cell)) {
+            Hud.actionBar(player, Hud.colored(Component.translatable(hud + "locked"), 0xFF5555));
             return false;
         }
         if (plan.kind(cell) == Kind.ARENA) {
@@ -751,7 +921,7 @@ public final class Passages {
      * tower, and one more again for each level into the passage.
      */
     public static int guardianCount(Plan plan) {
-        return 2 + plan.tier + plan.stage;
+        return 2 + plan.tier + Math.min(3, plan.stage);
     }
 
     /** The sentinels of a room that are still standing. */
@@ -787,7 +957,7 @@ public final class Passages {
             others = guardianCount(plan) - 1;
             elites = plan.last() ? 1 : 0;
         } else if (kind == Kind.ARENA) {
-            others = 3 + plan.stage;
+            others = 3 + Math.min(3, plan.stage);
             elites = 1;
         } else {
             others = 1 + (plan.threat >= 8.0 ? 1 : 0);
@@ -851,6 +1021,7 @@ public final class Passages {
         for (Mob m : level.getEntitiesOfClass(Mob.class, plan.box().inflate(2), e -> e.entityTags().contains(GUARDIAN_TAG))) m.discard();
         for (Cell c : plan.seals) set(level, plan.sealPos(c), ModContent.PASSAGE_SEAL.get());
         ProgressData.get(level.getServer()).unmarkPrefix(wokenKey(plan));
+        Rooms.rearm(level, plan);
     }
 
     /** The level a block belongs to, with its plan - or null if it is not in a passage. */
@@ -858,7 +1029,7 @@ public final class Passages {
         Realm realm = Realm.of(level.dimension());
         if (realm == null || realm.line() == null) return null;
         int index = indexAt(pos.getX());
-        return index == 0 ? null : plan(level, realm.line(), index, stageAt(index, pos.getY()));
+        return index == 0 ? null : plan(level, realm.line(), index, stageAt(level, realm.line(), index, pos.getY()));
     }
 
     /**
@@ -904,7 +1075,7 @@ public final class Passages {
     // ---- coming and going ------------------------------------------------------------------------------------
 
     private static boolean occupied(ServerLevel level, Line line, int index, ServerPlayer except) {
-        for (int stage = 0; stage < stages(index); stage++) {
+        for (int stage = 0; stage < stages(level, line, index); stage++) {
             Plan plan = plan(level, line, index, stage);
             if (!level.getEntitiesOfClass(ServerPlayer.class, plan.box(), p -> p != except && p.isAlive() && !p.isSpectator()).isEmpty()) return true;
         }
@@ -914,7 +1085,7 @@ public final class Passages {
     /** True if every level of the passage that has been built has had all its seals broken. */
     public static boolean brokenOpen(ServerLevel level, Line line, int index) {
         if (!isBuilt(level, line, index, 0)) return false;
-        for (int stage = 0; stage < stages(index); stage++) {
+        for (int stage = 0; stage < stages(level, line, index); stage++) {
             if (isBuilt(level, line, index, stage) && sealsLeft(level, plan(level, line, index, stage)) > 0) return false;
         }
         return true;
@@ -922,7 +1093,7 @@ public final class Passages {
 
     /** Seals every built level of a passage again. This is how a passage adapts to a player who has not walked it. */
     public static void rearm(ServerLevel level, Line line, int index) {
-        for (int stage = 0; stage < stages(index); stage++) {
+        for (int stage = 0; stage < stages(level, line, index); stage++) {
             if (isBuilt(level, line, index, stage)) rearm(level, plan(level, line, index, stage));
         }
     }
@@ -949,8 +1120,11 @@ public final class Passages {
     private static void arrive(ServerPlayer player, ServerLevel level, Plan plan) {
         Teleports.moveTo(player, level, plan.arrival(), 0.0F);
         visited(player, plan).add(plan.start);
+        // the level after this one is built while this one is explored; and everyone gets a chart to draw it on
+        if (!plan.last()) prepare(level, plan.line, plan.index, plan.stage + 1);
+        if (Charts.give(player)) Hud.actionBar(player, Hud.colored(Component.translatable(HUD + "chart"), 0xF5B82E));
         int left = sealsLeft(level, plan);
-        Hud.title(player, Hud.colored(Component.translatable(HUD + "title", plan.index + 1), plan.line.color()),
+        Hud.title(player, Hud.colored(Component.translatable(HUD + "title", plan.label(), plan.index + 1), plan.line.color()),
                 Hud.colored(Component.translatable(HUD + (left > 0 ? "level" : "level.open"), plan.stage + 1, plan.stages, left), 0xCCCCCC));
     }
 
@@ -1013,6 +1187,7 @@ public final class Passages {
             boolean wakes = sealed || kind == Kind.ARENA || plan.patrols.contains(cell);
             if (wakes && !player.isSpectator() && !player.isCreative()) wake(level, plan, cell);
             if (kind == Kind.TRAP) Traps.service(player, level, plan, cell);
+            Rooms.service(player, level, plan, cell);
             String here = spot.line().id() + "/" + spot.index() + "/" + spot.stage() + "/" + cell.x + "/" + cell.z;
             if (!here.equals(LAST_CELL.put(player.getUUID(), here))) {
                 String hint = switch (kind) {
@@ -1024,6 +1199,12 @@ public final class Passages {
                     case GARDEN -> "garden";
                     case LIBRARY -> "library";
                     case POOL -> "pool";
+                    case VAULT -> "vault";
+                    case CHIMES -> "chimes";
+                    case BEAM -> "beam";
+                    case PLATES -> "plates";
+                    case CRUSHER -> "crusher";
+                    case DARTS -> "darts";
                     case EXIT -> sealsLeft(level, plan) > 0 ? "exit.sealed" : plan.last() ? "exit.open" : "exit.deeper";
                     default -> null;
                 };
@@ -1032,6 +1213,7 @@ public final class Passages {
             }
         }
         RealmSafety.updatePassageBar(player, plan, plan.seals.size() - sealsLeft(level, plan));
+        if (Charts.holds(player)) Charts.draw(player, level, plan);
     }
 
     /**

@@ -511,7 +511,7 @@
       16
     ],
     "columns": 8,
-    "count": 44,
+    "count": 68,
     "source": "assets/realms_of_chaos/textures/block",
     "tiles": {
       "altar_base": [
@@ -542,153 +542,249 @@
         6,
         0
       ],
-      "bounty_board_side": [
+      "ancient_urn_side": [
         7,
         0
       ],
-      "bounty_board_top": [
+      "ancient_urn_top": [
         0,
         1
       ],
-      "chaos_forge_side": [
+      "beam_emitter": [
         1,
         1
       ],
-      "chaos_forge_top": [
+      "beam_mirror_lit_side": [
         2,
         1
       ],
-      "gate_ascend": [
+      "beam_mirror_lit_top": [
         3,
         1
       ],
-      "gate_hades": [
+      "beam_mirror_side": [
         4,
         1
       ],
-      "gate_hub": [
+      "beam_mirror_top": [
         5,
         1
       ],
-      "gate_leave": [
+      "beam_receiver": [
         6,
         1
       ],
-      "gate_pedestal_side": [
+      "beam_receiver_lit": [
         7,
         1
       ],
-      "gate_pedestal_top": [
+      "bounty_board_side": [
         0,
         2
       ],
-      "gate_poseidon": [
+      "bounty_board_top": [
         1,
         2
       ],
-      "gate_zeus": [
+      "chaos_forge_side": [
         2,
         2
+      ],
+      "chaos_forge_top": [
+        3,
+        2
+      ],
+      "chime_crystal_lit_side": [
+        4,
+        2
+      ],
+      "chime_crystal_lit_top": [
+        5,
+        2
+      ],
+      "chime_crystal_side": [
+        6,
+        2
+      ],
+      "chime_crystal_top": [
+        7,
+        2
+      ],
+      "dart_tile": [
+        0,
+        3
+      ],
+      "gate_ascend": [
+        1,
+        3
+      ],
+      "gate_hades": [
+        2,
+        3
+      ],
+      "gate_hub": [
+        3,
+        3
+      ],
+      "gate_leave": [
+        4,
+        3
+      ],
+      "gate_pedestal_side": [
+        5,
+        3
+      ],
+      "gate_pedestal_top": [
+        6,
+        3
+      ],
+      "gate_poseidon": [
+        7,
+        3
+      ],
+      "gate_zeus": [
+        0,
+        4
+      ],
+      "glyph_tile": [
+        1,
+        4
+      ],
+      "glyph_tile_lit": [
+        2,
+        4
       ],
       "hub_heart_side": [
         3,
-        2
+        4
       ],
       "hub_heart_top": [
         4,
-        2
+        4
+      ],
+      "lore_tablet_side": [
+        5,
+        4
+      ],
+      "lore_tablet_top": [
+        6,
+        4
+      ],
+      "memory_plate": [
+        7,
+        4
+      ],
+      "memory_plate_lit": [
+        0,
+        5
       ],
       "oracle_side": [
-        5,
-        2
+        1,
+        5
       ],
       "oracle_top": [
-        6,
-        2
+        2,
+        5
       ],
       "passage_cache": [
-        7,
-        2
+        3,
+        5
       ],
       "passage_seal": [
-        0,
-        3
+        4,
+        5
       ],
       "passage_seal_top": [
-        1,
-        3
+        5,
+        5
       ],
       "passage_shrine": [
-        2,
-        3
+        6,
+        5
       ],
       "relay_core_side": [
-        3,
-        3
+        7,
+        5
       ],
       "relay_core_top": [
-        4,
-        3
+        0,
+        6
       ],
       "rune_stone_0": [
-        5,
-        3
+        1,
+        6
       ],
       "rune_stone_0_lit": [
-        6,
-        3
+        2,
+        6
       ],
       "rune_stone_1": [
-        7,
-        3
+        3,
+        6
       ],
       "rune_stone_1_lit": [
-        0,
-        4
+        4,
+        6
       ],
       "rune_stone_2": [
-        1,
-        4
+        5,
+        6
       ],
       "rune_stone_2_lit": [
-        2,
-        4
+        6,
+        6
       ],
       "rune_stone_3": [
-        3,
-        4
+        7,
+        6
       ],
       "rune_stone_3_lit": [
-        4,
-        4
+        0,
+        7
       ],
       "rune_stone_top": [
-        5,
-        4
+        1,
+        7
       ],
       "shield_pylon_side": [
-        6,
-        4
+        2,
+        7
       ],
       "shield_pylon_top": [
-        7,
-        4
+        3,
+        7
       ],
       "signal_jammer_side": [
-        0,
-        5
+        4,
+        7
       ],
       "signal_jammer_top": [
+        5,
+        7
+      ],
+      "tower_brazier_hades_top": [
+        6,
+        7
+      ],
+      "tower_brazier_poseidon_top": [
+        7,
+        7
+      ],
+      "tower_brazier_side": [
+        0,
+        8
+      ],
+      "tower_brazier_zeus_top": [
         1,
-        5
+        8
       ],
       "waygate_obelisk_side": [
         2,
-        5
+        8
       ],
       "waygate_obelisk_top": [
         3,
-        5
+        8
       ]
     }
   },

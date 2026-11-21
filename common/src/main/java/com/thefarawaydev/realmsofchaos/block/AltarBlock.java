@@ -138,6 +138,8 @@ public class AltarBlock extends Block {
         // ...and it rises to match what they carry: their best weapon and its enchantments, and their armour
         com.thefarawaydev.realmsofchaos.world.Adapt.Measure measure = measure(level, player, altar, line, god);
         boss.setTrial(challengers, mercy, measure);
+        // while the trial is fought, the first level of the passage above it is built
+        if (inTower(level, line)) com.thefarawaydev.realmsofchaos.world.Passages.prepare(level, line, Tower.floorAt(altar.getY()), 0);
         com.thefarawaydev.realmsofchaos.ui.Tutorial.tip(player, com.thefarawaydev.realmsofchaos.ui.Tutorial.Tip.TRIAL);
         boss.setPos(spawn.x, spawn.y, spawn.z);
         boss.setHome(spawn);

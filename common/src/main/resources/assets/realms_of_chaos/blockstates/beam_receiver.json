@@ -1,0 +1,10 @@
+{
+  "variants": {
+    "lit=false": {
+      "model": "realms_of_chaos:block/beam_receiver"
+    },
+    "lit=true": {
+      "model": "realms_of_chaos:block/beam_receiver_lit"
+    }
+  }
+}

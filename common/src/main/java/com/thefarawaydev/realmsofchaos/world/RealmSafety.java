@@ -36,6 +36,8 @@ public final class RealmSafety {
         Scanner.tick(server);
         Waygates.tick(server);
         Traps.tick(server);
+        Rooms.tick(server);
+        Passages.tick(server);
         Hazards.tick(server);
         Craters.tick(server);
         com.thefarawaydev.realmsofchaos.ui.Sidebar.tick(server);
@@ -43,6 +45,7 @@ public final class RealmSafety {
         if (++ticker % 20 != 0) return;
         for (ServerPlayer player : server.getPlayerList().getPlayers()) {
             Wards.service(player);
+            Skills.service(player, ticker);
             Realm realm = Realm.of(player.level().dimension());
             if (realm == null || !(player.level() instanceof ServerLevel level)) {
                 STUCK_SECONDS.remove(player.getUUID());
@@ -116,7 +119,7 @@ public final class RealmSafety {
         ServerBossEvent bar = BARS.computeIfAbsent(player.getUUID(), id -> new ServerBossEvent(
                 UUID.randomUUID(), Component.empty(), BossEvent.BossBarColor.WHITE, BossEvent.BossBarOverlay.NOTCHED_20));
         int total = plan.seals.size();
-        bar.setName(Component.translatable("hud." + RealmsOfChaos.MOD_ID + ".passage.bar", Tower.towerName(plan.line), plan.index + 1, plan.stage + 1, plan.stages, broken, total));
+        bar.setName(Component.translatable("hud." + RealmsOfChaos.MOD_ID + ".passage.bar", Tower.towerName(plan.line), plan.label(), plan.stage + 1, plan.stages, broken, total));
         bar.setColor(plan.line.barColor());
         bar.setProgress(total == 0 ? 1.0F : broken / (float) total);
         if (!bar.getPlayers().contains(player)) {

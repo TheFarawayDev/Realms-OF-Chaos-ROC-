@@ -1,0 +1,10 @@
+{
+  "variants": {
+    "lit=false": {
+      "model": "realms_of_chaos:block/chime_crystal"
+    },
+    "lit=true": {
+      "model": "realms_of_chaos:block/chime_crystal_lit"
+    }
+  }
+}

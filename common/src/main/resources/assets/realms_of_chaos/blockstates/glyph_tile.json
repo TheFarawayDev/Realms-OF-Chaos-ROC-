@@ -1,0 +1,10 @@
+{
+  "variants": {
+    "lit=false": {
+      "model": "realms_of_chaos:block/glyph_tile"
+    },
+    "lit=true": {
+      "model": "realms_of_chaos:block/glyph_tile_lit"
+    }
+  }
+}

@@ -44,6 +44,35 @@ The current build is an **Alpha**.
   * **In its looks.** Every god's skin has been redrawn with more detail - the mark of its tower on its back, gold
     on the arms of the stronger gods, a cape on the three greatest of each tower - and each god now has three
     skins: itself, lit with runes behind its aegis, and cracked open with fire inside in its wrath.
+* **Passages of one to ten levels.** How many levels lie between two boss floors is decided by the world's seed:
+  one to four low in a tower, two to seven in the middle, four to ten near the top (about 190 levels across the
+  three towers in a typical world). Every level has a name - **7-B2** is passage 7, wing B, level 2 - shown on its
+  bar and title. Wings are three levels long and each is built from a different set of its tower's stone. Levels
+  after a passage's first may be a row and a column larger.
+* **No waiting at the gate.** The next level is built in the background, about four milliseconds a tick, while
+  you explore the one you are on, and a passage's first level is built while the trial below it is fought. Arrive
+  early and only what is left is finished on the spot.
+* **The Passage Chart: a map with fog of war.** Everyone is handed a chart on entering a passage. It is an
+  ordinary map item, drawn by the mod: blank parchment to begin with, each room inked in when you first walk into
+  it - its kind by colour, its doorways, a broken seal turning green - with a white mark where you stand. `/roc
+  chart` gives a new one.
+* **Four puzzle rooms**, each keeping a cache locked until it is solved (for everyone at once; they lock and
+  scramble again when a passage re-seals):
+  * **Vault** - nine glyph tiles; pressing one turns it and its neighbours; light all nine.
+  * **Chime room** - ring four crystals before the first falls silent (eleven seconds low in a tower, seven high).
+  * **Beam room** - turn two mirrors until the beam reaches the receiver.
+  * **Trembling floor** - a ring of plates of which one path holds. It glimmers every six seconds and has to be
+    walked in order from its first plate; a wrong plate throws you off.
+* **Two more trap halls.** A **crusher hall** marks a row and a second later brings the ceiling down on it, row
+  after row; the row that just fell is the safe one. A **dart hall** has marked tiles that loose arrows from the
+  walls at whoever treads on them.
+* **Things to find.** **Urns** can be smashed: most hold a little loot, some nothing, a few a sentinel. **Lore
+  tablets** tell a line of the tower's story (24 in all) and give a little experience the first time. Each tower
+  has its own **brazier**.
+* **Mastery.** A point for every god woken and every passage walked, spent in the Codex (or `/roc skills`) on
+  twelve skills of three ranks each: *Combat* - Might, Swiftness, Focus, Reach; *Survival* - Vigor, Guard,
+  Steadiness, Second Wind; *Exploration* - Cartographer (the chart sketches rooms next door), Signal, Scavenger,
+  Pathfinder. The tree can be taken apart and re-spent at any time.
 * **Sixty-three sentinels.** Each tower now has twenty-one kinds instead of six. Every kind has a role (soldier,
   caster, skirmisher, brute, mystic, Keeper) and most have one **trait** that no other kind in their tower has. The
   deeper a level, the more kinds it fields.
@@ -63,9 +92,9 @@ The current build is an **Alpha**.
   facing the camera: they are drawn as a 3D model lying along the line of flight, nose first, turning as they go.
 * **Craters.** A bolt from a relic of level 3 or more breaks the ground where it lands - on anything, not only on
   an enemy. The crater is one block wide at level 3, two at 6, three at 9, and one more with three stars; the blast
-  hurts what is near. Ten seconds later the ground closes again and lifts out anyone standing in it, so nothing is
-  ever lost from a tower, a passage or your base. Chests and unbreakable blocks are never taken, and inside the
-  realms a crater is one block deep.
+  hurts what is near. **Out in the world a crater stays** (where you could have dug it yourself: not in adventure
+  mode or spawn protection). Inside the realms the towers mend themselves: there a crater is one block deep and
+  closes after ten seconds, lifting out anyone standing in it. Chests and unbreakable blocks are never taken.
 * **Rune chambers.** The trap rooms of the passages are now traps with a puzzle in them. A rune stone stands on a
   pillar in each corner; step onto the marked square in the middle and the doorways close and water rises a layer
   at a time. The runes light up in an order, again and again - press them (right-click) in that order and the room
@@ -109,7 +138,7 @@ The current build is an **Alpha**.
   and the party are real screens - a title, text, pictures of items and buttons - built on the game's own dialog
   system, so they work the same on Fabric and Forge. Chapters of the story are read on screen, page by page. The
   screens with moving parts (the forge's strike bar, the passage map, a tower's floor plan) are still chest menus.
-* **A tutorial.** A new player is shown the **Climber's Handbook** a few seconds after they first join: seventeen
+* **A tutorial.** A new player is shown the **Climber's Handbook** a few seconds after they first join: nineteen
   topics, from getting in to reading a fight, always there in the Codex. After that, a **tip** appears the first
   time each thing happens - the first Ruined Gate, the first altar, the first seal, the first eruption - once each.
 * **Climb together.** Up to four players can form a **party** (Codex -> Party, or `/roc party invite <player>`,
@@ -422,7 +451,7 @@ on a real server: data loading, the hub, building and walking every floor of eve
 towers through the altar menu (with rematches) and all 42 passages, the Ruined Gate and its keystones, the story's
 chapters, the hub's residents, all sixty-three sentinels and their traits, craters, the custom screens and their buttons, the tutorial, impacts, the
 floor's eruptions and the gods' last stands, the three phases of a trial (health gates, pylons, stances, the collapsing floor and its restoration, strikes), gear and difficulty scaling,
-the compass scanner, relays and jammers, waygates, the Field Tower Bag, hub tiers and bounties, the rune chambers, the sidebar, parties, group scaling and per-player loot, the wall protection (built, checked room by room for reachability,
+the compass scanner, relays and jammers, waygates, the Field Tower Bag, hub tiers and bounties, the rune chambers, the sidebar, level counts and names, building ahead, the four puzzle rooms, crusher and dart halls, urns and tablets, the Passage Chart, the mastery tree, parties, group scaling and per-player loot, the wall protection (built, checked room by room for reachability,
 seals struck, guardians, shrine, map), every god's signature move, the relic moves, the forging quick-time rounds,
 tier materials, each tarot card, the Codex, leaving the realms, the welcome and the anti-stuck safeguards.
 

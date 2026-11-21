@@ -14,6 +14,8 @@ public final class HandbookData {
         new Topic("compass", 4),
         new Topic("network", 3),
         new Topic("traps", 3),
+        new Topic("rooms", 5),
+        new Topic("mastery", 3),
         new Topic("hub_tiers", 3),
         new Topic("phases", 4),
         new Topic("hub", 4),

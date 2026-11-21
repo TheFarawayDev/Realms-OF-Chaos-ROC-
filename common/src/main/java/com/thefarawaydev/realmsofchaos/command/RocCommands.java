@@ -64,6 +64,18 @@ public final class RocCommands {
                             com.thefarawaydev.realmsofchaos.ui.Sidebar.toggle(p);
                             Screens.show(p, Screens.home(p));
                         })))
+                        .then(Commands.literal("skills")
+                                .executes(ctx -> ui(ctx.getSource().getPlayerOrException(), p -> Screens.show(p, Screens.skills(p))))
+                                .then(Commands.literal("reset").executes(ctx -> ui(ctx.getSource().getPlayerOrException(), p -> {
+                                    com.thefarawaydev.realmsofchaos.world.Skills.reset(p);
+                                    Screens.show(p, Screens.skills(p));
+                                })))
+                                .then(Commands.literal("raise").then(Commands.argument("id", com.mojang.brigadier.arguments.StringArgumentType.word()).executes(ctx ->
+                                        ui(ctx.getSource().getPlayerOrException(), p -> {
+                                            var skill = com.thefarawaydev.realmsofchaos.world.Skills.Skill.byId(com.mojang.brigadier.arguments.StringArgumentType.getString(ctx, "id"));
+                                            if (skill != null) com.thefarawaydev.realmsofchaos.world.Skills.raise(p, skill);
+                                            Screens.show(p, Screens.skills(p));
+                                        })))))
                         .then(Commands.literal("hubcore")
                                 .executes(ctx -> ui(ctx.getSource().getPlayerOrException(), p -> Screens.show(p, Screens.hubCommand(p))))
                                 .then(Commands.literal("deposit").executes(ctx -> ui(ctx.getSource().getPlayerOrException(), RocCommands::deposit))))
@@ -109,6 +121,8 @@ public final class RocCommands {
                     Teleports.recall(player);
                     return 1;
                 }))
+                .then(Commands.literal("skills").executes(ctx -> ui(ctx.getSource().getPlayerOrException(), p -> Screens.show(p, Screens.skills(p)))))
+                .then(Commands.literal("chart").executes(ctx -> ui(ctx.getSource().getPlayerOrException(), com.thefarawaydev.realmsofchaos.world.Charts::give)))
                 .then(Commands.literal("sidebar").executes(ctx -> {
                     com.thefarawaydev.realmsofchaos.ui.Sidebar.toggle(ctx.getSource().getPlayerOrException());
                     return 1;
