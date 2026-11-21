@@ -80,6 +80,7 @@ public final class ModContent {
     public static final Ref<Block> WAYGATE_OBELISK = new Ref<>();
     public static final Ref<Block> HUB_HEART = new Ref<>();
     public static final Ref<Block> BOUNTY_BOARD = new Ref<>();
+    public static final Ref<Block> RUNE_STONE = new Ref<>();
 
     public static final List<Def<Block>> BLOCK_DEFS = new ArrayList<>();
 
@@ -147,6 +148,10 @@ public final class ModContent {
                 unbreakable(key).mapColor(MapColor.COLOR_PURPLE).lightLevel(s -> 15).noOcclusion().sound(SoundType.AMETHYST)));
         block("bounty_board", BOUNTY_BOARD, key -> new com.thefarawaydev.realmsofchaos.block.HubStationBlock(com.thefarawaydev.realmsofchaos.block.HubStationBlock.Kind.BOUNTIES,
                 unbreakable(key).mapColor(MapColor.WOOD).lightLevel(s -> 8).sound(SoundType.WOOD)));
+
+        block("rune_stone", RUNE_STONE, key -> new com.thefarawaydev.realmsofchaos.block.RuneStoneBlock(
+                unbreakable(key).mapColor(MapColor.STONE).sound(SoundType.STONE)
+                        .lightLevel(s -> s.getValue(com.thefarawaydev.realmsofchaos.block.RuneStoneBlock.LIT) ? 15 : 5)));
 
         // items: codex, compass, 45 god weapons (ordered by line, rank 1 -> 15), then the block items
         item("chaos_codex", CHAOS_CODEX, key -> new CodexItem(new Item.Properties().setId(key).stacksTo(1)));

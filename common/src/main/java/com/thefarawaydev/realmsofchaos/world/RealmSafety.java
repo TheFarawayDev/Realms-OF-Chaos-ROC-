@@ -35,6 +35,8 @@ public final class RealmSafety {
         HubLife.tick(server);
         Scanner.tick(server);
         Waygates.tick(server);
+        Traps.tick(server);
+        com.thefarawaydev.realmsofchaos.ui.Sidebar.tick(server);
         com.thefarawaydev.realmsofchaos.item.TarotEffects.tick(server);
         if (++ticker % 20 != 0) return;
         for (ServerPlayer player : server.getPlayerList().getPlayers()) {

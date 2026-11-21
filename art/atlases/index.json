@@ -511,7 +511,7 @@
       16
     ],
     "columns": 8,
-    "count": 35,
+    "count": 44,
     "source": "assets/realms_of_chaos/textures/block",
     "tiles": {
       "altar_base": [
@@ -630,29 +630,65 @@
         4,
         3
       ],
-      "shield_pylon_side": [
+      "rune_stone_0": [
         5,
         3
       ],
-      "shield_pylon_top": [
+      "rune_stone_0_lit": [
         6,
         3
       ],
-      "signal_jammer_side": [
+      "rune_stone_1": [
         7,
         3
       ],
-      "signal_jammer_top": [
+      "rune_stone_1_lit": [
         0,
         4
       ],
-      "waygate_obelisk_side": [
+      "rune_stone_2": [
         1,
         4
       ],
-      "waygate_obelisk_top": [
+      "rune_stone_2_lit": [
         2,
         4
+      ],
+      "rune_stone_3": [
+        3,
+        4
+      ],
+      "rune_stone_3_lit": [
+        4,
+        4
+      ],
+      "rune_stone_top": [
+        5,
+        4
+      ],
+      "shield_pylon_side": [
+        6,
+        4
+      ],
+      "shield_pylon_top": [
+        7,
+        4
+      ],
+      "signal_jammer_side": [
+        0,
+        5
+      ],
+      "signal_jammer_top": [
+        1,
+        5
+      ],
+      "waygate_obelisk_side": [
+        2,
+        5
+      ],
+      "waygate_obelisk_top": [
+        3,
+        5
       ]
     }
   },

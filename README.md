@@ -44,6 +44,17 @@ The current build is an **Alpha**.
   * **In its looks.** Every god's skin has been redrawn with more detail - the mark of its tower on its back, gold
     on the arms of the stronger gods, a cape on the three greatest of each tower - and each god now has three
     skins: itself, lit with runes behind its aegis, and cracked open with fire inside in its wrath.
+* **Rune chambers.** The trap rooms of the passages are now traps with a puzzle in them. A rune stone stands on a
+  pillar in each corner; step onto the marked square in the middle and the doorways close and water rises a layer
+  at a time. The runes light up in an order, again and again - press them (right-click) in that order and the room
+  drains, opens, and pays each player in it forge material, once. A wrong rune starts the order again and the
+  water leaps up a layer. It is a trap, not a grave: once full it hurts its catch for a quarter of a minute and
+  then lets go by itself, unpaid. It resets when nobody is left inside, never springs for someone who has solved
+  it, and a room left flooded by a server stop is put right when someone next walks in.
+* **A sidebar.** `/roc sidebar` (or the switch in the Codex) turns on a panel at the side of the screen: the tower
+  and floor, a trial's phase and health, pylons standing, the ring of floor that is left, the hub's tier, the
+  compass's signal, today's bounties and your party. Each player has their own; it never touches the world's
+  scoreboard.
 * **The compass scans. Nothing warps.** The Compass of Chaos no longer carries anyone to the hub, and neither do
   the Codex or `/roc hub` from the world outside.
   * Right-click begins a **scan** of 60 to 90 seconds, read above the hotbar while the compass is in hand: an
@@ -76,7 +87,7 @@ The current build is an **Alpha**.
   and the party are real screens - a title, text, pictures of items and buttons - built on the game's own dialog
   system, so they work the same on Fabric and Forge. Chapters of the story are read on screen, page by page. The
   screens with moving parts (the forge's strike bar, the passage map, a tower's floor plan) are still chest menus.
-* **A tutorial.** A new player is shown the **Climber's Handbook** a few seconds after they first join: sixteen
+* **A tutorial.** A new player is shown the **Climber's Handbook** a few seconds after they first join: seventeen
   topics, from getting in to reading a fight, always there in the Codex. After that, a **tip** appears the first
   time each thing happens - the first Ruined Gate, the first altar, the first seal, the first eruption - once each.
 * **Climb together.** Up to four players can form a **party** (Codex -> Party, or `/roc party invite <player>`,
@@ -389,7 +400,7 @@ on a real server: data loading, the hub, building and walking every floor of eve
 towers through the altar menu (with rematches) and all 42 passages, the Ruined Gate and its keystones, the story's
 chapters, the hub's residents, all eighteen sentinels, the custom screens and their buttons, the tutorial, impacts, the
 floor's eruptions and the gods' last stands, the three phases of a trial (health gates, pylons, stances, the collapsing floor and its restoration, strikes), gear and difficulty scaling,
-the compass scanner, relays and jammers, waygates, the Field Tower Bag, hub tiers and bounties, parties, group scaling and per-player loot, the wall protection (built, checked room by room for reachability,
+the compass scanner, relays and jammers, waygates, the Field Tower Bag, hub tiers and bounties, the rune chambers, the sidebar, parties, group scaling and per-player loot, the wall protection (built, checked room by room for reachability,
 seals struck, guardians, shrine, map), every god's signature move, the relic moves, the forging quick-time rounds,
 tier materials, each tarot card, the Codex, leaving the realms, the welcome and the anti-stuck safeguards.
 

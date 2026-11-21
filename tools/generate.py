@@ -344,6 +344,11 @@ HANDBOOK = [
         "A Relay Tower Core steadies every compass within 96 blocks. A Signal Jammer spoils the scans of everyone within 64 blocks except its owner and their party.",
         "A Waygate Obelisk is a place to travel from and to. Right-click it and choose: the Hub of Realms (once a Ruined Gate knows you) or any other obelisk you have touched. Then stand still for five seconds - move or be hit and it lets go. Each journey costs one ender pearl.",
     ]),
+    ("traps", "Rune chambers", [
+        "Some rooms of a passage are rune chambers: a rune stone on a pillar in each corner and a marked square in the middle. Step onto the square and the trap springs - the doorways close and water rises a layer at a time.",
+        "The runes light up in an order, again and again. Right-click them in that order and the room drains, opens, and gives each of you forge material (once). A wrong rune starts the order again and the water leaps up a layer.",
+        "It is a trap, not a grave: once full it hurts whoever is inside for a quarter of a minute, then lets go by itself, with no reward. It never springs for someone who has already solved it.",
+    ]),
     ("hub_tiers", "The hub grows", [
         "The Heart of the Hub stands south of the middle of the plaza. Right-click it for Hub Command: the hub's tier, what each tier does, and what the next one asks for. Everyone on the world shares one hub and anyone can add to the pile.",
         "Tier II: steadier compasses, a hub that mends you, and the Bounty Board. Tier III: six-row Field Bags, and the hub lifts every harm. Tier IV: three-second waygates, and the needle rolls every two seconds. Tier V: free waygates.",
@@ -406,7 +411,7 @@ HANDBOOK = [
         "Voodoo dolls are stitched from wheat and string round a pin. Bind one to a creature and stabbing the doll hurts the creature from afar.",
     ]),
     ("commands", "Commands", [
-        "/roc - this menu.  /roc hub - back to the hub from inside the realms.  /roc leave - go home.  /roc forge - the forge screen.  /roc scan - begin a compass scan.",
+        "/roc - this menu.  /roc hub - back to the hub from inside the realms.  /roc leave - go home.  /roc forge - the forge screen.  /roc scan - begin a compass scan.  /roc sidebar - the side panel on or off.",
         "/roc party invite <player>, /roc party accept, /roc party leave.",
     ]),
 ]
@@ -666,6 +671,44 @@ def gen_lang():
         "block.realms_of_chaos.waygate_obelisk": "Waygate Obelisk",
         "block.realms_of_chaos.hub_heart": "Heart of the Hub",
         "block.realms_of_chaos.bounty_board": "Bounty Board",
+        "block.realms_of_chaos.rune_stone": "Rune Stone",
+        "sidebar.realms_of_chaos.title": "Realms of Chaos",
+        "sidebar.realms_of_chaos.on": "Sidebar on",
+        "sidebar.realms_of_chaos.off": "Sidebar off",
+        "sidebar.realms_of_chaos.passage": "Passage to floor %s",
+        "sidebar.realms_of_chaos.passage.level": "Level %s of %s",
+        "sidebar.realms_of_chaos.passage.seals": "Seals broken: %s / %s",
+        "sidebar.realms_of_chaos.outside": "The world outside",
+        "sidebar.realms_of_chaos.hub": "Hub of Realms",
+        "sidebar.realms_of_chaos.floor": "Floor %s of %s",
+        "sidebar.realms_of_chaos.trial.phase.first": "First phase: %s%%",
+        "sidebar.realms_of_chaos.trial.phase.aegis": "Aegis: %s%%",
+        "sidebar.realms_of_chaos.trial.phase.rage": "Enraged: %s%%",
+        "sidebar.realms_of_chaos.trial.phase.wrath": "Wrath: %s%%",
+        "sidebar.realms_of_chaos.trial.pylons": "Pylons standing: %s",
+        "sidebar.realms_of_chaos.trial.ring": "Safe ring: %s blocks",
+        "sidebar.realms_of_chaos.trial.stance.deflect": "It turns shots aside",
+        "sidebar.realms_of_chaos.trial.stance.bristle": "Its guard lashes back",
+        "sidebar.realms_of_chaos.hubtier": "Hub tier %s: %s",
+        "sidebar.realms_of_chaos.signal": "Signal %s",
+        "sidebar.realms_of_chaos.signal.scanning": "Scanning %s",
+        "sidebar.realms_of_chaos.party": "Party of %s",
+        "sidebar.realms_of_chaos.bounty": "%s: %s / %s",
+        "sidebar.realms_of_chaos.bounty.done": "Done - %s: %s / %s",
+        "sidebar.realms_of_chaos.bounty.claimed": "Claimed - %s",
+        "screen.realms_of_chaos.home.sidebar.on": "Sidebar: on",
+        "screen.realms_of_chaos.home.sidebar.off": "Sidebar: off",
+        "screen.realms_of_chaos.home.sidebar.tip": "A panel at the side of the screen: where you are, the trial's phase, the hub, your signal, today's bounties",
+        "hud.realms_of_chaos.trap.sprung": "The room floods!",
+        "hud.realms_of_chaos.trap.sprung.sub": "Watch the %s runes light, then press them in that order",
+        "hud.realms_of_chaos.trap.status": "Water %s / %s  |  runes %s / %s",
+        "hud.realms_of_chaos.trap.wrong": "Wrong rune: the water leaps up. Watch the order again",
+        "hud.realms_of_chaos.trap.full": "The room is full - press the runes or hold on!",
+        "hud.realms_of_chaos.trap.failed": "The room lets go of you. It will flood again if you come back",
+        "hud.realms_of_chaos.trap.solved": "The room drains",
+        "hud.realms_of_chaos.trap.solved.sub": "Its doors stand open",
+        "hud.realms_of_chaos.trap.prize": "The chamber gives up %s x %s",
+        "hud.realms_of_chaos.trap.dormant": "The runes sleep until someone stands in the middle of the room",
         # ---- a trial's three phases
         "boss.realms_of_chaos.phase.aegis": "%s - Aegis",
         "boss.realms_of_chaos.phase.rage": "%s - Enraged",
@@ -944,7 +987,7 @@ def gen_lang():
         "hud.realms_of_chaos.passage.room.seal.done": "This chamber's seal is broken",
         "hud.realms_of_chaos.passage.room.treasure": "A treasure room",
         "hud.realms_of_chaos.passage.room.shrine": "A shrine - right-click it for a blessing",
-        "hud.realms_of_chaos.passage.room.trap": "Careful: scorching tiles and webs",
+        "hud.realms_of_chaos.passage.room.trap": "A rune chamber. Step into the middle and it floods",
         "hud.realms_of_chaos.passage.room.exit.sealed": "The gate - still sealed",
         "hud.realms_of_chaos.passage.room.exit.open": "The gate stands open",
         "hud.realms_of_chaos.passage.compass.seal": "Nearest seal: %s blocks to the %s",
@@ -1270,7 +1313,7 @@ KEYSTONES = {
 
 BLOCKS = ["gate_hub", "gate_zeus", "gate_poseidon", "gate_hades", "gate_ascend", "gate_leave",
           "altar_zeus", "altar_poseidon", "altar_hades", "chaos_forge", "passage_seal", "passage_shrine", "gate_pedestal", "oracle", "passage_cache",
-          "shield_pylon", "relay_core", "signal_jammer", "waygate_obelisk", "hub_heart", "bounty_board"]
+          "shield_pylon", "relay_core", "signal_jammer", "waygate_obelisk", "hub_heart", "bounty_board", "rune_stone"]
 
 # Blocks shaped from stacked boxes with their own top and side textures: id -> boxes
 FIELD_MODELS = {
@@ -1399,6 +1442,21 @@ def gen_models():
             wj(os.path.join(ASSETS, f"models/block/{b}.json"),
                station_model(f"{MOD}:block/oracle_top", f"{MOD}:block/altar_base", f"{MOD}:block/oracle_side",
                              [(0, 0, 0, 16, 4, 16), (3, 4, 3, 13, 8, 13), (1, 8, 1, 15, 12, 15), (4, 12, 4, 12, 16, 12)]))
+        elif b == "rune_stone":
+            # four runes, each lit or dark: eight looks from one block
+            variants = {}
+            for n in range(4):
+                for lit in (False, True):
+                    name = f"rune_stone_{n}" + ("_lit" if lit else "")
+                    variants[f"lit={'true' if lit else 'false'},rune={n}"] = {"model": f"{MOD}:block/{name}"}
+                    wj(os.path.join(ASSETS, f"models/block/{name}.json"),
+                       {"parent": "minecraft:block/cube_column", "textures": {"end": f"{MOD}:block/rune_stone_top", "side": f"{MOD}:block/{name}"}})
+            wj(os.path.join(ASSETS, f"blockstates/{b}.json"), {"variants": variants})
+            # the block's own model: the first rune, dark - what it looks like in the hand
+            wj(os.path.join(ASSETS, f"models/block/{b}.json"),
+               {"parent": "minecraft:block/cube_column", "textures": {"end": f"{MOD}:block/rune_stone_top", "side": f"{MOD}:block/rune_stone_0"}})
+            item_def(b, f"block/{b}")
+            continue
         elif b in FIELD_MODELS:
             wj(os.path.join(ASSETS, f"models/block/{b}.json"),
                station_model(f"{MOD}:block/{b}_top", f"{MOD}:block/altar_base", f"{MOD}:block/{b}_side", FIELD_MODELS[b]))
@@ -2933,6 +2991,35 @@ def gen_field_textures():
     stone_pair("signal_jammer", (64, 44, 50), (255, 90, 80), cross)
     stone_pair("waygate_obelisk", (40, 30, 62), (190, 110, 255), arch)
     stone_pair("hub_heart", (74, 52, 110), (245, 184, 46), heart, band_rows=(2, 13))
+
+    # rune stones: four runes carved in grey stone, dark or alight
+    runes = [["#......#", "##....##", "#.#..#.#", "#..##..#", "#..##..#", "#.#..#.#", "##....##", "#......#"],
+             ["...##...", "..####..", ".#.##.#.", "#..##..#", "...##...", "...##...", "...##...", "...##..."],
+             ["########", "#......#", "#.####.#", "#.#..#.#", "#.#..#.#", "#.####.#", "#......#", "########"],
+             ["#..#..#.", ".#.#.#..", "..###...", "#######.", "..###...", ".#.#.#..", "#..#..#.", "........"]]
+    rune_glow = [(250, 215, 90), (90, 220, 240), (200, 120, 255), (120, 240, 140)]
+    rnd = random.Random(hsh("rune_stone"))
+    grain = [[1 + rnd.uniform(-0.08, 0.08) for _ in range(16)] for _ in range(16)]
+    top = Image.new("RGBA", (16, 16))
+    for y in range(16):
+        for x in range(16):
+            top.putpixel((x, y), shade((112, 112, 124), grain[y][x] * (0.78 if x in (0, 15) or y in (0, 15) else 1.0)) + (255,))
+    top.save(os.path.join(T, "rune_stone_top.png"))
+    for n, rune in enumerate(runes):
+        for lit in (False, True):
+            img = Image.new("RGBA", (16, 16))
+            for y in range(16):
+                for x in range(16):
+                    c = shade((104, 104, 116), grain[x][y] * (0.76 if x in (0, 15) or y in (0, 15) else 1.0))
+                    if x in (2, 13) and 2 <= y <= 13 or y in (2, 13) and 2 <= x <= 13:
+                        c = shade(c, 0.82)
+                    ry, rx = y - 4, x - 4
+                    if 0 <= ry < 8 and 0 <= rx < 8 and rune[ry][rx] == "#":
+                        c = mix(rune_glow[n], (255, 255, 255), 0.25) if lit else shade(mix(rune_glow[n], (60, 60, 70), 0.72), 0.9)
+                    elif lit and 3 <= x <= 12 and 3 <= y <= 12:
+                        c = mix(c, rune_glow[n], 0.22)
+                    img.putpixel((x, y), c + (255,))
+            img.save(os.path.join(T, f"rune_stone_{n}" + ("_lit" if lit else "") + ".png"))
 
     # the Bounty Board: a plank board with three pinned notes
     rnd = random.Random(hsh("bounty_board"))

@@ -1693,7 +1693,7 @@ public final class SelfTest {
                 check(Screens.bodyLines(screen) >= 1, "a screen with nothing on it");
                 for (String command : Screens.commands(screen)) check(command.startsWith("/roc"), "a button that does not run a /roc command: " + command);
             }
-            check(HandbookData.ALL.size() == 16, "handbook topics: " + HandbookData.ALL.size());
+            check(HandbookData.ALL.size() == 17, "handbook topics: " + HandbookData.ALL.size());
 
             // the Codex item opens its home screen; every one of its buttons does something
             ModContent.CHAOS_CODEX.get().use(level, hero, InteractionHand.MAIN_HAND);
@@ -3309,6 +3309,188 @@ public final class SelfTest {
                 com.thefarawaydev.realmsofchaos.world.HubTiers.setTier(server, 1);
                 data.clearCounters("bounty/");
                 data.unmarkPrefix("bountyclaim/");
+                Realm.testAlias(Level.OVERWORLD, Realm.ABYSS);
+            }
+        });
+
+        step("rune chambers: stepping in floods and shuts the room, the runes pressed in order drain it, and it lets go and repairs itself", () -> {
+            Realm.testAlias(Level.OVERWORLD, Realm.OLYMPUS);
+            com.thefarawaydev.realmsofchaos.world.Traps.forget();
+            data.unmarkPrefix("trapdone/");
+            Passages.Plan found = null;
+            Passages.Cell chamber = null;
+            for (int index = 1; index <= Passages.COUNT && chamber == null; index++) {
+                for (int stage = 0; stage < Passages.stages(index) && chamber == null; stage++) {
+                    Passages.Plan candidate = Passages.plan(level, Line.ZEUS, index, stage);
+                    for (Passages.Cell c : candidate.cells()) {
+                        if (candidate.kind(c) == Passages.Kind.TRAP && chamber == null) {
+                            found = candidate;
+                            chamber = c;
+                        }
+                    }
+                }
+            }
+            check(chamber != null, "test setup: a rune chamber somewhere in the tower of Zeus");
+            final Passages.Plan plan = found;
+            final Passages.Cell cell = chamber;
+            // (in the test world the three towers' passages share one place: build this one afresh)
+            Passages.build(level, plan);
+            BlockPos m = plan.centre(cell);
+            Vec3 middle = new Vec3(m.getX() + 0.5, m.getY() + 1, m.getZ() + 0.5);
+            List<BlockPos> doors = com.thefarawaydev.realmsofchaos.world.Traps.doors(plan, cell);
+            ServerPlayer hero = fakePlayer(server, level, "RocRuneReader"), friend = fakePlayer(server, level, "RocRuneFriend"), late = fakePlayer(server, level, "RocRuneLate");
+            Item prizeItem = com.thefarawaydev.realmsofchaos.world.Traps.prize(plan).getItem();
+            int prizeCount = com.thefarawaydev.realmsofchaos.world.Traps.prize(plan).getCount();
+            java.util.function.BooleanSupplier dry = () -> {
+                for (int dx = -4; dx <= 4; dx++) {
+                    for (int dz = -4; dz <= 4; dz++) {
+                        for (int y = 1; y <= Passages.HEADROOM + 1; y++) if (level.getBlockState(m.offset(dx, y, dz)).is(Blocks.WATER)) return false;
+                    }
+                }
+                return true;
+            };
+            java.util.function.BooleanSupplier open = () -> {
+                for (BlockPos door : doors) if (!level.getBlockState(door).isAir()) return false;
+                return true;
+            };
+            level.addNewPlayer(hero);
+            level.addNewPlayer(friend);
+            level.addNewPlayer(late);
+            try {
+                friend.setPos(900, 300, 900);
+                late.setPos(900, 300, 900);
+                for (int n = 0; n < com.thefarawaydev.realmsofchaos.block.RuneStoneBlock.RUNES; n++) {
+                    BlockPos at = com.thefarawaydev.realmsofchaos.world.Traps.rune(plan, cell, n);
+                    BlockState state = level.getBlockState(at);
+                    check(state.is(ModContent.RUNE_STONE.get()) && state.getValue(com.thefarawaydev.realmsofchaos.block.RuneStoneBlock.RUNE) == n
+                            && !state.getValue(com.thefarawaydev.realmsofchaos.block.RuneStoneBlock.LIT) && solid(level, at.below()), "rune stone " + n + " stands dark on its pillar");
+                }
+                long ways = plan.neighbours(cell).stream().filter(n -> plan.connected(cell, n)).count();
+                check(ways >= 1 && doors.size() == ways * 9 && open.getAsBoolean() && dry.getAsBoolean(), "its " + ways + " doorways stand open and it is dry");
+
+                // nothing happens at the edge of the room, and the runes sleep
+                hero.setPos(middle.x + 3.5, middle.y, middle.z);
+                settle(level);
+                com.thefarawaydev.realmsofchaos.world.Traps.service(hero, level, plan, cell);
+                check(com.thefarawaydev.realmsofchaos.world.Traps.active(plan, cell) == null, "walking along the wall does not spring it");
+                check(!com.thefarawaydev.realmsofchaos.world.Traps.press(level, com.thefarawaydev.realmsofchaos.world.Traps.rune(plan, cell, 0), hero), "the runes sleep until it does");
+
+                // the middle springs it
+                hero.setPos(middle.x, middle.y, middle.z);
+                com.thefarawaydev.realmsofchaos.world.Traps.service(hero, level, plan, cell);
+                var trap = com.thefarawaydev.realmsofchaos.world.Traps.active(plan, cell);
+                check(trap != null && trap.order().length == com.thefarawaydev.realmsofchaos.world.Traps.length(plan), "stepping into the middle springs it");
+                for (BlockPos door : doors) check(solid(level, door), "every doorway is shut: " + door);
+                int[] order = trap.order();
+                for (int i = 1; i < order.length; i++) check(order[i] != order[i - 1], "no rune twice running");
+                int beat = com.thefarawaydev.realmsofchaos.world.Traps.GLOW + com.thefarawaydev.realmsofchaos.world.Traps.GAP, wait = com.thefarawaydev.realmsofchaos.world.Traps.SHOW_DELAY;
+                check(com.thefarawaydev.realmsofchaos.world.Traps.shown(order, 0) == -1 && com.thefarawaydev.realmsofchaos.world.Traps.shown(order, wait) == order[0]
+                        && com.thefarawaydev.realmsofchaos.world.Traps.shown(order, wait + com.thefarawaydev.realmsofchaos.world.Traps.GLOW) == -1
+                        && com.thefarawaydev.realmsofchaos.world.Traps.shown(order, wait + beat) == order[1]
+                        && com.thefarawaydev.realmsofchaos.world.Traps.shown(order, wait + com.thefarawaydev.realmsofchaos.world.Traps.SHOW_EVERY) == order[0], "the order is shown rune by rune, and again");
+                for (int i = 0; i <= wait; i++) com.thefarawaydev.realmsofchaos.world.Traps.step(trap);
+                check(level.getBlockState(com.thefarawaydev.realmsofchaos.world.Traps.rune(plan, cell, order[0])).getValue(com.thefarawaydev.realmsofchaos.block.RuneStoneBlock.LIT), "the first rune of the order lights");
+                for (int i = 0; i < com.thefarawaydev.realmsofchaos.world.Traps.fillEvery(plan) && trap.water() < 1; i++) com.thefarawaydev.realmsofchaos.world.Traps.step(trap);
+                check(trap.water() == 1 && level.getBlockState(m.offset(2, 1, 0)).is(Blocks.WATER) && level.getBlockState(m.offset(2, 2, 0)).isAir(), "the water rises a layer at a time");
+
+                // a wrong rune costs a layer and the progress made
+                BlockPos wrong = com.thefarawaydev.realmsofchaos.world.Traps.rune(plan, cell, (order[0] + 1) % 4);
+                check(!com.thefarawaydev.realmsofchaos.world.Traps.press(level, wrong, hero) && trap.water() == 2 && trap.pressed() == 0, "a wrong rune brings the water up a layer");
+                check(com.thefarawaydev.realmsofchaos.world.Traps.press(level, com.thefarawaydev.realmsofchaos.world.Traps.rune(plan, cell, order[0]), hero) && trap.pressed() == 1, "the right one counts");
+                com.thefarawaydev.realmsofchaos.world.Traps.press(level, com.thefarawaydev.realmsofchaos.world.Traps.rune(plan, cell, (order[1] + 1) % 4), hero);
+                check(trap.pressed() == 0 && trap.water() == 3, "a mistake part-way and the order has to be begun again");
+
+                // the order pressed right drains it, opens it and pays everyone inside
+                friend.setPos(middle.x + 1, middle.y, middle.z);
+                for (int n : order) check(com.thefarawaydev.realmsofchaos.world.Traps.press(level, com.thefarawaydev.realmsofchaos.world.Traps.rune(plan, cell, n), hero), "the order, rune by rune");
+                check(com.thefarawaydev.realmsofchaos.world.Traps.active(plan, cell) == null && dry.getAsBoolean() && open.getAsBoolean(), "pressed right, the room drains and opens");
+                for (int n = 0; n < 4; n++) {
+                    check(!level.getBlockState(com.thefarawaydev.realmsofchaos.world.Traps.rune(plan, cell, n)).getValue(com.thefarawaydev.realmsofchaos.block.RuneStoneBlock.LIT), "and its runes go dark");
+                }
+                check(count(hero, prizeItem) == prizeCount && count(friend, prizeItem) == prizeCount, "everyone in the room is paid");
+                check(com.thefarawaydev.realmsofchaos.world.Traps.solvedBy(plan, cell, hero) && com.thefarawaydev.realmsofchaos.world.Traps.solvedBy(plan, cell, friend), "and it is remembered");
+                com.thefarawaydev.realmsofchaos.world.Traps.service(hero, level, plan, cell);
+                check(com.thefarawaydev.realmsofchaos.world.Traps.active(plan, cell) == null, "it never springs for someone who has solved it");
+
+                // someone else: left alone it fills, holds, and lets go by itself
+                hero.setPos(900, 300, 900);
+                friend.setPos(900, 300, 900);
+                late.setPos(middle.x, middle.y, middle.z);
+                com.thefarawaydev.realmsofchaos.world.Traps.service(late, level, plan, cell);
+                trap = com.thefarawaydev.realmsofchaos.world.Traps.active(plan, cell);
+                check(trap != null, "it springs for the next who has not");
+                for (int i = 0; i < 20 * 200 && com.thefarawaydev.realmsofchaos.world.Traps.active(plan, cell) == trap; i++) {
+                    late.damageCooldownTime = 0;
+                    com.thefarawaydev.realmsofchaos.world.Traps.step(trap);
+                }
+                check(com.thefarawaydev.realmsofchaos.world.Traps.active(plan, cell) == null && trap.full() && trap.water() == com.thefarawaydev.realmsofchaos.world.Traps.LAYERS, "left alone it fills, holds, and lets go");
+                check(late.isAlive() && late.getHealth() < late.getMaxHealth(), "having hurt its catch, not killed it: " + late.getHealth());
+                check(dry.getAsBoolean() && open.getAsBoolean() && !com.thefarawaydev.realmsofchaos.world.Traps.solvedBy(plan, cell, late) && count(late, prizeItem) == 0, "drained and open, and nothing paid");
+
+                // a server stop mid-flood: the room is put right the next time someone walks in
+                late.setHealth(late.getMaxHealth());
+                com.thefarawaydev.realmsofchaos.world.Traps.service(late, level, plan, cell);
+                trap = com.thefarawaydev.realmsofchaos.world.Traps.active(plan, cell);
+                check(trap != null, "it springs again for someone it let go");
+                for (int i = 0; i < com.thefarawaydev.realmsofchaos.world.Traps.fillEvery(plan); i++) com.thefarawaydev.realmsofchaos.world.Traps.step(trap);
+                com.thefarawaydev.realmsofchaos.world.Traps.forget();
+                check(!dry.getAsBoolean() && !open.getAsBoolean(), "test setup: the server stopped with the room flooded and shut");
+                late.setPos(middle.x + 3.5, middle.y, middle.z);
+                com.thefarawaydev.realmsofchaos.world.Traps.service(late, level, plan, cell);
+                check(dry.getAsBoolean() && open.getAsBoolean() && com.thefarawaydev.realmsofchaos.world.Traps.active(plan, cell) == null, "a room left flooded is put right when someone walks in");
+
+                // and it resets the moment nobody is left inside
+                late.setPos(middle.x, middle.y, middle.z);
+                com.thefarawaydev.realmsofchaos.world.Traps.service(late, level, plan, cell);
+                trap = com.thefarawaydev.realmsofchaos.world.Traps.active(plan, cell);
+                late.setPos(900, 300, 900);
+                com.thefarawaydev.realmsofchaos.world.Traps.step(trap);
+                check(com.thefarawaydev.realmsofchaos.world.Traps.active(plan, cell) == null && dry.getAsBoolean() && open.getAsBoolean(), "nobody left inside: it resets for whoever comes next");
+            } finally {
+                for (ServerPlayer pl : new ServerPlayer[]{hero, friend, late}) pl.remove(net.minecraft.world.entity.Entity.RemovalReason.DISCARDED);
+                com.thefarawaydev.realmsofchaos.world.Traps.forget();
+                com.thefarawaydev.realmsofchaos.world.Traps.restore(level, plan, cell);
+                data.unmarkPrefix("trapdone/");
+                Realm.testAlias(Level.OVERWORLD, Realm.ABYSS);
+            }
+        });
+
+        step("the sidebar: off until asked for, each player's own, and it follows what is going on", () -> {
+            Realm.testAlias(Level.OVERWORLD, Realm.OLYMPUS);
+            ServerPlayer watcher = fakePlayer(server, level, "RocWatcher");
+            watcher.setPos(0.5, Tower.floorY(4) + 1, 6.5);
+            data.unmarkBuilt("sidebar/" + watcher.getUUID());
+            clearBosses(level);
+            try {
+                check(!com.thefarawaydev.realmsofchaos.ui.Sidebar.enabled(watcher) && !com.thefarawaydev.realmsofchaos.ui.Sidebar.showing(watcher), "nobody has a sidebar they did not ask for");
+                check(Screens.commands(Screens.home(watcher)).contains("/roc ui sidebar"), "the Codex has the switch");
+                server.getCommands().performPrefixedCommand(watcher.createCommandSourceStack(), "roc sidebar");
+                check(com.thefarawaydev.realmsofchaos.ui.Sidebar.enabled(watcher) && com.thefarawaydev.realmsofchaos.ui.Sidebar.showing(watcher), "/roc sidebar turns it on");
+                int quiet = com.thefarawaydev.realmsofchaos.ui.Sidebar.lines(watcher).size();
+                check(quiet >= 3 && com.thefarawaydev.realmsofchaos.ui.Sidebar.shownLines(watcher) == quiet, "it says where you are and how the hub stands: " + quiet + " lines");
+                // a trial close by adds its phase
+                GodBoss boss = ModContent.GOD_BOSS.get().create(level, EntitySpawnReason.TRIGGERED);
+                boss.setGod(Tower.god(Line.ZEUS, 4));
+                Vec3 home = Tower.centre(level, 4);
+                boss.setPos(home.x, home.y, home.z);
+                boss.setHome(home);
+                level.addFreshEntity(boss);
+                settle(level);
+                com.thefarawaydev.realmsofchaos.ui.Sidebar.update(watcher);
+                int fighting = com.thefarawaydev.realmsofchaos.ui.Sidebar.shownLines(watcher);
+                check(fighting == quiet + 2, "a trial close by adds the god and its phase: " + fighting);
+                boss.setHealth(boss.getMaxHealth() * 0.6F);
+                boss.updatePhase(level);
+                com.thefarawaydev.realmsofchaos.ui.Sidebar.update(watcher);
+                check(com.thefarawaydev.realmsofchaos.ui.Sidebar.shownLines(watcher) == fighting + 1, "and, behind its aegis, how many pylons stand");
+                boss.discard();
+                check(com.thefarawaydev.realmsofchaos.ui.Sidebar.lines(watcher).size() <= com.thefarawaydev.realmsofchaos.ui.Sidebar.MAX_LINES, "never longer than the screen is tall");
+                com.thefarawaydev.realmsofchaos.ui.Sidebar.toggle(watcher);
+                check(!com.thefarawaydev.realmsofchaos.ui.Sidebar.enabled(watcher) && !com.thefarawaydev.realmsofchaos.ui.Sidebar.showing(watcher), "and off again");
+            } finally {
+                clearBosses(level);
+                data.unmarkBuilt("sidebar/" + watcher.getUUID());
+                for (var bolt : level.getEntitiesOfClass(net.minecraft.world.entity.LightningBolt.class, new AABB(-24, Tower.floorY(4) - 3, -24, 24, Tower.floorY(4) + 17, 24), e -> true)) bolt.discard();
                 Realm.testAlias(Level.OVERWORLD, Realm.ABYSS);
             }
         });

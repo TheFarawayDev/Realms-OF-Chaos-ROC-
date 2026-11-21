@@ -63,7 +63,7 @@ public final class Passages {
     public static final int HEADROOM = 5;
     public static final int MAX_SIZE = 6;
     public static final int X0 = 600, PITCH = 160;
-    public static final int LAYOUT_VERSION = 3;
+    public static final int LAYOUT_VERSION = 4;
     public static final String GUARDIAN_TAG = "realms_of_chaos_guardian";
     private static final String HUD = "hud." + RealmsOfChaos.MOD_ID + ".passage.";
 
@@ -583,12 +583,12 @@ public final class Passages {
                 for (int[] k : CORNERS) set(level, m.offset(k[0], 0, k[1]), Blocks.MOSS_BLOCK);
             }
             case TRAP -> {
-                // scorching tiles underfoot and webs to wade through: slow going, never a dead end
-                for (int dx = -4; dx <= 4; dx++) {
-                    for (int dz = -4; dz <= 4; dz++) {
-                        if (Math.abs(dx) == 4 && Math.abs(dz) <= 1 || Math.abs(dz) == 4 && Math.abs(dx) <= 1) continue;   // thresholds stay safe
-                        if (random.nextFloat() < 0.28F) set(level, m.offset(dx, 0, dz), Blocks.MAGMA_BLOCK);
-                        else if (random.nextFloat() < 0.10F) set(level, m.offset(dx, 1 + random.nextInt(2), dz), Blocks.COBWEB);
+                // a rune chamber: a rune stone on a pillar in each corner, and a floor that says "do not stand here"
+                Traps.build(level, plan, c, p.pillar());
+                for (int dx = -2; dx <= 2; dx++) {
+                    for (int dz = -2; dz <= 2; dz++) {
+                        boolean ring = Math.max(Math.abs(dx), Math.abs(dz)) == 2;
+                        set(level, m.offset(dx, 0, dz), ring ? p.inlay() : dx == 0 && dz == 0 ? p.light() : p.trim());
                     }
                 }
             }
@@ -1011,6 +1011,7 @@ public final class Passages {
             boolean sealed = kind == Kind.SEAL && level.getBlockState(plan.sealPos(cell)).is(ModContent.PASSAGE_SEAL.get());
             boolean wakes = sealed || kind == Kind.ARENA || plan.patrols.contains(cell);
             if (wakes && !player.isSpectator() && !player.isCreative()) wake(level, plan, cell);
+            if (kind == Kind.TRAP) Traps.service(player, level, plan, cell);
             String here = spot.line().id() + "/" + spot.index() + "/" + spot.stage() + "/" + cell.x + "/" + cell.z;
             if (!here.equals(LAST_CELL.put(player.getUUID(), here))) {
                 String hint = switch (kind) {

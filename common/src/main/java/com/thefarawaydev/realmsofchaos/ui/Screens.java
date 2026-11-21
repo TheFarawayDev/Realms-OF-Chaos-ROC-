@@ -146,6 +146,7 @@ public final class Screens {
         actions.add(button(tr("home.handbook", 0x55FFFF), tr("home.handbook.tip", 0xAAAAAA), "/roc ui handbook"));
         actions.add(button(tr("home.party", 0x55FF55), tr("home.party.tip", 0xAAAAAA), "/roc ui party"));
         actions.add(button(tr("home.forge", 0xFFAA00), tr("home.forge.tip", 0xAAAAAA), "/roc forge"));
+        actions.add(button(tr(Sidebar.enabled(player) ? "home.sidebar.on" : "home.sidebar.off", 0x55FFFF), tr("home.sidebar.tip", 0xAAAAAA), "/roc ui sidebar"));
         actions.add(button(tr("home.hub", 0xFFFFFF), null, "/roc hub"));
         actions.add(button(tr("home.leave", 0xFFFFFF), null, "/roc leave"));
         return menu(tr("home", 0xA55AD6), body, actions, close(), 2);

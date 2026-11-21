@@ -1,0 +1,28 @@
+{
+  "variants": {
+    "lit=false,rune=0": {
+      "model": "realms_of_chaos:block/rune_stone_0"
+    },
+    "lit=true,rune=0": {
+      "model": "realms_of_chaos:block/rune_stone_0_lit"
+    },
+    "lit=false,rune=1": {
+      "model": "realms_of_chaos:block/rune_stone_1"
+    },
+    "lit=true,rune=1": {
+      "model": "realms_of_chaos:block/rune_stone_1_lit"
+    },
+    "lit=false,rune=2": {
+      "model": "realms_of_chaos:block/rune_stone_2"
+    },
+    "lit=true,rune=2": {
+      "model": "realms_of_chaos:block/rune_stone_2_lit"
+    },
+    "lit=false,rune=3": {
+      "model": "realms_of_chaos:block/rune_stone_3"
+    },
+    "lit=true,rune=3": {
+      "model": "realms_of_chaos:block/rune_stone_3_lit"
+    }
+  }
+}

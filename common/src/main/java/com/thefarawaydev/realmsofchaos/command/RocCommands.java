@@ -60,6 +60,10 @@ public final class RocCommands {
                                                                         com.mojang.brigadier.arguments.IntegerArgumentType.getInteger(ctx, "y"),
                                                                         com.mojang.brigadier.arguments.IntegerArgumentType.getInteger(ctx, "z")),
                                                                         com.mojang.brigadier.arguments.StringArgumentType.getString(ctx, "what")))))))))
+                        .then(Commands.literal("sidebar").executes(ctx -> ui(ctx.getSource().getPlayerOrException(), p -> {
+                            com.thefarawaydev.realmsofchaos.ui.Sidebar.toggle(p);
+                            Screens.show(p, Screens.home(p));
+                        })))
                         .then(Commands.literal("hubcore")
                                 .executes(ctx -> ui(ctx.getSource().getPlayerOrException(), p -> Screens.show(p, Screens.hubCommand(p))))
                                 .then(Commands.literal("deposit").executes(ctx -> ui(ctx.getSource().getPlayerOrException(), RocCommands::deposit))))
@@ -103,6 +107,10 @@ public final class RocCommands {
                 .then(Commands.literal("hub").executes(ctx -> {
                     ServerPlayer player = ctx.getSource().getPlayerOrException();
                     Teleports.recall(player);
+                    return 1;
+                }))
+                .then(Commands.literal("sidebar").executes(ctx -> {
+                    com.thefarawaydev.realmsofchaos.ui.Sidebar.toggle(ctx.getSource().getPlayerOrException());
                     return 1;
                 }))
                 .then(Commands.literal("scan").executes(ctx -> {
