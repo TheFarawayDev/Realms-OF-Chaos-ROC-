@@ -41,7 +41,7 @@ public class CodexMenu extends ButtonMenu {
     public static void open(ServerPlayer player) {
         player.openMenu(new SimpleMenuProvider(
                 (id, inventory, p) -> new CodexMenu(id, inventory, (ServerPlayer) p),
-                Component.translatable(NS + "codex")));
+                Skin.title(Skin.Panel.CODEX, Component.translatable(NS + "codex"))));
     }
 
     private CodexMenu(int id, Inventory inventory, ServerPlayer viewer) {

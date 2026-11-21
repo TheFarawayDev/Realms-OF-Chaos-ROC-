@@ -32,7 +32,7 @@ public class PartyMenu extends ButtonMenu {
 
     public static void open(ServerPlayer player) {
         player.openMenu(new SimpleMenuProvider((id, inventory, p) -> new PartyMenu(id, inventory, (ServerPlayer) p),
-                Component.translatable("menu." + RealmsOfChaos.MOD_ID + ".party")));
+                Skin.title(Skin.Panel.PARTY, Component.translatable("menu." + RealmsOfChaos.MOD_ID + ".party"))));
     }
 
     private PartyMenu(int id, Inventory inventory, ServerPlayer viewer) {

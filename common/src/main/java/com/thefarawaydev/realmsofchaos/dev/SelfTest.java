@@ -4192,6 +4192,57 @@ public final class SelfTest {
             }
         });
 
+        step("the menus wear the mod's own artwork: a panel in the title, blank tiles for unused slots, gems for meters", () -> {
+            ServerPlayer viewer = fakePlayer(server, level, "RocViewer");
+            ClassLoader assets = RealmsOfChaos.class.getClassLoader();
+            // every panel is in the font, with a picture of the right height for its menu
+            String font;
+            try (var in = assets.getResourceAsStream("assets/realms_of_chaos/font/ui.json")) {
+                check(in != null, "the menu font");
+                font = new String(in.readAllBytes(), java.nio.charset.StandardCharsets.UTF_8);
+            }
+            check(font.contains("space") && font.contains("bitmap"), "the font has pictures, and the spaces that pull a panel back to the corner");
+            String[] names = {"codex", "forge", "passage", "bag6", "altar", "seal", "deck", "party", "story", "bag3"};
+            com.thefarawaydev.realmsofchaos.ui.Skin.Panel[] panels = com.thefarawaydev.realmsofchaos.ui.Skin.Panel.values();
+            check(panels.length == names.length, "a picture for every panel");
+            for (int i = 0; i < names.length; i++) {
+                com.thefarawaydev.realmsofchaos.ui.Skin.Panel panel = panels[i];
+                net.minecraft.network.chat.Component title = com.thefarawaydev.realmsofchaos.ui.Skin.title(panel, net.minecraft.network.chat.Component.literal("Name"));
+                check(com.thefarawaydev.realmsofchaos.ui.Skin.skinned(title, panel) && title.getString().endsWith("Name"), panel + ": the title is the panel, then the name");
+                check(panel.glyph == (char) (0xE000 + i), panel + ": its letter");
+                try (var in = assets.getResourceAsStream("assets/realms_of_chaos/textures/gui/panel_" + names[i] + ".png")) {
+                    check(in != null, "panel artwork for " + names[i]);
+                    var image = javax.imageio.ImageIO.read(in);
+                    int rows = (image.getHeight() - 114) / 18;
+                    check(image.getWidth() == 176 && rows == panel.rows && font.contains("panel_" + names[i] + ".png"),
+                            names[i] + ": a panel the size of its menu: " + image.getWidth() + " x " + image.getHeight() + " for " + panel.rows + " rows");
+                    // every slot is a hole in the picture, so an icon can never be hidden by it
+                    for (int r = 0; r < rows; r++) {
+                        for (int c = 0; c < 9; c++) check((image.getRGB(8 + c * 18 + 8, 18 + r * 18 + 8) >>> 24) == 0, names[i] + ": slot " + r + "," + c + " is open");
+                    }
+                    check((image.getRGB(16, 161 + (rows - 4) * 18 + 8) >>> 24) == 0 && (image.getRGB(88, 8) >>> 24) == 255, names[i] + ": the hotbar is open and the header is solid");
+                }
+            }
+            for (net.minecraft.world.item.DyeColor dye : net.minecraft.world.item.DyeColor.values()) {
+                check(assets.getResource("assets/realms_of_chaos/items/ui/gem_" + dye.getName() + ".json") != null
+                        && assets.getResource("assets/realms_of_chaos/textures/item/ui/gem_" + dye.getName() + ".png") != null, "a gem for " + dye.getName());
+            }
+            check(assets.getResource("assets/realms_of_chaos/items/ui/tile.json") != null, "the blank tile");
+            // and the menus use them
+            CodexMenu.open(viewer);
+            CodexMenu codex = (CodexMenu) viewer.containerMenu;
+            int tiles = 0, gems = 0;
+            for (int i = 0; i < 54; i++) {
+                var model = codex.getSlot(i).getItem().get(net.minecraft.core.component.DataComponents.ITEM_MODEL);
+                if (model == null) continue;
+                if (model.equals(RealmsOfChaos.id("ui/tile"))) tiles++;
+                if (model.getPath().startsWith("ui/gem_")) gems++;
+            }
+            check(tiles >= 10 && gems >= 3, "the Codex is tiles and gems, not glass panes: " + tiles + " tiles, " + gems + " gems");
+            check(codex.getSlot(CodexMenu.SLOT_HUB).getItem().is(ModContent.CHAOS_COMPASS.get()), "its buttons keep their own icons");
+            viewer.closeContainer();
+        });
+
         step("live ticking: bosses of every line are left in the world mid-ability for the server to tick", () -> {
             ServerPlayer target = fakePlayer(server, level, "RocTarget");
             target.setPos(4.5, Tower.floorY(5) + 1, 4.5);

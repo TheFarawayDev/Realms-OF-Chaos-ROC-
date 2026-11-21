@@ -29,7 +29,7 @@ public class StoryMenu extends ButtonMenu {
 
     public static void open(ServerPlayer player) {
         player.openMenu(new SimpleMenuProvider((id, inventory, p) -> new StoryMenu(id, inventory, (ServerPlayer) p),
-                Component.translatable("menu." + RealmsOfChaos.MOD_ID + ".story")));
+                Skin.title(Skin.Panel.STORY, Component.translatable("menu." + RealmsOfChaos.MOD_ID + ".story"))));
     }
 
     private StoryMenu(int id, Inventory inventory, ServerPlayer viewer) {

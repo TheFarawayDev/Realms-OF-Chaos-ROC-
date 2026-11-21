@@ -22,8 +22,9 @@ import net.minecraft.world.item.component.TooltipDisplay;
 import net.minecraft.world.level.ItemLike;
 
 /**
- * Base for the mod's in-game menus. They use the vanilla 9x3 chest screen with the server owning every slot, so
- * they behave the same on Fabric and Forge and need no custom packets. Icons are buttons; nothing can be taken.
+ * Base for the mod's in-game menus. Underneath they are the vanilla chest screen with the server owning every slot,
+ * so they behave the same on Fabric and Forge and need no custom packets; what the player sees is the mod's own
+ * panel, tiles and gems (see {@link Skin}). Icons are buttons; nothing can be taken.
  */
 public abstract class ButtonMenu extends ChestMenu {
     protected final SimpleContainer view;
@@ -97,7 +98,8 @@ public abstract class ButtonMenu extends ChestMenu {
 
     /** A named pane used as a label or meter segment. */
     protected static ItemStack pane(DyeColor color, Component name, List<Component> lore) {
-        return icon(Items.STAINED_GLASS_PANE.pick(color), name, false, lore);
+        // (still a pane underneath, but drawn as one of the mod's own gems)
+        return Skin.gem(icon(Items.STAINED_GLASS_PANE.pick(color), name, false, lore), color);
     }
 
     protected static Style plain(int color) {
@@ -125,6 +127,7 @@ public abstract class ButtonMenu extends ChestMenu {
     protected static ItemStack filler(DyeColor color) {
         ItemStack stack = new ItemStack(Items.STAINED_GLASS_PANE.pick(color));
         stack.set(DataComponents.TOOLTIP_DISPLAY, new TooltipDisplay(true, TooltipDisplay.DEFAULT.hiddenComponents()));
-        return stack;
+        // an unused slot is not a pane of glass: it is a blank tile of the menu's own panel
+        return Skin.tile(stack);
     }
 }

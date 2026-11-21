@@ -339,6 +339,7 @@ public final class Rooms {
 
     private static final Map<String, Integer> PROGRESS = new HashMap<>();
     private static final Map<UUID, BlockPos> LAST_PLATE = new HashMap<>();
+    private static final Map<UUID, Long> LAST_STOOD = new HashMap<>();
 
     /** Every plate of the floor: the two rings round the cache. */
     public static List<BlockPos> plates(Passages.Plan plan, Passages.Cell cell) {
@@ -388,8 +389,11 @@ public final class Rooms {
      * @return true if that step solved the room
      */
     public static boolean stepPlate(ServerLevel level, BlockPos pos, ServerPlayer player) {
-        if (pos.equals(LAST_PLATE.get(player.getUUID()))) return false;          // (still standing on the same one)
-        LAST_PLATE.put(player.getUUID(), pos);
+        // (a plate is stepped on once however long it is stood on: only coming back to it after leaving counts again)
+        long now = level.getServer().getTickCount();
+        Long stood = LAST_STOOD.put(player.getUUID(), now);
+        boolean same = pos.equals(LAST_PLATE.put(player.getUUID(), pos.immutable())) && stood != null && now - stood >= 0 && now - stood <= 3;
+        if (same) return false;
         Place at = place(level, pos, Passages.Kind.PLATES);
         if (at == null || solved(level, at.plan, at.cell) || player.isCreative()) return false;
         List<BlockPos> path = path(at.plan, at.cell);
@@ -644,6 +648,7 @@ public final class Rooms {
         CHIME_UNTIL.clear();
         PROGRESS.clear();
         LAST_PLATE.clear();
+        LAST_STOOD.clear();
         DART_READY.clear();
     }
 }

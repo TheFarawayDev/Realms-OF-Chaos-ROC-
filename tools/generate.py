@@ -3341,6 +3341,112 @@ def gen_field_textures():
     img.save(os.path.join(ASSETS, "textures/item/field_bag.png"))
 
 # ----------------------------------------------------------------------------
+# The mod's own menu artwork. A chest screen cannot be given a new background by a server - but its title can be
+# written in a font, and a font's letters can be pictures. So each menu has one "letter" that is its whole panel,
+# drawn from the top-left corner of the screen; the title text follows it. Every slot is left as a hole in the
+# picture, so whatever the game draws there - an icon, or the mod's own blank tile - always shows.
+# ----------------------------------------------------------------------------
+UI_BASE, UI_DARK, UI_WELL, UI_PARCH, UI_PARCH_D = (38, 32, 80), (22, 18, 43), (28, 23, 60), (214, 196, 160), (150, 128, 96)
+# name: (rows of the menu, accent colour, the 9x9 emblem in its header, glyph)
+UI_PANELS = {
+    "codex": (6, (165, 90, 214), ["..#####..", ".#.....#.", ".#.###.#.", ".#.#.#.#.", ".#.###.#.", ".#.....#.", ".#.###.#.", ".#.....#.", "..#####.."], "\uE000"),
+    "forge": (6, (255, 140, 40), [".........", ".#######.", ".#######.", "..#####..", "...###...", "...###...", "..#####..", ".#######.", "........."], "\uE001"),
+    "passage": (6, (60, 190, 215), ["....#....", "...###...", "..#.#.#..", ".#..#..#.", "#########", ".#..#..#.", "..#.#.#..", "...###...", "....#...."], "\uE002"),
+    "bag6": (6, (176, 124, 78), ["..#####..", ".#.....#.", ".#######.", "#########", "#...#...#", "#..###..#", "#...#...#", "#########", ".#######."], "\uE003"),
+    "altar": (3, (245, 184, 46), ["....#....", "...###...", "..##.##..", "..#...#..", "..##.##..", "...###...", ".#######.", ".#######.", "#########"], "\uE004"),
+    "seal": (3, (120, 240, 250), ["....#....", "...#.#...", "..#...#..", ".#..#..#.", "#..###..#", ".#..#..#.", "..#...#..", "...#.#...", "....#...."], "\uE005"),
+    "deck": (6, (190, 80, 250), [".#######.", ".#.....#.", ".#..#..#.", ".#.###.#.", ".#..#..#.", ".#.....#.", ".#..#..#.", ".#.....#.", ".#######."], "\uE006"),
+    "party": (6, (90, 220, 120), [".........", ".##...##.", ".##...##.", ".........", "####.####", "####.####", "####.####", "####.####", "........."], "\uE007"),
+    "story": (6, (236, 208, 150), ["#########", "#.......#", "#.#####.#", "#.......#", "#.#####.#", "#.......#", "#.###...#", "#.......#", "#########"], "\uE008"),
+    "bag3": (3, (176, 124, 78), ["..#####..", ".#.....#.", ".#######.", "#########", "#...#...#", "#..###..#", "#...#...#", "#########", ".#######."], "\uE009"),
+}
+UI_DYES = {"white": (236, 236, 240), "orange": (240, 140, 50), "magenta": (200, 90, 200), "light_blue": (110, 190, 240), "yellow": (250, 215, 80), "lime": (130, 220, 80),
+           "pink": (245, 160, 190), "gray": (90, 90, 100), "light_gray": (160, 160, 168), "cyan": (60, 180, 190), "purple": (150, 80, 210), "blue": (70, 90, 210),
+           "brown": (130, 90, 60), "green": (80, 150, 70), "red": (210, 60, 60), "black": (30, 28, 36)}
+
+def gen_ui():
+    G = os.path.join(ASSETS, "textures/gui")
+    I = os.path.join(ASSETS, "textures/item/ui")
+    os.makedirs(G, exist_ok=True)
+    os.makedirs(I, exist_ok=True)
+    providers = [{"type": "space", "advances": {"\uF800": -8, "\uF801": -169}}]
+    for name, (rows, accent, emblem, glyph) in UI_PANELS.items():
+        height = 114 + rows * 18
+        split = 18 + rows * 18 + 3                         # where the menu's own half ends and the player's begins
+        rnd = random.Random(hsh("ui" + name))
+        img = Image.new("RGBA", (176, height), (0, 0, 0, 0))
+        px = img.load()
+        for y in range(height):
+            for x in range(176):
+                corner = (x < 2 or x > 173) and (y < 2 or y > height - 3)
+                if corner and (x in (0, 175) or y in (0, height - 1)):
+                    continue                                # rounded corners
+                edge = x < 2 or x > 173 or y < 2 or y > height - 3
+                if y < split:
+                    c = UI_DARK if edge else UI_BASE
+                    if not edge and y < 16:                # the header band, in the menu's own colour
+                        c = mix(shade(accent, 0.34), shade(accent, 0.2), y / 16)
+                    if not edge and y == 16:
+                        c = GOLD if x % 2 == 0 else shade(GOLD, 0.75)
+                else:
+                    c = shade(UI_PARCH_D, 0.8) if edge else shade(UI_PARCH, 1 + rnd.uniform(-0.025, 0.025))
+                    if not edge and y == split:
+                        c = UI_PARCH_D
+                px[x, y] = c + (255,)
+        for sy, row in enumerate(emblem):                  # the emblem, top right of the header
+            for sx, ch in enumerate(row):
+                if ch == "#":
+                    px[160 + sx, 4 + sy] = mix(accent, (255, 255, 255), 0.35) + (255,)
+        for cx in (4, 171):                                # gold studs in the header's corners
+            px[cx, 4] = GOLD + (255,)
+        def well(x0, y0, rim, lip):
+            for dy in range(-1, 17):
+                for dx in range(-1, 17):
+                    if dx in (-1, 16) or dy in (-1, 16):
+                        px[x0 + dx, y0 + dy] = (rim if dx == -1 or dy == -1 else lip) + (255,)
+                    else:
+                        px[x0 + dx, y0 + dy] = (0, 0, 0, 0)        # the slot itself: a hole
+        for r in range(rows):
+            for c in range(9):
+                well(8 + c * 18, 18 + r * 18, UI_DARK, shade(UI_BASE, 1.35))
+        shift = (rows - 4) * 18
+        for r in range(3):
+            for c in range(9):
+                well(8 + c * 18, 103 + r * 18 + shift, UI_PARCH_D, mix(UI_PARCH, (255, 255, 255), 0.5))
+        for c in range(9):
+            well(8 + c * 18, 161 + shift, UI_PARCH_D, mix(UI_PARCH, (255, 255, 255), 0.5))
+        img.save(os.path.join(G, f"panel_{name}.png"))
+        providers.append({"type": "bitmap", "file": f"{MOD}:gui/panel_{name}.png", "ascent": 13, "height": height, "chars": [glyph]})
+    wj(os.path.join(ASSETS, "font/ui.json"), {"providers": providers})
+
+    # icons: the blank tile that fills an unused slot, and a gem for every colour a meter or a label can have
+    def icon(name, img):
+        img.save(os.path.join(I, name + ".png"))
+        wj(os.path.join(ASSETS, f"items/ui/{name}.json"), {"model": {"type": "minecraft:model", "model": f"{MOD}:item/ui/{name}"}})
+        wj(os.path.join(ASSETS, f"models/item/ui/{name}.json"), {"parent": "minecraft:item/generated", "textures": {"layer0": f"{MOD}:item/ui/{name}"}})
+    tile = Image.new("RGBA", (16, 16), UI_WELL + (255,))
+    for i in range(16):
+        tile.putpixel((i, 0), shade(UI_WELL, 0.8) + (255,)); tile.putpixel((0, i), shade(UI_WELL, 0.8) + (255,))
+        tile.putpixel((i, 15), shade(UI_WELL, 1.25) + (255,)); tile.putpixel((15, i), shade(UI_WELL, 1.25) + (255,))
+    icon("tile", tile)
+    for dye, col in UI_DYES.items():
+        gem = Image.new("RGBA", (16, 16), UI_WELL + (255,))
+        for y in range(2, 14):
+            for x in range(2, 14):
+                rounded = (x in (2, 13)) and (y in (2, 13))
+                if rounded:
+                    continue
+                c = shade(col, 1.0 - 0.03 * (y - 2))
+                if x == 2 or y == 2:
+                    c = mix(col, (255, 255, 255), 0.45)
+                elif x == 13 or y == 13:
+                    c = shade(col, 0.6)
+                elif (x, y) in ((4, 4), (5, 4), (4, 5)):
+                    c = mix(col, (255, 255, 255), 0.7)
+                gem.putpixel((x, y), c + (255,))
+        icon(f"gem_{dye}", gem)
+
+# ----------------------------------------------------------------------------
 # Boss skins: 64x64 humanoid layout, per-god outfit, hair, face and headgear (hat layer)
 # ----------------------------------------------------------------------------
 def faces(u, v, wd, ht, dp):
@@ -4278,6 +4384,7 @@ if __name__ == "__main__":
     gen_flat_items()
     gen_block_textures()
     gen_field_textures()
+    gen_ui()
     gen_tarot()
     gen_dolls()
     gen_essences_and_orbs()

@@ -34,7 +34,7 @@ public class SealMenu extends ButtonMenu {
 
     public static void open(ServerPlayer player, BlockPos seal, int tier) {
         player.openMenu(new SimpleMenuProvider((id, inventory, p) -> new SealMenu(id, inventory, (ServerPlayer) p, seal, tier),
-                Component.translatable("menu." + RealmsOfChaos.MOD_ID + ".seal")));
+                Skin.title(Skin.Panel.SEAL, Component.translatable("menu." + RealmsOfChaos.MOD_ID + ".seal"))));
     }
 
     private SealMenu(int id, Inventory inventory, ServerPlayer viewer, BlockPos seal, int tier) {

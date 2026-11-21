@@ -30,7 +30,7 @@ public class PassageMenu extends ButtonMenu {
 
     public static void open(ServerPlayer player, Passages.Spot spot) {
         player.openMenu(new SimpleMenuProvider((id, inventory, p) -> new PassageMenu(id, inventory, (ServerPlayer) p, spot),
-                Component.translatable("menu." + RealmsOfChaos.MOD_ID + ".passage", spot.index() + 1)));
+                Skin.title(Skin.Panel.PASSAGE, Component.translatable("menu." + RealmsOfChaos.MOD_ID + ".passage", spot.index() + 1))));
     }
 
     private PassageMenu(int id, Inventory inventory, ServerPlayer viewer, Passages.Spot spot) {

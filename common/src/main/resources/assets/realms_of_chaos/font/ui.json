@@ -1,0 +1,101 @@
+{
+  "providers": [
+    {
+      "type": "space",
+      "advances": {
+        "": -8,
+        "": -169
+      }
+    },
+    {
+      "type": "bitmap",
+      "file": "realms_of_chaos:gui/panel_codex.png",
+      "ascent": 13,
+      "height": 222,
+      "chars": [
+        ""
+      ]
+    },
+    {
+      "type": "bitmap",
+      "file": "realms_of_chaos:gui/panel_forge.png",
+      "ascent": 13,
+      "height": 222,
+      "chars": [
+        ""
+      ]
+    },
+    {
+      "type": "bitmap",
+      "file": "realms_of_chaos:gui/panel_passage.png",
+      "ascent": 13,
+      "height": 222,
+      "chars": [
+        ""
+      ]
+    },
+    {
+      "type": "bitmap",
+      "file": "realms_of_chaos:gui/panel_bag6.png",
+      "ascent": 13,
+      "height": 222,
+      "chars": [
+        ""
+      ]
+    },
+    {
+      "type": "bitmap",
+      "file": "realms_of_chaos:gui/panel_altar.png",
+      "ascent": 13,
+      "height": 168,
+      "chars": [
+        ""
+      ]
+    },
+    {
+      "type": "bitmap",
+      "file": "realms_of_chaos:gui/panel_seal.png",
+      "ascent": 13,
+      "height": 168,
+      "chars": [
+        ""
+      ]
+    },
+    {
+      "type": "bitmap",
+      "file": "realms_of_chaos:gui/panel_deck.png",
+      "ascent": 13,
+      "height": 222,
+      "chars": [
+        ""
+      ]
+    },
+    {
+      "type": "bitmap",
+      "file": "realms_of_chaos:gui/panel_party.png",
+      "ascent": 13,
+      "height": 222,
+      "chars": [
+        ""
+      ]
+    },
+    {
+      "type": "bitmap",
+      "file": "realms_of_chaos:gui/panel_story.png",
+      "ascent": 13,
+      "height": 222,
+      "chars": [
+        ""
+      ]
+    },
+    {
+      "type": "bitmap",
+      "file": "realms_of_chaos:gui/panel_bag3.png",
+      "ascent": 13,
+      "height": 168,
+      "chars": [
+        ""
+      ]
+    }
+  ]
+}

@@ -44,6 +44,13 @@ The current build is an **Alpha**.
   * **In its looks.** Every god's skin has been redrawn with more detail - the mark of its tower on its back, gold
     on the arms of the stronger gods, a cape on the three greatest of each tower - and each god now has three
     skins: itself, lit with runes behind its aegis, and cracked open with fire inside in its wrath.
+* **The mod's own menu artwork.** The Codex's tower plans, the forge, the passage map, the seal, the deck, the
+  party, the chronicle and the Field Tower Bag no longer look like chests. Each has its own panel - a dark field
+  with a header in the menu's colour and its emblem, and a parchment half for your inventory - unused slots are
+  blank tiles of the panel and meters are gems instead of glass panes. It is done with the mod's own resources (a
+  font whose letters are whole panels, and item models for the tiles and gems), so nothing extra is needed on the
+  client and it is the same on Fabric and Forge. Every slot is a hole in the artwork, so an icon can never be
+  hidden by it. `art/renders/ui-panels.png` shows three of them.
 * **Passages of one to ten levels.** How many levels lie between two boss floors is decided by the world's seed:
   one to four low in a tower, two to seven in the middle, four to ten near the top (about 190 levels across the
   three towers in a typical world). Every level has a name - **7-B2** is passage 7, wing B, level 2 - shown on its
@@ -451,7 +458,7 @@ on a real server: data loading, the hub, building and walking every floor of eve
 towers through the altar menu (with rematches) and all 42 passages, the Ruined Gate and its keystones, the story's
 chapters, the hub's residents, all sixty-three sentinels and their traits, craters, the custom screens and their buttons, the tutorial, impacts, the
 floor's eruptions and the gods' last stands, the three phases of a trial (health gates, pylons, stances, the collapsing floor and its restoration, strikes), gear and difficulty scaling,
-the compass scanner, relays and jammers, waygates, the Field Tower Bag, hub tiers and bounties, the rune chambers, the sidebar, level counts and names, building ahead, the four puzzle rooms, crusher and dart halls, urns and tablets, the Passage Chart, the mastery tree, parties, group scaling and per-player loot, the wall protection (built, checked room by room for reachability,
+the compass scanner, relays and jammers, waygates, the Field Tower Bag, hub tiers and bounties, the rune chambers, the sidebar, level counts and names, building ahead, the four puzzle rooms, crusher and dart halls, urns and tablets, the Passage Chart, the mastery tree, the menu artwork, parties, group scaling and per-player loot, the wall protection (built, checked room by room for reachability,
 seals struck, guardians, shrine, map), every god's signature move, the relic moves, the forging quick-time rounds,
 tier materials, each tarot card, the Codex, leaving the realms, the welcome and the anti-stuck safeguards.
 
