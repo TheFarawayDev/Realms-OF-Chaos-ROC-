@@ -1540,9 +1540,9 @@ public final class SelfTest {
             }
         });
 
-        step("sentinels: eighteen kinds, six to a tower - soldiers, casters, skirmishers, brutes, mystics and Keepers", () -> {
+        step("sentinels: sixty-three kinds, twenty-one to a tower - every one sets up, fights, and does what its role says", () -> {
             Set<String> names = new HashSet<>();
-            check(Sentinel.Kind.values().length == 18, "kinds: " + Sentinel.Kind.values().length);
+            check(Sentinel.Kind.values().length == 63, "kinds: " + Sentinel.Kind.values().length);
             for (Line line : Line.values()) {
                 for (Sentinel.Role role : Sentinel.Role.values()) check(Sentinel.Kind.of(line, role).line == line && Sentinel.Kind.of(line, role).role == role, "a " + role + " for " + line);
             }
@@ -1558,13 +1558,13 @@ public final class SelfTest {
                     weak.setUp(kind, 1);
                     strong.setUp(kind, 3, high, false);
                     check(weak.kind() == kind && weak.tier() == 1 && weak.threat() == 0.0 && strong.tier() == 3 && strong.threat() == high, kind + ": set up");
-                    check(Math.abs(weak.getMaxHealth() - Sentinel.health(kind.role, 0)) < 0.01 && weak.getHealth() == weak.getMaxHealth(), kind + ": health");
+                    check(Math.abs(weak.getMaxHealth() - Sentinel.health(kind, 0)) < 0.01 && weak.getHealth() == weak.getMaxHealth(), kind + ": health");
                     check(strong.getMaxHealth() > weak.getMaxHealth() * 1.9 && strong.getAttributeValue(net.minecraft.world.entity.ai.attributes.Attributes.ATTACK_DAMAGE)
                             > weak.getAttributeValue(net.minecraft.world.entity.ai.attributes.Attributes.ATTACK_DAMAGE) * 1.6, kind + ": far stronger at the top of the tower");
                     check(!weak.getMainHandItem().isEmpty(), kind + ": carries something");
                     boolean ranged = kind.role == Sentinel.Role.CASTER || kind.role == Sentinel.Role.MYSTIC;
                     check(weak.fightsAtRange() == ranged, kind + ": casters and mystics keep their distance, the rest close in");
-                    check((weak.move() != null) == (kind.role == Sentinel.Role.KEEPER || kind == Sentinel.Kind.SHADE), kind + ": only Keepers and Shades have a move");
+                    check((weak.move() != null) == (kind.role == Sentinel.Role.KEEPER || kind == Sentinel.Kind.SHADE || kind.trait == Sentinel.Trait.CHARGE), kind + ": only Keepers, Shades and chargers have a move");
                     check(!weak.isElite() && !weak.hasGlowingTag(), kind + ": ordinary by default");
                     // they are a danger to players, never to each other or to the gods
                     check(Power.canHurt(weak, target) && !Power.canHurt(weak, strong), kind + ": sentinels do not hurt each other");
@@ -1585,6 +1585,12 @@ public final class SelfTest {
                     float before = target.getHealth();
                     if (ranged) {
                         strong.performRangedAttack(target, 1.0F);
+                        if (kind.trait == Sentinel.Trait.SNIPE) {
+                            // a sniper aims along a line of light first
+                            check(level.getEntitiesOfClass(Projectile.class, near, e -> true).isEmpty(), kind + ": aims before it shoots");
+                            advance(server, Sentinel.AIM_TICKS + 1);
+                            Scheduler.tick(server);
+                        }
                         List<Projectile> shots = level.getEntitiesOfClass(Projectile.class, near, e -> true);
                         check(shots.size() == 1 && shots.get(0).getOwner() == strong, kind + ": one shot");
                         check((shots.get(0) instanceof Arrow) == (kind == Sentinel.Kind.SKY_ARCHER), kind + ": archers loose arrows, the others bolts");
@@ -1620,7 +1626,26 @@ public final class SelfTest {
                         level.addFreshEntity(ally);
                         ally.setHealth(5.0F);
                         strong.addTag("realms_of_chaos_guardian/9/9");
+                        ally.addTag("realms_of_chaos_guardian/9/9");
+                        // (a reviver has nothing to do until someone has fallen)
+                        if (kind.trait == Sentinel.Trait.REVIVE) ally.hurtServer(level, level.damageSources().playerAttack(target), 100000.0F);
                         check(strong.rite(level), kind + ": performs its rite");
+                        if (kind.trait == Sentinel.Trait.BANNER) {
+                            check(ally.hasEffect(kind.line == Line.ZEUS ? net.minecraft.world.effect.MobEffects.SPEED : kind.line == Line.POSEIDON ? net.minecraft.world.effect.MobEffects.RESISTANCE
+                                    : net.minecraft.world.effect.MobEffects.STRENGTH), kind + ": its standard gives its tower's strength");
+                            strong.hurtServer(level, level.damageSources().playerAttack(target), 100000.0F);
+                            check(ally.hasEffect(net.minecraft.world.effect.MobEffects.WEAKNESS), kind + ": when the standard falls, those under it falter");
+                        }
+                        if (kind.trait == Sentinel.Trait.HORN) check(ally.getTarget() == target && ally.hasEffect(net.minecraft.world.effect.MobEffects.SPEED) && !strong.rite(level), kind + ": the alarm sets its allies on you, and then rests");
+                        if (kind.trait == Sentinel.Trait.REVIVE) {
+                            List<Sentinel> back = level.getEntitiesOfClass(Sentinel.class, near, e -> e.isAlive() && e.entityTags().contains(Sentinel.RAISED_TAG));
+                            check(back.size() == 1 && back.get(0).kind() == ally.kind() && back.get(0).getHealth() < back.get(0).getMaxHealth() * 0.5F
+                                    && back.get(0).entityTags().contains("realms_of_chaos_guardian/9/9"), kind + ": stands a fallen ally back up, hurt, in the same room: " + back.size());
+                            check(!strong.rite(level), kind + ": once");
+                            back.forEach(Sentinel::discard);
+                            for (ItemEntity drop : level.getEntitiesOfClass(ItemEntity.class, near, e -> true)) drop.discard();
+                            for (var orb : level.getEntitiesOfClass(net.minecraft.world.entity.ExperienceOrb.class, near, e -> true)) orb.discard();
+                        }
                         if (kind == Sentinel.Kind.STORM_AUGUR) check(ally.hasEffect(net.minecraft.world.effect.MobEffects.SPEED) && ally.hasEffect(net.minecraft.world.effect.MobEffects.STRENGTH), "the Storm Augur quickens its allies");
                         if (kind == Sentinel.Kind.TIDE_PRIEST) check(ally.getHealth() > 5.0F, "the Tide Priest mends its allies");
                         if (kind == Sentinel.Kind.NECROMANCER) {
@@ -3491,6 +3516,307 @@ public final class SelfTest {
                 clearBosses(level);
                 data.unmarkBuilt("sidebar/" + watcher.getUUID());
                 for (var bolt : level.getEntitiesOfClass(net.minecraft.world.entity.LightningBolt.class, new AABB(-24, Tower.floorY(4) - 3, -24, 24, Tower.floorY(4) + 17, 24), e -> true)) bolt.discard();
+                Realm.testAlias(Level.OVERWORLD, Realm.ABYSS);
+            }
+        });
+
+        step("sentinels cover for each other and make trouble: every trait does its one thing", () -> {
+            Realm.testAlias(Level.OVERWORLD, Realm.OLYMPUS);
+            final int floor = 6;
+            TowerBuilder.buildFloor(level, Line.ZEUS, floor);
+            int y0 = Tower.floorY(floor);
+            AABB near = new AABB(-24, y0 - 4, -24, 24, y0 + 14, 24);
+            for (var e : level.getEntitiesOfClass(net.minecraft.world.entity.Entity.class, near, e -> !(e instanceof ServerPlayer))) e.discard();
+            ServerPlayer hero = fakePlayer(server, level, "RocTroubled");
+            level.addNewPlayer(hero);
+            double high = Sentinel.threat(14, 2);
+            var damageAttr = net.minecraft.world.entity.ai.attributes.Attributes.ATTACK_DAMAGE;
+            java.util.function.BiFunction<Sentinel.Kind, double[], Sentinel> put = (kind, at) -> {
+                Sentinel made = ModContent.SENTINEL.get().create(level, EntitySpawnReason.TRIGGERED);
+                made.setUp(kind, 3, high, false);
+                made.setPos(at[0], ground(level, floor, at[0], at[1]), at[1]);
+                level.addFreshEntity(made);
+                made.setTarget(hero);
+                return made;
+            };
+            com.thefarawaydev.realmsofchaos.world.Hazards.clear();
+            try {
+                // ---- the roster
+                for (Line line : Line.values()) {
+                    List<Sentinel.Kind> kinds = Sentinel.Kind.of(line);
+                    Set<Sentinel.Trait> traits = new HashSet<>();
+                    int plain = 0;
+                    for (Sentinel.Kind k : kinds) {
+                        if (k.trait == Sentinel.Trait.NONE) plain++;
+                        else check(traits.add(k.trait) && Sentinel.Kind.of(line, k.trait) == k, line + ": one kind to a trait: " + k);
+                    }
+                    check(kinds.size() == 21 && plain == 6 && traits.size() == 15, line + ": twenty-one kinds, fifteen of them with a trait of their own: " + kinds.size());
+                    check(Sentinel.Kind.pool(line, Sentinel.Role.SOLDIER, 0.0).size() == 2 && Sentinel.Kind.pool(line, Sentinel.Role.SOLDIER, high).size() == 3
+                            && Sentinel.Kind.pool(line, Sentinel.Role.KEEPER, high).size() == 1, line + ": the deeper the level, the more kinds it can field");
+                    check(Sentinel.Kind.pool(line, Sentinel.Role.CASTER, high).get(0) == Sentinel.Kind.of(line, Sentinel.Role.CASTER), line + ": the plain kind is always among them");
+                    Set<Sentinel.Kind> seen = new HashSet<>();
+                    java.util.Random dice = new java.util.Random(5);
+                    for (int i = 0; i < 300; i++) seen.add(Sentinel.Kind.pick(line, Sentinel.Role.CASTER, high, dice));
+                    check(seen.size() == 6 && seen.equals(new HashSet<>(Sentinel.Kind.pool(line, Sentinel.Role.CASTER, high))), line + ": every caster turns up: " + seen);
+                }
+                hero.setPos(6.5, ground(level, floor, 6.5, 0.5), 0.5);
+                settle(level);
+                var blow = level.damageSources().playerAttack(hero);
+
+                // ---- shield: blows from the front glance off, and those beside it are sheltered
+                Sentinel shield = put.apply(Sentinel.Kind.AEGIS_BEARER, new double[]{0.5, 0.5});
+                float whole = shield.getHealth();
+                shield.yBodyRot = -90.0F;                               // facing the hero
+                check(shield.facing(hero.position()), "test setup: the shield faces the hero");
+                shield.hurtServer(level, blow, 20.0F);
+                float front = whole - shield.getHealth();
+                shield.setHealth(whole);
+                shield.damageCooldownTime = 0;
+                shield.yBodyRot = 90.0F;                                // its back to them
+                shield.hurtServer(level, blow, 20.0F);
+                float behind = whole - shield.getHealth();
+                check(front > 0 && behind > front * 1.8F, "a shield-bearer shrugs off blows from its front: " + front + " against " + behind);
+                Sentinel sheltered = put.apply(Sentinel.Kind.STORM_HOPLITE, new double[]{0.5, 2.5});
+                float h0 = sheltered.getHealth();
+                sheltered.hurtServer(level, blow, 20.0F);
+                float covered = h0 - sheltered.getHealth();
+                shield.discard();
+                sheltered.setHealth(h0);
+                sheltered.damageCooldownTime = 0;
+                sheltered.hurtServer(level, blow, 20.0F);
+                float bare = h0 - sheltered.getHealth();
+                check(covered > 0 && covered < bare * 0.8F, "and whoever stands beside one is hurt less: " + covered + " against " + bare);
+
+                // ---- link: a warden takes half of what lands on its allies
+                Sentinel warden = put.apply(Sentinel.Kind.OATHKEEPER, new double[]{0.5, -3.5});
+                float wardenWhole = warden.getHealth();
+                sheltered.setHealth(h0);
+                sheltered.damageCooldownTime = 0;
+                sheltered.hurtServer(level, blow, 20.0F);
+                check(h0 - sheltered.getHealth() < bare * 0.6F && warden.getHealth() < wardenWhole, "a warden takes half of every blow that lands on an ally");
+                warden.discard();
+                sheltered.discard();
+
+                // ---- frenzy: roused when an ally falls, wild when nearly beaten
+                Sentinel maenad = put.apply(Sentinel.Kind.MAENAD, new double[]{0.5, 0.5}), doomed = put.apply(Sentinel.Kind.STORM_HOPLITE, new double[]{2.5, 0.5});
+                double calm = maenad.getAttributeValue(damageAttr);
+                doomed.hurtServer(level, blow, 100000.0F);
+                check(maenad.frenzy() == 1 && maenad.getAttributeValue(damageAttr) > calm * 1.1, "a berserker is roused when an ally falls");
+                maenad.setHealth(maenad.getMaxHealth() * 0.45F);
+                maenad.hurtServer(level, level.damageSources().magic(), 4.0F);
+                check(maenad.isWild() && maenad.hasEffect(MobEffects.STRENGTH), "and goes wild when it is nearly beaten");
+                maenad.discard();
+
+                // ---- swap: trades places with a wounded ally, and mends it
+                Sentinel dancer = put.apply(Sentinel.Kind.WIND_DANCER, new double[]{-4.5, 0.5}), wounded = put.apply(Sentinel.Kind.STORM_HOPLITE, new double[]{4.5, 0.5});
+                check(!dancer.swap(level), "a dancer has nothing to do while nobody is hurt");
+                wounded.setHealth(wounded.getMaxHealth() * 0.3F);
+                Vec3 dancerAt = dancer.position(), woundedAt = wounded.position();
+                check(dancer.swap(level) && dancer.position().distanceTo(woundedAt) < 0.1 && wounded.position().distanceTo(dancerAt) < 0.1 && wounded.hasEffect(MobEffects.REGENERATION),
+                        "it trades places with a wounded ally, who starts to mend");
+                dancer.discard();
+                wounded.discard();
+
+                // ---- bomb: bursts on everyone near
+                Sentinel bomb = put.apply(Sentinel.Kind.SPARK_RUNNER, new double[]{5.0, 0.5});
+                hero.setHealth(hero.getMaxHealth());
+                hero.damageCooldownTime = 0;
+                hero.setDeltaMovement(Vec3.ZERO);
+                check(bomb.fuse() < 0 && bomb.getMaxHealth() < Sentinel.health(Sentinel.Role.SKIRMISHER, high), "a bomber is frail, and quiet until it is on you");
+                bomb.burst(level);
+                check(bomb.isRemoved() && hero.getHealth() < hero.getMaxHealth() && hero.isAlive() && hero.getDeltaMovement().y > 0.5, "then it bursts: hurt, and thrown into the air");
+
+                // ---- bind: rooted, hauled in or blinded, by tower
+                for (Line line : Line.values()) {
+                    Sentinel binder = put.apply(Sentinel.Kind.of(line, Sentinel.Trait.BIND), new double[]{0.5, 0.5});
+                    hero.removeAllEffects();
+                    hero.setDeltaMovement(Vec3.ZERO);
+                    binder.rider(level, hero);
+                    switch (line) {
+                        case ZEUS -> check(hero.hasEffect(MobEffects.SLOWNESS) && hero.getEffect(MobEffects.SLOWNESS).getAmplifier() >= 5, "a Chain Thrower roots you to the spot");
+                        case POSEIDON -> check(hero.getDeltaMovement().x < -0.8, "a Net Caster hauls you in: " + hero.getDeltaMovement());
+                        case HADES -> check(hero.hasEffect(MobEffects.DARKNESS), "a Shackler blinds you");
+                    }
+                    if (line == Line.ZEUS) {
+                        // and it rides on the bolt
+                        hero.removeAllEffects();
+                        hero.setHealth(hero.getMaxHealth());
+                        hero.damageCooldownTime = 0;
+                        binder.performRangedAttack(hero, 1.0F);
+                        RelicProjectile chain = (RelicProjectile) level.getEntitiesOfClass(Projectile.class, near, e -> true).get(0);
+                        chain.impact(level, binder, hero);
+                        check(hero.hasEffect(MobEffects.SLOWNESS) && hero.getEffect(MobEffects.SLOWNESS).getAmplifier() >= 5, "the bind rides on its bolt");
+                        chain.discard();
+                    }
+                    binder.discard();
+                }
+
+                // ---- silence: the relic's move will not answer
+                Sentinel breaker = put.apply(Sentinel.Kind.ORACLE_BREAKER, new double[]{0.5, 0.5});
+                hero.removeAllEffects();
+                hero.addEffect(new MobEffectInstance(MobEffects.SPEED, 400));
+                GodWeaponItem relic = (GodWeaponItem) ModContent.weaponItem(Gods.byId("ares"));
+                check(relic.moveWait(hero, server.getTickCount()) == 0, "test setup: the move is ready");
+                breaker.rider(level, hero);
+                check(relic.moveWait(hero, server.getTickCount()) > 20 * 5 && !hero.hasEffect(MobEffects.SPEED), "an Oracle Breaker silences your relic and takes a blessing with it");
+                advance(server, 20 * 6 + 1);
+                check(relic.moveWait(hero, server.getTickCount()) == 0, "for six seconds");
+                breaker.discard();
+
+                // ---- disarm: the weapon ends up in the pack, never on the floor
+                hero.getInventory().clearContent();
+                hero.setItemInHand(InteractionHand.MAIN_HAND, new ItemStack(net.minecraft.world.item.Items.IRON_SWORD));
+                check(Sentinel.disarm(hero) && hero.getMainHandItem().isEmpty() && count(hero, net.minecraft.world.item.Items.IRON_SWORD) == 1, "a thief knocks your weapon into your pack - nothing is lost");
+                check(!Sentinel.disarm(hero), "an empty hand has nothing to lose");
+                hero.getInventory().clearContent();
+
+                // ---- trap: its bolt leaves ground that hurts, whether or not it hit anyone
+                Sentinel sower = put.apply(Sentinel.Kind.STORM_SOWER, new double[]{0.5, 0.5});
+                sower.performRangedAttack(hero, 1.0F);
+                RelicProjectile seed = (RelicProjectile) level.getEntitiesOfClass(Projectile.class, near, e -> true).get(0);
+                Vec3 spot = hero.position();
+                seed.land(level, spot);
+                var patches = com.thefarawaydev.realmsofchaos.world.Hazards.near(level, spot, 1.0);
+                check(patches.size() == 1 && patches.get(0).line() == Line.ZEUS, "a sower's bolt leaves a patch where it lands: " + patches.size());
+                hero.setHealth(hero.getMaxHealth());
+                hero.damageCooldownTime = 0;
+                hero.setDeltaMovement(Vec3.ZERO);
+                check(com.thefarawaydev.realmsofchaos.world.Hazards.bite(patches.get(0)) == 1 && hero.getHealth() < hero.getMaxHealth() && hero.getDeltaMovement().y > 0.4, "standing in it hurts, and under Zeus throws you up");
+                hero.setPos(-10.5, ground(level, floor, -10.5, 0.5), 0.5);
+                check(com.thefarawaydev.realmsofchaos.world.Hazards.bite(patches.get(0)) == 0, "stepping out of it is enough");
+                seed.discard();
+                sower.discard();
+                hero.setPos(6.5, ground(level, floor, 6.5, 0.5), 0.5);
+
+                // ---- mirage: three where there was one, and two of them are nothing
+                Sentinel mirage = put.apply(Sentinel.Kind.MIRAGE, new double[]{0.5, 0.5});
+                mirage.addTag("realms_of_chaos_guardian/3/3");
+                List<Sentinel> copies = mirage.split(level);
+                check(copies.size() == 2 && mirage.split(level).isEmpty(), "a mirage splits into three, once");
+                for (Sentinel copy : copies) {
+                    check(copy.isIllusion() && copy.getMaxHealth() == 1.0F && copy.kind() == mirage.kind() && copy.entityTags().contains("realms_of_chaos_guardian/3/3"), "its copies look the same and belong to its room");
+                    hero.setHealth(hero.getMaxHealth());
+                    check(!copy.doHurtTarget(level, hero) && hero.getHealth() == hero.getMaxHealth(), "but they hurt nobody");
+                }
+                mirage.hurtServer(level, blow, 100000.0F);
+                check(copies.stream().allMatch(net.minecraft.world.entity.Entity::isRemoved), "when the real one falls its copies are gone");
+
+                // ---- snipe: a heavy shot after a line of light
+                Sentinel sniper = put.apply(Sentinel.Kind.BOLT_HURLER, new double[]{-8.5, 0.5});
+                sniper.performRangedAttack(hero, 1.0F);
+                check(level.getEntitiesOfClass(Projectile.class, near, e -> true).isEmpty(), "a sniper aims first");
+                advance(server, Sentinel.AIM_TICKS + 1);
+                Scheduler.tick(server);
+                List<Projectile> shots = level.getEntitiesOfClass(Projectile.class, near, e -> true);
+                check(shots.size() == 1 && ((RelicProjectile) shots.get(0)).damage() > sniper.getAttributeValue(damageAttr) * 2.0, "and then looses one heavy shot");
+                shots.forEach(Projectile::discard);
+                sniper.discard();
+
+                // ---- horn: everyone in earshot comes
+                Sentinel herald = put.apply(Sentinel.Kind.THUNDER_HERALD, new double[]{0.5, 0.5}), idle = put.apply(Sentinel.Kind.STORM_HOPLITE, new double[]{10.5, 5.5});
+                idle.setTarget(null);
+                check(herald.soundHorn(level) == 1 && idle.getTarget() == hero && idle.hasEffect(MobEffects.SPEED), "a herald's horn sets every sentinel in earshot on you");
+            } finally {
+                hero.remove(net.minecraft.world.entity.Entity.RemovalReason.DISCARDED);
+                for (var e : level.getEntitiesOfClass(net.minecraft.world.entity.Entity.class, near, e -> !(e instanceof ServerPlayer))) e.discard();
+                com.thefarawaydev.realmsofchaos.world.Hazards.clear();
+                Realm.testAlias(Level.OVERWORLD, Realm.ABYSS);
+            }
+        });
+
+        step("a levelled relic's bolt breaks the ground where it lands: craters grow with the level, close again and bury nobody", () -> {
+            check(com.thefarawaydev.realmsofchaos.world.Craters.radius(1, 0) == 0 && com.thefarawaydev.realmsofchaos.world.Craters.radius(2, 5) == 0
+                    && com.thefarawaydev.realmsofchaos.world.Craters.radius(3, 0) == 1 && com.thefarawaydev.realmsofchaos.world.Craters.radius(6, 0) == 2
+                    && com.thefarawaydev.realmsofchaos.world.Craters.radius(9, 0) == 3 && com.thefarawaydev.realmsofchaos.world.Craters.radius(10, 5) == 4,
+                    "no crater below level 3, then wider at 3, 6 and 9, and one more with three stars");
+            Realm.testAlias(Level.OVERWORLD, null);
+            com.thefarawaydev.realmsofchaos.world.Craters.closeAll();
+            BlockPos c = new BlockPos(7600, 100, 7600);
+            AABB field = new AABB(7585, 90, 7585, 7615, 112, 7615);
+            ServerPlayer hero = fakePlayer(server, level, "RocCratered");
+            level.addNewPlayer(hero);
+            try {
+                for (int dx = -8; dx <= 8; dx++) {
+                    for (int dz = -8; dz <= 8; dz++) {
+                        for (int y = 95; y <= 106; y++) level.setBlock(new BlockPos(7600 + dx, y, 7600 + dz), (y <= 100 ? Blocks.STONE : Blocks.AIR).defaultBlockState(), 2);
+                    }
+                }
+                BlockPos chest = c.offset(2, 0, 0), bedrock = c.offset(-2, 0, 0);
+                level.setBlock(chest, Blocks.CHEST.defaultBlockState(), 2);
+                level.setBlock(bedrock, Blocks.BEDROCK.defaultBlockState(), 2);
+                Vec3 hit = new Vec3(7600.5, 101.0, 7600.5);
+                int small = com.thefarawaydev.realmsofchaos.world.Craters.blast(level, hit, 1, null, 0.0F);
+                check(small >= 1 && small <= 9 && level.getBlockState(c).isAir() && com.thefarawaydev.realmsofchaos.world.Craters.open() == 1, "a small crater: " + small + " blocks");
+                com.thefarawaydev.realmsofchaos.world.Craters.closeAll();
+                check(level.getBlockState(c).is(Blocks.STONE) && com.thefarawaydev.realmsofchaos.world.Craters.open() == 0, "it closes again");
+                int big = com.thefarawaydev.realmsofchaos.world.Craters.blast(level, hit, 4, null, 0.0F);
+                check(big > small * 4 && level.getBlockState(c.below()).isAir() && !level.getBlockState(c.below(4)).isAir(), "a big one is wider and deeper, with ground left under it: " + big);
+                check(level.getBlockState(chest).is(Blocks.CHEST) && level.getBlockState(bedrock).is(Blocks.BEDROCK), "a chest and what cannot be mined are never taken");
+                // someone standing in it is lifted out when it closes
+                hero.setPos(7600.5, 98.0, 7600.5);
+                settle(level);
+                for (int i = 0; i < com.thefarawaydev.realmsofchaos.world.Craters.RESTORE_TICKS; i++) com.thefarawaydev.realmsofchaos.world.Craters.tick(server);
+                check(com.thefarawaydev.realmsofchaos.world.Craters.open() == 0, "ten seconds later it has closed");
+                for (int dx = -5; dx <= 5; dx++) {
+                    for (int dz = -5; dz <= 5; dz++) {
+                        BlockPos p = c.offset(dx, 0, dz);
+                        check(p.equals(chest) || p.equals(bedrock) || level.getBlockState(p).is(Blocks.STONE), "the ground is whole again at " + p);
+                    }
+                }
+                check(hero.getY() >= 100.99 && level.noCollision(hero), "and whoever stood in it was lifted out, not buried: " + hero.position());
+
+                // a crater that was open when the server stopped is closed when it starts again
+                com.thefarawaydev.realmsofchaos.world.Craters.blast(level, hit, 2, null, 0.0F);
+                com.thefarawaydev.realmsofchaos.world.Craters.forget();
+                check(level.getBlockState(c).isAir(), "test setup: the server stopped with a crater open");
+                com.thefarawaydev.realmsofchaos.world.Craters.tick(server);
+                check(level.getBlockState(c).is(Blocks.STONE) && data.keys("crater|").isEmpty(), "it is closed when the server starts again");
+
+                // the blast shakes whoever is near - but not the one who made it
+                var zombie = EntityTypes.ZOMBIE.create(level, EntitySpawnReason.TRIGGERED);
+                zombie.setPos(7602.5, 101.0, 7600.5);
+                level.addFreshEntity(zombie);
+                hero.setPos(7599.5, 101.0, 7600.5);
+                hero.setHealth(hero.getMaxHealth());
+                settle(level);
+                float zh = zombie.getHealth();
+                com.thefarawaydev.realmsofchaos.world.Craters.blast(level, hit, 2, hero, 6.0F);
+                check(zombie.getHealth() < zh && hero.getHealth() == hero.getMaxHealth(), "the blast hurts what is near, never the one who made it");
+                zombie.discard();
+                com.thefarawaydev.realmsofchaos.world.Craters.closeAll();
+
+                // the bolt carries it: a levelled relic's shot has a crater in it, and makes it wherever it comes down
+                God caster = null;
+                for (God g : Gods.ALL) if (caster == null && g.kind().ranged() && g.kind() != WeaponKind.BOW && g.kind() != WeaponKind.THROWN) caster = g;
+                check(caster != null, "test setup: a god whose relic shoots bolts");
+                ItemStack fresh = new ItemStack(ModContent.weaponItem(caster)), forged = new ItemStack(ModContent.weaponItem(caster));
+                WeaponProgress.setLevel(forged, 9);
+                hero.setPos(7600.5, 101.0, 7592.5);
+                Projectile plain = com.thefarawaydev.realmsofchaos.god.Ranged.fire(level, hero, caster, fresh, 5.0F, null);
+                Projectile heavy = com.thefarawaydev.realmsofchaos.god.Ranged.fire(level, hero, caster, forged, 5.0F, null);
+                check(plain instanceof RelicProjectile a && a.crater() == 0 && heavy instanceof RelicProjectile b && b.crater() == 3, "a relic's level decides the crater its bolt carries");
+                ((RelicProjectile) plain).land(level, hit);
+                check(com.thefarawaydev.realmsofchaos.world.Craters.open() == 0 && level.getBlockState(c).is(Blocks.STONE), "a new relic's bolt leaves the ground alone");
+                ((RelicProjectile) heavy).land(level, hit);
+                check(com.thefarawaydev.realmsofchaos.world.Craters.open() == 1 && level.getBlockState(c).isAir(), "a forged one breaks it - with nobody there to hit");
+                com.thefarawaydev.realmsofchaos.world.Craters.closeAll();
+                plain.discard();
+                heavy.discard();
+
+                // inside the realms a crater is only ever one block deep
+                Realm.testAlias(Level.OVERWORLD, Realm.OLYMPUS);
+                com.thefarawaydev.realmsofchaos.world.Craters.blast(level, hit, 4, null, 0.0F);
+                check(level.getBlockState(c).isAir() && level.getBlockState(c.below()).is(Blocks.STONE), "in a tower a crater is one block deep, however wide");
+                com.thefarawaydev.realmsofchaos.world.Craters.closeAll();
+            } finally {
+                com.thefarawaydev.realmsofchaos.world.Craters.closeAll();
+                hero.remove(net.minecraft.world.entity.Entity.RemovalReason.DISCARDED);
+                for (var e : level.getEntitiesOfClass(net.minecraft.world.entity.Entity.class, field, e -> !(e instanceof ServerPlayer))) e.discard();
+                for (int dx = -8; dx <= 8; dx++) {
+                    for (int dz = -8; dz <= 8; dz++) {
+                        for (int y = 95; y <= 106; y++) level.setBlock(new BlockPos(7600 + dx, y, 7600 + dz), Blocks.AIR.defaultBlockState(), 2);
+                    }
+                }
                 Realm.testAlias(Level.OVERWORLD, Realm.ABYSS);
             }
         });

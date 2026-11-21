@@ -45,17 +45,48 @@ import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.Vec3;
 
 /**
- * The passages' own enemies. One entity type, eighteen kinds: every tower has a soldier, a caster, a skirmisher, a
- * brute, a mystic and a Keeper, each with its own look. Soldiers close in (the Shade steps behind you), casters
- * stand off and shoot, skirmishers are quick and leap at you, brutes hit slowly and send you flying, mystics hang
- * back and help the others - the Storm Augur quickens them, the Tide Priest mends them, the Necromancer raises
- * more - and a Keeper, one to every seal, now and then lets loose a small version of one of its tower's moves.
+ * The passages' own enemies. One entity type, sixty-three kinds: twenty-one to a tower.
+ *
+ * <p>Every kind has a <i>role</i>, which decides how it fights and how tough it is - soldiers close in, casters
+ * stand off and shoot, skirmishers are quick and leap, brutes hit slowly and send you flying, mystics hang back and
+ * work rites, and a Keeper stands on every seal. Most kinds also have a <i>trait</i>: the one thing that kind does
+ * that no other in its tower does. Traits are what make a room of sentinels more than the sum of its parts:
+ *
+ * <ul>
+ * <li><b>Shield</b> - blows from the front glance off it, and allies standing by it are hurt less.
+ * <li><b>Banner</b> - a rite that strengthens every ally near; when it falls, they falter.
+ * <li><b>Bomb</b> - runs at you, hisses for a second and a half, and bursts.
+ * <li><b>Bind</b> - its bolt roots you (Zeus), drags you to it (Poseidon) or blinds you (Hades).
+ * <li><b>Horn</b> - sounds the alarm: wakes the rooms next door and sets every sentinel near on you.
+ * <li><b>Disarm</b> - its blow knocks your weapon out of your hand and into your pack.
+ * <li><b>Trap</b> - its bolts leave a patch of ground that hurts to stand on.
+ * <li><b>Mirage</b> - hurt, it splits into three: two of them are not really there.
+ * <li><b>Link</b> - takes half of every blow that lands on an ally near it.
+ * <li><b>Frenzy</b> - grows stronger each time an ally falls, and wild when it is nearly beaten.
+ * <li><b>Revive</b> - a rite that stands a fallen ally back up.
+ * <li><b>Snipe</b> - a long, slow, heavy shot along a line of light you can step out of.
+ * <li><b>Charge</b> - puts its head down and runs you through.
+ * <li><b>Silence</b> - its bolt stops your relic's move from being cast for a while.
+ * <li><b>Swap</b> - trades places with a wounded ally, and mends it.
+ * </ul>
  *
  * How strong a sentinel is follows its <i>threat</i>: how far up the tower its passage lies and how deep into that
  * passage it stands. An elite is half as tough again, glows, and always gives up forge material.
  */
 public class Sentinel extends Monster implements RangedAttackMob {
     public enum Role { SOLDIER, CASTER, SKIRMISHER, BRUTE, MYSTIC, KEEPER }
+
+    /** The one thing a kind does that no other in its tower does. */
+    public enum Trait {
+        NONE(0), SHIELD(0), BIND(1), BOMB(2), FRENZY(2), DISARM(3), TRAP(3), SNIPE(4), SWAP(4), CHARGE(5), MIRAGE(5), LINK(6), SILENCE(6), BANNER(7), HORN(8), REVIVE(9);
+
+        /** The threat a level needs before kinds with this trait turn up on it. */
+        public final double unlock;
+
+        Trait(double unlock) {
+            this.unlock = unlock;
+        }
+    }
 
     public enum Kind {
         STORM_HOPLITE(Line.ZEUS, Role.SOLDIER), SKY_ARCHER(Line.ZEUS, Role.CASTER), THUNDER_BRUTE(Line.ZEUS, Role.BRUTE), KEEPER_SKY(Line.ZEUS, Role.KEEPER),
@@ -64,14 +95,36 @@ public class Sentinel extends Monster implements RangedAttackMob {
         // (added later: kept at the end so saved sentinels keep their kind)
         HARPY(Line.ZEUS, Role.SKIRMISHER), STORM_AUGUR(Line.ZEUS, Role.MYSTIC),
         TELCHINE(Line.POSEIDON, Role.SKIRMISHER), TIDE_PRIEST(Line.POSEIDON, Role.MYSTIC),
-        FURY(Line.HADES, Role.SKIRMISHER), NECROMANCER(Line.HADES, Role.MYSTIC);
+        FURY(Line.HADES, Role.SKIRMISHER), NECROMANCER(Line.HADES, Role.MYSTIC),
+        // ---- fifteen more to a tower, each with a trait of its own
+        AEGIS_BEARER(Line.ZEUS, Role.SOLDIER, Trait.SHIELD), EAGLE_STANDARD(Line.ZEUS, Role.MYSTIC, Trait.BANNER), SPARK_RUNNER(Line.ZEUS, Role.SKIRMISHER, Trait.BOMB),
+        CHAIN_THROWER(Line.ZEUS, Role.CASTER, Trait.BIND), THUNDER_HERALD(Line.ZEUS, Role.MYSTIC, Trait.HORN), GUST_THIEF(Line.ZEUS, Role.SKIRMISHER, Trait.DISARM),
+        STORM_SOWER(Line.ZEUS, Role.CASTER, Trait.TRAP), MIRAGE(Line.ZEUS, Role.CASTER, Trait.MIRAGE), OATHKEEPER(Line.ZEUS, Role.BRUTE, Trait.LINK),
+        MAENAD(Line.ZEUS, Role.SOLDIER, Trait.FRENZY), PAEAN_SINGER(Line.ZEUS, Role.MYSTIC, Trait.REVIVE), BOLT_HURLER(Line.ZEUS, Role.CASTER, Trait.SNIPE),
+        BULL_CHARGER(Line.ZEUS, Role.BRUTE, Trait.CHARGE), ORACLE_BREAKER(Line.ZEUS, Role.CASTER, Trait.SILENCE), WIND_DANCER(Line.ZEUS, Role.SKIRMISHER, Trait.SWAP),
+        SHELL_GUARD(Line.POSEIDON, Role.SOLDIER, Trait.SHIELD), TIDE_HERALD(Line.POSEIDON, Role.MYSTIC, Trait.BANNER), PUFFERLING(Line.POSEIDON, Role.SKIRMISHER, Trait.BOMB),
+        NET_CASTER(Line.POSEIDON, Role.CASTER, Trait.BIND), CONCH_BLOWER(Line.POSEIDON, Role.MYSTIC, Trait.HORN), WRECKER(Line.POSEIDON, Role.SKIRMISHER, Trait.DISARM),
+        BRINE_LAYER(Line.POSEIDON, Role.CASTER, Trait.TRAP), MIST_DANCER(Line.POSEIDON, Role.CASTER, Trait.MIRAGE), TIDE_WARDEN(Line.POSEIDON, Role.BRUTE, Trait.LINK),
+        SEA_RAIDER(Line.POSEIDON, Role.SOLDIER, Trait.FRENZY), PEARL_MENDER(Line.POSEIDON, Role.MYSTIC, Trait.REVIVE), HARPOONER(Line.POSEIDON, Role.CASTER, Trait.SNIPE),
+        WAVE_RIDER(Line.POSEIDON, Role.BRUTE, Trait.CHARGE), LULL_SINGER(Line.POSEIDON, Role.CASTER, Trait.SILENCE), CURRENT_SLIDER(Line.POSEIDON, Role.SKIRMISHER, Trait.SWAP),
+        GATE_WARDEN(Line.HADES, Role.SOLDIER, Trait.SHIELD), STYX_HERALD(Line.HADES, Role.MYSTIC, Trait.BANNER), EMBER_WRETCH(Line.HADES, Role.SKIRMISHER, Trait.BOMB),
+        SHACKLER(Line.HADES, Role.CASTER, Trait.BIND), DEATH_KNELL(Line.HADES, Role.MYSTIC, Trait.HORN), GRAVE_ROBBER(Line.HADES, Role.SKIRMISHER, Trait.DISARM),
+        MIASMA_SOWER(Line.HADES, Role.CASTER, Trait.TRAP), PHANTASM(Line.HADES, Role.CASTER, Trait.MIRAGE), SOUL_WARDEN(Line.HADES, Role.BRUTE, Trait.LINK),
+        REVENANT(Line.HADES, Role.SOLDIER, Trait.FRENZY), PSYCHOPOMP(Line.HADES, Role.MYSTIC, Trait.REVIVE), BONE_LANCER(Line.HADES, Role.CASTER, Trait.SNIPE),
+        CHARIOT_SHADE(Line.HADES, Role.BRUTE, Trait.CHARGE), LETHE_DRINKER(Line.HADES, Role.CASTER, Trait.SILENCE), SHADOW_STEPPER(Line.HADES, Role.SKIRMISHER, Trait.SWAP);
 
         public final Line line;
         public final Role role;
+        public final Trait trait;
 
         Kind(Line line, Role role) {
+            this(line, role, Trait.NONE);
+        }
+
+        Kind(Line line, Role role, Trait trait) {
             this.line = line;
             this.role = role;
+            this.trait = trait;
         }
 
         public String id() {
@@ -82,9 +135,34 @@ public class Sentinel extends Monster implements RangedAttackMob {
             return Component.translatable("entity." + RealmsOfChaos.MOD_ID + ".sentinel." + id());
         }
 
+        /** The plain kind of a role in a tower: the one without a trait. */
         public static Kind of(Line line, Role role) {
             for (Kind k : values()) if (k.line == line && k.role == role) return k;
             throw new IllegalArgumentException(line + " " + role);
+        }
+
+        public static Kind of(Line line, Trait trait) {
+            for (Kind k : values()) if (k.line == line && k.trait == trait && (trait != Trait.NONE)) return k;
+            throw new IllegalArgumentException(line + " " + trait);
+        }
+
+        public static java.util.List<Kind> of(Line line) {
+            java.util.List<Kind> out = new java.util.ArrayList<>();
+            for (Kind k : values()) if (k.line == line) out.add(k);
+            return out;
+        }
+
+        /** Every kind of a role a level of this threat can field: the plain one first, then those whose trait it has unlocked. */
+        public static java.util.List<Kind> pool(Line line, Role role, double threat) {
+            java.util.List<Kind> out = new java.util.ArrayList<>();
+            for (Kind k : values()) if (k.line == line && k.role == role && (k.trait == Trait.NONE || threat >= k.trait.unlock)) out.add(k);
+            return out;
+        }
+
+        /** Who fills a post: the plain kind half the time, otherwise one of the others the level has unlocked. */
+        public static Kind pick(Line line, Role role, double threat, java.util.Random random) {
+            java.util.List<Kind> pool = pool(line, role, threat);
+            return pool.size() == 1 || random.nextBoolean() ? pool.get(0) : pool.get(1 + random.nextInt(pool.size() - 1));
         }
     }
 
@@ -92,12 +170,22 @@ public class Sentinel extends Monster implements RangedAttackMob {
     private static final EntityDataAccessor<Boolean> DATA_ELITE = SynchedEntityData.defineId(Sentinel.class, EntityDataSerializers.BOOLEAN);
     private static final int MOVE_EVERY = 160, WARN_TICKS = 20, RITE_EVERY = 120;
     public static final String RAISED_TAG = "realms_of_chaos_raised";
+    /** How long a bomber hisses before it bursts, an illusion lasts, and a sniper aims. */
+    public static final int FUSE_TICKS = 30, ILLUSION_TICKS = 20 * 15, AIM_TICKS = 25;
+    public static final int MAX_FRENZY = 4;
+
+    /** What a reviver remembers of an ally that fell near it. */
+    private record Fallen(Kind kind, int tier, double threat, boolean elite, Vec3 at, java.util.Set<String> tags) {}
 
     private int tier = 1;
     private double threat;
     private int riteCooldown = 80;
     private Goal attackGoal, leapGoal;
     private int moveCooldown = 100;
+    // ---- traits
+    private int fuse = -1, trickCooldown = 60, frenzy, revives, life;
+    private boolean illusion, split, wild, sharing;
+    private Fallen fallen;
 
     public Sentinel(EntityType<? extends Sentinel> type, Level level) {
         super(type, level);
@@ -171,6 +259,17 @@ public class Sentinel extends Monster implements RangedAttackMob {
         return Math.max(0, passage - 1) + 1.5 * Math.max(0, stage);
     }
 
+    /** A kind's health: its role's, shifted by its trait - a bomber is frail, a shield-bearer and a warden stout. */
+    public static double health(Kind kind, double threat) {
+        double trait = switch (kind.trait) {
+            case BOMB -> 0.6;
+            case SHIELD, LINK -> 1.2;
+            case MIRAGE, SWAP -> 0.9;
+            default -> 1.0;
+        };
+        return health(kind.role, threat) * trait;
+    }
+
     public static double health(Role role, double threat) {
         double base = switch (role) {
             case SOLDIER -> 22.0;
@@ -199,18 +298,25 @@ public class Sentinel extends Monster implements RangedAttackMob {
         Kind kind = kind();
         Role role = kind.role;
         boolean elite = isElite();
-        getAttribute(Attributes.MAX_HEALTH).setBaseValue(health(role, threat) * (elite ? 1.5 : 1.0));
-        getAttribute(Attributes.ATTACK_DAMAGE).setBaseValue(damage(role, threat) * (elite ? 1.25 : 1.0));
-        getAttribute(Attributes.MOVEMENT_SPEED).setBaseValue(role == Role.BRUTE ? 0.22 : role == Role.SKIRMISHER ? 0.36 : kind == Kind.SHADE ? 0.33 : 0.28);
+        getAttribute(Attributes.MAX_HEALTH).setBaseValue(illusion ? 1.0 : health(kind, threat) * (elite ? 1.5 : 1.0));
+        getAttribute(Attributes.ATTACK_DAMAGE).setBaseValue(illusion ? 0.0 : damage(role, threat) * (elite ? 1.25 : 1.0) * (1.0 + 0.15 * frenzy));
+        double speed = role == Role.BRUTE ? 0.22 : role == Role.SKIRMISHER ? 0.36 : kind == Kind.SHADE ? 0.33 : 0.28;
+        if (kind.trait == Trait.SHIELD) speed = 0.24;
+        if (kind.trait == Trait.BOMB) speed = 0.40;
+        getAttribute(Attributes.MOVEMENT_SPEED).setBaseValue(speed * (1.0 + 0.05 * frenzy));
+        getAttribute(Attributes.ARMOR).setBaseValue(kind.trait == Trait.SHIELD ? 8.0 : 2.0);
+        getAttribute(Attributes.FOLLOW_RANGE).setBaseValue(kind.trait == Trait.SNIPE ? 36.0 : 24.0);
         getAttribute(Attributes.KNOCKBACK_RESISTANCE).setBaseValue(role == Role.BRUTE ? 0.6 : role == Role.KEEPER ? 0.4 : 0.0);
         getAttribute(Attributes.SCALE).setBaseValue((role == Role.KEEPER ? 1.25 : role == Role.BRUTE ? 1.15 : role == Role.SKIRMISHER ? 0.9 : 1.0) * (elite ? 1.1 : 1.0));
         if (heal) setHealth(getMaxHealth());
         this.xpReward = (role == Role.KEEPER ? 20 : role == Role.BRUTE ? 10 : 6) * (elite ? 2 : 1);
+        if (illusion) this.xpReward = 0;
         setGlowingTag(elite);
         if (attackGoal != null) this.goalSelector.removeGoal(attackGoal);
         if (leapGoal != null) this.goalSelector.removeGoal(leapGoal);
         boolean ranged = role == Role.CASTER || role == Role.MYSTIC;
-        attackGoal = ranged ? new RangedAttackGoal(this, 1.0, Math.max(25, 45 - 5 * tier), role == Role.MYSTIC ? 10.0F : 12.0F) : new MeleeAttackGoal(this, 1.1, true);
+        attackGoal = kind.trait == Trait.SNIPE ? new RangedAttackGoal(this, 0.9, 80 - 5 * tier, 22.0F)
+                : ranged ? new RangedAttackGoal(this, 1.0, Math.max(25, 45 - 5 * tier), role == Role.MYSTIC ? 10.0F : 12.0F) : new MeleeAttackGoal(this, 1.1, true);
         this.goalSelector.addGoal(2, attackGoal);
         // a skirmisher does not walk up to you: it jumps
         leapGoal = role == Role.SKIRMISHER ? new net.minecraft.world.entity.ai.goal.LeapAtTargetGoal(this, 0.45F) : null;
@@ -220,23 +326,61 @@ public class Sentinel extends Monster implements RangedAttackMob {
     }
 
     private static Item heldItem(Kind kind) {
-        return switch (kind) {
-            case STORM_HOPLITE -> Items.IRON_SWORD;
-            case TIDE_HOPLITE -> Items.TRIDENT;
-            case SHADE -> Items.GOLDEN_SWORD;
-            case SKY_ARCHER -> Items.BOW;
-            case SIREN -> Items.NAUTILUS_SHELL;
-            case LAMPAD -> Items.SOUL_TORCH;
-            case THUNDER_BRUTE, TARTARUS_BRUTE -> Items.MACE;
-            case REEF_BRUTE -> Items.IRON_AXE;
-            case KEEPER_SKY, KEEPER_TIDES, KEEPER_SHADES -> Items.BLAZE_ROD;
-            case HARPY -> Items.FEATHER;
-            case TELCHINE -> Items.GOLDEN_AXE;
-            case FURY -> Items.BLAZE_POWDER;
-            case STORM_AUGUR -> Items.END_ROD;
-            case TIDE_PRIEST -> Items.HEART_OF_THE_SEA;
-            case NECROMANCER -> Items.BONE;
+        return switch (kind.trait) {
+            case SHIELD -> Items.SHIELD;
+            case BANNER -> kind.line == Line.ZEUS ? Items.GOLDEN_SPEAR : kind.line == Line.POSEIDON ? Items.PRISMARINE_SHARD : Items.WITHER_ROSE;
+            case BOMB -> kind.line == Line.ZEUS ? Items.GLOWSTONE_DUST : kind.line == Line.POSEIDON ? Items.PUFFERFISH : Items.FIRE_CHARGE;
+            case BIND -> kind.line == Line.ZEUS ? Items.IRON_CHAIN : kind.line == Line.POSEIDON ? Items.COBWEB : Items.LEAD;
+            case HORN -> kind.line == Line.HADES ? Items.BELL : Items.GOAT_HORN;
+            case DISARM -> kind.line == Line.HADES ? Items.IRON_SHOVEL : Items.SHEARS;
+            case TRAP -> kind.line == Line.ZEUS ? Items.GLOWSTONE_DUST : kind.line == Line.POSEIDON ? Items.KELP : Items.FERMENTED_SPIDER_EYE;
+            case MIRAGE -> Items.GLASS_BOTTLE;
+            case LINK -> Items.IRON_AXE;
+            case FRENZY -> kind.line == Line.ZEUS ? Items.STICK : kind.line == Line.POSEIDON ? Items.IRON_AXE : Items.NETHERITE_SWORD;
+            case REVIVE -> kind.line == Line.ZEUS ? Items.GOLDEN_APPLE : kind.line == Line.POSEIDON ? Items.NAUTILUS_SHELL : Items.SOUL_LANTERN;
+            case SNIPE -> kind.line == Line.POSEIDON ? Items.TRIDENT : Items.CROSSBOW;
+            case CHARGE -> Items.MACE;
+            case SILENCE -> kind.line == Line.ZEUS ? Items.AMETHYST_SHARD : kind.line == Line.POSEIDON ? Items.NAUTILUS_SHELL : Items.POTION;
+            case SWAP -> Items.FEATHER;
+            case NONE -> switch (kind) {
+                case STORM_HOPLITE -> Items.IRON_SWORD;
+                case TIDE_HOPLITE -> Items.TRIDENT;
+                case SHADE -> Items.GOLDEN_SWORD;
+                case SKY_ARCHER -> Items.BOW;
+                case SIREN -> Items.NAUTILUS_SHELL;
+                case LAMPAD -> Items.SOUL_TORCH;
+                case THUNDER_BRUTE, TARTARUS_BRUTE -> Items.MACE;
+                case REEF_BRUTE -> Items.IRON_AXE;
+                case HARPY -> Items.FEATHER;
+                case TELCHINE -> Items.GOLDEN_AXE;
+                case FURY -> Items.BLAZE_POWDER;
+                case STORM_AUGUR -> Items.END_ROD;
+                case TIDE_PRIEST -> Items.HEART_OF_THE_SEA;
+                case NECROMANCER -> Items.BONE;
+                default -> Items.BLAZE_ROD;
+            };
         };
+    }
+
+    public Trait trait() {
+        return kind().trait;
+    }
+
+    /** True for one of the two copies a Mirage splits into: it has one point of health and hurts nobody. */
+    public boolean isIllusion() {
+        return illusion;
+    }
+
+    public int frenzy() {
+        return frenzy;
+    }
+
+    public boolean isWild() {
+        return wild;
+    }
+
+    public int fuse() {
+        return fuse;
     }
 
     public boolean fightsAtRange() {
@@ -269,19 +413,98 @@ public class Sentinel extends Monster implements RangedAttackMob {
             case POSEIDON -> Power.FREEZE;
             case HADES -> Power.FIRE;
         };
+        if (kind.trait == Trait.SNIPE) {
+            snipe(level, target, orb, damage * 2.2F);
+            return;
+        }
         RelicProjectile bolt = new RelicProjectile(level, this, new ItemStack(ModContent.orbItem(orb)));
-        bolt.setDamage(damage);
+        bolt.setDamage(illusion ? 0.0F : damage);
         bolt.setCurse(kind.role == Role.MYSTIC ? MobEffects.GLOWING : kind == Kind.SIREN ? MobEffects.SLOWNESS : MobEffects.WEAKNESS);
+        if (!illusion) {
+            if (kind.trait == Trait.BIND || kind.trait == Trait.SILENCE) bolt.setRider(hit -> rider(level, hit));
+            // a sower's bolt leaves its mark wherever it comes down, whether it found anyone or not
+            if (kind.trait == Trait.TRAP) bolt.setLanding(at -> com.thefarawaydev.realmsofchaos.world.Hazards.add(level, at, 2.5, 160, kind.line, moveDamage() * 0.5F));
+        }
         bolt.shoot(dx, target.getY(0.5) - bolt.getY(), dz, 1.4F, 5.0F);
         level.addFreshEntity(bolt);
         level.playSound(null, blockPosition(), SoundEvents.ILLUSIONER_PREPARE_MIRROR, SoundSource.HOSTILE, 1.0F, kind == Kind.SIREN ? 1.6F : 0.8F);
     }
 
-    /** A brute's blow throws its target back; a Fury's sets it alight. */
+    /**
+     * A sniper's shot: a line of light from it to where its target stands, for a second and a quarter, and then a
+     * fast, heavy bolt down that line. It is aimed at where the target was when the line appeared.
+     */
+    private void snipe(ServerLevel level, LivingEntity target, Power orb, float damage) {
+        Vec3 from = new Vec3(getX(), getEyeY() - 0.1, getZ()), to = new Vec3(target.getX(), target.getY(0.5), target.getZ());
+        level.playSound(null, blockPosition(), SoundEvents.CROSSBOW_LOADING_END.value(), SoundSource.HOSTILE, 1.5F, 0.6F);
+        for (int delay = 0; delay < AIM_TICKS; delay += 5) {
+            Runnable line = () -> {
+                if (!isAlive()) return;
+                for (int i = 1; i <= 24; i++) {
+                    Vec3 at = from.lerp(to, i / 24.0);
+                    level.sendParticles(Signature.spark(kind().line), at.x, at.y, at.z, 1, 0, 0, 0, 0);
+                }
+            };
+            if (delay == 0) line.run();
+            else com.thefarawaydev.realmsofchaos.world.Scheduler.after(level.getServer(), delay, line);
+        }
+        com.thefarawaydev.realmsofchaos.world.Scheduler.after(level.getServer(), AIM_TICKS, () -> {
+            if (!isAlive() || level() != level) return;
+            RelicProjectile bolt = new RelicProjectile(level, this, new ItemStack(ModContent.orbItem(orb)));
+            bolt.setDamage(damage);
+            bolt.setCurse(MobEffects.SLOWNESS);                 // a hit that heavy staggers
+            bolt.shoot(to.x - getX(), to.y - bolt.getY(), to.z - getZ(), 2.6F, 0.0F);
+            level.addFreshEntity(bolt);
+            level.playSound(null, blockPosition(), SoundEvents.CROSSBOW_SHOOT, SoundSource.HOSTILE, 1.5F, 0.7F);
+        });
+    }
+
+    /** What a binder's or a silencer's bolt does to whoever it hits, on top of its damage. */
+    public void rider(ServerLevel level, LivingEntity hit) {
+        Line line = kind().line;
+        if (trait() == Trait.BIND) {
+            switch (line) {
+                case ZEUS -> hit.addEffect(new net.minecraft.world.effect.MobEffectInstance(MobEffects.SLOWNESS, 50, 5));          // chained to the spot
+                case POSEIDON -> {
+                    // netted and hauled in
+                    Vec3 to = position().subtract(hit.position());
+                    double d = Math.max(0.01, Math.sqrt(to.x * to.x + to.z * to.z));
+                    hit.setDeltaMovement(to.x / d * 1.2, 0.35, to.z / d * 1.2);
+                    hit.needsSync = true;
+                    hit.addEffect(new net.minecraft.world.effect.MobEffectInstance(MobEffects.SLOWNESS, 40, 1));
+                }
+                case HADES -> {
+                    hit.addEffect(new net.minecraft.world.effect.MobEffectInstance(MobEffects.DARKNESS, 80, 0));
+                    hit.addEffect(new net.minecraft.world.effect.MobEffectInstance(MobEffects.SLOWNESS, 80, 2));
+                }
+            }
+            level.playSound(null, hit.blockPosition(), SoundEvents.CHAIN_PLACE, SoundSource.HOSTILE, 1.5F, 0.7F);
+        } else if (trait() == Trait.SILENCE) {
+            if (hit instanceof Player player) com.thefarawaydev.realmsofchaos.item.GodWeaponItem.silence(player, 20 * 6);
+            switch (line) {
+                case ZEUS -> {
+                    // an oracle-breaker also takes one blessing away
+                    for (var effect : new java.util.ArrayList<>(hit.getActiveEffects())) {
+                        if (effect.getEffect().value().isBeneficial()) {
+                            hit.removeEffect(effect.getEffect());
+                            break;
+                        }
+                    }
+                }
+                case POSEIDON -> hit.addEffect(new net.minecraft.world.effect.MobEffectInstance(MobEffects.MINING_FATIGUE, 120, 1));
+                case HADES -> hit.addEffect(new net.minecraft.world.effect.MobEffectInstance(MobEffects.NAUSEA, 120, 0));
+            }
+            level.playSound(null, hit.blockPosition(), SoundEvents.BEACON_DEACTIVATE, SoundSource.HOSTILE, 1.0F, 1.6F);
+        }
+    }
+
+    /** A brute's blow throws its target back; a Fury's sets it alight; a thief's empties your hand. */
     @Override
     public boolean doHurtTarget(ServerLevel level, Entity target) {
+        if (illusion) return false;
         boolean hit = super.doHurtTarget(level, target);
         if (hit && kind() == Kind.FURY) target.igniteForSeconds(3.0F);
+        if (hit && trait() == Trait.DISARM && target instanceof Player player && trickCooldown <= 0 && disarm(player)) trickCooldown = 160;
         if (hit && kind().role == Role.BRUTE && target instanceof LivingEntity living) {
             Vec3 away = target.position().subtract(position());
             double d = Math.max(0.01, Math.sqrt(away.x * away.x + away.z * away.z));
@@ -294,7 +517,230 @@ public class Sentinel extends Monster implements RangedAttackMob {
     }
 
     private java.util.List<Sentinel> allies(ServerLevel level, double radius) {
-        return level.getEntitiesOfClass(Sentinel.class, getBoundingBox().inflate(radius), s -> s != this && s.isAlive());
+        return level.getEntitiesOfClass(Sentinel.class, getBoundingBox().inflate(radius), s -> s != this && s.isAlive() && !s.illusion);
+    }
+
+    /** A thief's trick: the weapon in the player's hand ends up somewhere in their pack. Nothing is ever lost. */
+    public static boolean disarm(Player player) {
+        var inventory = player.getInventory();
+        ItemStack held = player.getMainHandItem();
+        if (held.isEmpty()) return false;
+        int hand = inventory.getSelectedSlot(), to = -1;
+        for (int i = 9; i < 36 && to < 0; i++) if (inventory.getItem(i).isEmpty()) to = i;
+        if (to < 0) to = 9 + player.getRandom().nextInt(27);            // a full pack: it changes places with something
+        ItemStack other = inventory.getItem(to);
+        inventory.setItem(to, held);
+        inventory.setItem(hand, other);
+        player.level().playSound(null, player.blockPosition(), SoundEvents.ITEM_BREAK.value(), SoundSource.HOSTILE, 0.8F, 1.4F);
+        if (player instanceof net.minecraft.server.level.ServerPlayer sp) {
+            com.thefarawaydev.realmsofchaos.ui.Hud.actionBar(sp, com.thefarawaydev.realmsofchaos.ui.Hud.colored(
+                    Component.translatable("hud." + RealmsOfChaos.MOD_ID + ".sentinel.disarmed"), 0xFF5555));
+        }
+        return true;
+    }
+
+    /** True if {@code from} lies in front of this sentinel, within sixty degrees of where it faces. */
+    public boolean facing(Vec3 from) {
+        Vec3 to = from.subtract(position());
+        double d = Math.sqrt(to.x * to.x + to.z * to.z);
+        if (d < 0.01) return true;
+        double yaw = Math.toRadians(yBodyRot);
+        return (-Math.sin(yaw) * to.x + Math.cos(yaw) * to.z) / d > 0.5;
+    }
+
+    /**
+     * Sentinels cover for each other. A shield-bearer takes less than half of a blow from its front, and anyone
+     * standing by one is hurt less; a warden takes half of whatever lands on an ally near it.
+     */
+    @Override
+    public boolean hurtServer(ServerLevel level, DamageSource source, float amount) {
+        if (!source.is(net.minecraft.tags.DamageTypeTags.BYPASSES_INVULNERABILITY) && !sharing && !illusion) {
+            Vec3 from = source.getSourcePosition();
+            if (trait() == Trait.SHIELD) {
+                if (from != null && facing(from)) {
+                    amount *= 0.4F;
+                    level.playSound(null, blockPosition(), SoundEvents.SHIELD_BLOCK.value(), SoundSource.HOSTILE, 1.0F, 1.0F);
+                }
+            } else {
+                for (Sentinel ally : allies(level, 3.5)) {
+                    if (ally.trait() == Trait.SHIELD) {
+                        amount *= 0.7F;
+                        break;
+                    }
+                }
+            }
+            if (trait() != Trait.LINK) {
+                for (Sentinel ally : allies(level, 8.0)) {
+                    if (ally.trait() != Trait.LINK) continue;
+                    float share = amount * 0.5F;
+                    amount -= share;
+                    ally.sharing = true;
+                    try {
+                        ally.hurtServer(level, source, share);
+                    } finally {
+                        ally.sharing = false;
+                    }
+                    Vec3 a = position().add(0, 1.0, 0), b = ally.position().add(0, 1.0, 0);
+                    for (int i = 0; i <= 8; i++) {
+                        Vec3 at = a.lerp(b, i / 8.0);
+                        level.sendParticles(ParticleTypes.ENCHANTED_HIT, at.x, at.y, at.z, 1, 0, 0, 0, 0);
+                    }
+                    break;
+                }
+            }
+        }
+        boolean hurt = super.hurtServer(level, source, amount);
+        if (hurt && isAlive()) {
+            if (trait() == Trait.MIRAGE && !illusion && !split && getHealth() < getMaxHealth() * 0.7F) split(level);
+            if (trait() == Trait.FRENZY && !wild && getHealth() < getMaxHealth() * 0.4F) goWild(level);
+        }
+        return hurt;
+    }
+
+    /** A mirage, hurt, is suddenly three: two of them are not there at all, and it is no longer where it was. */
+    public java.util.List<Sentinel> split(ServerLevel level) {
+        java.util.List<Sentinel> copies = new java.util.ArrayList<>();
+        if (split || illusion) return copies;
+        split = true;
+        Vec3 here = position();
+        for (int i = 0; i < 2; i++) {
+            Sentinel copy = ModContent.SENTINEL.get().create(level, net.minecraft.world.entity.EntitySpawnReason.MOB_SUMMONED);
+            if (copy == null) continue;
+            copy.illusion = true;
+            copy.setUp(kind(), tier, threat, false);
+            double a = Math.PI * 2 * (i + 1) / 3 + random.nextDouble();
+            copy.snapTo(here.x + Math.cos(a) * 2.0, here.y, here.z + Math.sin(a) * 2.0, getYRot(), 0.0F);
+            if (!level.noCollision(copy)) copy.snapTo(here.x, here.y, here.z, getYRot(), 0.0F);
+            for (String tag : entityTags()) copy.addTag(tag);
+            copy.addTag(RAISED_TAG);
+            copy.setTarget(getTarget());
+            level.addFreshEntity(copy);
+            copies.add(copy);
+        }
+        // the real one trades places with one of its copies, so nobody knows which is which
+        if (!copies.isEmpty()) {
+            Sentinel other = copies.get(random.nextInt(copies.size()));
+            Vec3 there = other.position();
+            other.snapTo(here.x, here.y, here.z, other.getYRot(), 0.0F);
+            snapTo(there.x, there.y, there.z, getYRot(), 0.0F);
+        }
+        level.sendParticles(ParticleTypes.CLOUD, here.x, here.y + 1.0, here.z, 40, 1.2, 0.8, 1.2, 0.02);
+        level.playSound(null, blockPosition(), SoundEvents.ILLUSIONER_MIRROR_MOVE, SoundSource.HOSTILE, 1.5F, 1.0F);
+        return copies;
+    }
+
+    /** Nearly beaten, a berserker stops caring: faster and stronger until it falls. */
+    private void goWild(ServerLevel level) {
+        wild = true;
+        addEffect(new net.minecraft.world.effect.MobEffectInstance(MobEffects.STRENGTH, 20 * 600, 0));
+        addEffect(new net.minecraft.world.effect.MobEffectInstance(MobEffects.SPEED, 20 * 600, 0));
+        level.sendParticles(ParticleTypes.ANGRY_VILLAGER, getX(), getY() + getBbHeight(), getZ(), 6, 0.3, 0.2, 0.3, 0.0);
+        level.playSound(null, blockPosition(), SoundEvents.RAVAGER_ROAR, SoundSource.HOSTILE, 0.8F, 1.4F);
+    }
+
+    /** An ally has just fallen near this sentinel: a berserker is roused by it, a reviver marks where. */
+    private void witness(Sentinel dead) {
+        if (trait() == Trait.FRENZY && frenzy < MAX_FRENZY) {
+            frenzy++;
+            getAttribute(Attributes.ATTACK_DAMAGE).setBaseValue(damage(kind().role, threat) * (isElite() ? 1.25 : 1.0) * (1.0 + 0.15 * frenzy));
+            getAttribute(Attributes.MOVEMENT_SPEED).setBaseValue(0.28 * (1.0 + 0.05 * frenzy));
+            if (level() instanceof ServerLevel level) level.sendParticles(ParticleTypes.ANGRY_VILLAGER, getX(), getY() + getBbHeight(), getZ(), 3, 0.3, 0.2, 0.3, 0.0);
+        }
+        if (trait() == Trait.REVIVE && fallen == null && dead.trait() != Trait.REVIVE && !dead.entityTags().contains(RAISED_TAG)) {
+            fallen = new Fallen(dead.kind(), dead.tier, dead.threat, dead.isElite(), dead.position(), new java.util.HashSet<>(dead.entityTags()));
+        }
+    }
+
+    @Override
+    public void die(DamageSource source) {
+        super.die(source);
+        if (!(level() instanceof ServerLevel level) || illusion) return;
+        for (Sentinel ally : allies(level, 12.0)) ally.witness(this);
+        if (trait() == Trait.BANNER) {
+            // the standard falls: those who fought under it falter
+            for (Sentinel ally : allies(level, 9.0)) {
+                ally.removeEffect(MobEffects.SPEED);
+                ally.removeEffect(MobEffects.STRENGTH);
+                ally.removeEffect(MobEffects.RESISTANCE);
+                ally.addEffect(new net.minecraft.world.effect.MobEffectInstance(MobEffects.WEAKNESS, 100, 0));
+            }
+        }
+        if (trait() == Trait.MIRAGE) {
+            for (Sentinel copy : level.getEntitiesOfClass(Sentinel.class, getBoundingBox().inflate(24), s -> s.illusion && s.kind() == kind())) copy.discard();
+        }
+    }
+
+    /** A bomber's end: everyone near is hurt and marked by its tower, and it is gone. */
+    public void burst(ServerLevel level) {
+        if (!isAlive()) return;
+        float damage = moveDamage() * 2.0F;
+        Line line = kind().line;
+        for (Player p : level.getEntitiesOfClass(Player.class, getBoundingBox().inflate(3.5), p -> p.isAlive() && Power.canHurt(this, p))) {
+            p.hurtServer(level, damageSources().mobAttack(this), damage);
+            switch (line) {
+                case ZEUS -> {
+                    p.setDeltaMovement(p.getDeltaMovement().x, 0.8, p.getDeltaMovement().z);
+                    p.needsSync = true;
+                }
+                case POSEIDON -> p.addEffect(new net.minecraft.world.effect.MobEffectInstance(MobEffects.SLOWNESS, 80, 2));
+                case HADES -> {
+                    p.igniteForSeconds(4.0F);
+                    p.addEffect(new net.minecraft.world.effect.MobEffectInstance(MobEffects.WITHER, 60, 0));
+                }
+            }
+        }
+        level.sendParticles(ParticleTypes.EXPLOSION, getX(), getY() + 1.0, getZ(), 3, 0.6, 0.4, 0.6, 0.0);
+        level.sendParticles(Signature.spark(line), getX(), getY() + 1.0, getZ(), 60, 1.2, 0.8, 1.2, 0.2);
+        level.playSound(null, blockPosition(), SoundEvents.GENERIC_EXPLODE.value(), SoundSource.HOSTILE, 1.2F, 1.3F);
+        com.thefarawaydev.realmsofchaos.world.Fx.impact(level, position(), 5);
+        discard();
+    }
+
+    /** A dancer's trick: it changes places with the worst-hurt ally near it, and that ally starts to mend. */
+    public boolean swap(ServerLevel level) {
+        Sentinel worst = null;
+        for (Sentinel ally : allies(level, 12.0)) {
+            float share = ally.getHealth() / ally.getMaxHealth();
+            if (share < 0.6F && (worst == null || share < worst.getHealth() / worst.getMaxHealth())) worst = ally;
+        }
+        if (worst == null) return false;
+        Vec3 mine = position(), theirs = worst.position();
+        snapTo(theirs.x, theirs.y, theirs.z, getYRot(), 0.0F);
+        worst.snapTo(mine.x, mine.y, mine.z, worst.getYRot(), 0.0F);
+        worst.addEffect(new net.minecraft.world.effect.MobEffectInstance(MobEffects.REGENERATION, 80, 1));
+        if (worst.getTarget() != null) setTarget(worst.getTarget());
+        for (Vec3 at : new Vec3[]{mine, theirs}) level.sendParticles(ParticleTypes.PORTAL, at.x, at.y + 1.0, at.z, 30, 0.3, 0.8, 0.3, 0.3);
+        level.playSound(null, blockPosition(), SoundEvents.ENDERMAN_TELEPORT, SoundSource.HOSTILE, 1.0F, 1.4F);
+        return true;
+    }
+
+    /** What a trait does on its own clock, every tick the sentinel has a target. */
+    private void tickTrait(ServerLevel level, LivingEntity target) {
+        if (trickCooldown > 0) trickCooldown--;
+        switch (trait()) {
+            case BOMB -> {
+                if (fuse < 0 && distanceToSqr(target) < 6.25) {
+                    fuse = FUSE_TICKS;
+                    setGlowingTag(true);
+                    level.playSound(null, blockPosition(), SoundEvents.CREEPER_PRIMED, SoundSource.HOSTILE, 1.5F, 1.2F);
+                } else if (fuse >= 0) {
+                    getNavigation().stop();
+                    if (fuse % 5 == 0) level.sendParticles(Signature.spark(kind().line), getX(), getY() + 1.0, getZ(), 10, 0.3, 0.5, 0.3, 0.05);
+                    if (--fuse < 0) burst(level);
+                }
+            }
+            case SWAP -> {
+                if (trickCooldown <= 0) trickCooldown = swap(level) ? 120 : 20;
+            }
+            case TRAP -> {
+                // now and then it sows one where it stands, to cover its own retreat
+                if (trickCooldown <= 0 && distanceToSqr(target) < 36.0) {
+                    com.thefarawaydev.realmsofchaos.world.Hazards.add(level, position(), 2.5, 160, kind().line, moveDamage() * 0.5F);
+                    trickCooldown = 200;
+                }
+            }
+            default -> { }
+        }
     }
 
     /**
@@ -306,6 +752,48 @@ public class Sentinel extends Monster implements RangedAttackMob {
         if (kind().role != Role.MYSTIC) return false;
         java.util.List<Sentinel> near = allies(level, 9.0);
         boolean did = false;
+        switch (trait()) {
+            case BANNER -> {
+                // every tower's standard gives what that tower fights with: speed, a thick hide, or a heavy hand
+                for (Sentinel ally : near) {
+                    ally.addEffect(new net.minecraft.world.effect.MobEffectInstance(switch (kind().line) {
+                        case ZEUS -> MobEffects.SPEED;
+                        case POSEIDON -> MobEffects.RESISTANCE;
+                        case HADES -> MobEffects.STRENGTH;
+                    }, 160, kind().line == Line.ZEUS ? 1 : 0));
+                    level.sendParticles(Signature.spark(kind().line), ally.getX(), ally.getY() + 1.2, ally.getZ(), 6, 0.3, 0.5, 0.3, 0.05);
+                    did = true;
+                }
+            }
+            case HORN -> {
+                // (two rites of rest after each call: a horn that never stops is no alarm)
+                if (riteCharge > 0) riteCharge--;
+                else if (soundHorn(level) > 0) {
+                    did = true;
+                    riteCharge = 2;
+                }
+            }
+            case REVIVE -> {
+                if (fallen != null && revives < (tier >= 3 ? 2 : 1)) {
+                    Sentinel back = ModContent.SENTINEL.get().create(level, net.minecraft.world.entity.EntitySpawnReason.MOB_SUMMONED);
+                    if (back != null) {
+                        back.setUp(fallen.kind(), fallen.tier(), fallen.threat(), fallen.elite());
+                        back.setHealth(back.getMaxHealth() * 0.4F);
+                        back.snapTo(fallen.at().x, fallen.at().y, fallen.at().z, getYRot(), 0.0F);
+                        for (String tag : fallen.tags()) back.addTag(tag);
+                        back.addTag(RAISED_TAG);
+                        back.setPersistenceRequired();
+                        back.setTarget(getTarget());
+                        level.addFreshEntity(back);
+                        level.sendParticles(ParticleTypes.TOTEM_OF_UNDYING, fallen.at().x, fallen.at().y + 1.0, fallen.at().z, 40, 0.4, 0.8, 0.4, 0.3);
+                        revives++;
+                        fallen = null;
+                        did = true;
+                    }
+                }
+            }
+            default -> { }
+        }
         switch (kind()) {
             case STORM_AUGUR -> {
                 for (Sentinel ally : near) {
@@ -347,8 +835,42 @@ public class Sentinel extends Monster implements RangedAttackMob {
         return did;
     }
 
-    /** The move a Keeper or a Shade makes now and then, or null for kinds that have none. */
+    private int riteCharge;
+
+    /**
+     * The alarm. Every sentinel within earshot turns on whoever the herald is fighting and runs; in a passage the
+     * rooms next door wake as well and come too. @return how many answered.
+     */
+    public int soundHorn(ServerLevel level) {
+        LivingEntity target = getTarget();
+        var plan = com.thefarawaydev.realmsofchaos.world.Passages.planAt(level, blockPosition());
+        if (plan != null) {
+            var cell = plan.cellAt(blockPosition());
+            if (cell != null) {
+                for (var next : plan.neighbours(cell)) {
+                    if (plan.connected(cell, next)) com.thefarawaydev.realmsofchaos.world.Passages.wake(level, plan, next);
+                }
+            }
+        }
+        int answered = 0;
+        for (Sentinel ally : allies(level, 28.0)) {
+            if (target != null) ally.setTarget(target);
+            ally.addEffect(new net.minecraft.world.effect.MobEffectInstance(MobEffects.SPEED, 120, 0));
+            answered++;
+        }
+        level.playSound(null, blockPosition(), kind().line == Line.HADES ? SoundEvents.BELL_BLOCK : SoundEvents.RAID_HORN.value(), SoundSource.HOSTILE, 4.0F, kind().line == Line.POSEIDON ? 0.7F : 1.0F);
+        for (Player p : level.getEntitiesOfClass(Player.class, getBoundingBox().inflate(28.0), Player::isAlive)) {
+            if (p instanceof net.minecraft.server.level.ServerPlayer sp) {
+                com.thefarawaydev.realmsofchaos.ui.Hud.actionBar(sp, com.thefarawaydev.realmsofchaos.ui.Hud.colored(
+                        Component.translatable("hud." + RealmsOfChaos.MOD_ID + ".sentinel.horn", kind().displayName()), 0xFFAA00));
+            }
+        }
+        return answered;
+    }
+
+    /** The move a Keeper, a Shade or a charger makes now and then, or null for kinds that have none. */
     public Signature move() {
+        if (trait() == Trait.CHARGE) return Signature.CHARGE;
         return switch (kind()) {
             case KEEPER_SKY -> Signature.STORM;
             case KEEPER_TIDES -> Signature.VORTEX;
@@ -371,8 +893,15 @@ public class Sentinel extends Monster implements RangedAttackMob {
     @Override
     protected void customServerAiStep(ServerLevel level) {
         super.customServerAiStep(level);
+        if (illusion && ++life > ILLUSION_TICKS) {
+            level.sendParticles(ParticleTypes.CLOUD, getX(), getY() + 1.0, getZ(), 10, 0.3, 0.6, 0.3, 0.02);
+            discard();
+            return;
+        }
         LivingEntity target = getTarget();
         if (target == null || !target.isAlive()) return;
+        tickTrait(level, target);
+        if (!isAlive() || isRemoved()) return;
         if (kind().role == Role.MYSTIC) {
             if (--riteCooldown <= 0) riteCooldown = rite(level) ? RITE_EVERY : 30;
             return;
@@ -380,7 +909,7 @@ public class Sentinel extends Monster implements RangedAttackMob {
         if (move() == null) return;
         if (moveCooldown > 0) {
             moveCooldown--;
-            if (moveCooldown == WARN_TICKS && kind().role == Role.KEEPER) {
+            if (moveCooldown == WARN_TICKS && (kind().role == Role.KEEPER || trait() == Trait.CHARGE)) {
                 // a breath of warning before a Keeper's move
                 level.playSound(null, blockPosition(), SoundEvents.EVOKER_PREPARE_ATTACK, SoundSource.HOSTILE, 1.2F, 1.2F);
                 level.sendParticles(Signature.spark(kind().line), getX(), getY() + 1.2, getZ(), 30, 0.5, 0.8, 0.5, 0.1);
@@ -396,7 +925,7 @@ public class Sentinel extends Monster implements RangedAttackMob {
     @Override
     protected void dropCustomDeathLoot(ServerLevel level, DamageSource source, boolean killedByPlayer) {
         super.dropCustomDeathLoot(level, source, killedByPlayer);
-        if (!killedByPlayer) return;
+        if (!killedByPlayer || illusion) return;
         if (source.getEntity() instanceof net.minecraft.server.level.ServerPlayer killer) {
             com.thefarawaydev.realmsofchaos.world.Bounties.count(killer, com.thefarawaydev.realmsofchaos.world.Bounties.Kind.SENTINELS, 1);
         }
@@ -418,6 +947,10 @@ public class Sentinel extends Monster implements RangedAttackMob {
         output.putInt("Tier", tier);
         output.putDouble("Threat", threat);
         output.putBoolean("Elite", isElite());
+        output.putBoolean("Illusion", illusion);
+        output.putInt("Life", life);
+        output.putInt("Frenzy", frenzy);
+        output.putBoolean("Split", split);
     }
 
     @Override
@@ -427,6 +960,10 @@ public class Sentinel extends Monster implements RangedAttackMob {
         this.tier = Math.max(1, Math.min(3, input.getIntOr("Tier", 1)));
         this.threat = Math.max(0.0, input.getDoubleOr("Threat", 0.0));
         this.entityData.set(DATA_ELITE, input.getBooleanOr("Elite", false));
+        this.illusion = input.getBooleanOr("Illusion", false);
+        this.life = input.getIntOr("Life", 0);
+        this.frenzy = Math.max(0, Math.min(MAX_FRENZY, input.getIntOr("Frenzy", 0)));
+        this.split = input.getBooleanOr("Split", false);
         configure(false);
     }
 }

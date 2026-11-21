@@ -134,10 +134,6 @@ public final class FloorShifts {
 
     /** Anything the rising ground moved into is lifted on top of it, so nobody is ever buried by a shift. */
     private static void carry(ServerLevel level, int floor) {
-        for (Entity e : level.getEntities((Entity) null, room(floor), en -> !en.isSpectator())) {
-            for (int i = 0; i < 3 && !level.noCollision(e); i++) {
-                e.teleportTo(e.getX(), e.getY() + 1.0, e.getZ());
-            }
-        }
+        for (Entity e : level.getEntitiesOfClass(Entity.class, room(floor), en -> !en.isSpectator())) Fx.unbury(level, e, 3);
     }
 }

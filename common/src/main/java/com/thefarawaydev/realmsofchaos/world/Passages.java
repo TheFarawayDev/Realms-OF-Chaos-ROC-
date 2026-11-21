@@ -800,7 +800,8 @@ public final class Passages {
             // one mystic to a room is plenty; an elite is always a fighter
             if (role == Sentinel.Role.MYSTIC && (mystic || i < elites)) role = Sentinel.Role.SOLDIER;
             mystic |= role == Sentinel.Role.MYSTIC;
-            out.add(new Post(Sentinel.Kind.of(plan.line, role), i < elites));
+            // which kind of that role: the plain one, or one of those with a trait that this level's threat has unlocked
+            out.add(new Post(Sentinel.Kind.pick(plan.line, role, plan.threat, random), i < elites));
         }
         return out;
     }

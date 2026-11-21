@@ -698,7 +698,7 @@
       64
     ],
     "columns": 9,
-    "count": 153,
+    "count": 198,
     "source": "assets/realms_of_chaos/textures/entity",
     "tiles": {
       "god/amphitrite": [
@@ -1241,77 +1241,257 @@
         8,
         14
       ],
-      "sentinel/fury": [
+      "sentinel/aegis_bearer": [
         0,
         15
+      ],
+      "sentinel/bolt_hurler": [
+        1,
+        15
+      ],
+      "sentinel/bone_lancer": [
+        2,
+        15
+      ],
+      "sentinel/brine_layer": [
+        3,
+        15
+      ],
+      "sentinel/bull_charger": [
+        4,
+        15
+      ],
+      "sentinel/chain_thrower": [
+        5,
+        15
+      ],
+      "sentinel/chariot_shade": [
+        6,
+        15
+      ],
+      "sentinel/conch_blower": [
+        7,
+        15
+      ],
+      "sentinel/current_slider": [
+        8,
+        15
+      ],
+      "sentinel/death_knell": [
+        0,
+        16
+      ],
+      "sentinel/eagle_standard": [
+        1,
+        16
+      ],
+      "sentinel/ember_wretch": [
+        2,
+        16
+      ],
+      "sentinel/fury": [
+        3,
+        16
+      ],
+      "sentinel/gate_warden": [
+        4,
+        16
+      ],
+      "sentinel/grave_robber": [
+        5,
+        16
+      ],
+      "sentinel/gust_thief": [
+        6,
+        16
+      ],
+      "sentinel/harpooner": [
+        7,
+        16
       ],
       "sentinel/harpy": [
-        1,
-        15
+        8,
+        16
       ],
       "sentinel/keeper_shades": [
-        2,
-        15
+        0,
+        17
       ],
       "sentinel/keeper_sky": [
-        3,
-        15
+        1,
+        17
       ],
       "sentinel/keeper_tides": [
-        4,
-        15
+        2,
+        17
       ],
       "sentinel/lampad": [
+        3,
+        17
+      ],
+      "sentinel/lethe_drinker": [
+        4,
+        17
+      ],
+      "sentinel/lull_singer": [
         5,
-        15
+        17
+      ],
+      "sentinel/maenad": [
+        6,
+        17
+      ],
+      "sentinel/miasma_sower": [
+        7,
+        17
+      ],
+      "sentinel/mirage": [
+        8,
+        17
+      ],
+      "sentinel/mist_dancer": [
+        0,
+        18
       ],
       "sentinel/necromancer": [
+        1,
+        18
+      ],
+      "sentinel/net_caster": [
+        2,
+        18
+      ],
+      "sentinel/oathkeeper": [
+        3,
+        18
+      ],
+      "sentinel/oracle_breaker": [
+        4,
+        18
+      ],
+      "sentinel/paean_singer": [
+        5,
+        18
+      ],
+      "sentinel/pearl_mender": [
         6,
-        15
+        18
+      ],
+      "sentinel/phantasm": [
+        7,
+        18
+      ],
+      "sentinel/psychopomp": [
+        8,
+        18
+      ],
+      "sentinel/pufferling": [
+        0,
+        19
       ],
       "sentinel/reef_brute": [
-        7,
-        15
+        1,
+        19
+      ],
+      "sentinel/revenant": [
+        2,
+        19
+      ],
+      "sentinel/sea_raider": [
+        3,
+        19
+      ],
+      "sentinel/shackler": [
+        4,
+        19
       ],
       "sentinel/shade": [
-        8,
-        15
+        5,
+        19
+      ],
+      "sentinel/shadow_stepper": [
+        6,
+        19
+      ],
+      "sentinel/shell_guard": [
+        7,
+        19
       ],
       "sentinel/siren": [
-        0,
-        16
+        8,
+        19
       ],
       "sentinel/sky_archer": [
+        0,
+        20
+      ],
+      "sentinel/soul_warden": [
         1,
-        16
+        20
+      ],
+      "sentinel/spark_runner": [
+        2,
+        20
       ],
       "sentinel/storm_augur": [
-        2,
-        16
+        3,
+        20
       ],
       "sentinel/storm_hoplite": [
-        3,
-        16
+        4,
+        20
+      ],
+      "sentinel/storm_sower": [
+        5,
+        20
+      ],
+      "sentinel/styx_herald": [
+        6,
+        20
       ],
       "sentinel/tartarus_brute": [
-        4,
-        16
+        7,
+        20
       ],
       "sentinel/telchine": [
-        5,
-        16
+        8,
+        20
       ],
       "sentinel/thunder_brute": [
-        6,
-        16
+        0,
+        21
+      ],
+      "sentinel/thunder_herald": [
+        1,
+        21
+      ],
+      "sentinel/tide_herald": [
+        2,
+        21
       ],
       "sentinel/tide_hoplite": [
-        7,
-        16
+        3,
+        21
       ],
       "sentinel/tide_priest": [
+        4,
+        21
+      ],
+      "sentinel/tide_warden": [
+        5,
+        21
+      ],
+      "sentinel/wave_rider": [
+        6,
+        21
+      ],
+      "sentinel/wind_dancer": [
+        7,
+        21
+      ],
+      "sentinel/wrecker": [
         8,
-        16
+        21
       ]
     }
   },
@@ -1673,7 +1853,7 @@
       32
     ],
     "columns": 15,
-    "count": 63,
+    "count": 108,
     "tiles": {
       "zeus": [
         0,
@@ -1926,6 +2106,186 @@
       "necromancer": [
         2,
         4
+      ],
+      "aegis_bearer": [
+        3,
+        4
+      ],
+      "eagle_standard": [
+        4,
+        4
+      ],
+      "spark_runner": [
+        5,
+        4
+      ],
+      "chain_thrower": [
+        6,
+        4
+      ],
+      "thunder_herald": [
+        7,
+        4
+      ],
+      "gust_thief": [
+        8,
+        4
+      ],
+      "storm_sower": [
+        9,
+        4
+      ],
+      "mirage": [
+        10,
+        4
+      ],
+      "oathkeeper": [
+        11,
+        4
+      ],
+      "maenad": [
+        12,
+        4
+      ],
+      "paean_singer": [
+        13,
+        4
+      ],
+      "bolt_hurler": [
+        14,
+        4
+      ],
+      "bull_charger": [
+        0,
+        5
+      ],
+      "oracle_breaker": [
+        1,
+        5
+      ],
+      "wind_dancer": [
+        2,
+        5
+      ],
+      "shell_guard": [
+        3,
+        5
+      ],
+      "tide_herald": [
+        4,
+        5
+      ],
+      "pufferling": [
+        5,
+        5
+      ],
+      "net_caster": [
+        6,
+        5
+      ],
+      "conch_blower": [
+        7,
+        5
+      ],
+      "wrecker": [
+        8,
+        5
+      ],
+      "brine_layer": [
+        9,
+        5
+      ],
+      "mist_dancer": [
+        10,
+        5
+      ],
+      "tide_warden": [
+        11,
+        5
+      ],
+      "sea_raider": [
+        12,
+        5
+      ],
+      "pearl_mender": [
+        13,
+        5
+      ],
+      "harpooner": [
+        14,
+        5
+      ],
+      "wave_rider": [
+        0,
+        6
+      ],
+      "lull_singer": [
+        1,
+        6
+      ],
+      "current_slider": [
+        2,
+        6
+      ],
+      "gate_warden": [
+        3,
+        6
+      ],
+      "styx_herald": [
+        4,
+        6
+      ],
+      "ember_wretch": [
+        5,
+        6
+      ],
+      "shackler": [
+        6,
+        6
+      ],
+      "death_knell": [
+        7,
+        6
+      ],
+      "grave_robber": [
+        8,
+        6
+      ],
+      "miasma_sower": [
+        9,
+        6
+      ],
+      "phantasm": [
+        10,
+        6
+      ],
+      "soul_warden": [
+        11,
+        6
+      ],
+      "revenant": [
+        12,
+        6
+      ],
+      "psychopomp": [
+        13,
+        6
+      ],
+      "bone_lancer": [
+        14,
+        6
+      ],
+      "chariot_shade": [
+        0,
+        7
+      ],
+      "lethe_drinker": [
+        1,
+        7
+      ],
+      "shadow_stepper": [
+        2,
+        7
       ]
     }
   },

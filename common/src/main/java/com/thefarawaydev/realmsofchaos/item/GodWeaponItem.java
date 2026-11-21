@@ -187,16 +187,36 @@ public class GodWeaponItem extends Item {
         return (int) (MOVE_COOLDOWN_TICKS * WeaponProgress.cooldownScale(stack));
     }
 
+    /** Players a sentinel has silenced, and the server tick until which no relic of theirs will cast its move. */
+    private static final Map<java.util.UUID, Long> SILENCED = new ConcurrentHashMap<>();
+
+    /** Silences a player: for this many ticks none of their relics will cast its move. */
+    public static void silence(Player player, int ticks) {
+        if (player.level().getServer() == null) return;
+        SILENCED.put(player.getUUID(), player.level().getServer().getTickCount() + (long) ticks);
+        if (player instanceof ServerPlayer sp) {
+            Hud.actionBar(sp, Hud.colored(Component.translatable("hud." + RealmsOfChaos.MOD_ID + ".sentinel.silenced", ticks / 20), 0xFF5555));
+        }
+    }
+
+    public static int silencedFor(Player player, long now) {
+        Long until = SILENCED.get(player.getUUID());
+        // (a time far ahead is left over from another world)
+        return until == null || now >= until || until - now > 20 * 60 ? 0 : (int) (until - now);
+    }
+
     /** Ticks until this player's move with this relic is ready; 0 when it is. */
     public int moveWait(Player player, long now) {
         Long ready = MOVE_READY.get(player.getUUID() + "/" + god.id());
         // a time further ahead than any recharge is left over from another world: ignore it
-        return ready == null || now >= ready || ready - now > MOVE_COOLDOWN_TICKS ? 0 : (int) (ready - now);
+        int wait = ready == null || now >= ready || ready - now > MOVE_COOLDOWN_TICKS ? 0 : (int) (ready - now);
+        return Math.max(wait, silencedFor(player, now));
     }
 
     /** Makes the move ready at once. */
     public void resetMove(Player player) {
         MOVE_READY.remove(player.getUUID() + "/" + god.id());
+        SILENCED.remove(player.getUUID());
         player.getCooldowns().removeCooldown(god.weaponId());
     }
 

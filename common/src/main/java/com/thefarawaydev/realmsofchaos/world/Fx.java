@@ -33,6 +33,20 @@ public final class Fx {
         return Blocks.STONE.defaultBlockState();
     }
 
+    /** Moves an entity to a place in its own level, at once - a player through the proper teleport, anything else directly. */
+    public static void place(ServerLevel level, net.minecraft.world.entity.Entity entity, double x, double y, double z) {
+        if (entity instanceof net.minecraft.server.level.ServerPlayer player) {
+            player.teleportTo(level, x, y, z, java.util.Set.of(), player.getYRot(), player.getXRot(), false);
+        } else {
+            entity.teleportTo(x, y, z);
+        }
+    }
+
+    /** Lifts an entity a block at a time until it is clear of the blocks around it (at most {@code most} blocks). */
+    public static void unbury(ServerLevel level, net.minecraft.world.entity.Entity entity, int most) {
+        for (int i = 0; i < most && !level.noCollision(entity); i++) place(level, entity, entity.getX(), entity.getY() + 1.0, entity.getZ());
+    }
+
     /**
      * An impact at {@code at}. @param power 1 (a heavy hit) to 8 (the floor erupting): how many chunks fly and how
      * high. @return how many chunks were thrown.

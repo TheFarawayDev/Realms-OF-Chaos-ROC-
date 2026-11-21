@@ -178,7 +178,7 @@ public final class Traps {
         for (ServerPlayer p : level.getEntitiesOfClass(ServerPlayer.class, plan.cellBox(cell).inflate(1.0, 0, 1.0), e -> e.isAlive() && !e.isSpectator())) {
             double dx = p.getX() - (m.getX() + 0.5), dz = p.getZ() - (m.getZ() + 0.5);
             if (Math.abs(dx) > 3.6 || Math.abs(dz) > 3.6) {
-                p.teleportTo(m.getX() + 0.5 + Math.max(-3.2, Math.min(3.2, dx)), m.getY() + 1, m.getZ() + 0.5 + Math.max(-3.2, Math.min(3.2, dz)));
+                Fx.place(level, p, m.getX() + 0.5 + Math.max(-3.2, Math.min(3.2, dx)), m.getY() + 1, m.getZ() + 0.5 + Math.max(-3.2, Math.min(3.2, dz)));
             }
         }
         for (BlockPos door : doors(plan, cell)) {

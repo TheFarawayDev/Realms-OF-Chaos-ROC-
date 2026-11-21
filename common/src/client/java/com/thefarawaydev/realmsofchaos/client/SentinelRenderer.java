@@ -8,11 +8,14 @@ import net.minecraft.client.renderer.entity.EntityRendererProvider;
 import net.minecraft.client.renderer.entity.HumanoidMobRenderer;
 import net.minecraft.resources.Identifier;
 
-/** Draws the passages' sentinels as humanoids, each kind with its own generated skin. */
+/**
+ * Draws the passages' sentinels as humanoids, each kind with its own generated skin. The model is the player's, so a
+ * skin's outer layer - jacket, sleeves, trouser legs and hat - is drawn over it: armour, cloaks and sashes stand proud.
+ */
 public class SentinelRenderer extends HumanoidMobRenderer<Sentinel, SentinelRenderState, HumanoidModel<SentinelRenderState>> {
 
     public SentinelRenderer(EntityRendererProvider.Context context) {
-        super(context, new HumanoidModel<>(context.bakeLayer(ModelLayers.ZOMBIE)), 0.5F);
+        super(context, new HumanoidModel<>(context.bakeLayer(ModelLayers.PLAYER)), 0.5F);
     }
 
     @Override

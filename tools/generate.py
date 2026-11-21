@@ -390,6 +390,8 @@ HANDBOOK = [
         "Soldiers close in. Casters keep their distance and shoot. Skirmishers are quick and leap at you. Brutes are slow and send you flying.",
         "Mystics hang back and help the rest: the Storm Augur quickens them, the Tide Priest heals them, the Necromancer raises more. Deal with the mystic first.",
         "A Keeper guards every seal and now and then makes a small version of one of its tower's moves. Elites glow, take half as much again to bring down, and always drop forge material.",
+        "Each tower has twenty-one kinds, and most have one trick of their own. They cover for each other: a shield-bearer turns blows from its front and shelters those beside it, a warden takes half of what lands on its allies, a standard-bearer strengthens them, a dancer trades places with a wounded one, a singer stands a fallen one back up.",
+        "Others are there to make trouble: bombers that run at you and burst, binders that root or drag you, sowers whose bolts leave ground that hurts, snipers that aim along a line of light, thieves that knock your weapon into your pack, silencers that stop your relic's move, mirages that split into three, and heralds that wake the rooms next door. Kill the helper first.",
     ]),
     ("relics", "Relics and their moves", [
         "Every god drops its relic the first time you beat it. Each relic has a kind - blade, dagger, polearm, heavy, scythe, staff, bow, thrown or relic - and a power on every hit.",
@@ -453,8 +455,86 @@ SENTINELS = [
     ("fury", "Fury", "HADES", ("dress", (110, 20, 30), (20, 16, 20), (30, 10, 14), (170, 150, 160), "wings", (40, 30, 40), False, True)),
     ("necromancer", "Necromancer", "HADES", ("robe", (30, 44, 36), (110, 220, 130), (20, 30, 24), (160, 175, 165), "hood", (30, 44, 36), True, False)),
 ]
+SEA, DEEP, PEARL = (150, 200, 200), (110, 150, 150), (170, 215, 210)
+ASH, GREY, BONEWHITE = (150, 150, 170), (120, 110, 120), (200, 200, 215)
+SENTINELS += [
+    # --- Zeus: fifteen more, each with a trait of its own
+    ("aegis_bearer", "Aegis Bearer", "ZEUS", ("armor", GOLD, WHITE, (50, 36, 26), TAN, "helmet", (200, 60, 60), False, False)),
+    ("eagle_standard", "Eagle Standard", "ZEUS", ("toga", WHITE, (200, 40, 40), (90, 60, 40), LIGHT, "laurel", GOLD, False, False)),
+    ("spark_runner", "Spark Runner", "ZEUS", ("wild", (70, 70, 90), (255, 240, 120), (250, 240, 160), PALE, "none", GOLD, False, False)),
+    ("chain_thrower", "Chain Thrower", "ZEUS", ("armor", IRON, (150, 150, 160), (30, 30, 30), TAN, "hood", (70, 70, 80), True, False)),
+    ("thunder_herald", "Thunder Herald", "ZEUS", ("robe", (60, 70, 130), GOLD, (220, 220, 230), LIGHT, "wings", GOLD, True, False)),
+    ("gust_thief", "Gust Thief", "ZEUS", ("toga", (170, 200, 190), (90, 110, 100), (120, 90, 60), LIGHT, "hood", (90, 110, 100), False, False)),
+    ("storm_sower", "Storm Sower", "ZEUS", ("robe", (80, 90, 110), (255, 240, 120), (40, 40, 50), TAN, "circlet", (255, 240, 120), False, True)),
+    ("mirage", "Mirage", "ZEUS", ("dress", (200, 220, 250), (250, 250, 255), (240, 240, 250), PALE, "circlet", WHITE, False, True)),
+    ("oathkeeper", "Oathkeeper", "ZEUS", ("armor", (210, 210, 220), (90, 130, 220), (160, 120, 70), LIGHT, "helmet", (90, 130, 220), True, False)),
+    ("maenad", "Maenad", "ZEUS", ("wild", (124, 62, 152), (90, 170, 80), (60, 30, 20), TAN, "flowers", (180, 60, 120), False, True)),
+    ("paean_singer", "Paean Singer", "ZEUS", ("toga", CREAM, (242, 212, 110), (242, 212, 110), LIGHT, "laurel", GOLD, False, True)),
+    ("bolt_hurler", "Bolt Hurler", "ZEUS", ("armor", BRONZE, (255, 240, 120), (50, 40, 30), TAN, "helmet", (255, 240, 120), False, False)),
+    ("bull_charger", "Bull Charger", "ZEUS", ("wild", (110, 70, 40), (220, 200, 160), (40, 26, 18), TAN, "horns", BONE, True, False)),
+    ("oracle_breaker", "Oracle Breaker", "ZEUS", ("robe", (50, 40, 70), (200, 120, 255), (20, 20, 30), PALE, "hood", (50, 40, 70), False, False)),
+    ("wind_dancer", "Wind Dancer", "ZEUS", ("dress", (190, 230, 220), (120, 200, 190), (250, 250, 250), LIGHT, "wings", (220, 250, 245), False, True)),
+    # --- Poseidon
+    ("shell_guard", "Shell Guard", "POSEIDON", ("armor", (200, 150, 130), (250, 230, 210), (30, 70, 80), SEA, "helmet", (230, 120, 110), False, False)),
+    ("tide_herald", "Tide Herald", "POSEIDON", ("robe", (40, 110, 150), (250, 230, 150), (200, 235, 240), PEARL, "circlet", (250, 230, 150), True, False)),
+    ("pufferling", "Pufferling", "POSEIDON", ("wild", (220, 190, 90), (120, 90, 40), (160, 130, 60), (200, 210, 160), "horns", (250, 240, 200), False, False)),
+    ("net_caster", "Net Caster", "POSEIDON", ("toga", (90, 150, 140), (200, 190, 150), (30, 60, 60), SEA, "none", GOLD, True, False)),
+    ("conch_blower", "Conch Blower", "POSEIDON", ("toga", (230, 200, 190), (230, 120, 110), (40, 90, 100), PEARL, "flowers", (230, 120, 110), False, True)),
+    ("wrecker", "Wrecker", "POSEIDON", ("wild", (60, 50, 40), (160, 120, 70), (20, 20, 20), DEEP, "hood", (40, 36, 30), True, False)),
+    ("brine_layer", "Brine Layer", "POSEIDON", ("robe", (70, 120, 90), (170, 220, 120), (40, 80, 50), DEEP, "hood", (70, 120, 90), False, False)),
+    ("mist_dancer", "Mist Dancer", "POSEIDON", ("dress", (210, 235, 240), (255, 255, 255), (230, 245, 250), PEARL, "circlet", (255, 255, 255), False, True)),
+    ("tide_warden", "Tide Warden", "POSEIDON", ("armor", (40, 80, 120), (120, 240, 250), (20, 50, 70), SEA, "helmet", (120, 240, 250), True, False)),
+    ("sea_raider", "Sea Raider", "POSEIDON", ("wild", (120, 50, 40), (220, 200, 170), (150, 60, 40), TAN, "horns", (220, 200, 170), True, True)),
+    ("pearl_mender", "Pearl Mender", "POSEIDON", ("dress", (245, 240, 250), (250, 180, 200), (250, 200, 210), PEARL, "circlet", (250, 180, 200), False, True)),
+    ("harpooner", "Harpooner", "POSEIDON", ("armor", (70, 100, 100), (230, 230, 210), (30, 40, 40), DEEP, "hood", (50, 80, 80), True, False)),
+    ("wave_rider", "Wave Rider", "POSEIDON", ("armor", (60, 140, 170), (255, 255, 255), (240, 250, 255), SEA, "wings", (255, 255, 255), False, False)),
+    ("lull_singer", "Lull Singer", "POSEIDON", ("dress", (120, 100, 170), (220, 200, 250), (60, 40, 100), PEARL, "flowers", (220, 200, 250), False, True)),
+    ("current_slider", "Current Slider", "POSEIDON", ("toga", (40, 160, 170), (20, 90, 100), (10, 60, 70), SEA, "none", GOLD, False, False)),
+    # --- Hades
+    ("gate_warden", "Gate Warden", "HADES", ("armor", (40, 40, 48), (190, 80, 250), (20, 16, 20), GREY, "helmet", (190, 80, 250), False, False)),
+    ("styx_herald", "Styx Herald", "HADES", ("robe", (20, 40, 50), (110, 220, 200), (200, 220, 220), BONEWHITE, "hood", (20, 40, 50), True, False)),
+    ("ember_wretch", "Ember Wretch", "HADES", ("wild", (60, 24, 16), (255, 140, 40), (255, 180, 60), (140, 90, 80), "none", GOLD, False, False)),
+    ("shackler", "Shackler", "HADES", ("armor", (60, 56, 64), (150, 150, 160), (20, 20, 24), GREY, "hood", (30, 28, 34), True, False)),
+    ("death_knell", "Death Knell", "HADES", ("robe", (36, 30, 24), (200, 170, 90), (220, 220, 220), BONEWHITE, "hood", (36, 30, 24), True, False)),
+    ("grave_robber", "Grave Robber", "HADES", ("toga", (70, 60, 50), (120, 100, 70), (40, 30, 24), ASH, "hood", (50, 44, 36), False, False)),
+    ("miasma_sower", "Miasma Sower", "HADES", ("robe", (40, 60, 40), (150, 220, 90), (30, 40, 30), (150, 170, 150), "hood", (40, 60, 40), False, False)),
+    ("phantasm", "Phantasm", "HADES", ("dress", (90, 80, 120), (200, 190, 240), (230, 230, 250), BONEWHITE, "circlet", (200, 190, 240), False, True)),
+    ("soul_warden", "Soul Warden", "HADES", ("armor", (30, 50, 70), (120, 220, 255), (200, 230, 250), ASH, "helmet", (120, 220, 255), True, False)),
+    ("revenant", "Revenant", "HADES", ("armor", (70, 30, 30), (20, 16, 20), (20, 10, 10), GREY, "none", GOLD, True, False)),
+    ("psychopomp", "Psychopomp", "HADES", ("robe", (240, 236, 220), (120, 80, 170), (30, 24, 40), BONEWHITE, "wings", (60, 50, 80), False, True)),
+    ("bone_lancer", "Bone Lancer", "HADES", ("armor", BONE, (60, 50, 70), (30, 26, 34), ASH, "horns", BONE, False, False)),
+    ("chariot_shade", "Chariot Shade", "HADES", ("armor", (24, 20, 32), (255, 140, 40), (10, 8, 12), ASH, "helmet", (255, 140, 40), False, False)),
+    ("lethe_drinker", "Lethe Drinker", "HADES", ("dress", (60, 90, 110), (170, 210, 230), (150, 180, 200), BONEWHITE, "flowers", (170, 210, 230), False, True)),
+    ("shadow_stepper", "Shadow Stepper", "HADES", ("toga", (24, 22, 30), (90, 60, 130), (12, 10, 16), ASH, "hood", (24, 22, 30), False, False)),
+]
 for _sid, _name, _line, _look in SENTINELS:
     LOOKS[_sid] = _look
+
+# What each sentinel wears on the skin's outer layer (drawn standing proud of the body): see apply_layers
+SENTINEL_LAYERS = {
+    "storm_hoplite": ["pauldrons", "cuirass", "greaves"], "sky_archer": ["bandolier", "bracers"], "thunder_brute": ["furs", "pauldrons", "belt"],
+    "keeper_sky": ["cape", "tabard"], "tide_hoplite": ["pauldrons", "cuirass", "greaves"], "siren": ["skirt", "scarf"], "reef_brute": ["kelp", "belt"],
+    "keeper_tides": ["cape", "tabard"], "shade": ["wraps"], "lampad": ["skirt", "sash"], "tartarus_brute": ["bones", "pauldrons", "belt"],
+    "keeper_shades": ["cape", "tabard", "chains"], "harpy": ["furs"], "storm_augur": ["sash", "scarf"], "telchine": ["bandolier", "belt"],
+    "tide_priest": ["sash", "scarf"], "fury": ["skirt", "chains"], "necromancer": ["bones", "belt"],
+    "aegis_bearer": ["pauldrons", "cuirass", "greaves", "plume"], "eagle_standard": ["cape", "sash"], "spark_runner": ["wraps", "chains"],
+    "chain_thrower": ["chains", "bracers", "bandolier"], "thunder_herald": ["tabard", "scarf"], "gust_thief": ["mask", "bandolier", "wraps"],
+    "storm_sower": ["sash", "belt", "bracers"], "mirage": ["scarf", "skirt", "cape"], "oathkeeper": ["pauldrons", "cuirass", "tabard", "greaves"],
+    "maenad": ["furs", "kelp", "skirt"], "paean_singer": ["sash", "scarf"], "bolt_hurler": ["pauldrons", "bandolier", "bracers"],
+    "bull_charger": ["furs", "pauldrons", "belt", "greaves"], "oracle_breaker": ["mask", "tabard", "chains"], "wind_dancer": ["scarf", "skirt", "wraps"],
+    "shell_guard": ["pauldrons", "cuirass", "greaves"], "tide_herald": ["cape", "tabard", "scarf"], "pufferling": ["furs", "chains"],
+    "net_caster": ["bandolier", "chains", "belt"], "conch_blower": ["sash", "scarf"], "wrecker": ["mask", "bandolier", "wraps", "belt"],
+    "brine_layer": ["kelp", "belt"], "mist_dancer": ["scarf", "skirt", "cape"], "tide_warden": ["pauldrons", "cuirass", "tabard", "greaves"],
+    "sea_raider": ["furs", "bandolier", "bracers", "belt"], "pearl_mender": ["sash", "skirt"], "harpooner": ["bandolier", "bracers", "greaves"],
+    "wave_rider": ["pauldrons", "cape", "greaves"], "lull_singer": ["scarf", "skirt", "chains"], "current_slider": ["wraps", "sash", "mask"],
+    "gate_warden": ["pauldrons", "cuirass", "greaves", "chains"], "styx_herald": ["cape", "tabard", "scarf"], "ember_wretch": ["wraps", "chains", "bones"],
+    "shackler": ["chains", "bandolier", "bracers", "mask"], "death_knell": ["tabard", "belt", "scarf"], "grave_robber": ["mask", "bandolier", "wraps", "belt"],
+    "miasma_sower": ["mask", "kelp", "belt"], "phantasm": ["cape", "skirt", "scarf"], "soul_warden": ["pauldrons", "cuirass", "tabard", "greaves"],
+    "revenant": ["bones", "pauldrons", "wraps", "belt"], "psychopomp": ["cape", "sash", "scarf"], "bone_lancer": ["bones", "pauldrons", "bandolier", "greaves"],
+    "chariot_shade": ["pauldrons", "cape", "cuirass", "greaves"], "lethe_drinker": ["scarf", "skirt", "sash"], "shadow_stepper": ["mask", "wraps", "sash"],
+}
+# What a god wears on the outer layer, by its outfit
+OUTFIT_LAYERS = {"armor": ["pauldrons", "cuirass", "greaves"], "toga": ["sash", "belt"], "dress": ["skirt", "scarf"], "robe": ["tabard", "scarf"], "wild": ["furs", "belt"]}
 
 def all_gods():
     idx = 0
@@ -672,6 +752,9 @@ def gen_lang():
         "block.realms_of_chaos.hub_heart": "Heart of the Hub",
         "block.realms_of_chaos.bounty_board": "Bounty Board",
         "block.realms_of_chaos.rune_stone": "Rune Stone",
+        "hud.realms_of_chaos.sentinel.disarmed": "Your weapon is knocked from your hand - it is in your pack",
+        "hud.realms_of_chaos.sentinel.horn": "The %s sounds the alarm - more are coming!",
+        "hud.realms_of_chaos.sentinel.silenced": "Silenced: your relic's move will not answer for %s s",
         "sidebar.realms_of_chaos.title": "Realms of Chaos",
         "sidebar.realms_of_chaos.on": "Sidebar on",
         "sidebar.realms_of_chaos.off": "Sidebar off",
@@ -1417,13 +1500,17 @@ def gen_models():
         parent = "minecraft:item/generated" if g[4] in GENERATED_SHAPES else "minecraft:item/handheld"
         wj(os.path.join(ASSETS, f"models/item/{iid}.json"), {"parent": parent, "textures": {"layer0": f"{MOD}:item/{iid}"}})
     extra = ["chaos_compass", "chaos_codex", "field_bag", "tarot_deck"] + [f"tarot_{c[0]}" for c in TAROT] + [f"voodoo_doll_{d[0]}" for d in DOLLS] \
-        + [f"essence_{l.lower()}" for l in LINES] + [f"orb_{o}" for o in ORBS] \
+        + [f"essence_{l.lower()}" for l in LINES] \
         + [f"material_{l.lower()}_{t}" for l in LINES for t in (1, 2, 3)] \
         + [f"keystone_{l.lower()}" for l in LINES] + [f"seeker_{l.lower()}" for l in LINES]
     for flat in extra:
         item_def(flat, f"item/{flat}")
         wj(os.path.join(ASSETS, f"models/item/{flat}.json"),
            {"parent": "minecraft:item/generated", "textures": {"layer0": f"{MOD}:item/{flat}"}})
+    # staff bolts and the gods' shots: a 3D bolt, drawn lying along its flight
+    for orb in ORBS:
+        item_def(f"orb_{orb}", f"item/orb_{orb}")
+        wj(os.path.join(ASSETS, f"models/item/orb_{orb}.json"), bolt_model(f"{MOD}:item/orb_{orb}"))
     for b in BLOCKS:
         wj(os.path.join(ASSETS, f"blockstates/{b}.json"), {"variants": {"": {"model": f"{MOD}:block/{b}"}}})
         if b == "chaos_forge":
@@ -2624,28 +2711,43 @@ def gen_essences_and_orbs():
             frames.append(draw_template(GEM_SHAPE, pal))
         save_strip(frames, os.path.join(ASSETS, f"textures/item/essence_{line.lower()}.png"), {"animation": {"frametime": 4, "interpolate": True}})
     for orb in ORBS:
+        # the bolt's skin: a side view, bright along its length and brightest at the head, pulsing
         col = POWER_COLOR[orb.upper()]
         frames = []
         for f in range(4):
+            pulse = 0.5 + 0.5 * math.sin(f / 4 * math.tau)
             img = Image.new("RGBA", (16, 16), (0, 0, 0, 0))
             px = img.load()
-            rad = 4.2 + 0.9 * math.sin(f / 4 * math.tau)
             for y in range(16):
                 for x in range(16):
-                    d = math.hypot(x - 7.5, y - 7.5)
-                    if d < rad - 2.2:
-                        px[x, y] = (255, 255, 255, 255)
-                    elif d < rad:
-                        px[x, y] = mix(col, (255, 255, 255), 0.3) + (255,)
-                    elif d < rad + 1.3:
-                        px[x, y] = shade(col, 0.75) + (255,)
-            for i in range(4):                              # sparks circling the core
-                a = f / 4 * math.tau + i * math.tau / 4
-                sx, sy = int(round(7.5 + math.cos(a) * 6.5)), int(round(7.5 + math.sin(a) * 6.5))
-                if 0 <= sx < 16 and 0 <= sy < 16:
-                    px[sx, sy] = col + (255,)
+                    off = abs(y - 7.5) / 7.5                       # 0 on the bolt's axis, 1 at the edge of the picture
+                    along = x / 15.0                              # 0 at the tail, 1 at the point
+                    core = max(0.0, 1.0 - off * 2.2)
+                    c = mix(shade(col, 0.55 + 0.35 * along), (255, 255, 255), min(1.0, core * (0.55 + 0.45 * along) + 0.25 * pulse * along))
+                    if (x + f) % 5 == 0 and off > 0.25:
+                        c = mix(c, (255, 255, 255), 0.35)          # sparks running down it
+                    px[x, y] = c + (255,)
             frames.append(img)
         save_strip(frames, os.path.join(ASSETS, f"textures/item/orb_{orb}.png"), {"animation": {"frametime": 2}})
+
+BOLT_BOXES = [(3, 7, 7, 12, 9, 9), (11, 6, 6, 14, 10, 10), (14, 7, 7, 16, 9, 9), (8, 6.5, 6.5, 9, 9.5, 9.5),
+              (0, 4.5, 7.5, 4, 11.5, 8.5), (0, 7.5, 4.5, 4, 8.5, 11.5)]
+
+def bolt_model(texture):
+    """A bolt as a solid thing: a shaft, a head and a point along x, a collar, and two crossed fins at the tail.
+    Every face takes the strip of the side-view texture it would show, so the light runs the right way along it."""
+    elements = []
+    for x1, y1, z1, x2, y2, z2 in BOLT_BOXES:
+        faces_ = {
+            "north": {"uv": [16 - x2, 16 - y2, 16 - x1, 16 - y1], "texture": "#bolt"},
+            "south": {"uv": [x1, 16 - y2, x2, 16 - y1], "texture": "#bolt"},
+            "up": {"uv": [x1, z1, x2, z2], "texture": "#bolt"},
+            "down": {"uv": [x1, 16 - z2, x2, 16 - z1], "texture": "#bolt"},
+            "west": {"uv": [max(0, x1 - 1), 16 - y2, x1 + 1, 16 - y1], "texture": "#bolt"},
+            "east": {"uv": [x2 - 1, 16 - y2, min(16, x2 + 1), 16 - y1], "texture": "#bolt"},
+        }
+        elements.append({"from": [x1, y1, z1], "to": [x2, y2, z2], "shade": False, "faces": faces_})
+    return {"textures": {"bolt": texture, "particle": texture}, "elements": elements}
 
 def gen_materials():
     for line, mats in MATERIALS.items():
@@ -3082,6 +3184,9 @@ PARTS = {"head": faces(0, 0, 8, 8, 8), "hat": faces(32, 0, 8, 8, 8), "body": fac
          "rarm": faces(40, 16, 4, 12, 4), "larm": faces(32, 48, 4, 12, 4),
          "rleg": faces(0, 16, 4, 12, 4), "lleg": faces(16, 48, 4, 12, 4)}
 SIDES = ("front", "back", "left", "right")
+# the skin's outer layer: drawn a little larger than the part under it, so what is painted here stands proud
+PARTS.update({"jacket": faces(16, 32, 8, 12, 4), "rsleeve": faces(40, 32, 4, 12, 4), "lsleeve": faces(48, 48, 4, 12, 4),
+              "rpants": faces(0, 32, 4, 12, 4), "lpants": faces(0, 48, 4, 12, 4)})
 
 class Skin:
     def __init__(self, seed):
@@ -3529,6 +3634,166 @@ def phase_skin(base, gid, line, rank, phase):
                 e.put("hat", "top", x, y, ember)
     return img
 
+def apply_layers(img, look, layers, seed):
+    """Paints a skin's outer layer: armour plates, cloaks, sashes, straps - whatever the list names. Each piece takes
+    its colours from the look underneath, so the same piece is a different thing on every wearer."""
+    outfit, cloth, trim, hair, skin, gear, gear_col, beard, long_hair = look
+    e = SkinEdit(img, hsh("layers" + seed))
+    metal = gear_col if outfit == "armor" else mix(trim, (150, 150, 160), 0.35)
+    hi, lo = mix(metal, (255, 255, 255), 0.4), shade(metal, 0.62)
+    leather, leather2 = (104, 68, 42), (72, 46, 30)
+    for piece in layers:
+        if piece == "pauldrons":
+            for sleeve in ("rsleeve", "lsleeve"):
+                for face in SIDES:
+                    for x in range(4):
+                        for y in range(4):
+                            e.put(sleeve, face, x, y, hi if y == 0 else lo if y == 3 else metal)
+                for x in range(4):
+                    for y in range(4):
+                        e.put(sleeve, "top", x, y, hi if (x + y) % 3 == 0 else metal)
+        elif piece == "cuirass":
+            for face in ("front", "back"):
+                for x in range(8):
+                    for y in range(7):
+                        c = hi if y == 0 else lo if x in (3, 4) and face == "front" else metal
+                        if face == "front" and y in (2, 4) and x in (1, 2, 5, 6):
+                            c = hi if y == 2 else lo
+                        e.put("jacket", face, x, y, c)
+            for face in ("left", "right"):
+                for x in range(4):
+                    for y in range(1, 6):
+                        e.put("jacket", face, x, y, shade(metal, 0.85))
+            e.put("jacket", "front", 3, 3, trim); e.put("jacket", "front", 4, 3, trim)
+        elif piece == "greaves":
+            for leg in ("rpants", "lpants"):
+                for face in SIDES:
+                    for x in range(4):
+                        for y in range(6, 12):
+                            e.put(leg, face, x, y, hi if y == 6 else lo if y == 11 else metal)
+                e.put(leg, "front", 1, 8, hi); e.put(leg, "front", 2, 8, hi)
+        elif piece == "bracers":
+            for sleeve in ("rsleeve", "lsleeve"):
+                for face in SIDES:
+                    for x in range(4):
+                        for y in range(7, 10):
+                            e.put(sleeve, face, x, y, leather if y != 8 else mix(trim, leather, 0.4))
+        elif piece == "cape":
+            col = mix(trim, cloth, 0.35) if sum(trim) < 560 else shade(mix(cloth, trim, 0.5), 0.7)
+            for x in range(8):
+                for y in range(12):
+                    c = shade(col, 1.0 - 0.03 * y + (0.08 if x in (2, 5) else 0.0))
+                    if x in (0, 7) or y == 11:
+                        c = trim
+                    e.put("jacket", "back", x, y, c)
+            for face in ("left", "right"):
+                for y in range(9):
+                    e.put("jacket", face, 3 if face == "left" else 0, y, shade(col, 0.85))
+            for x in range(8):
+                e.put("jacket", "top", x, 3, col)
+        elif piece == "tabard":
+            for face in ("front", "back"):
+                for x in range(2, 6):
+                    for y in range(12):
+                        e.put("jacket", face, x, y, trim if x in (2, 5) or y == 11 else shade(cloth, 0.8) if sum(cloth) > 200 else mix(cloth, trim, 0.3))
+            for (x, y) in ((3, 3), (4, 3), (3, 4), (4, 4), (3, 2), (4, 5)):
+                e.put("jacket", "front", x, y, mix(trim, (255, 255, 255), 0.4))
+        elif piece == "sash":
+            for face in ("front", "back"):
+                for x in range(8):
+                    y = x if face == "front" else 7 - x
+                    e.put("jacket", face, x, y, trim); e.put("jacket", face, x, y + 1, shade(trim, 0.78))
+        elif piece == "bandolier":
+            for face in ("front", "back"):
+                for x in range(8):
+                    y = 7 - x if face == "front" else x
+                    e.put("jacket", face, x, y, leather); e.put("jacket", face, x, y + 1, leather2)
+            e.put("jacket", "front", 2, 5, hi); e.put("jacket", "front", 5, 2, hi)
+        elif piece == "belt":
+            for face in SIDES:
+                wd, _ = e.size("jacket", face)
+                for x in range(wd):
+                    e.put("jacket", face, x, 8, leather); e.put("jacket", face, x, 9, leather2)
+            e.put("jacket", "front", 3, 8, hi); e.put("jacket", "front", 4, 8, hi); e.put("jacket", "front", 3, 9, lo); e.put("jacket", "front", 4, 9, lo)
+        elif piece == "skirt":
+            col = shade(cloth, 0.86)
+            for leg in ("rpants", "lpants"):
+                for face in SIDES:
+                    for x in range(4):
+                        for y in range(6):
+                            e.put(leg, face, x, y, trim if y == 5 else shade(col, 1.0 - 0.04 * y + (0.07 if x % 2 else 0.0)))
+        elif piece == "scarf":
+            for face in SIDES:
+                wd, _ = e.size("jacket", face)
+                for x in range(wd):
+                    e.put("jacket", face, x, 0, trim); e.put("jacket", face, x, 1, shade(trim, 0.8))
+            for y in range(2, 6):
+                e.put("jacket", "front", 5, y, trim if y % 2 else shade(trim, 0.8))
+        elif piece == "furs":
+            fur, fur2 = mix(cloth, (120, 90, 60), 0.5), shade(mix(cloth, (120, 90, 60), 0.5), 0.72)
+            for face in SIDES:
+                wd, _ = e.size("jacket", face)
+                for x in range(wd):
+                    for y in range(4):
+                        if y < 3 or (x * 3 + y) % 2 == 0:
+                            e.put("jacket", face, x, y, fur2 if (x * 5 + y * 3) % 4 == 0 else fur)
+            for sleeve in ("rsleeve", "lsleeve"):
+                for face in SIDES:
+                    for x in range(4):
+                        for y in range(2):
+                            e.put(sleeve, face, x, y, fur2 if (x + y) % 2 else fur)
+        elif piece == "chains":
+            link, link2 = mix(trim, (190, 190, 200), 0.5), shade(mix(trim, (190, 190, 200), 0.5), 0.6)
+            for face in ("front", "back"):
+                for x in range(8):
+                    e.put("jacket", face, x, 5 if x % 2 else 6, link if x % 2 else link2)
+            for sleeve in ("rsleeve", "lsleeve"):
+                for face in SIDES:
+                    for x in range(4):
+                        if x % 2 == 0:
+                            e.put(sleeve, face, x, 10, link)
+        elif piece == "kelp":
+            leaf, leaf2 = (60, 140, 80), (40, 100, 60)
+            for face in SIDES:
+                wd, _ = e.size("jacket", face)
+                for x in range(0, wd, 2):
+                    for y in range(3 + e.rnd.randrange(3), 12):
+                        e.put("jacket", face, x, y, leaf if y % 2 else leaf2)
+            for leg in ("rpants", "lpants"):
+                for y in range(4):
+                    e.put(leg, "front", 1, y, leaf2); e.put(leg, "back", 2, y, leaf)
+        elif piece == "bones":
+            bone, bone2 = (226, 220, 200), (170, 164, 146)
+            for y in (1, 3, 5):
+                for x in range(1, 7):
+                    e.put("jacket", "front", x, y, bone2 if x in (3, 4) else bone)
+            for y in range(0, 7):
+                e.put("jacket", "front", 3, y, bone); e.put("jacket", "back", 4, y, bone); e.put("jacket", "back", 3, y, bone2)
+        elif piece == "wraps":
+            band = mix(cloth, (230, 224, 200), 0.6)
+            for part in ("rsleeve", "lsleeve", "rpants", "lpants"):
+                for face in SIDES:
+                    for x in range(4):
+                        for y in range(5, 12, 2):
+                            e.put(part, face, x, y, band if (x + y) % 3 else shade(band, 0.8))
+        elif piece == "mask":
+            col = shade(gear_col if gear == "hood" else cloth, 0.7)
+            for x in range(8):
+                for y in range(5, 8):
+                    e.put("hat", "front", x, y, col if y != 5 else shade(col, 1.2))
+            for face in ("left", "right"):
+                for x in range(8):
+                    for y in range(5, 8):
+                        e.put("hat", face, x, y, shade(col, 0.9))
+        elif piece == "plume":
+            col = gear_col
+            for i in range(8):
+                e.put("hat", "top", 3, i, col); e.put("hat", "top", 4, i, mix(col, (255, 255, 255), 0.3))
+            for y in range(0, 6):
+                e.put("hat", "back", 3, y, col); e.put("hat", "back", 4, y, shade(col, 0.75))
+            e.put("hat", "front", 3, 0, col); e.put("hat", "front", 4, 0, mix(col, (255, 255, 255), 0.3))
+    return img
+
 def skin_preview(img, scale=6):
     """Front view of the assembled character, for eyeballing designs and for the website."""
     out = Image.new("RGBA", (16, 32), (0, 0, 0, 0))
@@ -3539,11 +3804,13 @@ def skin_preview(img, scale=6):
     blit("head", "front", 4, 0); blit("hat", "front", 4, 0)
     blit("body", "front", 4, 8); blit("rarm", "front", 0, 8); blit("larm", "front", 12, 8)
     blit("rleg", "front", 4, 20); blit("lleg", "front", 8, 20)
+    blit("jacket", "front", 4, 8); blit("rsleeve", "front", 0, 8); blit("lsleeve", "front", 12, 8)
+    blit("rpants", "front", 4, 20); blit("lpants", "front", 8, 20)
     return out.resize((16 * scale, 32 * scale), Image.NEAREST)
 
 def gen_sentinel_skins():
-    for sid, _name, line, _look in SENTINELS:
-        img = make_skin(sid, line, 8)
+    for sid, _name, line, look in SENTINELS:
+        img = apply_layers(make_skin(sid, line, 8), look, SENTINEL_LAYERS.get(sid, []), sid)
         path = os.path.join(ASSETS, f"textures/entity/sentinel/{sid}.png")
         os.makedirs(os.path.dirname(path), exist_ok=True)
         img.save(path)
@@ -3552,6 +3819,9 @@ def gen_skins():
     previews = {}
     for _, line, rank, g in all_gods():
         img = polish_skin(make_skin(g[0], line, rank), g[0], line, rank)
+        # the outer layer: what the god's outfit calls for, and a cloak for the three greatest of each tower
+        god_layers = list(OUTFIT_LAYERS[LOOKS[g[0]][0]]) + (["cape"] if rank <= 3 else []) + (["bracers"] if rank <= 8 else [])
+        img = apply_layers(img, LOOKS[g[0]], god_layers, g[0])
         path = os.path.join(ASSETS, f"textures/entity/god/{g[0]}.png")
         os.makedirs(os.path.dirname(path), exist_ok=True)
         img.save(path)

@@ -10,11 +10,14 @@ import net.minecraft.client.renderer.entity.HumanoidMobRenderer;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.HumanoidArm;
 
-/** Draws every god boss as a humanoid with its own generated skin - one for each phase of its trial. */
+/**
+ * Draws every god boss as a humanoid with its own generated skin - one for each phase of its trial. The model is the
+ * player's, so a skin's outer layer (jacket, sleeves, trouser legs, hat) is drawn over the body.
+ */
 public class GodBossRenderer extends HumanoidMobRenderer<GodBoss, GodBossRenderState, HumanoidModel<GodBossRenderState>> {
 
     public GodBossRenderer(EntityRendererProvider.Context context) {
-        super(context, new HumanoidModel<>(context.bakeLayer(ModelLayers.ZOMBIE)), 0.6F);
+        super(context, new HumanoidModel<>(context.bakeLayer(ModelLayers.PLAYER)), 0.6F);
     }
 
     @Override

@@ -42,6 +42,11 @@ public final class Ranged {
             RelicProjectile bolt = new RelicProjectile(level, shooter, display);
             bolt.setGod(god);
             bolt.setDamage(damage);
+            // a player's levelled relic breaks the ground where its bolt lands
+            if (shooter instanceof net.minecraft.world.entity.player.Player && !weapon.isEmpty()) {
+                bolt.setCrater(com.thefarawaydev.realmsofchaos.world.Craters.radius(
+                        com.thefarawaydev.realmsofchaos.item.WeaponProgress.level(weapon), com.thefarawaydev.realmsofchaos.item.WeaponProgress.stars(weapon)));
+            }
             projectile = bolt;
             sound = god.kind() == WeaponKind.THROWN ? SoundEvents.ENDER_PEARL_THROW : SoundEvents.ILLUSIONER_PREPARE_MIRROR;
             speed = 1.8F;

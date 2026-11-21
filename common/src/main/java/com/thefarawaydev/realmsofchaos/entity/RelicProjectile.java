@@ -23,13 +23,20 @@ import net.minecraft.world.phys.HitResult;
 
 /**
  * Everything the mod shoots that is not an arrow: staff bolts, thrown thunderbolts and javelins, Hades' tarot cards.
- * It is drawn as whatever item it carries (the vanilla thrown-item renderer), flies almost straight, and on hitting
- * a valid target deals its damage and applies its god's power.
+ * It is drawn as the model of whatever item it carries, lying along its flight; it flies almost straight, and on
+ * hitting a valid target deals its damage and applies its god's power. A bolt from a relic that has been levelled
+ * also breaks the ground where it comes down - whether it found anyone or not - and the crater it leaves is wider
+ * the higher the relic's level.
  */
 public class RelicProjectile extends ThrowableItemProjectile {
     private int godIndex = -1;
     private float damage = 4.0F;
     private Holder<MobEffect> curse;
+    /** How wide a crater this bolt leaves where it lands; 0 for none. */
+    private int crater;
+    /** Extra things a hit or a landing does. Not saved: a bolt lives four seconds. */
+    private java.util.function.Consumer<LivingEntity> rider;
+    private java.util.function.Consumer<net.minecraft.world.phys.Vec3> landing;
 
     public RelicProjectile(EntityType<? extends RelicProjectile> type, Level level) {
         super(type, level);
@@ -49,6 +56,24 @@ public class RelicProjectile extends ThrowableItemProjectile {
 
     public float damage() {
         return damage;
+    }
+
+    public void setCrater(int radius) {
+        this.crater = Math.max(0, radius);
+    }
+
+    public int crater() {
+        return crater;
+    }
+
+    /** Something more to do to whoever the bolt hits, after its damage. */
+    public void setRider(java.util.function.Consumer<LivingEntity> rider) {
+        this.rider = rider;
+    }
+
+    /** Something to do where the bolt comes down, whatever it hit. */
+    public void setLanding(java.util.function.Consumer<net.minecraft.world.phys.Vec3> landing) {
+        this.landing = landing;
     }
 
     /** An extra harmful effect applied on hit (used by thrown tarot cards). */
@@ -93,6 +118,15 @@ public class RelicProjectile extends ThrowableItemProjectile {
             god.applyTargetEffect(target);
         }
         if (curse != null) target.addEffect(new MobEffectInstance(curse, 100, 1));
+        if (rider != null && target.isAlive()) rider.accept(target);
+    }
+
+    /** What coming down does, whatever was hit: the landing hook, and the crater of a levelled relic's bolt. */
+    public void land(ServerLevel level, net.minecraft.world.phys.Vec3 at) {
+        if (landing != null) landing.accept(at);
+        if (crater > 0) {
+            com.thefarawaydev.realmsofchaos.world.Craters.blast(level, at, crater, getOwner() instanceof LivingEntity shooter ? shooter : null, damage * 0.35F);
+        }
     }
 
     @Override
@@ -100,6 +134,7 @@ public class RelicProjectile extends ThrowableItemProjectile {
         super.onHit(result);
         if (level() instanceof ServerLevel level) {
             level.sendParticles(ParticleTypes.POOF, getX(), getY(), getZ(), 6, 0.1, 0.1, 0.1, 0.02);
+            land(level, result.getLocation());
             discard();
         }
     }
@@ -109,6 +144,7 @@ public class RelicProjectile extends ThrowableItemProjectile {
         super.addAdditionalSaveData(output);
         output.putInt("God", godIndex);
         output.putInt("Damage", Math.round(damage * 100));
+        output.putInt("Crater", crater);
     }
 
     @Override
@@ -116,5 +152,6 @@ public class RelicProjectile extends ThrowableItemProjectile {
         super.readAdditionalSaveData(input);
         this.godIndex = input.getIntOr("God", -1);
         this.damage = input.getIntOr("Damage", 400) / 100.0F;
+        this.crater = input.getIntOr("Crater", 0);
     }
 }

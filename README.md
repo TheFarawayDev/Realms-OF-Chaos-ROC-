@@ -44,6 +44,28 @@ The current build is an **Alpha**.
   * **In its looks.** Every god's skin has been redrawn with more detail - the mark of its tower on its back, gold
     on the arms of the stronger gods, a cape on the three greatest of each tower - and each god now has three
     skins: itself, lit with runes behind its aegis, and cracked open with fire inside in its wrath.
+* **Sixty-three sentinels.** Each tower now has twenty-one kinds instead of six. Every kind has a role (soldier,
+  caster, skirmisher, brute, mystic, Keeper) and most have one **trait** that no other kind in their tower has. The
+  deeper a level, the more kinds it fields.
+  * *They cover for each other:* a **shield-bearer** turns blows from its front and shelters whoever stands beside
+    it; a **warden** takes half of every blow that lands on an ally; a **standard-bearer** strengthens everyone near
+    (and they falter when it falls); a **dancer** trades places with a wounded ally and mends it; a **singer** stands
+    one fallen ally back up; a **berserker** grows stronger each time an ally falls.
+  * *They make trouble:* **bombers** run at you, hiss and burst; **binders** root you (Zeus), haul you in
+    (Poseidon) or blind you (Hades); **sowers** leave patches of ground that hurt; **snipers** aim along a line of
+    light before one heavy shot; **thieves** knock your weapon out of your hand and into your pack (nothing is ever
+    lost); **silencers** stop your relic's move for six seconds; **mirages** split into three, two of them harmless
+    copies; **chargers** run you through; **heralds** sound an alarm that wakes the rooms next door.
+* **Layered skins.** Gods and sentinels are drawn with the player model, so a skin's outer layer stands proud of
+  the body: pauldrons, breastplates, greaves, cloaks, tabards, sashes, belts, furs, chains, bandoliers, masks,
+  plumes. All 63 sentinels and all 45 gods wear some.
+* **Bolts are models.** Staff bolts, the gods' shots, thrown relics and thrown cards are no longer a flat picture
+  facing the camera: they are drawn as a 3D model lying along the line of flight, nose first, turning as they go.
+* **Craters.** A bolt from a relic of level 3 or more breaks the ground where it lands - on anything, not only on
+  an enemy. The crater is one block wide at level 3, two at 6, three at 9, and one more with three stars; the blast
+  hurts what is near. Ten seconds later the ground closes again and lifts out anyone standing in it, so nothing is
+  ever lost from a tower, a passage or your base. Chests and unbreakable blocks are never taken, and inside the
+  realms a crater is one block deep.
 * **Rune chambers.** The trap rooms of the passages are now traps with a puzzle in them. A rune stone stands on a
   pillar in each corner; step onto the marked square in the middle and the doorways close and water rises a layer
   at a time. The runes light up in an order, again and again - press them (right-click) in that order and the room
@@ -398,7 +420,7 @@ JAVA_HOME=/path/to/jdk-25 ./build.sh
 The mod contains a developer self-test that only runs when the JVM has `-Droc.selftest=true`. It exercises the mod
 on a real server: data loading, the hub, building and walking every floor of every tower, a full climb of all three
 towers through the altar menu (with rematches) and all 42 passages, the Ruined Gate and its keystones, the story's
-chapters, the hub's residents, all eighteen sentinels, the custom screens and their buttons, the tutorial, impacts, the
+chapters, the hub's residents, all sixty-three sentinels and their traits, craters, the custom screens and their buttons, the tutorial, impacts, the
 floor's eruptions and the gods' last stands, the three phases of a trial (health gates, pylons, stances, the collapsing floor and its restoration, strikes), gear and difficulty scaling,
 the compass scanner, relays and jammers, waygates, the Field Tower Bag, hub tiers and bounties, the rune chambers, the sidebar, parties, group scaling and per-player loot, the wall protection (built, checked room by room for reachability,
 seals struck, guardians, shrine, map), every god's signature move, the relic moves, the forging quick-time rounds,
