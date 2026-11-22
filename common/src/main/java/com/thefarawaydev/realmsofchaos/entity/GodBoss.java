@@ -15,8 +15,11 @@ import com.thefarawaydev.realmsofchaos.world.Realm;
 import com.thefarawaydev.realmsofchaos.world.FloorShifts;
 import com.thefarawaydev.realmsofchaos.world.Tower;
 import com.thefarawaydev.realmsofchaos.ui.Hud;
+import com.thefarawaydev.realmsofchaos.ui.HudArt;
+import com.thefarawaydev.realmsofchaos.ui.Options;
 import com.thefarawaydev.realmsofchaos.world.RocAdvancements;
 import com.thefarawaydev.realmsofchaos.world.Adapt;
+import com.thefarawaydev.realmsofchaos.world.Insight;
 import com.thefarawaydev.realmsofchaos.world.Arena;
 import com.thefarawaydev.realmsofchaos.world.Fx;
 import com.thefarawaydev.realmsofchaos.world.Scheduler;
@@ -151,6 +154,19 @@ public class GodBoss extends Monster implements RangedAttackMob {
     /** Server tick until which nothing can hurt this god (the opening of its last stand). */
     private long guardUntil;
     private long bristleReady, hintReady;
+    /** The cast bar: shown, while the god winds up, to those who have asked for it. */
+    private final ServerBossEvent castEvent = new ServerBossEvent(
+            UUID.randomUUID(), Component.empty(), BossEvent.BossBarColor.WHITE, BossEvent.BossBarOverlay.PROGRESS);
+    private String castName = "";
+    /** What the bar last showed, so its picture is only sent again when it would look different. */
+    private int barKey = -1;
+    /** What each challenger did in this trial, for the gods' longer memory; and the answers already given. */
+    private final java.util.Map<UUID, Insight.Tally> tallies = new java.util.HashMap<>();
+    private final java.util.Map<UUID, Float> lastHealth = new java.util.HashMap<>(), mended = new java.util.HashMap<>();
+    private final java.util.Map<UUID, Integer> farStreak = new java.util.HashMap<>();
+    private final java.util.Set<UUID> greeted = new java.util.HashSet<>();
+    private long riposteReady, mendReady, haulReady;
+    private boolean concluded;
     // ---- wrath
     private double safeRadius = -1.0;
     private int collapseTicks, strikeCooldown = 80;
@@ -294,6 +310,7 @@ public class GodBoss extends Monster implements RangedAttackMob {
         setTarget(null);
         bossEvent.removeAllPlayers();
         bossEvent.setVisible(false);
+        castEvent.removeAllPlayers();
     }
 
     public boolean isStatue() {
@@ -485,7 +502,8 @@ public class GodBoss extends Monster implements RangedAttackMob {
             setHealth(getMaxHealth());
         }
         setCustomName(god.bossName());
-        bossEvent.setName(god.bossName());
+        barKey = -1;
+        refreshBar();
         bossEvent.setColor(god.line().barColor());
         bossEvent.setOverlay(god.isFinalBoss() ? BossEvent.BossBarOverlay.NOTCHED_20 : BossEvent.BossBarOverlay.NOTCHED_10);
         bossEvent.setDarkenScreen(god.rank() <= 3);
@@ -506,13 +524,22 @@ public class GodBoss extends Monster implements RangedAttackMob {
     @Override
     public void startSeenByPlayer(ServerPlayer player) {
         super.startSeenByPlayer(player);
-        if (!statue) bossEvent.addPlayer(player);
+        if (!statue) {
+            bossEvent.addPlayer(player);
+            // a god that has met this challenger's kind before says so, once, a few seconds into the trial
+            if (greeted.add(player.getUUID()) && level().getServer() != null) {
+                Scheduler.after(level().getServer(), 70, () -> {
+                    if (isAlive() && !statue && player.isAlive() && !player.hasDisconnected()) Insight.announce(player, god());
+                });
+            }
+        }
     }
 
     @Override
     public void stopSeenByPlayer(ServerPlayer player) {
         super.stopSeenByPlayer(player);
         bossEvent.removePlayer(player);
+        castEvent.removePlayer(player);
     }
 
     @Override
@@ -520,12 +547,14 @@ public class GodBoss extends Monster implements RangedAttackMob {
         super.customServerAiStep(level);
         if (statue) return;
         bossEvent.setProgress(getHealth() / getMaxHealth());
+        refreshBar();
         God god = god();
 
         // Stand down if everyone left, so a forgotten boss never blocks the altar.
         boolean anyPlayer = !level.getEntitiesOfClass(Player.class, getBoundingBox().inflate(80), p -> p.isAlive() && !p.isSpectator()).isEmpty();
         lonelyTicks = anyPlayer ? 0 : lonelyTicks + 1;
         if (lonelyTicks > 20 * 45) {
+            concludeInsight(level);
             discardMinions(level);
             discard();
             return;
@@ -533,6 +562,7 @@ public class GodBoss extends Monster implements RangedAttackMob {
 
         updatePhase(level);
         phaseTicks++;
+        if (tickCount % WATCH_EVERY == 0) watch(level);
         if (aegis) tendAegis(level);
         if (phase() >= 3) tendWrath(level);
         if (enraged && --upheavalCooldown <= 0) {
@@ -548,7 +578,7 @@ public class GodBoss extends Monster implements RangedAttackMob {
 
         LivingEntity target = getTarget();
         if (target == null || !target.isAlive()) {
-            if (isCasting()) this.entityData.set(DATA_CASTING, false);
+            endCast();
             return;
         }
 
@@ -564,16 +594,10 @@ public class GodBoss extends Monster implements RangedAttackMob {
                 // telegraph: arms go up, a ring of particles gathers, and players get a moment to react
                 this.entityData.set(DATA_CASTING, true);
                 level.playSound(null, blockPosition(), SoundEvents.EVOKER_PREPARE_ATTACK, SoundSource.HOSTILE, 1.6F, 0.8F);
-                if (nextIsSignature()) {
-                    // name the move on screen so it can be learned and answered
-                    for (Player p : nearbyPlayers(level, 40)) {
-                        if (p instanceof ServerPlayer sp) {
-                            Hud.actionBar(sp, Hud.colored(Component.translatable("hud." + RealmsOfChaos.MOD_ID + ".move.windup",
-                                    god.displayName(), god.moveName()), god.line().color()));
-                        }
-                    }
-                }
+                // the move is named and counted down on a cast bar - for those who have turned it on
+                beginCast(level, god);
             }
+            if (isCasting()) tendCast();
             if (isCasting() && abilityCooldown % 4 == 0) {
                 for (int i = 0; i < 12; i++) {
                     double a = Math.PI * 2 * i / 12 + abilityCooldown * 0.2;
@@ -587,7 +611,176 @@ public class GodBoss extends Monster implements RangedAttackMob {
         abilityCooldown = castInterval(base);
         if (!nextIsSignature() || !castSignature(level)) castAbility(level, god);
         casts++;
-        this.entityData.set(DATA_CASTING, false);
+        endCast();
+    }
+
+    // ---- the bars -------------------------------------------------------------------------------------------
+
+    /** Redraws the god's bar when it would look different: another pixel of health gone, a new phase, a shield up or down. */
+    public void refreshBar() {
+        God god = god();
+        float progress = getMaxHealth() <= 0.0F ? 0.0F : getHealth() / getMaxHealth();
+        boolean shield = shielded();
+        int key = HudArt.fillWidth(progress) | (phase() << 8) | (shield ? 1 << 12 : 0) | (god.index() << 13);
+        if (key == barKey) return;
+        barKey = key;
+        bossEvent.setName(HudArt.bossBar(god.line(), phase(), shield, progress, god.englishName()));
+    }
+
+    /** The bar as it is drawn now. */
+    public Component barName() {
+        return bossEvent.getName();
+    }
+
+    public void beginCast(ServerLevel level, God god) {
+        castName = com.thefarawaydev.realmsofchaos.ui.Words.of(nextIsSignature() ? god.moveName() : Component.translatable("cast." + RealmsOfChaos.MOD_ID + "." + god.line().id()));
+        castEvent.setName(HudArt.castBar(0.0F, castName));
+        for (Player p : nearbyPlayers(level, 40)) {
+            if (p instanceof ServerPlayer sp && Options.on(sp, Options.Option.CASTS)) castEvent.addPlayer(sp);
+        }
+    }
+
+    private void tendCast() {
+        if (castEvent.getPlayers().isEmpty()) return;
+        castEvent.setName(HudArt.castBar(1.0F - abilityCooldown / (float) WINDUP_TICKS, castName));
+    }
+
+    public void endCast() {
+        if (isCasting()) this.entityData.set(DATA_CASTING, false);
+        if (!castEvent.getPlayers().isEmpty()) castEvent.removeAllPlayers();
+    }
+
+    /** The move on the cast bar, and who is being shown it. */
+    public String castName() {
+        return castName;
+    }
+
+    public java.util.Collection<ServerPlayer> castWatchers() {
+        return castEvent.getPlayers();
+    }
+
+    public Component castBarName() {
+        return castEvent.getName();
+    }
+
+    // ---- what the god sees of its challengers --------------------------------------------------------------
+
+    private static final int WATCH_EVERY = 5;
+    /** Further than this from the god is "keeping away". */
+    public static final double FAR = 10.0;
+
+    public Insight.Tally tally(Player player) {
+        return tallies.computeIfAbsent(player.getUUID(), id -> new Insight.Tally());
+    }
+
+    /** A few times a second: who keeps away, who is mending - and, for habits the gods already know, the answer. */
+    public void watch(ServerLevel level) {
+        long now = level.getServer().getTickCount();
+        for (Player p : nearbyPlayers(level, 40)) {
+            if (!(p instanceof ServerPlayer sp) || sp.isCreative()) continue;
+            UUID id = sp.getUUID();
+            Insight.Tally t = tally(sp);
+            t.ticks += WATCH_EVERY;
+            boolean far = distanceToSqr(sp) > FAR * FAR;
+            if (far) t.farTicks += WATCH_EVERY;
+            int streak = far ? farStreak.merge(id, WATCH_EVERY, Integer::sum) : 0;
+            if (!far) farStreak.remove(id);
+            Float before = lastHealth.put(id, sp.getHealth());
+            if (before != null && sp.getHealth() > before) {
+                t.healed += sp.getHealth() - before;
+                mended.merge(id, sp.getHealth() - before, Float::sum);
+            }
+            if (tickCount % 60 == 0) mended.computeIfPresent(id, (k, v) -> v * 0.5F);
+            if (isCasting()) continue;
+            int mender = Insight.level(sp, Insight.Habit.MENDER);
+            if (mender > 0 && mended.getOrDefault(id, 0.0F) >= 5.0F && now >= mendReady) {
+                mendReady = now + 240 - 50L * mender;
+                mended.remove(id);
+                strikeAt(level, sp.position());
+            }
+            int runner = Insight.level(sp, Insight.Habit.RUNNER);
+            if (runner > 0 && streak >= 60 && now >= haulReady && hasLineOfSight(sp)) {
+                haulReady = now + 200 - 40L * runner;
+                farStreak.remove(id);
+                haul(level, sp, runner);
+            }
+            int archer = Insight.level(sp, Insight.Habit.ARCHER);
+            if (archer > 0 && far && getTarget() == sp && tickCount % (80 - 15 * archer) < WATCH_EVERY) close(level, sp);
+        }
+    }
+
+    /** One marked strike, where a challenger stood when the god saw them mending. */
+    public void strikeAt(ServerLevel level, Vec3 mark) {
+        God god = god();
+        float s = (Line.RANKS + 1 - god.rank()) / (float) Line.RANKS;
+        float damage = (2.0F + 3.0F * s) * damageScale();
+        level.playSound(null, BlockPos.containing(mark), SoundEvents.WARDEN_SONIC_CHARGE, SoundSource.HOSTILE, 1.0F, 1.5F);
+        for (int delay = 0; delay < STRIKE_WARNING; delay += 5) {
+            final double radius = 2.4 * (1.0 - delay / (double) STRIKE_WARNING * 0.6);
+            Scheduler.after(level.getServer(), delay, () -> {
+                for (int i = 0; i < 16; i++) {
+                    double a = Math.PI * 2 * i / 16;
+                    level.sendParticles(lineParticle(), mark.x + Math.cos(a) * radius, mark.y + 0.15, mark.z + Math.sin(a) * radius, 1, 0, 0, 0, 0);
+                }
+            });
+        }
+        Scheduler.after(level.getServer(), STRIKE_WARNING, () -> {
+            if (!isAlive() || level() != level) return;
+            land(level, god.line(), mark);
+            for (Player p : level.getEntitiesOfClass(Player.class, new AABB(mark.x - 2.4, mark.y - 2.0, mark.z - 2.4, mark.x + 2.4, mark.y + 3.0, mark.z + 2.4),
+                    e -> e.isAlive() && !e.isSpectator() && !e.isCreative())) {
+                p.hurtServer(level, damageSources().indirectMagic(this, this), damage);
+            }
+        });
+    }
+
+    /** A runner is hauled back towards the god: harder the better the gods know them. */
+    public void haul(ServerLevel level, ServerPlayer runner, int known) {
+        Vec3 to = position().subtract(runner.position());
+        double d = Math.max(0.01, Math.sqrt(to.x * to.x + to.z * to.z)), pull = 0.9 + 0.3 * known;
+        runner.setDeltaMovement(to.x / d * pull, 0.42, to.z / d * pull);
+        runner.needsSync = true;
+        level.sendParticles(lineParticle(), runner.getX(), runner.getY() + 1.0, runner.getZ(), 24, 0.4, 0.6, 0.4, 0.15);
+        level.playSound(null, runner.blockPosition(), SoundEvents.FISHING_BOBBER_RETRIEVE, SoundSource.HOSTILE, 1.4F, 0.6F);
+    }
+
+    @Override
+    public boolean doHurtTarget(ServerLevel level, net.minecraft.world.entity.Entity target) {
+        ItemStack raised = target instanceof ServerPlayer p && p.isBlocking() ? p.getUseItem().copy() : ItemStack.EMPTY;
+        boolean hit = super.doHurtTarget(level, target);
+        if (!statue && !raised.isEmpty() && target instanceof ServerPlayer p) {
+            tally(p).blocks++;
+            int known = Insight.level(p, Insight.Habit.GUARD);
+            if (known > 0) {
+                // the gods know this one hides behind a shield: the blow knocks it aside
+                p.getCooldowns().addCooldown(raised, 20 * (1 + known));
+                p.stopUsingItem();
+                level.playSound(null, p.blockPosition(), SoundEvents.SHIELD_BREAK.value(), SoundSource.PLAYERS, 0.9F, 1.1F);
+            }
+        }
+        return hit;
+    }
+
+    /** The trial is over, one way or the other: what it showed goes into the gods' memory, and the challengers are told. */
+    public void concludeInsight(ServerLevel level) {
+        if (concluded || statue) return;
+        concluded = true;
+        for (java.util.Map.Entry<UUID, Insight.Tally> e : tallies.entrySet()) {
+            List<Insight.Habit> changed = Insight.learn(level.getServer(), e.getKey(), e.getValue());
+            ServerPlayer player = level.getServer().getPlayerList().getPlayer(e.getKey());
+            if (player == null && level.getPlayerByUUID(e.getKey()) instanceof ServerPlayer here) player = here;
+            if (changed.isEmpty() || player == null || !Options.on(player, Options.Option.INSIGHT)) continue;
+            StringBuilder text = new StringBuilder();
+            for (Insight.Habit habit : changed) {
+                int known = Insight.level(player, habit);
+                if (text.length() > 0) text.append(' ');
+                text.append(com.thefarawaydev.realmsofchaos.ui.Words.of("insight." + RealmsOfChaos.MOD_ID + (known == 0 ? ".forgotten" : ".learnt"),
+                        habit.displayName(), Insight.numeral(known))).append('.');
+            }
+            com.thefarawaydev.realmsofchaos.ui.Cards.insight(player,
+                    com.thefarawaydev.realmsofchaos.ui.Words.of("insight." + RealmsOfChaos.MOD_ID + ".changed"), text.toString());
+        }
+        tallies.clear();
     }
 
     /** Gods open with their signature move, then alternate it with their line's ability. */
@@ -614,9 +807,7 @@ public class GodBoss extends Monster implements RangedAttackMob {
     private void setPhase(int phase) {
         this.entityData.set(DATA_PHASE, phase);
         God god = god();
-        String key = "boss." + RealmsOfChaos.MOD_ID + ".phase.";
-        bossEvent.setName(phase >= 3 ? Component.translatable(key + "wrath", god.bossName())
-                : phase == 2 ? Component.translatable(key + (aegis ? "aegis" : "rage"), god.bossName()) : god.bossName());
+        refreshBar();
         bossEvent.setDarkenScreen(god.rank() <= 3 || phase >= 3);
         bossEvent.setCreateWorldFog(phase >= 3);
     }
@@ -671,6 +862,9 @@ public class GodBoss extends Monster implements RangedAttackMob {
             return false;
         }
         boolean afar = fromAfar(source);
+        ServerPlayer striker = source.getEntity() instanceof ServerPlayer sp ? sp : null;
+        // (a god that knows an archer is not waiting to find out again)
+        if (afar && striker != null) amount *= 1.0F - 0.12F * Insight.level(striker, Insight.Habit.ARCHER);
         if (afar && stance == Stance.DEFLECT) {
             amount *= 0.4F;
             level.sendParticles(ParticleTypes.ENCHANTED_HIT, getX(), getY() + 1.2, getZ(), 8, 0.4, 0.7, 0.4, 0.2);
@@ -687,6 +881,17 @@ public class GodBoss extends Monster implements RangedAttackMob {
             float dealt = Math.max(0.0F, before - getHealth());
             if (afar) rangedTaken += dealt;
             else meleeTaken += dealt;
+            if (striker != null) {
+                Insight.Tally t = tally(striker);
+                if (afar) t.ranged += dealt;
+                else t.melee += dealt;
+                int known = afar || stance == Stance.BRISTLE ? 0 : Insight.level(striker, Insight.Habit.DUELLIST);
+                long now = level.getServer().getTickCount();
+                if (known > 0 && now >= riposteReady) {
+                    riposteReady = now + 130 - 25L * known;
+                    bristle(level, striker);
+                }
+            }
             if (!afar && stance == Stance.BRISTLE && source.getEntity() instanceof LivingEntity attacker) bristle(level, attacker);
             updatePhase(level);
         }
@@ -1368,6 +1573,7 @@ public class GodBoss extends Monster implements RangedAttackMob {
     public void die(DamageSource source) {
         super.die(source);
         if (level() instanceof ServerLevel serverLevel) {
+            concludeInsight(serverLevel);
             onDefeated(serverLevel, source);
             // the floor is given back the moment the god falls, not when its body has faded
             if (!statue) clearArena(serverLevel);

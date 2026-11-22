@@ -96,6 +96,24 @@
       "chars": [
         ""
       ]
+    },
+    {
+      "type": "bitmap",
+      "file": "realms_of_chaos:gui/panel_settings.png",
+      "ascent": 13,
+      "height": 168,
+      "chars": [
+        ""
+      ]
+    },
+    {
+      "type": "bitmap",
+      "file": "realms_of_chaos:gui/panel_insight.png",
+      "ascent": 13,
+      "height": 222,
+      "chars": [
+        ""
+      ]
     }
   ]
 }

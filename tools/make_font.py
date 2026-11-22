@@ -5,8 +5,6 @@ An original typeface made for this project: capitals five blocks tall, drawn on 
 Needs fontTools (pip install fonttools). Run it again after changing a letter below.
 """
 import os
-from fontTools.fontBuilder import FontBuilder
-from fontTools.pens.ttGlyphPen import TTGlyphPen
 
 CELL = 125                 # one block; eight blocks to the em, so 16px text has 2px blocks
 ROWS = 5                   # capitals are five blocks tall
@@ -105,6 +103,7 @@ def outline(rows):
 
 
 def glyph(rows):
+    from fontTools.pens.ttGlyphPen import TTGlyphPen
     pen = TTGlyphPen(None)
     for loop in outline(rows):
         pen.moveTo((SIDE + loop[0][0] * CELL, loop[0][1] * CELL))
@@ -115,6 +114,8 @@ def glyph(rows):
 
 
 def main():
+    from fontTools.fontBuilder import FontBuilder
+    from fontTools.pens.ttGlyphPen import TTGlyphPen
     order, cmap, glyphs, metrics = [".notdef", "space"], {32: "space", 0xA0: "space"}, {}, {}
     empty = TTGlyphPen(None)
     glyphs[".notdef"] = glyph("####,#..#,#..#,#..#,####".split(","))

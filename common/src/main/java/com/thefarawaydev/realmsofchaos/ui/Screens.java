@@ -148,6 +148,8 @@ public final class Screens {
         actions.add(button(tr("home.forge", 0xFFAA00), tr("home.forge.tip", 0xAAAAAA), "/roc forge"));
         actions.add(button(tr("home.skills", 0xF5B82E, com.thefarawaydev.realmsofchaos.world.Skills.available(player)), tr("home.skills.tip", 0xAAAAAA), "/roc ui skills"));
         actions.add(button(tr(Sidebar.enabled(player) ? "home.sidebar.on" : "home.sidebar.off", 0x55FFFF), tr("home.sidebar.tip", 0xAAAAAA), "/roc ui sidebar"));
+        actions.add(button(tr("home.settings", 0xF5E6C8), tr("home.settings.tip", 0xAAAAAA), "/roc settings"));
+        actions.add(button(tr("home.insight", 0xFFAA3C), tr("home.insight.tip", 0xAAAAAA), "/roc insight"));
         actions.add(button(tr("home.hub", 0xFFFFFF), null, "/roc hub"));
         actions.add(button(tr("home.leave", 0xFFFFFF), null, "/roc leave"));
         return menu(tr("home", 0xA55AD6), body, actions, close(), 2);

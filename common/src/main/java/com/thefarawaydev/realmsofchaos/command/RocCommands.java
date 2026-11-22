@@ -122,6 +122,13 @@ public final class RocCommands {
                     return 1;
                 }))
                 .then(Commands.literal("skills").executes(ctx -> ui(ctx.getSource().getPlayerOrException(), p -> Screens.show(p, Screens.skills(p)))))
+                .then(Commands.literal("settings").executes(ctx -> ui(ctx.getSource().getPlayerOrException(), com.thefarawaydev.realmsofchaos.ui.OptionsMenu::open)))
+                .then(Commands.literal("insight").executes(ctx -> ui(ctx.getSource().getPlayerOrException(), com.thefarawaydev.realmsofchaos.ui.InsightMenu::open)))
+                .then(Commands.literal("casts").executes(ctx -> ui(ctx.getSource().getPlayerOrException(), p -> {
+                    boolean on = com.thefarawaydev.realmsofchaos.ui.Options.toggle(p, com.thefarawaydev.realmsofchaos.ui.Options.Option.CASTS);
+                    com.thefarawaydev.realmsofchaos.ui.Hud.actionBar(p, net.minecraft.network.chat.Component.translatable("menu." + com.thefarawaydev.realmsofchaos.RealmsOfChaos.MOD_ID + ".options.casts")
+                            .append(": ").append(net.minecraft.network.chat.Component.translatable("menu." + com.thefarawaydev.realmsofchaos.RealmsOfChaos.MOD_ID + (on ? ".options.on" : ".options.off"))));
+                })))
                 .then(Commands.literal("chart").executes(ctx -> ui(ctx.getSource().getPlayerOrException(), com.thefarawaydev.realmsofchaos.world.Charts::give)))
                 .then(Commands.literal("sidebar").executes(ctx -> {
                     com.thefarawaydev.realmsofchaos.ui.Sidebar.toggle(ctx.getSource().getPlayerOrException());

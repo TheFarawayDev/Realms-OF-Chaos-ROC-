@@ -41,6 +41,7 @@ public final class RealmSafety {
         Hazards.tick(server);
         Craters.tick(server);
         com.thefarawaydev.realmsofchaos.ui.Sidebar.tick(server);
+        com.thefarawaydev.realmsofchaos.ui.Cards.tick(server);
         com.thefarawaydev.realmsofchaos.item.TarotEffects.tick(server);
         if (++ticker % 20 != 0) return;
         for (ServerPlayer player : server.getPlayerList().getPlayers()) {

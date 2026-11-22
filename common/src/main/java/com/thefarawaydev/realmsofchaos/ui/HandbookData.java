@@ -20,7 +20,7 @@ public final class HandbookData {
         new Topic("phases", 4),
         new Topic("hub", 4),
         new Topic("trials", 4),
-        new Topic("fights", 5),
+        new Topic("fights", 6),
         new Topic("passages", 5),
         new Topic("sentinels", 5),
         new Topic("relics", 3),

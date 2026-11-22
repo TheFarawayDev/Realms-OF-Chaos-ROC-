@@ -23,7 +23,22 @@ public final class Hud {
         title(player, title, subtitle, 10, 60, 20);
     }
 
+    /** The most letters a title and the line under it may have before they are written on a card instead. */
+    public static final int TITLE_LETTERS = 16, SUBTITLE_LETTERS = 34;
+
+    /**
+     * A title is drawn four times the size of ordinary writing, and the line under it twice: on a small window a
+     * long one runs off both sides of the screen. So only short ones are titles. Anything longer is a card.
+     */
+    public static boolean fitsTitle(Component title, Component subtitle) {
+        return Words.of(title).length() <= TITLE_LETTERS && (subtitle == null || Words.of(subtitle).length() <= SUBTITLE_LETTERS);
+    }
+
     public static void title(ServerPlayer player, Component title, Component subtitle, int fadeIn, int stay, int fadeOut) {
+        if (!fitsTitle(title, subtitle)) {
+            Cards.notice(player, Words.of(title), Words.of(subtitle));
+            return;
+        }
         if (player.connection == null) return;
         player.connection.send(new ClientboundSetTitlesAnimationPacket(fadeIn, stay, fadeOut));
         player.connection.send(new ClientboundSetSubtitleTextPacket(subtitle == null ? Component.empty() : subtitle));

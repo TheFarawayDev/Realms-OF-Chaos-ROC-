@@ -1817,7 +1817,22 @@ public final class SelfTest {
             }
             advance(server, Tutorial.DELAY + 5);
             Scheduler.tick(server);
-            check(Scheduler.pending() == 0, "tips are delivered");
+            com.thefarawaydev.realmsofchaos.ui.Cards.tick(server);
+            // a tip is a card at the top of the screen; the rest wait their turn, and none of them is a title
+            var card = com.thefarawaydev.realmsofchaos.ui.Cards.showing(hero);
+            check(card != null && card.kind() == com.thefarawaydev.realmsofchaos.ui.HudArt.Card.TIP && !card.headed(), "the first tip is on a card");
+            check(com.thefarawaydev.realmsofchaos.ui.Cards.waiting(hero) == com.thefarawaydev.realmsofchaos.ui.Cards.MAX_WAITING, "the others queue, and the queue is short");
+            check(Scheduler.pending() == 0, "tips are delivered, and leave nothing waiting in the scheduler");
+            int shownCards = 1;
+            for (int i = 0; i < 40 && com.thefarawaydev.realmsofchaos.ui.Cards.showing(hero) != null; i++) {
+                advance(server, com.thefarawaydev.realmsofchaos.ui.Cards.STAY + 1);
+                com.thefarawaydev.realmsofchaos.ui.Cards.tick(server);
+                check(com.thefarawaydev.realmsofchaos.ui.Cards.showing(hero) == null, "a card is taken away when it has had its time");
+                advance(server, com.thefarawaydev.realmsofchaos.ui.Cards.GAP + 1);
+                com.thefarawaydev.realmsofchaos.ui.Cards.tick(server);
+                if (com.thefarawaydev.realmsofchaos.ui.Cards.showing(hero) != null) shownCards++;
+            }
+            check(shownCards == com.thefarawaydev.realmsofchaos.ui.Cards.MAX_WAITING + 1 && com.thefarawaydev.realmsofchaos.ui.Cards.showing(hero) == null, "each in turn, then the screen is clear: " + shownCards);
             // tips come from what the player does: arriving on a floor, opening the forge
             ServerPlayer walker = fakePlayer(server, level, "RocFirstSteps");
             Tutorial.reset(walker);
@@ -1833,6 +1848,7 @@ public final class SelfTest {
             check(Screens.last(fresh) == null, "not at once");
             advance(server, 100);
             Scheduler.tick(server);
+            com.thefarawaydev.realmsofchaos.ui.Cards.tick(server);
             check(Screens.last(fresh) != null && Screens.bodyLines(Screens.last(fresh)) == HandbookData.ALL.get(0).lines()
                     && Screens.commands(Screens.last(fresh)).contains("/roc ui topic " + HandbookData.ALL.get(1).id()), "the handbook opens on its first topic and leads on");
         });
@@ -4192,6 +4208,325 @@ public final class SelfTest {
             }
         });
 
+        step("the screen: a tip is a card of its own, a long title becomes a card, and short ones stay titles", () -> {
+            ServerPlayer hero = fakePlayer(server, level, "RocReader");
+            com.thefarawaydev.realmsofchaos.ui.Options.reset(hero);
+            com.thefarawaydev.realmsofchaos.ui.Cards.clear(hero);
+            Tutorial.reset(hero);
+            ClassLoader assets = RealmsOfChaos.class.getClassLoader();
+            for (String font : new String[]{"hud", "tip0", "tip1", "tip2", "tip3", "tip4"}) {
+                check(assets.getResource("assets/realms_of_chaos/font/" + font + ".json") != null, "the font " + font);
+            }
+            for (String art : new String[]{"frame_zeus", "frame_poseidon", "frame_hades", "over_1", "over_2", "over_3", "frame_cast", "card_tip", "card_insight", "card_notice", "letters", "fill_1", "fill_128"}) {
+                check(assets.getResource("assets/realms_of_chaos/textures/gui/hud/" + art + ".png") != null, "the picture " + art);
+            }
+            // spaces move the pen exactly, either way
+            for (int n = -520; n <= 520; n += 7) {
+                check(com.thefarawaydev.realmsofchaos.ui.HudArt.advance(com.thefarawaydev.realmsofchaos.ui.HudArt.space(n)) == n, "a space of " + n);
+            }
+            // every tip fits its card: three lines at most, none wider than the card, and in words - not a key
+            for (Tutorial.Tip tip : Tutorial.Tip.values()) {
+                String text = com.thefarawaydev.realmsofchaos.ui.Words.of(tip.text());
+                check(!text.startsWith("tip."), tip + " has words: " + text);
+                List<String> lines = com.thefarawaydev.realmsofchaos.ui.HudArt.wrap(text, com.thefarawaydev.realmsofchaos.ui.HudArt.CARD_TEXT_WIDTH);
+                check(lines.size() >= 1 && lines.size() <= com.thefarawaydev.realmsofchaos.ui.HudArt.CARD_LINES, tip + " fits a card: " + lines.size() + " lines");
+                int written = 0;
+                for (String line : lines) {
+                    check(com.thefarawaydev.realmsofchaos.ui.HudArt.textWidth(line) <= com.thefarawaydev.realmsofchaos.ui.HudArt.CARD_TEXT_WIDTH, tip + ": a line no wider than the card");
+                    written += com.thefarawaydev.realmsofchaos.ui.HudArt.textWidth(line);
+                }
+                check(String.join(" ", lines).equals(com.thefarawaydev.realmsofchaos.ui.HudArt.plain(text)), tip + ": nothing is lost in the wrapping");
+                // the row is always a card wide, so the game centres it where the picture expects to be
+                String row = com.thefarawaydev.realmsofchaos.ui.HudArt.card(com.thefarawaydev.realmsofchaos.ui.HudArt.Card.TIP, null, text).getString();
+                check(com.thefarawaydev.realmsofchaos.ui.HudArt.advance(row) + written == com.thefarawaydev.realmsofchaos.ui.HudGlyphs.CARD_WIDTH, tip + ": the card's row is exactly a card wide");
+                check(row.indexOf(com.thefarawaydev.realmsofchaos.ui.HudGlyphs.CARD[0]) == 0, tip + ": and begins with the card itself");
+            }
+            // text too long for a card is cut short, not spilt
+            List<String> cut = com.thefarawaydev.realmsofchaos.ui.HudArt.lines("A heading", "word ".repeat(120));
+            check(cut.size() == 3 && cut.get(2).endsWith("...") && com.thefarawaydev.realmsofchaos.ui.HudArt.textWidth(cut.get(2)) <= com.thefarawaydev.realmsofchaos.ui.HudArt.CARD_TEXT_WIDTH, "a card holds three lines and no more");
+            check(com.thefarawaydev.realmsofchaos.ui.HudArt.plain("it’s “fine” — really…").equals("it's \"fine\" - really..."), "curly marks become plain ones the card can write");
+
+            // a tip
+            check(Tutorial.tip(hero, Tutorial.Tip.FLOOR), "a tip is due");
+            advance(server, Tutorial.DELAY + 1);
+            Scheduler.tick(server);
+            com.thefarawaydev.realmsofchaos.ui.Cards.tick(server);
+            var shown = com.thefarawaydev.realmsofchaos.ui.Cards.showing(hero);
+            check(shown != null && shown.kind() == com.thefarawaydev.realmsofchaos.ui.HudArt.Card.TIP
+                    && shown.lines().equals(com.thefarawaydev.realmsofchaos.ui.HudArt.wrap(com.thefarawaydev.realmsofchaos.ui.Words.of(Tutorial.Tip.FLOOR.text()), com.thefarawaydev.realmsofchaos.ui.HudArt.CARD_TEXT_WIDTH)), "the tip is on a card");
+            // titles: short ones are titles still; a long one waits its turn as a card
+            net.minecraft.network.chat.Component shortTitle = net.minecraft.network.chat.Component.literal("Victory!"), longLine = net.minecraft.network.chat.Component.literal("Right-click the Trial Altar to see who waits here and to begin");
+            check(com.thefarawaydev.realmsofchaos.ui.Hud.fitsTitle(shortTitle, net.minecraft.network.chat.Component.literal("Artemis has fallen")), "a short title fits the screen");
+            check(!com.thefarawaydev.realmsofchaos.ui.Hud.fitsTitle(shortTitle, longLine) && !com.thefarawaydev.realmsofchaos.ui.Hud.fitsTitle(longLine, null), "a long one does not");
+            com.thefarawaydev.realmsofchaos.ui.Hud.title(hero, net.minecraft.network.chat.Component.literal("The Marble Halls"), longLine);
+            check(com.thefarawaydev.realmsofchaos.ui.Cards.waiting(hero) == 1, "so it is written on a card instead, after the one showing");
+            advance(server, com.thefarawaydev.realmsofchaos.ui.Cards.STAY + 1);
+            Scheduler.tick(server);
+            com.thefarawaydev.realmsofchaos.ui.Cards.tick(server);
+            check(com.thefarawaydev.realmsofchaos.ui.Cards.showing(hero) == null, "a card goes away by itself");
+            advance(server, com.thefarawaydev.realmsofchaos.ui.Cards.GAP + 1);
+            Scheduler.tick(server);
+            com.thefarawaydev.realmsofchaos.ui.Cards.tick(server);
+            shown = com.thefarawaydev.realmsofchaos.ui.Cards.showing(hero);
+            check(shown != null && shown.kind() == com.thefarawaydev.realmsofchaos.ui.HudArt.Card.NOTICE && shown.headed() && shown.lines().get(0).equals("The Marble Halls"), "then the next: a notice, with its heading");
+            com.thefarawaydev.realmsofchaos.ui.Cards.clear(hero);
+            advance(server, com.thefarawaydev.realmsofchaos.ui.Cards.STAY + com.thefarawaydev.realmsofchaos.ui.Cards.GAP + 2);
+            Scheduler.tick(server);
+            com.thefarawaydev.realmsofchaos.ui.Cards.tick(server);
+            check(com.thefarawaydev.realmsofchaos.ui.Cards.showing(hero) == null && Scheduler.pending() == 0, "a cleared card leaves nothing behind");
+
+            // settings: tips can be turned off, and a tip not shown has not been had
+            com.thefarawaydev.realmsofchaos.ui.OptionsMenu.open(hero);
+            check(hero.containerMenu instanceof com.thefarawaydev.realmsofchaos.ui.OptionsMenu, "the settings menu opens");
+            var menu = (com.thefarawaydev.realmsofchaos.ui.OptionsMenu) hero.containerMenu;
+            check(!com.thefarawaydev.realmsofchaos.ui.Options.on(hero, com.thefarawaydev.realmsofchaos.ui.Options.Option.CASTS)
+                    && com.thefarawaydev.realmsofchaos.ui.Options.on(hero, com.thefarawaydev.realmsofchaos.ui.Options.Option.TIPS)
+                    && com.thefarawaydev.realmsofchaos.ui.Options.on(hero, com.thefarawaydev.realmsofchaos.ui.Options.Option.INSIGHT), "a new player has tips and insight, and no cast bar");
+            var gemOff = menu.getSlot(com.thefarawaydev.realmsofchaos.ui.OptionsMenu.SLOT_CASTS + 9).getItem().get(net.minecraft.core.component.DataComponents.ITEM_MODEL);
+            check(gemOff != null && gemOff.getPath().equals("ui/gem_gray"), "the cast bar's gem is dark: " + gemOff);
+            menu.clicked(com.thefarawaydev.realmsofchaos.ui.OptionsMenu.SLOT_CASTS, 0, net.minecraft.world.inventory.ContainerInput.PICKUP, hero);
+            menu.clicked(com.thefarawaydev.realmsofchaos.ui.OptionsMenu.SLOT_TIPS + 9, 0, net.minecraft.world.inventory.ContainerInput.PICKUP, hero);
+            check(com.thefarawaydev.realmsofchaos.ui.Options.on(hero, com.thefarawaydev.realmsofchaos.ui.Options.Option.CASTS)
+                    && !com.thefarawaydev.realmsofchaos.ui.Options.on(hero, com.thefarawaydev.realmsofchaos.ui.Options.Option.TIPS), "a click on a switch, or on its gem, turns it");
+            var gemOn = menu.getSlot(com.thefarawaydev.realmsofchaos.ui.OptionsMenu.SLOT_CASTS + 9).getItem().get(net.minecraft.core.component.DataComponents.ITEM_MODEL);
+            check(gemOn != null && gemOn.getPath().equals("ui/gem_lime"), "and its gem lights: " + gemOn);
+            check(!Tutorial.tip(hero, Tutorial.Tip.FORGE) && !Tutorial.seen(hero, Tutorial.Tip.FORGE), "with tips off none is shown - and none is used up");
+            menu.clicked(com.thefarawaydev.realmsofchaos.ui.OptionsMenu.SLOT_TIPS, 0, net.minecraft.world.inventory.ContainerInput.PICKUP, hero);
+            check(Tutorial.seen(hero, Tutorial.Tip.FLOOR), "(a tip already had)");
+            menu.clicked(com.thefarawaydev.realmsofchaos.ui.OptionsMenu.SLOT_AGAIN, 0, net.minecraft.world.inventory.ContainerInput.PICKUP, hero);
+            check(!Tutorial.seen(hero, Tutorial.Tip.FLOOR), "'show tips again' forgets which were had");
+            hero.closeContainer();
+            com.thefarawaydev.realmsofchaos.ui.Cards.clear(hero);
+            com.thefarawaydev.realmsofchaos.ui.Options.reset(hero);
+            advance(server, com.thefarawaydev.realmsofchaos.ui.Cards.STAY + 1);
+            Scheduler.tick(server);
+            com.thefarawaydev.realmsofchaos.ui.Cards.tick(server);
+        });
+
+        step("a god's bar is the mod's own artwork, and the cast bar is only for those who turn it on", () -> {
+            ServerPlayer hero = fakePlayer(server, level, "RocWatcher"), other = fakePlayer(server, level, "RocUnbothered");
+            com.thefarawaydev.realmsofchaos.ui.Options.reset(hero);
+            com.thefarawaydev.realmsofchaos.ui.Options.reset(other);
+            // the bar's row: always a frame wide, a fill exactly as long as the health, the right pictures
+            check(com.thefarawaydev.realmsofchaos.ui.HudArt.fillWidth(0.0F) == 0 && com.thefarawaydev.realmsofchaos.ui.HudArt.fillWidth(0.0001F) == 1
+                    && com.thefarawaydev.realmsofchaos.ui.HudArt.fillWidth(1.0F) == com.thefarawaydev.realmsofchaos.ui.HudGlyphs.BAR_WIDTH, "empty is empty, alive shows a sliver, full is full");
+            for (God god : Gods.ALL) {
+                String name = god.englishName();
+                check(com.thefarawaydev.realmsofchaos.ui.HudArt.lettering(name, 88).length() == name.length(), name + " can be written in block lettering, and fits its plaque");
+                for (int phase = 1; phase <= 3; phase++) {
+                    for (float progress : new float[]{0.0F, 0.013F, 0.3F, 0.65F, 0.997F, 1.0F}) {
+                        String row = com.thefarawaydev.realmsofchaos.ui.HudArt.bossBar(god.line(), phase, phase == 2, progress, name).getString();
+                        check(com.thefarawaydev.realmsofchaos.ui.HudArt.advance(row) == com.thefarawaydev.realmsofchaos.ui.HudGlyphs.FRAME_WIDTH, name + ": the row is exactly a frame wide at " + progress);
+                        int filled = 0;
+                        for (char c : row.toCharArray()) {
+                            if (c >= com.thefarawaydev.realmsofchaos.ui.HudGlyphs.FILL && c <= com.thefarawaydev.realmsofchaos.ui.HudGlyphs.FILL + 7) filled += 1 << (c - com.thefarawaydev.realmsofchaos.ui.HudGlyphs.FILL);
+                        }
+                        check(filled == com.thefarawaydev.realmsofchaos.ui.HudArt.fillWidth(progress), name + ": the fill is as long as the health: " + filled);
+                        check(row.charAt(0) == com.thefarawaydev.realmsofchaos.ui.HudGlyphs.FRAME[god.line().ordinal()]
+                                && row.indexOf(com.thefarawaydev.realmsofchaos.ui.HudGlyphs.OVERLAY[phase - 1]) > 0, name + ": its tower's frame, and the gems of its phase");
+                    }
+                }
+                String move = com.thefarawaydev.realmsofchaos.ui.Words.of(god.moveName());
+                String cast = com.thefarawaydev.realmsofchaos.ui.HudArt.castBar(0.5F, move).getString();
+                check(com.thefarawaydev.realmsofchaos.ui.HudArt.advance(cast) == com.thefarawaydev.realmsofchaos.ui.HudGlyphs.FRAME_WIDTH && !com.thefarawaydev.realmsofchaos.ui.HudArt.lettering(move, 124).isEmpty(), name + ": its move fits the cast bar: " + move);
+            }
+            // a god in the world
+            God god = Gods.get(Line.POSEIDON, 15);
+            hero.setPos(8.5, level.getHeight(net.minecraft.world.level.levelgen.Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, 8, 8), 8.5);
+            other.setPos(10.5, hero.getY(), 8.5);
+            level.addNewPlayer(hero);
+            level.addNewPlayer(other);
+            settle(level);
+            GodBoss boss = ModContent.GOD_BOSS.get().create(level, EntitySpawnReason.TRIGGERED);
+            boss.setGod(god);
+            boss.setPos(hero.getX() + 3, hero.getY(), hero.getZ());
+            boss.setHome(boss.position());
+            level.addFreshEntity(boss);
+            try {
+                String bar = boss.barName().getString();
+                check(bar.charAt(0) == com.thefarawaydev.realmsofchaos.ui.HudGlyphs.FRAME[1] && bar.indexOf(com.thefarawaydev.realmsofchaos.ui.HudGlyphs.OVERLAY[0]) > 0, "its bar is drawn the moment it stands");
+                check(bar.contains(com.thefarawaydev.realmsofchaos.ui.HudArt.lettering(god.englishName(), 88)), "with its name on it");
+                boss.damageCooldownTime = 0;
+                boss.hurtServer(level, level.damageSources().playerAttack(hero), 6.0F);
+                boss.refreshBar();
+                check(!boss.barName().getString().equals(bar), "the bar is redrawn as its health goes");
+                boss.damageCooldownTime = 0;
+                boss.hurtServer(level, level.damageSources().playerAttack(hero), 1.0e5F);
+                boss.refreshBar();
+                check(boss.phase() == 2 && boss.barName().getString().indexOf(com.thefarawaydev.realmsofchaos.ui.HudGlyphs.OVERLAY[1]) > 0, "a new phase lights the next gem");
+                // the cast bar: nobody sees it who has not asked
+                boss.beginCast(level, god);
+                check(boss.castWatchers().isEmpty(), "by default no cast bar is shown to anyone");
+                boss.endCast();
+                com.thefarawaydev.realmsofchaos.ui.Options.set(hero, com.thefarawaydev.realmsofchaos.ui.Options.Option.CASTS, true);
+                boss.beginCast(level, god);
+                check(boss.castWatchers().size() == 1 && boss.castWatchers().contains(hero), "turned on, it is shown - to that player alone: " + boss.castWatchers().size() + " watching, option " + com.thefarawaydev.realmsofchaos.ui.Options.on(hero, com.thefarawaydev.realmsofchaos.ui.Options.Option.CASTS) + ", alive " + hero.isAlive() + ", at " + hero.distanceTo(boss));
+                String expected = com.thefarawaydev.realmsofchaos.ui.Words.of(boss.nextIsSignature() ? god.moveName() : net.minecraft.network.chat.Component.translatable("cast.realms_of_chaos." + god.line().id()));
+                check(boss.castName().equals(expected) && !expected.startsWith("cast."), "it names the move: " + boss.castName());
+                check(boss.castBarName().getString().charAt(0) == com.thefarawaydev.realmsofchaos.ui.HudGlyphs.CAST_FRAME, "on a bar of its own");
+                boss.endCast();
+                check(boss.castWatchers().isEmpty() && !boss.isCasting(), "and it is taken away when the move is made");
+                for (Line line : Line.values()) {
+                    check(!com.thefarawaydev.realmsofchaos.ui.Words.of("cast.realms_of_chaos." + line.id()).startsWith("cast."), "a name for the " + line.id() + " line's own move");
+                }
+            } finally {
+                boss.discard();
+                com.thefarawaydev.realmsofchaos.ui.Options.reset(hero);
+                hero.remove(net.minecraft.world.entity.Entity.RemovalReason.DISCARDED);
+                other.remove(net.minecraft.world.entity.Entity.RemovalReason.DISCARDED);
+            }
+        });
+
+        step("the gods remember: a habit seen in trial after trial is learnt, answered, and forgotten when dropped", () -> {
+            ServerPlayer hero = fakePlayer(server, level, "RocCreatureOfHabit");
+            var ARCHER = com.thefarawaydev.realmsofchaos.world.Insight.Habit.ARCHER;
+            var DUELLIST = com.thefarawaydev.realmsofchaos.world.Insight.Habit.DUELLIST;
+            com.thefarawaydev.realmsofchaos.world.Insight.forget(hero);
+            com.thefarawaydev.realmsofchaos.ui.Options.reset(hero);
+            com.thefarawaydev.realmsofchaos.ui.Cards.clear(hero);
+            Tutorial.reset(hero);
+            for (var habit : com.thefarawaydev.realmsofchaos.world.Insight.Habit.values()) {
+                check(com.thefarawaydev.realmsofchaos.world.Insight.level(hero, habit) == 0, habit + ": the gods know nothing of a new player");
+                for (net.minecraft.network.chat.Component words : List.of(habit.displayName(), habit.cause(), habit.answer())) check(!com.thefarawaydev.realmsofchaos.ui.Words.of(words).startsWith("insight."), habit + " is put into words");
+            }
+            // what a trial shows
+            var shots = new com.thefarawaydev.realmsofchaos.world.Insight.Tally();
+            shots.ranged = 40.0F; shots.melee = 6.0F; shots.ticks = 20 * 60;
+            var blades = new com.thefarawaydev.realmsofchaos.world.Insight.Tally();
+            blades.melee = 50.0F; blades.ranged = 2.0F; blades.ticks = 20 * 60; blades.blocks = 4; blades.healed = 20.0F; blades.farTicks = 20 * 10;
+            var away = new com.thefarawaydev.realmsofchaos.world.Insight.Tally();
+            away.ticks = 20 * 60; away.farTicks = 20 * 40;
+            check(shots.shows(ARCHER) && !shots.shows(DUELLIST) && !shots.shows(com.thefarawaydev.realmsofchaos.world.Insight.Habit.GUARD), "a trial fought with a bow shows an archer");
+            check(blades.shows(DUELLIST) && !blades.shows(ARCHER) && blades.shows(com.thefarawaydev.realmsofchaos.world.Insight.Habit.GUARD)
+                    && blades.shows(com.thefarawaydev.realmsofchaos.world.Insight.Habit.MENDER) && !blades.shows(com.thefarawaydev.realmsofchaos.world.Insight.Habit.RUNNER), "one fought up close, behind a shield, mending: those three");
+            check(away.shows(com.thefarawaydev.realmsofchaos.world.Insight.Habit.RUNNER) && !away.shows(ARCHER), "and one spent out of reach shows a runner");
+            // learnt over three trials, never past the top
+            UUID id = hero.getUUID();
+            for (int trial = 1; trial <= 4; trial++) {
+                var changed = com.thefarawaydev.realmsofchaos.world.Insight.learn(server, id, shots);
+                int expected = Math.min(3, trial);
+                check(com.thefarawaydev.realmsofchaos.world.Insight.level(hero, ARCHER) == expected, "after " + trial + " such trials the gods know an archer at level " + expected);
+                check(changed.contains(ARCHER) == (trial <= 3), "and say so when the level changes");
+            }
+            var brief = new com.thefarawaydev.realmsofchaos.world.Insight.Tally();
+            brief.melee = 500.0F; brief.ticks = com.thefarawaydev.realmsofchaos.world.Insight.MIN_TICKS - 1;
+            check(com.thefarawaydev.realmsofchaos.world.Insight.learn(server, id, brief).isEmpty() && com.thefarawaydev.realmsofchaos.world.Insight.level(hero, ARCHER) == 3, "a trial over in moments teaches nothing");
+            check(com.thefarawaydev.realmsofchaos.world.Insight.known(hero).equals(List.of(ARCHER)), "what is known of a player can be listed");
+
+            God god = Gods.get(Line.ZEUS, 12);
+            hero.setPos(8.5, level.getHeight(net.minecraft.world.level.levelgen.Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, 8, 8), 8.5);
+            hero.setHealth(hero.getMaxHealth());
+            level.addNewPlayer(hero);
+            settle(level);
+            // a god that knows says so at the start of a trial
+            check(com.thefarawaydev.realmsofchaos.world.Insight.announce(hero, god), "a god that knows its challenger says so");
+            var card = com.thefarawaydev.realmsofchaos.ui.Cards.showing(hero);
+            check(card != null && card.kind() == com.thefarawaydev.realmsofchaos.ui.HudArt.Card.INSIGHT && card.headed() && card.lines().get(0).contains(god.englishName())
+                    && String.join(" ", card.lines()).contains(com.thefarawaydev.realmsofchaos.ui.Words.of(ARCHER.displayName()) + " III"), "on a card: who knows, what, and how well: " + (card == null ? null : card.lines()));
+            com.thefarawaydev.realmsofchaos.ui.Cards.clear(hero);
+            com.thefarawaydev.realmsofchaos.ui.Options.set(hero, com.thefarawaydev.realmsofchaos.ui.Options.Option.INSIGHT, false);
+            check(!com.thefarawaydev.realmsofchaos.world.Insight.announce(hero, god) && com.thefarawaydev.realmsofchaos.ui.Cards.showing(hero) == null, "unless the player has turned that off");
+            com.thefarawaydev.realmsofchaos.ui.Options.reset(hero);
+
+            GodBoss boss = ModContent.GOD_BOSS.get().create(level, EntitySpawnReason.TRIGGERED);
+            boss.setGod(god);
+            boss.setPos(hero.getX() + 3, hero.getY(), hero.getZ());
+            boss.setHome(boss.position());
+            level.addFreshEntity(boss);
+            try {
+                // the answer to an archer: shots count for less
+                var arrow = new Arrow(level, hero.getX(), hero.getY() + 1, hero.getZ(), new ItemStack(net.minecraft.world.item.Items.ARROW), null);
+                com.thefarawaydev.realmsofchaos.world.Insight.setPoints(server, id, ARCHER, 0);
+                float h0 = boss.getHealth();
+                boss.damageCooldownTime = 0;
+                boss.hurtServer(level, level.damageSources().arrow(arrow, hero), 6.0F);
+                float plain = h0 - boss.getHealth();
+                com.thefarawaydev.realmsofchaos.world.Insight.setPoints(server, id, ARCHER, 6);
+                float h1 = boss.getHealth();
+                boss.damageCooldownTime = 0;
+                boss.hurtServer(level, level.damageSources().arrow(arrow, hero), 6.0F);
+                float known = h1 - boss.getHealth();
+                check(plain > 0.5F && known > 0.0F && known < plain * 0.8F, "a god that knows an archer takes less from a shot: " + plain + " then " + known);
+                check(boss.tally(hero).ranged > 0.0F && boss.tally(hero).melee == 0.0F, "and it keeps count of what was done to it from afar");
+                boss.damageCooldownTime = 0;
+                boss.hurtServer(level, level.damageSources().playerAttack(hero), 3.0F);
+                check(boss.tally(hero).melee > 0.0F, "and hand to hand");
+                // watching: who keeps away, who mends
+                hero.setPos(boss.getX() + GodBoss.FAR + 4, boss.getY(), boss.getZ());
+                hero.setHealth(8.0F);
+                boss.watch(level);
+                hero.setHealth(15.0F);
+                boss.watch(level);
+                check(boss.tally(hero).ticks == 10 && boss.tally(hero).farTicks == 10, "it sees a challenger keeping away");
+                check(Math.abs(boss.tally(hero).healed - 7.0F) < 0.01F, "and one mending: " + boss.tally(hero).healed);
+                // the answer to a runner: hauled back
+                hero.setDeltaMovement(0, 0, 0);
+                boss.haul(level, hero, 2);
+                check(hero.getDeltaMovement().x < -0.5, "a runner is hauled back towards the god: " + hero.getDeltaMovement());
+                hero.setDeltaMovement(0, 0, 0);
+                // the answer to a mender: a marked strike where they stand
+                hero.setHealth(hero.getMaxHealth());
+                boss.strikeAt(level, hero.position());
+                check(hero.getHealth() == hero.getMaxHealth(), "a strike is marked before it lands");
+                advance(server, GodBoss.STRIKE_WARNING + 1);
+                Scheduler.tick(server);
+                com.thefarawaydev.realmsofchaos.ui.Cards.tick(server);
+                check(hero.getHealth() < hero.getMaxHealth(), "and then lands: " + hero.getHealth());
+                // the trial ends: what it showed is remembered, and the challenger is told
+                com.thefarawaydev.realmsofchaos.world.Insight.forget(hero);
+                com.thefarawaydev.realmsofchaos.ui.Cards.clear(hero);
+                boss.tally(hero).ticks = 20 * 90;
+                boss.tally(hero).farTicks = 20 * 60;
+                boss.concludeInsight(level);
+                check(com.thefarawaydev.realmsofchaos.world.Insight.level(hero, com.thefarawaydev.realmsofchaos.world.Insight.Habit.RUNNER) == 1, "when the trial ends, the habit is remembered");
+                card = com.thefarawaydev.realmsofchaos.ui.Cards.showing(hero);
+                check(card != null && card.kind() == com.thefarawaydev.realmsofchaos.ui.HudArt.Card.INSIGHT
+                        && String.join(" ", card.lines()).contains(com.thefarawaydev.realmsofchaos.ui.Words.of(com.thefarawaydev.realmsofchaos.world.Insight.Habit.RUNNER.displayName())), "and the challenger is told what the gods have learnt");
+                boss.concludeInsight(level);
+                check(com.thefarawaydev.realmsofchaos.world.Insight.points(server, id, com.thefarawaydev.realmsofchaos.world.Insight.Habit.RUNNER) == 2, "a trial is only counted once");
+            } finally {
+                boss.discard();
+                hero.remove(net.minecraft.world.entity.Entity.RemovalReason.DISCARDED);
+            }
+            // dropped habits are forgotten, a trial at a time
+            com.thefarawaydev.realmsofchaos.world.Insight.setPoints(server, id, ARCHER, 6);
+            int trials = 0;
+            while (com.thefarawaydev.realmsofchaos.world.Insight.level(hero, ARCHER) > 0 && trials < 20) {
+                com.thefarawaydev.realmsofchaos.world.Insight.learn(server, id, blades);
+                trials++;
+            }
+            check(trials == 6 && com.thefarawaydev.realmsofchaos.world.Insight.level(hero, DUELLIST) == 3, "six trials fought another way and the archer is forgotten - and a duellist known instead: " + trials);
+            // the menu shows it
+            com.thefarawaydev.realmsofchaos.ui.InsightMenu.open(hero);
+            check(hero.containerMenu instanceof com.thefarawaydev.realmsofchaos.ui.InsightMenu, "the insight menu opens");
+            var menu = (com.thefarawaydev.realmsofchaos.ui.InsightMenu) hero.containerMenu;
+            for (var habit : com.thefarawaydev.realmsofchaos.world.Insight.Habit.values()) {
+                int knownLevel = com.thefarawaydev.realmsofchaos.world.Insight.level(hero, habit), lit = 0;
+                for (int l = 1; l <= 3; l++) {
+                    var model = menu.getSlot(com.thefarawaydev.realmsofchaos.ui.InsightMenu.gemSlot(habit, l)).getItem().get(net.minecraft.core.component.DataComponents.ITEM_MODEL);
+                    if (model != null && !model.getPath().equals("ui/gem_gray")) lit++;
+                }
+                check(lit == knownLevel && !menu.getSlot(com.thefarawaydev.realmsofchaos.ui.InsightMenu.slotOf(habit)).getItem().isEmpty(), habit + ": " + knownLevel + " gems lit");
+            }
+            hero.closeContainer();
+            CodexMenu.open(hero);
+            CodexMenu codex = (CodexMenu) hero.containerMenu;
+            check(!codex.getSlot(CodexMenu.SLOT_OPTIONS).getItem().isEmpty() && !codex.getSlot(CodexMenu.SLOT_INSIGHT).getItem().isEmpty(), "the Codex leads to settings and to what the gods know");
+            codex.clicked(CodexMenu.SLOT_INSIGHT, 0, net.minecraft.world.inventory.ContainerInput.PICKUP, hero);
+            check(hero.containerMenu instanceof com.thefarawaydev.realmsofchaos.ui.InsightMenu, "a click opens it");
+            hero.closeContainer();
+            com.thefarawaydev.realmsofchaos.world.Insight.forget(hero);
+            com.thefarawaydev.realmsofchaos.ui.Cards.clear(hero);
+            Tutorial.reset(hero);
+            advance(server, com.thefarawaydev.realmsofchaos.ui.Cards.STAY + Tutorial.DELAY + 2);
+            Scheduler.tick(server);
+            com.thefarawaydev.realmsofchaos.ui.Cards.tick(server);
+            com.thefarawaydev.realmsofchaos.ui.Cards.clear(hero);
+            advance(server, com.thefarawaydev.realmsofchaos.ui.Cards.STAY + 2);
+            Scheduler.tick(server);
+            com.thefarawaydev.realmsofchaos.ui.Cards.tick(server);
+        });
+
         step("the menus wear the mod's own artwork: a panel in the title, blank tiles for unused slots, gems for meters", () -> {
             ServerPlayer viewer = fakePlayer(server, level, "RocViewer");
             ClassLoader assets = RealmsOfChaos.class.getClassLoader();
@@ -4202,7 +4537,7 @@ public final class SelfTest {
                 font = new String(in.readAllBytes(), java.nio.charset.StandardCharsets.UTF_8);
             }
             check(font.contains("space") && font.contains("bitmap"), "the font has pictures, and the spaces that pull a panel back to the corner");
-            String[] names = {"codex", "forge", "passage", "bag6", "altar", "seal", "deck", "party", "story", "bag3"};
+            String[] names = {"codex", "forge", "passage", "bag6", "altar", "seal", "deck", "party", "story", "bag3", "settings", "insight"};
             com.thefarawaydev.realmsofchaos.ui.Skin.Panel[] panels = com.thefarawaydev.realmsofchaos.ui.Skin.Panel.values();
             check(panels.length == names.length, "a picture for every panel");
             for (int i = 0; i < names.length; i++) {

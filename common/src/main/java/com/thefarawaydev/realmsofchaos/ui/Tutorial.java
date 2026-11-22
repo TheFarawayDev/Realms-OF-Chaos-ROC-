@@ -19,7 +19,7 @@ public final class Tutorial {
     public static final int DELAY = 50;
 
     public enum Tip {
-        RUIN, HUB, FLOOR, TRIAL, VICTORY, PASSAGE, SEAL, FORGE, UPHEAVAL, AEGIS, WRATH, SCAN, WAYGATE;
+        RUIN, HUB, FLOOR, TRIAL, VICTORY, PASSAGE, SEAL, FORGE, UPHEAVAL, AEGIS, WRATH, SCAN, WAYGATE, INSIGHT;
 
         public String id() {
             return name().toLowerCase();
@@ -46,11 +46,13 @@ public final class Tutorial {
         MinecraftServer server = player.level().getServer();
         if (server == null) return false;
         ProgressData data = ProgressData.get(server);
-        if (data.isBuilt(key(player, tip))) return false;
+        // (a player who has turned tips off is not shown one - and has not "had" it, should they turn them on again)
+        if (data.isBuilt(key(player, tip)) || !Options.on(player, Options.Option.TIPS)) return false;
         data.markBuilt(key(player, tip));
         Scheduler.after(server, DELAY, () -> {
             if (!player.isAlive() || player.hasDisconnected()) return;
-            Hud.title(player, Hud.colored(Component.translatable("hud." + RealmsOfChaos.MOD_ID + ".tip"), 0x55FFFF), Hud.colored(tip.text(), 0xFFFFFF), 10, 120, 20);
+            // a card of its own at the top of the screen: never a title across the whole view
+            Cards.tip(player, Words.of(tip.text()));
             player.level().playSound(null, player.blockPosition(), SoundEvents.EXPERIENCE_ORB_PICKUP, SoundSource.PLAYERS, 0.6F, 1.4F);
         });
         return true;

@@ -26,7 +26,8 @@ public final class Skin {
     /** One panel for each kind of menu. The letter is its picture in the font. */
     public enum Panel {
         CODEX('\uE000', 6), FORGE('\uE001', 6), PASSAGE('\uE002', 6), BAG_LARGE('\uE003', 6),
-        ALTAR('\uE004', 3), SEAL('\uE005', 3), DECK('\uE006', 6), PARTY('\uE007', 6), STORY('\uE008', 6), BAG('\uE009', 3);
+        ALTAR('\uE004', 3), SEAL('\uE005', 3), DECK('\uE006', 6), PARTY('\uE007', 6), STORY('\uE008', 6), BAG('\uE009', 3),
+        SETTINGS('\uE00A', 3), INSIGHT('\uE00B', 6);
 
         public final char glyph;
         public final int rows;

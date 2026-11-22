@@ -10,6 +10,7 @@ Single source of truth for the Greek roster. Emits:
 Run:  python3 tools/generate.py
 """
 import hashlib, json, math, os, random
+import hud_art
 from PIL import Image
 
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
@@ -385,7 +386,8 @@ HANDBOOK = [
         "A god you have beaten can be called back from its altar for a rematch. Rematches drop forge materials.",
     ]),
     ("fights", "Reading a fight", [
-        "Every god has a signature move with a name. When a god raises its arms, the name appears above your hotbar: that is your warning.",
+        "Every god has a signature move with a name, and raises its arms before it: that is your warning. Turn on the cast bar in the Codex's settings and each move is named and counted down as it comes.",
+        "The gods remember how you fight. Shoot from afar, hide behind a shield, stop to heal or keep out of reach in trial after trial, and the next god has an answer ready. The Codex shows what they know of you; fight differently and they forget.",
         "Rings on the ground mean it is about to erupt there. Step out. A hex bursts two seconds after it lands unless you get well away.",
         "At half health a god is enraged: it glows, moves faster, and the floor starts to throw itself up under your feet. Keep moving when you see dust.",
         "At a fifth of its health it makes a last stand: for two seconds nothing can hurt it, sentinels answer its call, and then it uses everything it has.",
@@ -435,7 +437,7 @@ TIPS = [
     ("ruin", "A Ruined Gate. Look in its chest: the seekers lead to the keystones it needs"),
     ("hub", "The Oracle's Flame is just north. Right-click it. Each gate leads to a tower"),
     ("floor", "Right-click the Trial Altar to see who waits here and to begin"),
-    ("trial", "When the god raises its arms, its move is named above your hotbar"),
+    ("trial", "A god raises its arms before a heavy move. Settings in the Codex can name each move as it comes"),
     ("victory", "Pick up your relic. The Gate of Ascent at the far side is open"),
     ("passage", "Break every seal on this level. The Codex is a map; the compass points the way"),
     ("seal", "Clear the sentinels, then right-click the seal and strike on the yellow mark"),
@@ -445,6 +447,7 @@ TIPS = [
     ("wrath", "Rings on the floor mark where a strike lands. The edge of the floor is lost: stay in"),
     ("scan", "Keep the compass in hand and read above your hotbar. Sneak-click changes its target"),
     ("waygate", "Choose where to go, then stand still while the obelisk gathers"),
+    ("insight", "The gods remember how you fight. The Codex shows what they know. Fight differently and they forget"),
 ]
 
 SENTINELS = [
@@ -1378,6 +1381,59 @@ def gen_lang():
         "menu.realms_of_chaos.travel": "Enter the %s",
         "menu.realms_of_chaos.travel.lore": "Takes you to your current floor",
         "menu.realms_of_chaos.back": "Back",
+        "menu.realms_of_chaos.options": "Settings",
+        "menu.realms_of_chaos.options.casts": "Cast bar",
+        "menu.realms_of_chaos.options.casts.lore": "A god's move is named and counted down as it winds up",
+        "menu.realms_of_chaos.options.tips": "Tips",
+        "menu.realms_of_chaos.options.tips.lore": "A card the first time each new thing happens",
+        "menu.realms_of_chaos.options.insight": "Insight",
+        "menu.realms_of_chaos.options.insight.lore": "A card when a god remembers how you fight",
+        "menu.realms_of_chaos.options.sidebar": "Side panel",
+        "menu.realms_of_chaos.options.sidebar.lore": "Your climb at a glance, down the side of the screen",
+        "menu.realms_of_chaos.options.on": "On",
+        "menu.realms_of_chaos.options.off": "Off",
+        "menu.realms_of_chaos.options.click": "Click to switch",
+        "menu.realms_of_chaos.options.again": "Show tips again",
+        "menu.realms_of_chaos.options.again.lore": "Forget which tips you have had, so each is shown once more",
+        "menu.realms_of_chaos.options.again.done": "Every tip will be shown once more",
+        "menu.realms_of_chaos.options.open": "Settings",
+        "menu.realms_of_chaos.options.open.lore": "Choose what is shown on your screen",
+        "menu.realms_of_chaos.insight": "What the Gods Know",
+        "menu.realms_of_chaos.insight.open": "What the gods know",
+        "menu.realms_of_chaos.insight.open.lore": "How you fight, as the gods remember it",
+        "menu.realms_of_chaos.insight.about": "The gods remember",
+        "menu.realms_of_chaos.insight.about.1": "Every trial is watched. A habit seen again and again is remembered,",
+        "menu.realms_of_chaos.insight.about.2": "and the next god you meet has an answer ready.",
+        "menu.realms_of_chaos.insight.about.3": "Fight differently and it is forgotten, one trial at a time",
+        "menu.realms_of_chaos.insight.unknown": "Not known to the gods",
+        "menu.realms_of_chaos.insight.known": "Known to the gods: %s",
+        "menu.realms_of_chaos.insight.level": "Level %s",
+        "insight.realms_of_chaos.archer": "Marksman",
+        "insight.realms_of_chaos.archer.cause": "Most of your harm done from afar",
+        "insight.realms_of_chaos.archer.answer": "Your shots count for less, and the god comes for you",
+        "insight.realms_of_chaos.duellist": "Duellist",
+        "insight.realms_of_chaos.duellist.cause": "Nearly all of your harm done hand to hand",
+        "insight.realms_of_chaos.duellist.answer": "Its guard lashes back at your blade",
+        "insight.realms_of_chaos.guard": "Shield-bearer",
+        "insight.realms_of_chaos.guard.cause": "Blows taken on a raised shield",
+        "insight.realms_of_chaos.guard.answer": "Its blows knock your shield aside",
+        "insight.realms_of_chaos.mender": "Mender",
+        "insight.realms_of_chaos.mender.cause": "Wounds mended in the middle of a trial",
+        "insight.realms_of_chaos.mender.answer": "A strike falls where you stop to heal",
+        "insight.realms_of_chaos.runner": "Runner",
+        "insight.realms_of_chaos.runner.cause": "Most of a trial spent out of its reach",
+        "insight.realms_of_chaos.runner.answer": "It hauls you back when you keep away",
+        "insight.realms_of_chaos.remembers": "%s knows you",
+        "insight.realms_of_chaos.changed": "The gods have learnt",
+        "insight.realms_of_chaos.learnt": "%s %s",
+        "insight.realms_of_chaos.forgotten": "%s is forgotten",
+        "cast.realms_of_chaos.zeus": "Thunderclap",
+        "cast.realms_of_chaos.poseidon": "Riptide",
+        "cast.realms_of_chaos.hades": "Shadow Grasp",
+        "screen.realms_of_chaos.home.settings": "Settings",
+        "screen.realms_of_chaos.home.settings.tip": "The cast bar, tips, what the gods learn, the side panel",
+        "screen.realms_of_chaos.home.insight": "What the gods know",
+        "screen.realms_of_chaos.home.insight.tip": "How you fight, as the gods remember it - and what they do about it",
         "menu.realms_of_chaos.tier.floors": "Floors %s-%s",
         "menu.realms_of_chaos.tier.progress": "%s / %s gods defeated",
         "menu.realms_of_chaos.tier.summit": "Leads to the %s",
@@ -3359,6 +3415,8 @@ UI_PANELS = {
     "party": (6, (90, 220, 120), [".........", ".##...##.", ".##...##.", ".........", "####.####", "####.####", "####.####", "####.####", "........."], "\uE007"),
     "story": (6, (236, 208, 150), ["#########", "#.......#", "#.#####.#", "#.......#", "#.#####.#", "#.......#", "#.###...#", "#.......#", "#########"], "\uE008"),
     "bag3": (3, (176, 124, 78), ["..#####..", ".#.....#.", ".#######.", "#########", "#...#...#", "#..###..#", "#...#...#", "#########", ".#######."], "\uE009"),
+    "settings": (3, (150, 160, 190), [".........", "..##.....", "#########", "..##.....", ".........", ".....##..", "#########", ".....##..", "........."], "\uE00A"),
+    "insight": (6, (255, 170, 60), [".........", "..#####..", ".#.....#.", "#..###..#", "#..###..#", "#..###..#", ".#.....#.", "..#####..", "........."], "\uE00B"),
 }
 UI_DYES = {"white": (236, 236, 240), "orange": (240, 140, 50), "magenta": (200, 90, 200), "light_blue": (110, 190, 240), "yellow": (250, 215, 80), "lime": (130, 220, 80),
            "pink": (245, 160, 190), "gray": (90, 90, 100), "light_gray": (160, 160, 168), "cyan": (60, 180, 190), "purple": (150, 80, 210), "blue": (70, 90, 210),
@@ -4385,6 +4443,7 @@ if __name__ == "__main__":
     gen_block_textures()
     gen_field_textures()
     gen_ui()
+    hud_art.gen_hud(ASSETS, MOD, os.path.join(ROOT, "common/src/main/java", *JAVA_PKG.split(".")), wj, w)
     gen_tarot()
     gen_dolls()
     gen_essences_and_orbs()

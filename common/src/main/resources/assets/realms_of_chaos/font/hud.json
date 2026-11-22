@@ -1,0 +1,202 @@
+{
+  "providers": [
+    {
+      "type": "space",
+      "advances": {
+        "": 1,
+        "": -1,
+        "": 2,
+        "": -2,
+        "": 4,
+        "": -4,
+        "": 8,
+        "": -8,
+        "": 16,
+        "": -16,
+        "": 32,
+        "": -32,
+        "": 64,
+        "": -64,
+        "": 128,
+        "": -128,
+        "": 256,
+        "": -256,
+        "": 3
+      }
+    },
+    {
+      "type": "bitmap",
+      "file": "realms_of_chaos:gui/hud/frame_zeus.png",
+      "ascent": 11,
+      "height": 22,
+      "chars": [
+        ""
+      ]
+    },
+    {
+      "type": "bitmap",
+      "file": "realms_of_chaos:gui/hud/frame_poseidon.png",
+      "ascent": 11,
+      "height": 22,
+      "chars": [
+        ""
+      ]
+    },
+    {
+      "type": "bitmap",
+      "file": "realms_of_chaos:gui/hud/frame_hades.png",
+      "ascent": 11,
+      "height": 22,
+      "chars": [
+        ""
+      ]
+    },
+    {
+      "type": "bitmap",
+      "file": "realms_of_chaos:gui/hud/over_1.png",
+      "ascent": 11,
+      "height": 22,
+      "chars": [
+        ""
+      ]
+    },
+    {
+      "type": "bitmap",
+      "file": "realms_of_chaos:gui/hud/over_2.png",
+      "ascent": 11,
+      "height": 22,
+      "chars": [
+        ""
+      ]
+    },
+    {
+      "type": "bitmap",
+      "file": "realms_of_chaos:gui/hud/over_3.png",
+      "ascent": 11,
+      "height": 22,
+      "chars": [
+        ""
+      ]
+    },
+    {
+      "type": "bitmap",
+      "file": "realms_of_chaos:gui/hud/frame_cast.png",
+      "ascent": 11,
+      "height": 22,
+      "chars": [
+        ""
+      ]
+    },
+    {
+      "type": "bitmap",
+      "file": "realms_of_chaos:gui/hud/card_tip.png",
+      "ascent": 9,
+      "height": 46,
+      "chars": [
+        ""
+      ]
+    },
+    {
+      "type": "bitmap",
+      "file": "realms_of_chaos:gui/hud/card_insight.png",
+      "ascent": 9,
+      "height": 46,
+      "chars": [
+        ""
+      ]
+    },
+    {
+      "type": "bitmap",
+      "file": "realms_of_chaos:gui/hud/card_notice.png",
+      "ascent": 9,
+      "height": 46,
+      "chars": [
+        ""
+      ]
+    },
+    {
+      "type": "bitmap",
+      "file": "realms_of_chaos:gui/hud/fill_1.png",
+      "ascent": -2,
+      "height": 5,
+      "chars": [
+        ""
+      ]
+    },
+    {
+      "type": "bitmap",
+      "file": "realms_of_chaos:gui/hud/fill_2.png",
+      "ascent": -2,
+      "height": 5,
+      "chars": [
+        ""
+      ]
+    },
+    {
+      "type": "bitmap",
+      "file": "realms_of_chaos:gui/hud/fill_4.png",
+      "ascent": -2,
+      "height": 5,
+      "chars": [
+        ""
+      ]
+    },
+    {
+      "type": "bitmap",
+      "file": "realms_of_chaos:gui/hud/fill_8.png",
+      "ascent": -2,
+      "height": 5,
+      "chars": [
+        ""
+      ]
+    },
+    {
+      "type": "bitmap",
+      "file": "realms_of_chaos:gui/hud/fill_16.png",
+      "ascent": -2,
+      "height": 5,
+      "chars": [
+        ""
+      ]
+    },
+    {
+      "type": "bitmap",
+      "file": "realms_of_chaos:gui/hud/fill_32.png",
+      "ascent": -2,
+      "height": 5,
+      "chars": [
+        ""
+      ]
+    },
+    {
+      "type": "bitmap",
+      "file": "realms_of_chaos:gui/hud/fill_64.png",
+      "ascent": -2,
+      "height": 5,
+      "chars": [
+        ""
+      ]
+    },
+    {
+      "type": "bitmap",
+      "file": "realms_of_chaos:gui/hud/fill_128.png",
+      "ascent": -2,
+      "height": 5,
+      "chars": [
+        ""
+      ]
+    },
+    {
+      "type": "bitmap",
+      "file": "realms_of_chaos:gui/hud/letters.png",
+      "ascent": 7,
+      "height": 8,
+      "chars": [
+        "\u0000\u0000\u0000\u0000",
+        "\u0000\u0000\u0000\u0000",
+        "\u0000",
+        "\u0000\u0000\u0000\u0000\u0000"
+      ]
+    }
+  ]
+}
