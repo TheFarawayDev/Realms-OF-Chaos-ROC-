@@ -246,7 +246,8 @@ public final class SelfTest {
             check(here.getX() > box.minX && here.getX() < box.maxX - 1 && here.getZ() > box.minZ && here.getZ() < box.maxZ - 1,
                     at + "a player could walk out of the passage at " + here);
             // (a pool is a floor too: shallow water over a solid bed, waded through)
-            check(solid(level, here.below()) || (level.getBlockState(here.below()).is(Blocks.WATER) && solid(level, here.below(2))), at + "no floor under " + here);
+            // (and so is a sunken floor: one step down, never more)
+            check(solid(level, here.below()) || ((level.getBlockState(here.below()).is(Blocks.WATER) || open(level, here.below())) && solid(level, here.below(2))), at + "no floor under " + here);
             for (net.minecraft.core.Direction d : net.minecraft.core.Direction.Plane.HORIZONTAL) {
                 BlockPos next = here.relative(d);
                 if (seen.contains(next) || !open(level, next) || !open(level, next.above())) continue;
@@ -4204,6 +4205,217 @@ public final class SelfTest {
             } finally {
                 data.reset(hero.getUUID());
                 data.clearCounters("skill/" + hero.getUUID() + "/");
+                Realm.testAlias(Level.OVERWORLD, Realm.ABYSS);
+            }
+        });
+
+        step("rooms are not all alike: tall and wide ones, cut corners, columns and sunken floors, a stairwell with a loft", () -> {
+            ServerPlayer hero = fakePlayer(server, level, "RocSurveyor");
+            Realm.testAlias(Level.OVERWORLD, Realm.ofLine(Line.ZEUS));
+            // ---- the plans: every kind of shape turns up, and the rooms that depend on their size keep the plain one
+            java.util.Set<Integer> heights = new java.util.HashSet<>(), forms = new java.util.HashSet<>();
+            int wide = 0, rooms = 0, stairwells = 0, levels = 0;
+            check(Passages.TALL + 1 <= Passages.LEVEL_PITCH - 3 && Passages.TALL > Passages.HEADROOM, "the tallest room still has a ceiling inside its own level");
+            for (Line line : Line.values()) {
+                for (int index = 1; index <= Passages.COUNT; index++) {
+                    for (int stage = 0; stage < Passages.stages(level, line, index); stage++) {
+                        Passages.Plan plan = Passages.plan(level, line, index, stage);
+                        levels++;
+                        int here = 0;
+                        for (Passages.Cell c : plan.cells()) {
+                            Passages.Kind kind = plan.kind(c);
+                            int h = plan.height(c);
+                            check(h >= Passages.HEADROOM && h <= Passages.TALL && plan.half(c) == (plan.wide(c) ? 5 : 4), plan.label() + ": a room's size is one the level can hold");
+                            if (com.thefarawaydev.realmsofchaos.world.Rooms.isPuzzle(kind) || com.thefarawaydev.realmsofchaos.world.Snares.is(kind) || kind == Passages.Kind.TRAP || kind == Passages.Kind.CRUSHER
+                                    || kind == Passages.Kind.DARTS || kind == Passages.Kind.HALL) {
+                                check(h == Passages.HEADROOM && !plan.wide(c) && plan.form(c) == Passages.FORM_PLAIN, plan.label() + ": a " + kind + " keeps the plain shape its workings need");
+                            }
+                            if (kind == Passages.Kind.STAIRWELL) {
+                                here++;
+                                check(plan.wide(c) && h == Passages.TALL, plan.label() + ": a stairwell is wide and tall");
+                            }
+                            if (kind == Passages.Kind.ARENA) check(plan.wide(c) && h == Passages.TALL, plan.label() + ": an arena is the biggest room there is");
+                            if (kind == Passages.Kind.ROOM) forms.add(plan.form(c));
+                            heights.add(h);
+                            rooms++;
+                            if (plan.wide(c)) wide++;
+                        }
+                        check(here <= 1, plan.label() + ": one stairwell at most");
+                        stairwells += here;
+                    }
+                }
+            }
+            check(heights.containsAll(List.of(Passages.HEADROOM, 6, 7, Passages.TALL)), "rooms come low and tall: " + heights);
+            check(forms.equals(java.util.Set.of(Passages.FORM_PLAIN, Passages.FORM_CUT_CORNERS, Passages.FORM_COLONNADE, Passages.FORM_SUNKEN)), "and in every form: " + forms);
+            check(wide * 12 > rooms && wide * 2 < rooms, "some are wide, most are not: " + wide + " of " + rooms);
+            check(stairwells * 10 >= levels * 9, "nearly every level has a stairwell: " + stairwells + " of " + levels);
+
+            // ---- a stairwell, built
+            Object[] found = room(level, Line.ZEUS, Passages.Kind.STAIRWELL);
+            Passages.Plan plan = (Passages.Plan) found[0];
+            Passages.Cell well = (Passages.Cell) found[1];
+            Passages.build(level, plan);
+            checkPassage(level, plan, "stairwell level " + plan.label());
+            BlockPos m = plan.centre(well);
+            for (int y = 1; y <= Passages.TALL; y++) check(level.getBlockState(m.offset(0, y, 2)).isAir(), "the stairwell is open to its full height at " + y);
+            check(!level.getBlockState(m.offset(0, Passages.TALL + 1, 2)).isAir() && !level.getBlockState(m.offset(6, 2, 3)).isAir(), "under a ceiling, inside walls");
+            check(level.getBlockState(m.offset(5, 1, 2)).isAir() && level.getBlockState(m.offset(-5, 1, 2)).isAir(), "and a step wider than an ordinary room");
+            check(well.equals(plan.cellAt(m.offset(5, 1, 2))) && well.equals(plan.cellAt(m.offset(-5, 5, -5))) && plan.cellAt(m.offset(6, 1, 2)) == null, "all of it counts as the room");
+            for (int side = -1; side <= 1; side += 2) {
+                for (int step = 1; step <= 4; step++) {
+                    BlockState stair = level.getBlockState(m.offset(side * (step + 1), step, -2));
+                    check(stair.getBlock() instanceof net.minecraft.world.level.block.StairBlock
+                            && stair.getValue(net.minecraft.world.level.block.StairBlock.FACING) == (side > 0 ? net.minecraft.core.Direction.EAST : net.minecraft.core.Direction.WEST),
+                            "step " + step + " of the " + (side > 0 ? "east" : "west") + " flight rises outward");
+                    check(level.getBlockState(m.offset(side * (step + 1), step + 1, -2)).isAir() && level.getBlockState(m.offset(side * (step + 1), step + 2, -2)).isAir(), "with room to climb it");
+                    if (step > 1) check(solid(level, m.offset(side * (step + 1), step - 1, -2)), "and something under it");
+                }
+                check(solid(level, m.offset(side * 5, 4, -3)) && level.getBlockState(m.offset(side * 5, 5, -3)).isAir(), "the flight comes out on to the loft");
+            }
+            for (int dx = -5; dx <= 5; dx++) {
+                for (int dz = -5; dz <= -3; dz++) check(solid(level, m.offset(dx, 4, dz)), "the loft's floor is whole at " + dx + "," + dz);
+            }
+            for (int y = 1; y <= 3; y++) check(level.getBlockState(m.offset(0, y, -4)).isAir(), "the way through under the loft is clear");
+            check(level.getBlockState(m.offset(0, 5, -4)).is(ModContent.PASSAGE_CACHE.get()), "a cache stands on the loft");
+            Item prize = ModContent.materialItem(plan.line, plan.tier);
+            int had = count(hero, prize);
+            check(Passages.loot(level, m.offset(0, 5, -4), hero) && count(hero, prize) > had, "and it pays whoever climbs to it");
+            check(!Passages.loot(level, m.offset(0, 5, -4), hero), "once");
+            check(level.getBlockState(m.offset(0, 0, 0)).isCollisionShapeFullBlock(level, m) && level.getBlockState(m.above()).isAir(), "the ways through the room stay open");
+
+            // ---- the other shapes, wherever this tower has them
+            boolean sawSunken = false, sawColumns = false, sawCut = false, sawTallWide = false;
+            for (int index = 1; index <= Passages.COUNT && !(sawSunken && sawColumns && sawCut && sawTallWide); index++) {
+                for (int stage = 0; stage < Passages.stages(level, Line.ZEUS, index) && !(sawSunken && sawColumns && sawCut && sawTallWide); stage++) {
+                    Passages.Plan other = Passages.plan(level, Line.ZEUS, index, stage);
+                    boolean built = false;
+                    for (Passages.Cell c : other.cells()) {
+                        if (other.kind(c) != Passages.Kind.ROOM) continue;
+                        int form = other.form(c), r = other.half(c), h = other.height(c);
+                        boolean wanted = (form == Passages.FORM_SUNKEN && !sawSunken) || (form == Passages.FORM_COLONNADE && !sawColumns)
+                                || (form == Passages.FORM_CUT_CORNERS && !sawCut) || (other.wide(c) && h == Passages.TALL && form == Passages.FORM_PLAIN && !sawTallWide);
+                        if (!wanted) continue;
+                        if (!built) {
+                            Passages.build(level, other);
+                            checkPassage(level, other, "shapes level " + other.label());
+                            built = true;
+                        }
+                        BlockPos at = other.centre(c);
+                        String in = other.label() + " room " + c + ": ";
+                        if (form == Passages.FORM_SUNKEN) {
+                            sawSunken = true;
+                            check(level.getBlockState(at).isAir() && solid(level, at.below()) && level.getBlockState(at.offset(r - 2, 0, 0)).getBlock() instanceof net.minecraft.world.level.block.StairBlock,
+                                    in + "its floor is a step down, with stairs out of it");
+                            check(solid(level, at.offset(r - 1, 0, 0)) && level.getBlockState(at.offset(r - 1, 1, 0)).isAir(), in + "and ordinary floor round it");
+                        } else if (form == Passages.FORM_COLONNADE) {
+                            sawColumns = true;
+                            for (int y = 1; y <= h; y++) check(solid(level, at.offset(r - 1, y, r - 1)) && solid(level, at.offset(-2, y, r - 1)), in + "columns to the ceiling");
+                            check(level.getBlockState(at.offset(0, 1, r - 1)).isAir() && level.getBlockState(at.offset(r - 1, 1, 0)).isAir(), in + "and none in the ways through");
+                        } else if (form == Passages.FORM_CUT_CORNERS) {
+                            sawCut = true;
+                            check(solid(level, at.offset(r, 1, r)) && solid(level, at.offset(r, 1, r - 1)) && level.getBlockState(at.offset(r, 1, 0)).isAir()
+                                    && level.getBlockState(at.offset(r - 1, 1, r - 1)).isAir(), in + "its corners are cut off");
+                        } else {
+                            sawTallWide = true;
+                            check(level.getBlockState(at.offset(5, Passages.TALL, 2)).isAir() && !level.getBlockState(at.offset(5, Passages.TALL + 1, 2)).isAir()
+                                    && !level.getBlockState(at.offset(6, Passages.TALL, 2)).isAir(), in + "eleven across and eight high");
+                        }
+                    }
+                }
+            }
+            check(sawSunken && sawColumns && sawCut && sawTallWide, "this tower has a sunken room, a colonnade, cut corners and a great room: " + sawSunken + sawColumns + sawCut + sawTallWide);
+            Realm.testAlias(Level.OVERWORLD, Realm.ABYSS);
+        });
+
+        step("three halls that never rest: spikes that come up by colour, fire that walks the rows, a blade from wall to wall", () -> {
+            ServerPlayer hero = fakePlayer(server, level, "RocCareful");
+            com.thefarawaydev.realmsofchaos.world.Snares.forget();
+            level.addNewPlayer(hero);
+            Realm.testAlias(Level.OVERWORLD, Realm.ofLine(Line.HADES));
+            try {
+                // ---- spikes
+                Object[] found = room(level, Line.HADES, Passages.Kind.SPIKES);
+                Passages.Plan plan = (Passages.Plan) found[0];
+                Passages.Cell cell = (Passages.Cell) found[1];
+                Passages.build(level, plan);
+                BlockPos m = plan.centre(cell);
+                check(level.getBlockState(m).is(com.thefarawaydev.realmsofchaos.world.Snares.SPIKE_TILE_A) && level.getBlockState(m.east()).is(com.thefarawaydev.realmsofchaos.world.Snares.SPIKE_TILE_B),
+                        "a spike hall's floor is two colours of tile");
+                check(!level.getBlockState(m.offset(4, 0, 0)).is(com.thefarawaydev.realmsofchaos.world.Snares.SPIKE_TILE_A) && !level.getBlockState(m.offset(4, 0, 0)).is(com.thefarawaydev.realmsofchaos.world.Snares.SPIKE_TILE_B),
+                        "with a step of plain floor inside each wall");
+                hero.setPos(m.getX() + 0.5, m.getY() + 1, m.getZ() + 0.5);
+                hero.setHealth(hero.getMaxHealth());
+                settle(level);
+                long turn = 80L * 1000;
+                check(!com.thefarawaydev.realmsofchaos.world.Snares.spikesUp(turn, 0) && com.thefarawaydev.realmsofchaos.world.Snares.spikesUp(turn + com.thefarawaydev.realmsofchaos.world.Snares.SPIKE_WARN, 0)
+                        && !com.thefarawaydev.realmsofchaos.world.Snares.spikesUp(turn + com.thefarawaydev.realmsofchaos.world.Snares.SPIKE_WARN, 1), "the two colours take turns");
+                com.thefarawaydev.realmsofchaos.world.Snares.tend(level, plan, cell, turn);
+                check(level.getBlockState(m.above()).isAir() && hero.getHealth() == hero.getMaxHealth(), "a warning first: nothing comes up yet");
+                com.thefarawaydev.realmsofchaos.world.Snares.tend(level, plan, cell, turn + com.thefarawaydev.realmsofchaos.world.Snares.SPIKE_WARN);
+                check(level.getBlockState(m.above()).is(Blocks.POINTED_DRIPSTONE) && level.getBlockState(m.offset(2, 1, 0)).is(Blocks.POINTED_DRIPSTONE), "then that colour's spikes come up");
+                check(level.getBlockState(m.offset(1, 1, 0)).isAir(), "and the other colour's stay down");
+                check(hero.getHealth() < hero.getMaxHealth(), "whoever stood on that colour is hurt: " + hero.getHealth());
+                com.thefarawaydev.realmsofchaos.world.Snares.tend(level, plan, cell, turn + com.thefarawaydev.realmsofchaos.world.Snares.SPIKE_WARN + com.thefarawaydev.realmsofchaos.world.Snares.SPIKE_UP);
+                check(level.getBlockState(m.above()).isAir(), "and they go down again");
+                com.thefarawaydev.realmsofchaos.world.Snares.tend(level, plan, cell, turn + 40 + com.thefarawaydev.realmsofchaos.world.Snares.SPIKE_WARN);
+                check(level.getBlockState(m.offset(1, 1, 0)).is(Blocks.POINTED_DRIPSTONE) && level.getBlockState(m.above()).isAir(), "half a turn later it is the other colour");
+                com.thefarawaydev.realmsofchaos.world.Snares.lower(level, plan, cell);
+                check(level.getBlockState(m.offset(1, 1, 0)).isAir(), "a hall can be put back as it was");
+
+                // ---- flames
+                found = room(level, Line.HADES, Passages.Kind.FLAMES);
+                plan = (Passages.Plan) found[0];
+                cell = (Passages.Cell) found[1];
+                Passages.build(level, plan);
+                m = plan.centre(cell);
+                check(level.getBlockState(m).is(com.thefarawaydev.realmsofchaos.world.Snares.VENT), "a flame hall has vents in its floor");
+                hero.setPos(m.getX() + 0.5, m.getY() + 1, m.getZ() + 0.5);
+                hero.setHealth(hero.getMaxHealth());
+                hero.clearFire();
+                hero.damageCooldownTime = 0;
+                settle(level);
+                turn = 90L * 1000;
+                int row = com.thefarawaydev.realmsofchaos.world.Snares.flameGroup(0);
+                check(row == 0 && com.thefarawaydev.realmsofchaos.world.Snares.flameGroup(1) != row && com.thefarawaydev.realmsofchaos.world.Snares.flameGroup(3) == row, "rows burn in three sets");
+                com.thefarawaydev.realmsofchaos.world.Snares.tend(level, plan, cell, turn + 5);
+                check(hero.getHealth() == hero.getMaxHealth() && !com.thefarawaydev.realmsofchaos.world.Snares.burning(turn + 5, 0), "smoke before fire: no harm yet");
+                com.thefarawaydev.realmsofchaos.world.Snares.tend(level, plan, cell, turn + com.thefarawaydev.realmsofchaos.world.Snares.FLAME_WARN);
+                check(hero.getHealth() < hero.getMaxHealth() && hero.getRemainingFireTicks() > 0, "then the row burns whoever is standing in it: " + hero.getHealth());
+                hero.setHealth(hero.getMaxHealth());
+                hero.clearFire();
+                hero.damageCooldownTime = 0;
+                long other = turn + 30 + com.thefarawaydev.realmsofchaos.world.Snares.FLAME_WARN + 5;
+                check(!com.thefarawaydev.realmsofchaos.world.Snares.burning(other, 0) && (com.thefarawaydev.realmsofchaos.world.Snares.burning(other, 1) || com.thefarawaydev.realmsofchaos.world.Snares.burning(other, 2)), "the fire walks on to the next rows");
+                com.thefarawaydev.realmsofchaos.world.Snares.tend(level, plan, cell, other);
+                check(hero.getHealth() == hero.getMaxHealth(), "and a row it has left is safe to stand in");
+
+                // ---- blades
+                found = room(level, Line.HADES, Passages.Kind.BLADES);
+                plan = (Passages.Plan) found[0];
+                cell = (Passages.Cell) found[1];
+                Passages.build(level, plan);
+                m = plan.centre(cell);
+                hero.setPos(m.getX() + 0.5, m.getY() + 1, m.getZ() + 2.5);
+                hero.setHealth(hero.getMaxHealth());
+                hero.damageCooldownTime = 0;
+                hero.setDeltaMovement(0, 0, 0);
+                settle(level);
+                turn = 120L * 1000;
+                check(com.thefarawaydev.realmsofchaos.world.Snares.bladeAt(turn) == -4.0 && com.thefarawaydev.realmsofchaos.world.Snares.bladeAt(turn + 30) == 0.0
+                        && com.thefarawaydev.realmsofchaos.world.Snares.bladeAt(turn + 60) == 4.0 && com.thefarawaydev.realmsofchaos.world.Snares.bladeAt(turn + 90) == 0.0, "the blade goes wall to wall and back");
+                com.thefarawaydev.realmsofchaos.world.Snares.tend(level, plan, cell, turn);
+                check(hero.getHealth() == hero.getMaxHealth(), "at the far wall it harms nobody in the middle");
+                com.thefarawaydev.realmsofchaos.world.Snares.tend(level, plan, cell, turn + 30);
+                check(hero.getHealth() < hero.getMaxHealth() && hero.getDeltaMovement().x > 0.5, "as it passes it cuts, and carries them with it: " + hero.getHealth() + " " + hero.getDeltaMovement());
+                float after = hero.getHealth();
+                hero.damageCooldownTime = 0;
+                hero.setPos(m.getX() + 0.5 + com.thefarawaydev.realmsofchaos.world.Snares.bladeAt(turn + 31), m.getY() + 1, m.getZ() + 2.5);
+                com.thefarawaydev.realmsofchaos.world.Snares.tend(level, plan, cell, turn + 31);
+                check(hero.getHealth() == after, "one pass cuts once");
+                check(com.thefarawaydev.realmsofchaos.world.Snares.damage(plan) >= 2.0F && com.thefarawaydev.realmsofchaos.world.Snares.damage(plan) <= 8.0F, "they hurt more the deeper the level, within reason");
+            } finally {
+                hero.remove(net.minecraft.world.entity.Entity.RemovalReason.DISCARDED);
+                com.thefarawaydev.realmsofchaos.world.Snares.forget();
                 Realm.testAlias(Level.OVERWORLD, Realm.ABYSS);
             }
         });

@@ -61,13 +61,19 @@ public final class Passages {
     /** One cell of the maze: a 9x9 room and the walls round it. */
     public static final int CELL = 12, ROOM = 9, CENTRE = 5;
     public static final int HEADROOM = 5;
+    /** The headroom of the tallest rooms. A level is a solid slab twelve blocks deep, from two below its floor. */
+    public static final int TALL = 8;
     public static final int MAX_SIZE = 6;
     public static final int X0 = 600, PITCH = 160;
-    public static final int LAYOUT_VERSION = 5;
+    public static final int LAYOUT_VERSION = 6;
     public static final String GUARDIAN_TAG = "realms_of_chaos_guardian";
     private static final String HUD = "hud." + RealmsOfChaos.MOD_ID + ".passage.";
 
-    public enum Kind { START, EXIT, SEAL, TREASURE, SHRINE, HALL, ROOM, TRAP, GARDEN, LIBRARY, POOL, ARENA, VAULT, CHIMES, BEAM, PLATES, CRUSHER, DARTS }
+    public enum Kind { START, EXIT, SEAL, TREASURE, SHRINE, HALL, ROOM, TRAP, GARDEN, LIBRARY, POOL, ARENA, VAULT, CHIMES, BEAM, PLATES, CRUSHER, DARTS,
+        SPIKES, FLAMES, BLADES, STAIRWELL }
+
+    /** How a room is shaped, for the kinds that are not all alike. */
+    public static final int FORM_PLAIN = 0, FORM_CUT_CORNERS = 1, FORM_COLONNADE = 2, FORM_SUNKEN = 3;
 
     public record Cell(int x, int z) {}
 
@@ -116,6 +122,8 @@ public final class Passages {
         private final Kind[][] kinds;
         /** east[x][z]: a doorway between (x, z) and (x + 1, z). south[x][z]: between (x, z) and (x, z + 1). */
         private final boolean[][] east, south;
+        private final int[][] heights, forms;
+        private final boolean[][] wides;
         public Cell start, exit;
         public final List<Cell> seals = new ArrayList<>();
         /** Ordinary rooms and corridors that a patrol of sentinels walks. */
@@ -138,7 +146,61 @@ public final class Passages {
             this.kinds = new Kind[size][size];
             this.east = new boolean[size][size];
             this.south = new boolean[size][size];
+            this.heights = new int[size][size];
+            this.forms = new int[size][size];
+            this.wides = new boolean[size][size];
             generate(new Random(seed));
+            shape(new Random(seed ^ 0x5DEECE66DL));
+        }
+
+        /**
+         * No two levels are built alike: a room may be low or tall, a step wider than its neighbours, its corners
+         * cut, ringed with columns, or sunk a step into the floor. Rooms whose workings depend on their size - the
+         * puzzles and the trap halls - keep the plain one.
+         */
+        private void shape(Random random) {
+            for (Cell c : cells()) {
+                int h = HEADROOM, form = FORM_PLAIN;
+                boolean wide = false;
+                switch (kinds[c.x][c.z]) {
+                    case START -> h = 6;
+                    case EXIT, SEAL, SHRINE -> h = 7;
+                    case TREASURE -> h = random.nextBoolean() ? 7 : HEADROOM;
+                    case ARENA, STAIRWELL -> {
+                        h = TALL;
+                        wide = true;
+                    }
+                    case ROOM, GARDEN, LIBRARY, POOL -> {
+                        float roll = random.nextFloat();
+                        h = roll < 0.4F ? HEADROOM : roll < 0.75F ? 7 : TALL;
+                        wide = random.nextFloat() < 0.35F;
+                        form = kinds[c.x][c.z] == Kind.ROOM ? random.nextInt(4) : random.nextInt(2);
+                    }
+                    default -> { }
+                }
+                heights[c.x][c.z] = h;
+                forms[c.x][c.z] = form;
+                wides[c.x][c.z] = wide;
+            }
+        }
+
+        /** How much air a room has above its floor: 5 for an ordinary room, up to {@link #TALL}. */
+        public int height(Cell c) {
+            return heights[c.x][c.z];
+        }
+
+        /** A wide room is eleven across instead of nine. */
+        public boolean wide(Cell c) {
+            return wides[c.x][c.z];
+        }
+
+        /** How far a room reaches from its middle: 4, or 5 for a wide one. */
+        public int half(Cell c) {
+            return wides[c.x][c.z] ? 5 : 4;
+        }
+
+        public int form(Cell c) {
+            return forms[c.x][c.z];
         }
 
         public boolean last() {
@@ -285,10 +347,16 @@ public final class Passages {
                 Cell c = free.remove(0);
                 kinds[c.x][c.z] = puzzles.get(i);
             }
+            // one stairwell: a tall hall with a flight of steps at either side up to a loft, and a cache on it
+            if (free.size() > 3) {
+                Cell c = free.remove(0);
+                kinds[c.x][c.z] = Kind.STAIRWELL;
+            }
             for (Cell c : free) {
                 float roll = random.nextFloat();
-                kinds[c.x][c.z] = roll < 0.28F ? Kind.HALL : roll < 0.48F ? Kind.ROOM : roll < 0.56F ? Kind.TRAP : roll < 0.63F ? Kind.CRUSHER
-                        : roll < 0.70F ? Kind.DARTS : roll < 0.80F ? Kind.GARDEN : roll < 0.90F ? Kind.LIBRARY : Kind.POOL;
+                kinds[c.x][c.z] = roll < 0.24F ? Kind.HALL : roll < 0.43F ? Kind.ROOM : roll < 0.49F ? Kind.TRAP : roll < 0.54F ? Kind.CRUSHER
+                        : roll < 0.59F ? Kind.DARTS : roll < 0.65F ? Kind.SPIKES : roll < 0.71F ? Kind.FLAMES : roll < 0.76F ? Kind.BLADES
+                        : roll < 0.85F ? Kind.GARDEN : roll < 0.93F ? Kind.LIBRARY : Kind.POOL;
             }
             // a third of the ordinary rooms have a patrol in them, and more on the levels further in
             float chance = Math.min(0.75F, 0.35F + 0.06F * stage);
@@ -326,6 +394,10 @@ public final class Passages {
                         case PLATES -> 'p';
                         case CRUSHER -> '=';
                         case DARTS -> ':';
+                        case SPIKES -> '^';
+                        case FLAMES -> 'f';
+                        case BLADES -> '%';
+                        case STAIRWELL -> 'Z';
                     });
                     if (x + 1 < size) rooms.append(east[x][z] ? "--" : "  ");
                     below.append(z + 1 < size && south[x][z] ? "|  " : "   ");
@@ -380,18 +452,23 @@ public final class Passages {
             int dx = pos.getX() - o.getX(), dz = pos.getZ() - o.getZ();
             if (dx < 0 || dz < 0 || dx >= width() || dz >= width()) return null;
             int ox = dx % CELL, oz = dz % CELL;
-            if (ox < 1 || ox > ROOM || oz < 1 || oz > ROOM) return null;
-            return new Cell(dx / CELL, dz / CELL);
+            Cell cell = new Cell(dx / CELL, dz / CELL);
+            // (a wide room reaches one block further each way)
+            int reach = wide(cell) ? 1 : 0;
+            if (ox < 1 - reach || ox > ROOM + reach || oz < 1 - reach || oz > ROOM + reach) return null;
+            return cell;
         }
 
         public AABB cellBox(Cell c) {
             BlockPos m = centre(c);
-            return new AABB(m.getX() - 4, y(), m.getZ() - 4, m.getX() + 5, y() + HEADROOM + 2, m.getZ() + 5);
+            int r = half(c);
+            return new AABB(m.getX() - r, y(), m.getZ() - r, m.getX() + r + 1, y() + height(c) + 2, m.getZ() + r + 1);
         }
 
         public AABB box() {
             BlockPos o = origin();
-            return new AABB(o.getX(), y() - 1, o.getZ(), o.getX() + width(), y() + HEADROOM + 3, o.getZ() + width());
+            // (one block more on the low sides: a wide room in the first row or column still has a wall outside it)
+            return new AABB(o.getX() - 1, y() - 2, o.getZ() - 1, o.getX() + width(), y() + LEVEL_PITCH - 2, o.getZ() + width());
         }
     }
 
@@ -557,16 +634,17 @@ public final class Passages {
         int w = plan.width();
         // stale sentinels of an earlier layout go first
         steps.add(() -> {
-            for (Mob m : level.getEntitiesOfClass(Mob.class, plan.box().inflate(2), e -> e.entityTags().contains(GUARDIAN_TAG))) m.discard();
+            // (not reaching up or down: the levels above and below keep theirs)
+            for (Mob m : level.getEntitiesOfClass(Mob.class, plan.box().inflate(2, 0, 2), e -> e.entityTags().contains(GUARDIAN_TAG))) m.discard();
         });
-        for (int from = 0; from < w; from += 4) {
+        for (int from = -1; from < w; from += 4) {
             final int x0 = from;
             steps.add(() -> {
                 BlockPos.MutableBlockPos at = new BlockPos.MutableBlockPos();
                 for (int x = x0; x < Math.min(w, x0 + 4); x++) {
-                    for (int z = 0; z < w; z++) {
-                        for (int y = -1; y <= HEADROOM + 2; y++) {
-                            Block block = y <= 0 || y >= HEADROOM + 1 ? p.fill() : p.wall();
+                    for (int z = -1; z < w; z++) {
+                        for (int y = -2; y <= LEVEL_PITCH - 3; y++) {
+                            Block block = y <= 0 || y >= TALL + 1 ? p.fill() : p.wall();
                             at.set(o.getX() + x, o.getY() + y, o.getZ() + z);
                             // (what already stands is left alone: a rebuild only pays for what changed)
                             if (!level.getBlockState(at).is(block)) level.setBlock(at, block.defaultBlockState(), 2);
@@ -599,34 +677,63 @@ public final class Passages {
         set(level, floor.above(4), p.trim());
     }
 
+    /** The steps a tower's stairs are made of. */
+    static BlockState stairs(Line line, net.minecraft.core.Direction rising) {
+        Block block = line == Line.ZEUS ? Blocks.QUARTZ_STAIRS : line == Line.POSEIDON ? Blocks.PRISMARINE_BRICK_STAIRS : Blocks.POLISHED_BLACKSTONE_BRICK_STAIRS;
+        return block.defaultBlockState().setValue(net.minecraft.world.level.block.StairBlock.FACING, rising);
+    }
+
+    /** True where a room with cut corners keeps its wall. */
+    private static boolean cut(Plan plan, Cell c, int dx, int dz) {
+        return plan.form(c) == FORM_CUT_CORNERS && Math.abs(dx) + Math.abs(dz) > 2 * plan.half(c) - 2;
+    }
+
     private static void carve(ServerLevel level, Plan plan, Cell c, TowerBuilder.Palette p) {
         BlockPos m = plan.centre(c);
         boolean hall = plan.kind(c) == Kind.HALL;
-        for (int dx = -4; dx <= 4; dx++) {
-            for (int dz = -4; dz <= 4; dz++) {
+        int r = plan.half(c), h = plan.height(c);
+        for (int dx = -r; dx <= r; dx++) {
+            for (int dz = -r; dz <= r; dz++) {
                 if (hall && !inHall(plan, c, dx, dz)) continue;
-                boolean edge = Math.abs(dx) == 4 || Math.abs(dz) == 4;
+                if (cut(plan, c, dx, dz)) continue;
+                boolean edge = Math.abs(dx) == r || Math.abs(dz) == r;
                 set(level, m.offset(dx, 0, dz), hall || edge || ((dx + dz) & 1) == 0 ? p.top() : p.topAlt());
-                for (int y = 1; y <= HEADROOM; y++) set(level, m.offset(dx, y, dz), Blocks.AIR);
+                for (int y = 1; y <= h; y++) set(level, m.offset(dx, y, dz), Blocks.AIR);
             }
         }
         if (hall) {
             set(level, m.above(HEADROOM + 1), p.light());
             return;
         }
-        // a proper room has a shallow dome over its middle, lit from its corners,
-        for (int dx = -2; dx <= 2; dx++) {
-            for (int dz = -2; dz <= 2; dz++) set(level, m.offset(dx, HEADROOM + 1, dz), Blocks.AIR);
+        if (h <= HEADROOM + 1) {
+            // a low room has a shallow dome over its middle, lit from its corners,
+            for (int dx = -2; dx <= 2; dx++) {
+                for (int dz = -2; dz <= 2; dz++) set(level, m.offset(dx, h + 1, dz), Blocks.AIR);
+            }
+            for (int[] k : new int[][]{{-2, -2}, {2, -2}, {-2, 2}, {2, 2}, {0, 0}}) set(level, m.offset(k[0], h + 2, k[1]), p.light());
+            for (int d = -3; d <= 3; d++) {
+                for (int[] k : new int[][]{{d, -3}, {d, 3}, {-3, d}, {3, d}}) set(level, m.offset(k[0], h + 1, k[1]), p.trim());
+            }
+        } else {
+            // a tall one has a flat ceiling coffered in trim, with lights let into it
+            for (int dx = -r; dx <= r; dx++) {
+                for (int dz = -r; dz <= r; dz++) {
+                    int ring = Math.max(Math.abs(dx), Math.abs(dz));
+                    if (ring == r - 1 || ring == 1) set(level, m.offset(dx, h + 1, dz), p.trim());
+                    if ((Math.abs(dx) == 3 && Math.abs(dz) == 3) || (dx == 0 && dz == 0)) set(level, m.offset(dx, h + 1, dz), p.light());
+                }
+            }
         }
-        for (int[] k : new int[][]{{-2, -2}, {2, -2}, {-2, 2}, {2, 2}, {0, 0}}) set(level, m.offset(k[0], HEADROOM + 2, k[1]), p.light());
-        for (int d = -3; d <= 3; d++) {
-            for (int[] k : new int[][]{{d, -3}, {d, 3}, {-3, d}, {3, d}}) set(level, m.offset(k[0], HEADROOM + 1, k[1]), p.trim());
-        }
-        // a band of trim round its walls, and sconces set into them
-        for (int d = -4; d <= 4; d++) {
-            for (int[] k : new int[][]{{d, -5}, {d, 5}, {-5, d}, {5, d}}) {
+        // a band of trim round its walls, and sconces set into them; a tall room has a second band under its ceiling
+        int wall = r + 1;
+        for (int d = -r; d <= r; d++) {
+            for (int[] k : new int[][]{{d, -wall}, {d, wall}, {-wall, d}, {wall, d}}) {
                 set(level, m.offset(k[0], 4, k[1]), p.trim());
                 if (Math.abs(d) == 3) set(level, m.offset(k[0], 3, k[1]), p.light());
+                if (h > HEADROOM + 1) {
+                    set(level, m.offset(k[0], h, k[1]), p.trim());
+                    if (Math.abs(d) == 2 || d == 0) set(level, m.offset(k[0], h - 1, k[1]), Math.abs(d) == 2 ? p.light() : p.glass());
+                }
             }
         }
     }
@@ -672,7 +779,7 @@ public final class Passages {
                 set(level, m.above(), p.trim());
                 set(level, plan.sealPos(c), ModContent.PASSAGE_SEAL.get());
                 for (int[] k : CORNERS) {
-                    for (int y = 1; y <= HEADROOM; y++) set(level, m.offset(k[0], y, k[1]), p.pillar());
+                    for (int y = 1; y <= plan.height(c); y++) set(level, m.offset(k[0], y, k[1]), p.pillar());
                 }
                 // a ring of inlay round the pedestal, and four rays out to the lanes
                 for (int dx = -2; dx <= 2; dx++) {
@@ -690,17 +797,19 @@ public final class Passages {
                 }
             }
             case ARENA -> {
-                // a fighting floor: rings underfoot, a pillar in every corner, and the prize in the middle
-                for (int dx = -4; dx <= 4; dx++) {
-                    for (int dz = -4; dz <= 4; dz++) {
+                // a fighting floor: rings underfoot, a tall pillar in every corner, and the prize in the middle
+                int reach = plan.half(c);
+                for (int dx = -reach; dx <= reach; dx++) {
+                    for (int dz = -reach; dz <= reach; dz++) {
                         int ring = Math.max(Math.abs(dx), Math.abs(dz));
-                        set(level, m.offset(dx, 0, dz), ring == 3 || ring == 1 ? p.inlay() : ring == 0 ? p.light() : p.top());
+                        set(level, m.offset(dx, 0, dz), ring == reach - 1 || ring == 3 || ring == 1 ? p.inlay() : ring == 0 ? p.light() : p.top());
                     }
                 }
                 set(level, plan.featurePos(c), ModContent.PASSAGE_CACHE.get());
                 for (int[] k : CORNERS) {
-                    for (int y = 1; y <= 3; y++) set(level, m.offset(k[0], y, k[1]), p.pillar());
-                    set(level, m.offset(k[0], 4, k[1]), p.light());
+                    int kx = k[0] * (reach - 1) / 3, kz = k[1] * (reach - 1) / 3;
+                    for (int y = 1; y <= plan.height(c) - 1; y++) set(level, m.offset(kx, y, kz), y == 4 ? p.light() : p.pillar());
+                    set(level, m.offset(kx, plan.height(c), kz), p.trim());
                 }
             }
             case SHRINE -> {
@@ -715,6 +824,29 @@ public final class Passages {
                 for (int[] k : CORNERS) set(level, m.offset(k[0], 0, k[1]), Blocks.MOSS_BLOCK);
             }
             case VAULT, CHIMES, BEAM, PLATES, DARTS -> Rooms.build(level, plan, c, random);
+            case SPIKES, FLAMES, BLADES -> Snares.build(level, plan, c, p);
+            case STAIRWELL -> {
+                // a loft across the north end, a flight of steps up to it at either side, and a cache up there
+                for (int dx = -5; dx <= 5; dx++) {
+                    for (int dz = -5; dz <= -3; dz++) set(level, m.offset(dx, 4, dz), dz == -3 ? p.trim() : ((dx + dz) & 1) == 0 ? p.top() : p.topAlt());
+                    if (Math.abs(dx) <= 4) set(level, m.offset(dx, 5, -3), Math.abs(dx) == 4 || dx == 0 ? p.pillar() : p.trim());      // the parapet
+                }
+                for (int side = -1; side <= 1; side += 2) {
+                    for (int step = 1; step <= 4; step++) {
+                        int dx = side * (step + 1);
+                        for (int y = 1; y < step; y++) set(level, m.offset(dx, y, -2), p.wall());
+                        level.setBlock(m.offset(dx, step, -2), stairs(plan.line, side > 0 ? net.minecraft.core.Direction.EAST : net.minecraft.core.Direction.WEST), 2);
+                    }
+                    for (int y = 1; y <= 3; y++) set(level, m.offset(side * 3, y, -3), p.pillar());                      // what the loft stands on
+                    set(level, m.offset(side * 3, 4, -4), p.light());
+                    set(level, m.offset(side * 2, 5, -5), ModContent.ANCIENT_URN.get());
+                    level.setBlock(m.offset(side * 4, 5, -5), ModContent.TOWER_BRAZIER.get().defaultBlockState()
+                            .setValue(com.thefarawaydev.realmsofchaos.block.BrazierBlock.TOWER, plan.line.ordinal()), 2);
+                }
+                set(level, m.offset(0, 5, -4), ModContent.PASSAGE_CACHE.get());
+                // below, a runner of inlay from the south door to the foot of the loft
+                for (int dz = -2; dz <= 5; dz++) set(level, m.offset(0, 0, dz), p.inlay());
+            }
             case CRUSHER -> {
                 // a crusher hall: its floor is striped row by row, so the row that is marked can be told from the next
                 for (int dx = -4; dx <= 4; dx++) {
@@ -734,9 +866,9 @@ public final class Passages {
             case GARDEN -> {
                 // moss underfoot, flowers and bushes in the four quarters; the lanes are left as paths
                 Block[] flowers = {Blocks.PINK_TULIP, Blocks.ALLIUM, Blocks.AZURE_BLUET, Blocks.OXEYE_DAISY, Blocks.SHORT_GRASS, Blocks.FERN};
-                for (int dx = -4; dx <= 4; dx++) {
-                    for (int dz = -4; dz <= 4; dz++) {
-                        if (lane(dx, dz)) continue;
+                for (int dx = -plan.half(c); dx <= plan.half(c); dx++) {
+                    for (int dz = -plan.half(c); dz <= plan.half(c); dz++) {
+                        if (lane(dx, dz) || cut(plan, c, dx, dz)) continue;
                         set(level, m.offset(dx, 0, dz), Blocks.MOSS_BLOCK);
                         float roll = random.nextFloat();
                         if (roll < 0.35F) set(level, m.offset(dx, 1, dz), flowers[random.nextInt(flowers.length)]);
@@ -747,11 +879,13 @@ public final class Passages {
             }
             case LIBRARY -> {
                 // shelves along the walls between the doors, a carpet down the middle, a lectern to one side
-                for (int d = 2; d <= 4; d++) {
-                    for (int[] k : new int[][]{{d, -4}, {-d, -4}, {d, 4}, {-d, 4}, {-4, d}, {-4, -d}, {4, d}, {4, -d}}) {
-                        set(level, m.offset(k[0], 1, k[1]), Blocks.BOOKSHELF);
-                        set(level, m.offset(k[0], 2, k[1]), Blocks.BOOKSHELF);
-                        set(level, m.offset(k[0], 3, k[1]), random.nextFloat() < 0.3F ? Blocks.CHISELED_BOOKSHELF : Blocks.BOOKSHELF);
+                int far = plan.half(c), shelves = Math.min(plan.height(c) - 2, 5);
+                for (int d = 2; d <= far; d++) {
+                    for (int[] k : new int[][]{{d, -far}, {-d, -far}, {d, far}, {-d, far}, {-far, d}, {-far, -d}, {far, d}, {far, -d}}) {
+                        if (cut(plan, c, k[0], k[1])) continue;
+                        for (int y = 1; y <= shelves; y++) {
+                            set(level, m.offset(k[0], y, k[1]), y == 3 && random.nextFloat() < 0.3F ? Blocks.CHISELED_BOOKSHELF : Blocks.BOOKSHELF);
+                        }
                     }
                 }
                 Block carpet = plan.line == Line.ZEUS ? Blocks.CARPET.pick(net.minecraft.world.item.DyeColor.YELLOW)
@@ -772,10 +906,41 @@ public final class Passages {
                 }
             }
             case ROOM -> {
-                switch (random.nextInt(4)) {
+                int variant = random.nextInt(4), reach = plan.half(c), tall = plan.height(c);
+                if (plan.form(c) == FORM_COLONNADE) {
+                    // columns all the way round, a step in from the walls, clear of the ways through
+                    for (int a : new int[]{-(reach - 1), reach - 1}) {
+                        for (int b : new int[]{-(reach - 1), -2, 2, reach - 1}) {
+                            for (int y = 1; y <= tall; y++) {
+                                set(level, m.offset(a, y, b), y == 1 || y == tall ? p.trim() : p.pillar());
+                                set(level, m.offset(b, y, a), y == 1 || y == tall ? p.trim() : p.pillar());
+                            }
+                        }
+                    }
+                    variant = 1;                    // and a medallion between them
+                } else if (plan.form(c) == FORM_SUNKEN) {
+                    // the middle of the floor is a step down, with stairs where the ways through cross its edge
+                    int pit = reach - 2;
+                    for (int dx = -pit; dx <= pit; dx++) {
+                        for (int dz = -pit; dz <= pit; dz++) {
+                            set(level, m.offset(dx, 0, dz), Blocks.AIR);
+                            set(level, m.offset(dx, -1, dz), Math.max(Math.abs(dx), Math.abs(dz)) == pit ? p.trim() : ((dx + dz) & 1) == 0 ? p.inlay() : p.topAlt());
+                        }
+                    }
+                    for (int k = -1; k <= 1; k++) {
+                        level.setBlock(m.offset(pit, 0, k), stairs(plan.line, net.minecraft.core.Direction.EAST), 2);
+                        level.setBlock(m.offset(-pit, 0, k), stairs(plan.line, net.minecraft.core.Direction.WEST), 2);
+                        level.setBlock(m.offset(k, 0, pit), stairs(plan.line, net.minecraft.core.Direction.SOUTH), 2);
+                        level.setBlock(m.offset(k, 0, -pit), stairs(plan.line, net.minecraft.core.Direction.NORTH), 2);
+                    }
+                    set(level, m.below(), p.light());
+                    variant = -1;
+                }
+                switch (variant) {
+                    case -1 -> { }
                     case 0 -> {
                         for (int[] k : CORNERS) {
-                            for (int y = 1; y <= HEADROOM; y++) set(level, m.offset(k[0], y, k[1]), p.pillar());
+                            for (int y = 1; y <= tall; y++) set(level, m.offset(k[0], y, k[1]), p.pillar());
                         }
                     }
                     case 1 -> {
@@ -813,7 +978,8 @@ public final class Passages {
         if (kind != Kind.ROOM && kind != Kind.GARDEN && kind != Kind.LIBRARY && kind != Kind.POOL && kind != Kind.ARENA && kind != Kind.SHRINE) return;
         BlockPos m = plan.centre(c);
         // against the walls, clear of the lanes that run door to door
-        int[][] spots = {{4, 2}, {-4, -2}, {2, 4}, {-2, -4}, {4, -2}, {-4, 2}, {-2, 4}, {2, -4}};
+        int w = plan.half(c);
+        int[][] spots = {{w, 2}, {-w, -2}, {2, w}, {-2, -w}, {w, -2}, {-w, 2}, {-2, w}, {2, -w}};
         int from = random.nextInt(spots.length), urns = random.nextInt(3), braziers = random.nextInt(2);
         int tablets = kind == Kind.LIBRARY || random.nextFloat() < 0.15F ? 1 : 0;
         for (int i = 0; i < spots.length && urns + braziers + tablets > 0; i++) {
@@ -872,7 +1038,7 @@ public final class Passages {
         String hud = "hud." + RealmsOfChaos.MOD_ID + ".cache.";
         Plan plan = planAt(level, pos);
         Cell cell = plan == null ? null : plan.cellAt(pos);
-        if (cell == null || (plan.kind(cell) != Kind.TREASURE && plan.kind(cell) != Kind.ARENA && !Rooms.isPuzzle(plan.kind(cell)))) {
+        if (cell == null || (plan.kind(cell) != Kind.TREASURE && plan.kind(cell) != Kind.ARENA && plan.kind(cell) != Kind.STAIRWELL && !Rooms.isPuzzle(plan.kind(cell)))) {
             Hud.actionBar(player, Hud.colored(Component.translatable(hud + "empty"), 0xAAAAAA));
             return false;
         }
@@ -1018,10 +1184,11 @@ public final class Passages {
      * One level seals itself again: every seal is restored and every room's sentinels will wake afresh.
      */
     public static void rearm(ServerLevel level, Plan plan) {
-        for (Mob m : level.getEntitiesOfClass(Mob.class, plan.box().inflate(2), e -> e.entityTags().contains(GUARDIAN_TAG))) m.discard();
+        for (Mob m : level.getEntitiesOfClass(Mob.class, plan.box().inflate(2, 0, 2), e -> e.entityTags().contains(GUARDIAN_TAG))) m.discard();
         for (Cell c : plan.seals) set(level, plan.sealPos(c), ModContent.PASSAGE_SEAL.get());
         ProgressData.get(level.getServer()).unmarkPrefix(wokenKey(plan));
         Rooms.rearm(level, plan);
+        for (Cell c : plan.cells()) if (plan.kind(c) == Kind.SPIKES) Snares.lower(level, plan, c);
     }
 
     /** The level a block belongs to, with its plan - or null if it is not in a passage. */
@@ -1205,6 +1372,10 @@ public final class Passages {
                     case PLATES -> "plates";
                     case CRUSHER -> "crusher";
                     case DARTS -> "darts";
+                    case SPIKES -> "spikes";
+                    case FLAMES -> "flames";
+                    case BLADES -> "blades";
+                    case STAIRWELL -> "stairwell";
                     case EXIT -> sealsLeft(level, plan) > 0 ? "exit.sealed" : plan.last() ? "exit.open" : "exit.deeper";
                     default -> null;
                 };

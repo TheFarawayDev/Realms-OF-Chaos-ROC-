@@ -37,6 +37,7 @@ public final class RealmSafety {
         Waygates.tick(server);
         Traps.tick(server);
         Rooms.tick(server);
+        Snares.tick(server);
         Passages.tick(server);
         Hazards.tick(server);
         Craters.tick(server);

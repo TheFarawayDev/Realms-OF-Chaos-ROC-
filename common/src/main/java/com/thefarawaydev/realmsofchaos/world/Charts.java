@@ -85,9 +85,9 @@ public final class Charts {
             case START -> MapColor.COLOR_LIGHT_GREEN;
             case EXIT -> MapColor.EMERALD;
             case SEAL -> MapColor.COLOR_RED;
-            case TREASURE, VAULT, CHIMES, BEAM, PLATES -> MapColor.GOLD;
+            case TREASURE, VAULT, CHIMES, BEAM, PLATES, STAIRWELL -> MapColor.GOLD;
             case SHRINE -> MapColor.COLOR_LIGHT_BLUE;
-            case TRAP, CRUSHER, DARTS -> MapColor.COLOR_ORANGE;
+            case TRAP, CRUSHER, DARTS, SPIKES, FLAMES, BLADES -> MapColor.COLOR_ORANGE;
             case ARENA -> MapColor.COLOR_PURPLE;
             case GARDEN -> MapColor.PLANT;
             case POOL -> MapColor.WATER;

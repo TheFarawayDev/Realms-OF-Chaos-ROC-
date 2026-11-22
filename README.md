@@ -16,6 +16,36 @@ The current build is an **Alpha**.
 
 ## What's in 1.2.0
 
+* **Its own things on the screen.** Nothing the mod shows takes over the view.
+  * **Tips are cards.** A tip is a small card at the top of the screen with up to three lines on it, shown for a few
+    seconds; cards wait their turn instead of replacing one another. Any title too long to fit a small window is
+    written on a card too. Short ones (*Victory!*) stay titles.
+  * **Boss bars are drawn.** A god's bar is its tower's own frame and emblems, a fill coloured by phase, a mark
+    where its aegis rises (65%) and where its wrath begins (30%), a gem lit for each phase reached, and its name in
+    block lettering.
+  * **The cast bar is opt-in.** A god's move is no longer named for everyone above the hotbar. Turn the cast bar on
+    (Codex > Settings, or `/roc casts`) and each move is named on a bar that fills as the god winds up.
+  * **Settings and insight menus**, each with its own panel: `/roc settings`, `/roc insight`, or from the Codex.
+  * All of it is fonts whose letters are pictures (`tools/hud_art.py`), composed on the server, so it needs nothing
+    on the client but the mod and is the same on Fabric and Forge.
+* **Gods that remember.** Every trial is watched, player by player: how much harm was done from afar or hand to
+  hand, blows taken on a shield, wounds mended mid-fight, time spent out of reach. A habit shown in trial after
+  trial is learnt, through three levels, and the next god already has an answer: shots count for less and it
+  closes in on a **marksman**; its guard lashes back at a **duellist**; its blows knock a **shield-bearer**'s
+  shield aside; a marked strike falls where a **mender** stops to heal; a **runner** is hauled back. A card says
+  what a god knows of you as the trial starts and what was learnt as it ends. Drop a habit and it is forgotten, a
+  trial at a time. This is on top of the stance a god takes within a single trial.
+* **Rooms that are not all alike.** Passage rooms are low (5), tall (7) or great (8 high); about a third of the
+  ordinary ones are a step wider (11 across); and a room may have its corners cut, a ring of columns to the
+  ceiling, or a floor sunk a step with stairs out of it. Arenas are always the biggest room there is. Levels are
+  built as solid slabs twelve deep, so a tall room is still inside its own level.
+  * **Stairwells.** Nearly every level has one: a great hall with a flight of steps at either side up to a loft
+    across its north end, and a cache on the loft.
+  * **Three more trap halls**, none of which can be switched off: a **spike hall** (two colours of tile, each
+    colour's spikes up in turn), a **flame hall** (vents erupt a row at a time, the fire walking down the hall) and
+    a **blade hall** (a blade sweeping from wall to wall and back). Each warns before it strikes, and they hurt
+    more the deeper the level.
+
 * **Trials in three phases.** A god fights as itself down to 65% of its health, and no single blow carries it past
   that mark or the next.
   * **Aegis (65%).** It raises shield pylons round the floor - two on Easy, three on Normal, four on Hard, one more
@@ -460,7 +490,7 @@ on a real server: data loading, the hub, building and walking every floor of eve
 towers through the altar menu (with rematches) and all 42 passages, the Ruined Gate and its keystones, the story's
 chapters, the hub's residents, all sixty-three sentinels and their traits, craters, the custom screens and their buttons, the tutorial, impacts, the
 floor's eruptions and the gods' last stands, the three phases of a trial (health gates, pylons, stances, the collapsing floor and its restoration, strikes), gear and difficulty scaling,
-the compass scanner, relays and jammers, waygates, the Field Tower Bag, hub tiers and bounties, the rune chambers, the sidebar, level counts and names, building ahead, the four puzzle rooms, crusher and dart halls, urns and tablets, the Passage Chart, the mastery tree, the menu artwork, parties, group scaling and per-player loot, the wall protection (built, checked room by room for reachability,
+the compass scanner, relays and jammers, waygates, the Field Tower Bag, hub tiers and bounties, the rune chambers, the sidebar, level counts and names, building ahead, the four puzzle rooms, crusher and dart halls, urns and tablets, the Passage Chart, the mastery tree, the menu artwork, cards and tips, the drawn boss bar and the opt-in cast bar, settings, the gods' memory of each player, room shapes and stairwells, the spike, flame and blade halls, parties, group scaling and per-player loot, the wall protection (built, checked room by room for reachability,
 seals struck, guardians, shrine, map), every god's signature move, the relic moves, the forging quick-time rounds,
 tier materials, each tarot card, the Codex, leaving the realms, the welcome and the anti-stuck safeguards.
 
