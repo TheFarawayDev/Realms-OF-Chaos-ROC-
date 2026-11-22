@@ -22,7 +22,21 @@ TOWERS = {
     "poseidon": ((43, 183, 204), ["#.#.#", "#.#.#", "#####", ".###.", "..#..", "..#..", "..#.."]),
     "hades": ((165, 90, 214), ["#...#", "#...#", "#####", "#.#.#", "..#..", "..#..", "..#.."]),
 }
-CARDS = {"tip": ((85, 230, 245), "TIP"), "insight": ((255, 170, 60), "INSIGHT"), "notice": ((236, 208, 150), "NOTICE")}
+CARDS = {"tip": ((85, 230, 245), "TIP"), "insight": ((255, 170, 60), "INSIGHT"), "notice": ((236, 208, 150), "NOTICE"),
+         "aegis": ((126, 235, 255), "AEGIS"), "wrath": ((255, 90, 60), "WRATH"), "boon": ((120, 230, 140), "BOON")}
+AEGIS, WRATH = (126, 235, 255), (255, 90, 60)
+# small pictures that sit on a bar's plaque or above the hotbar: each an 8x8 cell, seven rows used
+ICONS = {
+    "pip_off": ((70, 62, 120), [".......", "..###..", ".#...#.", ".#...#.", ".#...#.", "..###..", "......."]),
+    "pip_on": ((245, 184, 46), [".......", "..###..", ".#####.", ".#####.", ".#####.", "..###..", "......."]),
+    "parry_ready": ((126, 235, 255), ["...#...", "..###..", ".##.##.", "##...##", ".##.##.", "..###..", "...#..."]),
+    "parry_spent": ((70, 62, 120), ["...#...", "..#.#..", ".#...#.", "#.....#", ".#...#.", "..#.#..", "...#..."]),
+    "riposte": ((255, 90, 60), ["......#", ".....##", "#...##.", ".#.##..", "..##...", ".#.#...", "#...#.."]),
+    "pylon": ((126, 235, 255), ["...#...", "..###..", "..###..", "..###..", "..###..", ".#####.", "......."]),
+    "pylon_gone": ((60, 70, 100), [".......", ".......", "...#...", "..#.#..", "..###..", ".#####.", "......."]),
+    "ring": ((255, 90, 60), [".#####.", "#.....#", "#.###.#", "#.#.#.#", "#.###.#", "#.....#", ".#####."]),
+    "ring_gone": ((90, 50, 60), [".#.#.#.", "#.....#", ".......", "#.....#", ".......", "#.....#", ".#.#.#."]),
+}
 FRAME_W, FRAME_H, BAR_X, BAR_W = 200, 22, 9, 182
 CARD_W, CARD_H = 220, 46
 # glyph of the default font -> advance, measured from the game's own ascii.png
@@ -53,8 +67,11 @@ def lettering(px, x, y, text, colour):
     return at - x - 1
 
 
-def frame(colour, emblem, plain=False):
-    """The picture under a bar: a plaque for the name, a trough for the fill, an emblem at each end."""
+def frame(colour, emblem, plain=False, phase=1):
+    """The picture under a bar: a plaque for the name, a trough for the fill, an emblem at each end.
+
+    Each phase of a trial has its own: plain metal first; studded with the aegis's crystal while the shield is up;
+    toothed, cracked and glowing once the god's wrath has begun."""
     img = Image.new("RGBA", (FRAME_W, FRAME_H), (0, 0, 0, 0))
     px = img.load()
     hi, lo = mix(colour, (255, 255, 255), 0.45), shade(colour, 0.55)
@@ -98,6 +115,37 @@ def frame(colour, emblem, plain=False):
                     px[x0 + step * (5 - i) + (0 if step > 0 else 0), y] = (hi if y <= 15 else lo) + (255,)
         px[FRAME_W - 1, 15] = hi + (255,)
         px[0, 15] = hi + (255,)
+    if phase == 2:
+        # crystal studs along the trough, facets on the emblem blocks, a cold rule under the plaque's own
+        for x in range(12, 190, 6):
+            for y in (10, 20):
+                px[x, y] = AEGIS + (255,)
+                px[x + 1, y] = mix(AEGIS, (255, 255, 255), 0.6) + (255,)
+        for x in range(38, 162):
+            px[x, 3] = (shade(AEGIS, 0.55) if x % 3 else AEGIS) + (255,)
+        for x0 in (0, FRAME_W - 11):
+            for i in range(1, 10):
+                px[x0 + i, 8 + i] = mix(AEGIS, (255, 255, 255), 0.5) + (150,)
+            for y in range(9, 21):
+                px[x0 + (0 if x0 else 10), y] = AEGIS + (255,)
+    elif phase == 3:
+        # teeth above and below the trough, a crack down the plaque, the emblem blocks glowing at their edges
+        for x in range(9, 192, 4):
+            px[x, 9] = WRATH + (255,)
+            px[x + 1, 9] = shade(WRATH, 0.6) + (255,)
+            px[x, 21] = WRATH + (255,)
+            px[x + 1, 21] = shade(WRATH, 0.6) + (255,)
+            px[x, 10] = shade(WRATH, 0.75) + (255,)
+        for crack in (52, 128):
+            x = crack
+            for y in range(2, 10):
+                px[x, y] = INK + (255,)
+                px[x + 1, y] = shade(WRATH, 0.5) + (255,)
+                x += (1 if y % 3 else -2)
+        for x0 in (0, FRAME_W - 11):
+            for y in range(9, 21):
+                for x in (x0 + 1, x0 + 9):
+                    px[x, y] = mix(WRATH, (255, 220, 120), 0.4 if y % 2 else 0.0) + (255,)
     return img
 
 
@@ -191,11 +239,26 @@ def gen_hud(assets, mod, java_dir, wj, w):
 
     for i, (name, (colour, emblem)) in enumerate(TOWERS.items()):
         picture("frame_" + name, frame(colour, emblem), chr(0xE100 + i), 11)
+        picture("frame_" + name + "_aegis", frame(colour, emblem, phase=2), chr(0xE130 + i * 2), 11)
+        picture("frame_" + name + "_wrath", frame(colour, emblem, phase=3), chr(0xE131 + i * 2), 11)
     for phase in (1, 2, 3):
         picture(f"over_{phase}", overlay(phase), chr(0xE103 + phase), 11)
     picture("frame_cast", frame((236, 208, 150), None, plain=True), chr(0xE108), 11)
     for i, (name, (colour, label)) in enumerate(CARDS.items()):
         picture("card_" + name, card(colour, label), chr(0xE120 + i), 9)
+    # icons: one sheet, a row of eight-pixel cells, on the same line as the block lettering
+    icon_sheet = Image.new("RGBA", (8 * len(ICONS), 8), (0, 0, 0, 0))
+    ip = icon_sheet.load()
+    icon_row, icon_adv = "", []
+    for i, (name, (colour, rows)) in enumerate(ICONS.items()):
+        for ry, row in enumerate(rows):
+            for rx, bit in enumerate(row):
+                if bit == "#":
+                    ip[i * 8 + rx, ry] = (mix(colour, (255, 255, 255), 0.35) if ry < 2 else colour if ry < 5 else shade(colour, 0.7)) + (255,)
+        icon_row += chr(0xE140 + i)
+        icon_adv.append(max(rx for row in rows for rx, bit in enumerate(row) if bit == "#") + 2)
+    icon_sheet.save(os.path.join(out, "icons.png"))
+    providers.append({"type": "bitmap", "file": f"{mod}:gui/hud/icons.png", "ascent": 7, "height": 8, "chars": [icon_row]})
     # the fill, in pieces 1, 2, 4 ... 128 wide: white, shaded top to bottom, coloured by the text's own colour
     for k in range(8):
         piece = Image.new("RGBA", (1 << k, 5))
@@ -250,12 +313,19 @@ public final class HudGlyphs {{
     /** Frames by tower (Zeus, Poseidon, Hades), and what the game takes their advance to be. */
     public static final char[] FRAME = {{{", ".join(jchar(art["frame_" + n][0]) for n in names)}}};
     public static final int[] FRAME_ADVANCE = {{{", ".join(str(art["frame_" + n][1]) for n in names)}}};
+    /** The frames of the later phases: [tower][0] while its aegis is up, [tower][1] in its wrath. */
+    public static final char[][] PHASE_FRAME = {{{", ".join("{" + jchar(art["frame_" + n + "_aegis"][0]) + ", " + jchar(art["frame_" + n + "_wrath"][0]) + "}" for n in names)}}};
+    public static final int[][] PHASE_FRAME_ADVANCE = {{{", ".join("{" + str(art["frame_" + n + "_aegis"][1]) + ", " + str(art["frame_" + n + "_wrath"][1]) + "}" for n in names)}}};
+    /** Icons: {", ".join(ICONS)}. */
+    public static final char ICON = '\\uE140';
+    public static final int {", ".join("ICON_" + n.upper() + " = " + str(i) for i, n in enumerate(ICONS))};
+    public static final int[] ICON_ADVANCE = {{{", ".join(map(str, icon_adv))}}};
     /** Overlays by phase, 1 to 3. */
     public static final char[] OVERLAY = {{{", ".join(jchar(art[f"over_{p}"][0]) for p in (1, 2, 3))}}};
     public static final int[] OVERLAY_ADVANCE = {{{", ".join(str(art[f"over_{p}"][1]) for p in (1, 2, 3))}}};
     public static final char CAST_FRAME = {jchar(art["frame_cast"][0])};
     public static final int CAST_FRAME_ADVANCE = {art["frame_cast"][1]};
-    /** Cards: tip, insight, notice. */
+    /** Cards: {", ".join(CARDS)}. */
     public static final char[] CARD = {{{", ".join(jchar(art["card_" + n][0]) for n in CARDS)}}};
     public static final int[] CARD_ADVANCE = {{{", ".join(str(art["card_" + n][1]) for n in CARDS)}}};
     /** A piece of fill 2^k wide is FILL + k; a space of 2^k is SPACE + k, and of -2^k is BACK + k. */

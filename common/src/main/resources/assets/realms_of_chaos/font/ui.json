@@ -114,6 +114,24 @@
       "chars": [
         ""
       ]
+    },
+    {
+      "type": "bitmap",
+      "file": "realms_of_chaos:gui/panel_boon.png",
+      "ascent": 13,
+      "height": 168,
+      "chars": [
+        ""
+      ]
+    },
+    {
+      "type": "bitmap",
+      "file": "realms_of_chaos:gui/panel_bestiary.png",
+      "ascent": 13,
+      "height": 222,
+      "chars": [
+        ""
+      ]
     }
   ]
 }

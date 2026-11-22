@@ -8,14 +8,21 @@ public final class HudGlyphs {
     /** Frames by tower (Zeus, Poseidon, Hades), and what the game takes their advance to be. */
     public static final char[] FRAME = {'\uE100', '\uE101', '\uE102'};
     public static final int[] FRAME_ADVANCE = {201, 201, 201};
+    /** The frames of the later phases: [tower][0] while its aegis is up, [tower][1] in its wrath. */
+    public static final char[][] PHASE_FRAME = {{'\uE130', '\uE131'}, {'\uE132', '\uE133'}, {'\uE134', '\uE135'}};
+    public static final int[][] PHASE_FRAME_ADVANCE = {{201, 201}, {201, 201}, {201, 201}};
+    /** Icons: pip_off, pip_on, parry_ready, parry_spent, riposte, pylon, pylon_gone, ring, ring_gone. */
+    public static final char ICON = '\uE140';
+    public static final int ICON_PIP_OFF = 0, ICON_PIP_ON = 1, ICON_PARRY_READY = 2, ICON_PARRY_SPENT = 3, ICON_RIPOSTE = 4, ICON_PYLON = 5, ICON_PYLON_GONE = 6, ICON_RING = 7, ICON_RING_GONE = 8;
+    public static final int[] ICON_ADVANCE = {7, 7, 8, 8, 8, 7, 7, 8, 8};
     /** Overlays by phase, 1 to 3. */
     public static final char[] OVERLAY = {'\uE104', '\uE105', '\uE106'};
     public static final int[] OVERLAY_ADVANCE = {201, 201, 201};
     public static final char CAST_FRAME = '\uE108';
     public static final int CAST_FRAME_ADVANCE = 201;
-    /** Cards: tip, insight, notice. */
-    public static final char[] CARD = {'\uE120', '\uE121', '\uE122'};
-    public static final int[] CARD_ADVANCE = {221, 221, 221};
+    /** Cards: tip, insight, notice, aegis, wrath, boon. */
+    public static final char[] CARD = {'\uE120', '\uE121', '\uE122', '\uE123', '\uE124', '\uE125'};
+    public static final int[] CARD_ADVANCE = {221, 221, 221, 221, 221, 221};
     /** A piece of fill 2^k wide is FILL + k; a space of 2^k is SPACE + k, and of -2^k is BACK + k. */
     public static final char FILL = '\uE110', SPACE = '\uF810', BACK = '\uF820';
     /** Block lettering: the letter for an ASCII character from space to underscore is LETTER + its code. */

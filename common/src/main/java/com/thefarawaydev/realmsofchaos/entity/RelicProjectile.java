@@ -111,6 +111,13 @@ public class RelicProjectile extends ThrowableItemProjectile {
     /** What a hit does: damage, the god's power and curse, and any card curse. Friendly targets are spared. */
     public void impact(ServerLevel level, LivingEntity shooter, LivingEntity target) {
         if (!Power.canHurt(shooter, target)) return;
+        // a bolt met at the right moment goes back to whoever loosed it
+        if (target instanceof net.minecraft.server.level.ServerPlayer met && !(shooter instanceof net.minecraft.world.entity.player.Player)
+                && com.thefarawaydev.realmsofchaos.world.Combat.tryParry(level, met, null)) {
+            shooter.hurtServer(level, damageSources().thrown(this, met), damage);
+            level.sendParticles(net.minecraft.core.particles.ParticleTypes.ENCHANTED_HIT, shooter.getX(), shooter.getY() + 1.0, shooter.getZ(), 10, 0.3, 0.4, 0.3, 0.2);
+            return;
+        }
         target.hurtServer(level, damageSources().thrown(this, shooter), damage);
         if (godIndex >= 0) {
             God god = Gods.byIndex(godIndex);

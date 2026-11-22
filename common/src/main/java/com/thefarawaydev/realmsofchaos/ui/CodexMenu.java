@@ -33,7 +33,7 @@ public class CodexMenu extends ButtonMenu {
     public static final int SLOT_ABOUT = slot(0, 4);
     public static final int SLOT_ZEUS = slot(1, 2), SLOT_POSEIDON = slot(1, 4), SLOT_HADES = slot(1, 6);
     public static final int SLOT_HUB = slot(5, 2), SLOT_FORGE = slot(5, 4), SLOT_LEAVE = slot(5, 6), SLOT_STORY = slot(5, 8), SLOT_PARTY = slot(5, 0);
-    public static final int SLOT_OPTIONS = slot(0, 8), SLOT_INSIGHT = slot(0, 0);
+    public static final int SLOT_OPTIONS = slot(0, 8), SLOT_INSIGHT = slot(0, 0), SLOT_BESTIARY = slot(0, 2);
     public static final int SLOT_BACK = slot(5, 0), SLOT_TRAVEL = slot(5, 4), SLOT_SUMMARY = slot(0, 4);
     private static final String NS = "menu." + RealmsOfChaos.MOD_ID + ".";
 
@@ -74,6 +74,7 @@ public class CodexMenu extends ButtonMenu {
             if (slot == SLOT_PARTY) { clickSound(); PartyMenu.open(viewer); return; }
             if (slot == SLOT_OPTIONS) { clickSound(); OptionsMenu.open(viewer); return; }
             if (slot == SLOT_INSIGHT) { clickSound(); InsightMenu.open(viewer); return; }
+            if (slot == SLOT_BESTIARY) { clickSound(); BestiaryMenu.open(viewer); return; }
             // a tower icon or any segment of its meter opens that tower
             int row = slot / 9, col = slot % 9;
             for (Line line : Line.values()) {
@@ -163,6 +164,8 @@ public class CodexMenu extends ButtonMenu {
         view.setItem(SLOT_OPTIONS, icon(Items.COMPARATOR, text(NS + "options.open", 0xF5E6C8), false, List.of(text(NS + "options.open.lore", 0xAAAAAA))));
         view.setItem(SLOT_INSIGHT, icon(Items.ENDER_EYE, text(NS + "insight.open", 0xFFAA3C), !com.thefarawaydev.realmsofchaos.world.Insight.known(viewer).isEmpty(),
                 List.of(text(NS + "insight.open.lore", 0xAAAAAA))));
+        view.setItem(SLOT_BESTIARY, icon(Items.SKELETON_SKULL, text(NS + "bestiary.open", 0xDC5050), false, List.of(
+                text(NS + "bestiary.known.codex", 0xAAAAAA, BestiaryMenu.known(viewer), com.thefarawaydev.realmsofchaos.entity.Sentinel.Kind.values().length))));
         view.setItem(SLOT_HUB, icon(ModContent.CHAOS_COMPASS.get(), text(NS + "hub", 0xFFFFFF), false,
                 List.of(text(NS + "click", 0xAAAAAA))));
         view.setItem(SLOT_FORGE, icon(ModContent.BLOCK_ITEMS.get("chaos_forge").get(), text(NS + "forge.open", 0xFFAA00), false,

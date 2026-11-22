@@ -16,7 +16,9 @@ public final class Options {
         /** Tips, the first time each thing happens. */
         TIPS(true),
         /** A card when a god remembers how you fight. */
-        INSIGHT(true);
+        INSIGHT(true),
+        /** The combat meter above the hotbar: momentum, parry, riposte. */
+        COMBAT(true);
 
         public final boolean byDefault;
 

@@ -25,7 +25,7 @@ public final class HudArt {
     private static final int[][] ROWS = {{2}, {1, 3}, {0, 2, 4}};
 
     public enum Card {
-        TIP(0x55E6F5), INSIGHT(0xFFAA3C), NOTICE(0xECD096);
+        TIP(0x55E6F5), INSIGHT(0xFFAA3C), NOTICE(0xECD096), AEGIS(0x7EEBFF), WRATH(0xFF5A3C), BOON(0x78E68C);
 
         public final int color;
 
@@ -60,12 +60,14 @@ public final class HudArt {
             else if (c >= HudGlyphs.FILL && c <= HudGlyphs.FILL + 7) total += (1 << (c - HudGlyphs.FILL)) + 1;
             else if (c >= HudGlyphs.LETTER + 0x20 && c < HudGlyphs.LETTER + 0x60) total += HudGlyphs.LETTER_ADVANCE[c - HudGlyphs.LETTER - 0x20];
             else if (c == HudGlyphs.CAST_FRAME) total += HudGlyphs.CAST_FRAME_ADVANCE;
+            else if (c >= HudGlyphs.ICON && c < HudGlyphs.ICON + HudGlyphs.ICON_ADVANCE.length) total += HudGlyphs.ICON_ADVANCE[c - HudGlyphs.ICON];
             else {
                 for (int k = 0; k < 3; k++) {
                     if (c == HudGlyphs.FRAME[k]) total += HudGlyphs.FRAME_ADVANCE[k];
                     if (c == HudGlyphs.OVERLAY[k]) total += HudGlyphs.OVERLAY_ADVANCE[k];
-                    if (c == HudGlyphs.CARD[k]) total += HudGlyphs.CARD_ADVANCE[k];
+                    for (int phase = 0; phase < 2; phase++) if (c == HudGlyphs.PHASE_FRAME[k][phase]) total += HudGlyphs.PHASE_FRAME_ADVANCE[k][phase];
                 }
+                for (int k = 0; k < HudGlyphs.CARD.length; k++) if (c == HudGlyphs.CARD[k]) total += HudGlyphs.CARD_ADVANCE[k];
             }
         }
         return total;
@@ -110,11 +112,24 @@ public final class HudArt {
     }
 
     private static MutableComponent bar(char frame, int frameAdvance, char overlay, int overlayAdvance, int width, int fillColor, String name, int nameWidth) {
+        return bar(frame, frameAdvance, overlay, overlayAdvance, width, fillColor, name, nameWidth, "");
+    }
+
+    /** Small pictures in a row, the pen left where they end. */
+    public static String icons(int icon, int count) {
+        StringBuilder out = new StringBuilder();
+        for (int i = 0; i < count; i++) out.append((char) (HudGlyphs.ICON + icon));
+        return out.toString();
+    }
+
+    private static MutableComponent bar(char frame, int frameAdvance, char overlay, int overlayAdvance, int width, int fillColor, String name, int nameWidth, String widgets) {
         MutableComponent row = Component.empty();
         row.append(art(frame + space(HudGlyphs.BAR_X - frameAdvance)));
         row.append(Component.literal(fill(width)).withStyle(ART.withColor(fillColor)));
         String back = space(-(HudGlyphs.BAR_X + width));
         row.append(art(overlay == 0 ? back : back + overlay + space(-overlayAdvance)));
+        // what this phase has to show, at the left of the plaque: pylons still standing, rings of floor still there
+        if (!widgets.isEmpty()) row.append(art(space(WIDGET_X) + widgets + space(-(WIDGET_X + advance(widgets)))));
         String letters = lettering(name, nameWidth);
         int adv = letteringWidth(letters), pad = (HudGlyphs.FRAME_WIDTH - Math.max(0, adv - 1)) / 2;
         row.append(Component.literal(space(pad) + letters + space(HudGlyphs.FRAME_WIDTH - pad - adv)).withStyle(ART.withColor(NAME_INK)));
@@ -126,10 +141,43 @@ public final class HudArt {
      * aegis rises and its wrath begins, a gem lit for each phase reached, and its name.
      */
     public static Component bossBar(Line line, int phase, boolean shielded, float progress, String name) {
-        int p = Math.max(1, Math.min(3, phase));
+        return bossBar(line, phase, shielded, progress, name, 0, 0);
+    }
+
+    /** Where on the plaque a phase's own pictures start, and how many there can be. */
+    public static final int WIDGET_X = 37, MAX_WIDGETS = 5;
+
+    /** The frame a bar wears: plain in the first phase, crystal while an aegis is up, toothed and cracked in the wrath. */
+    public static char frame(Line line, int phase, boolean shielded) {
+        int t = line.ordinal();
+        return shielded ? HudGlyphs.PHASE_FRAME[t][0] : phase >= 3 ? HudGlyphs.PHASE_FRAME[t][1] : HudGlyphs.FRAME[t];
+    }
+
+    /**
+     * As above, with the phase's own count on the plaque: under an aegis the pylons, standing and fallen; in the
+     * wrath the rings of floor, left and lost.
+     * @param widgets how many there are in all (none, if 0), @param lit how many of them still stand
+     */
+    public static Component bossBar(Line line, int phase, boolean shielded, float progress, String name, int widgets, int lit) {
+        int p = Math.max(1, Math.min(3, phase)), t = line.ordinal();
         int color = shielded ? SHIELDED : p >= 3 ? WRATH : line.color();
-        return bar(HudGlyphs.FRAME[line.ordinal()], HudGlyphs.FRAME_ADVANCE[line.ordinal()], HudGlyphs.OVERLAY[p - 1], HudGlyphs.OVERLAY_ADVANCE[p - 1],
-                fillWidth(progress), color, name, 88);
+        int frameAdvance = shielded ? HudGlyphs.PHASE_FRAME_ADVANCE[t][0] : p >= 3 ? HudGlyphs.PHASE_FRAME_ADVANCE[t][1] : HudGlyphs.FRAME_ADVANCE[t];
+        int all = Math.max(0, Math.min(MAX_WIDGETS, widgets)), on = Math.max(0, Math.min(all, lit));
+        String row = all == 0 ? "" : shielded ? icons(HudGlyphs.ICON_PYLON, on) + icons(HudGlyphs.ICON_PYLON_GONE, all - on)
+                : icons(HudGlyphs.ICON_RING, on) + icons(HudGlyphs.ICON_RING_GONE, all - on);
+        return bar(frame(line, p, shielded), frameAdvance, HudGlyphs.OVERLAY[p - 1], HudGlyphs.OVERLAY_ADVANCE[p - 1], fillWidth(progress), color, name, 88, row);
+    }
+
+    /**
+     * The combat meter, above the hotbar: a pip for each point of momentum, a mark that is bright while a parry is
+     * to hand, and a blade while a riposte is waiting.
+     */
+    public static Component combatMeter(int momentum, int max, boolean parryReady, boolean riposte) {
+        int on = Math.max(0, Math.min(max, momentum));
+        String row = icons(HudGlyphs.ICON_PIP_ON, on) + icons(HudGlyphs.ICON_PIP_OFF, max - on) + space(4)
+                + (char) (HudGlyphs.ICON + (parryReady ? HudGlyphs.ICON_PARRY_READY : HudGlyphs.ICON_PARRY_SPENT))
+                + (riposte ? space(3) + (char) (HudGlyphs.ICON + HudGlyphs.ICON_RIPOSTE) : "");
+        return art(row);
     }
 
     /** The cast bar: a move's name, filling as the god winds up. */

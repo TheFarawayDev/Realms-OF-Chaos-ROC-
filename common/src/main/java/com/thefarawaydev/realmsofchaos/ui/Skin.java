@@ -27,7 +27,7 @@ public final class Skin {
     public enum Panel {
         CODEX('\uE000', 6), FORGE('\uE001', 6), PASSAGE('\uE002', 6), BAG_LARGE('\uE003', 6),
         ALTAR('\uE004', 3), SEAL('\uE005', 3), DECK('\uE006', 6), PARTY('\uE007', 6), STORY('\uE008', 6), BAG('\uE009', 3),
-        SETTINGS('\uE00A', 3), INSIGHT('\uE00B', 6);
+        SETTINGS('\uE00A', 3), INSIGHT('\uE00B', 6), BOON('\uE00C', 3), BESTIARY('\uE00D', 6);
 
         public final char glyph;
         public final int rows;

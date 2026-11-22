@@ -258,6 +258,11 @@ public final class SelfTest {
         for (Passages.Cell c : plan.cells()) {
             // a hall is only its crossing and arms; every other room is open two steps south of its middle
             BlockPos beside = plan.kind(c) == Passages.Kind.HALL ? plan.centre(c).above() : plan.centre(c).offset(0, 1, 2);
+            if (plan.kind(c) == Passages.Kind.EXIT) {
+                // (the gate's arch stands in the middle of its room, turned to the doorway: the room is entered in front of it)
+                Passages.Cell way = plan.approach();
+                beside = plan.gateTurned() ? plan.centre(c).offset(way.x() > c.x() ? 2 : -2, 1, 0) : plan.centre(c).offset(0, 1, way.z() > c.z() ? 2 : -2);
+            }
             check(seen.contains(beside), at + "room " + c + " (" + plan.kind(c) + ") cannot be walked into");
         }
         check(seen.contains(plan.gatePositions().get(0)), at + "the gate cannot be walked into");
@@ -4420,6 +4425,341 @@ public final class SelfTest {
             }
         });
 
+        step("parry, riposte and momentum; heavy blows that are seen coming; a bolt sent back", () -> {
+            ServerPlayer hero = fakePlayer(server, level, "RocDuellist");
+            com.thefarawaydev.realmsofchaos.world.Combat.forgetAll();
+            com.thefarawaydev.realmsofchaos.world.Boons.clear(hero);
+            com.thefarawaydev.realmsofchaos.ui.Options.reset(hero);
+            com.thefarawaydev.realmsofchaos.ui.Cards.clear(hero);
+            Tutorial.reset(hero);
+            hero.setPos(8.5, level.getHeight(net.minecraft.world.level.levelgen.Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, 8, 8), 8.5);
+            hero.setHealth(hero.getMaxHealth());
+            level.addNewPlayer(hero);
+            settle(level);
+            Sentinel foe = ModContent.SENTINEL.get().create(level, EntitySpawnReason.TRIGGERED), plain = ModContent.SENTINEL.get().create(level, EntitySpawnReason.TRIGGERED),
+                    bystander = ModContent.SENTINEL.get().create(level, EntitySpawnReason.TRIGGERED), green = ModContent.SENTINEL.get().create(level, EntitySpawnReason.TRIGGERED);
+            foe.setUp(Sentinel.Kind.of(Line.ZEUS, Sentinel.Role.SOLDIER), 3, 6.0, false);
+            plain.setUp(Sentinel.Kind.of(Line.ZEUS, Sentinel.Role.SOLDIER), 3, 6.0, false);
+            bystander.setUp(Sentinel.Kind.of(Line.ZEUS, Sentinel.Role.SOLDIER), 3, 6.0, false);
+            green.setUp(Sentinel.Kind.of(Line.ZEUS, Sentinel.Role.SOLDIER), 1);
+            for (Sentinel one : List.of(foe, plain, bystander)) {
+                one.setPos(hero.getX() + 1.5, hero.getY(), hero.getZ());
+                level.addFreshEntity(one);
+                one.setTarget(hero);
+            }
+            try {
+                // ---- the tap
+                check(!com.thefarawaydev.realmsofchaos.world.Combat.ready(hero), "no parry is to hand until it is asked for");
+                check(com.thefarawaydev.realmsofchaos.world.Combat.press(hero, server.getTickCount()) && com.thefarawaydev.realmsofchaos.world.Combat.ready(hero), "a tap opens a moment to parry in");
+                advance(server, com.thefarawaydev.realmsofchaos.world.Combat.PARRY_WINDOW + 1);
+                check(!com.thefarawaydev.realmsofchaos.world.Combat.ready(hero), "and the moment passes");
+                check(!com.thefarawaydev.realmsofchaos.world.Combat.press(hero, server.getTickCount()), "a tap that parried nothing has to be waited out");
+                advance(server, com.thefarawaydev.realmsofchaos.world.Combat.PARRY_RECOVERY);
+                // watching a player: sneak pressed is a tap, sneak held is not another
+                hero.setShiftKeyDown(true);
+                com.thefarawaydev.realmsofchaos.world.Combat.watch(hero, server.getTickCount());
+                check(com.thefarawaydev.realmsofchaos.world.Combat.ready(hero), "pressing sneak is the tap");
+                // ---- a blow met in time
+                float whole = hero.getHealth();
+                check(!foe.doHurtTarget(level, hero) && hero.getHealth() == whole, "a blow met in time does no harm");
+                check(com.thefarawaydev.realmsofchaos.world.Combat.isStaggered(foe) && com.thefarawaydev.realmsofchaos.world.Combat.riposteReady(hero)
+                        && com.thefarawaydev.realmsofchaos.world.Combat.momentum(hero) == 1, "the attacker reels, and a riposte is owed");
+                check(!com.thefarawaydev.realmsofchaos.world.Combat.ready(hero), "one tap, one blow");
+                check(!foe.doHurtTarget(level, hero), "a reeling sentinel lands nothing");
+                // ---- the riposte, on a reeling enemy, against the same blow on one that is neither
+                plain.damageCooldownTime = 0;
+                float p0 = plain.getHealth();
+                com.thefarawaydev.realmsofchaos.world.Combat.forget(hero);
+                plain.hurtServer(level, level.damageSources().playerAttack(hero), 4.0F);
+                float ordinary = p0 - plain.getHealth();
+                com.thefarawaydev.realmsofchaos.world.Combat.forget(hero);
+                hero.setShiftKeyDown(false);
+                com.thefarawaydev.realmsofchaos.world.Combat.watch(hero, server.getTickCount());
+                advance(server, com.thefarawaydev.realmsofchaos.world.Combat.PARRY_RECOVERY + 1);
+                check(com.thefarawaydev.realmsofchaos.world.Combat.press(hero, server.getTickCount()) && !bystander.doHurtTarget(level, hero), "(another parry)");
+                foe.damageCooldownTime = 0;
+                float f0 = foe.getHealth();
+                foe.hurtServer(level, level.damageSources().playerAttack(hero), 4.0F);
+                float answered = f0 - foe.getHealth();
+                check(ordinary > 0.5F && answered > ordinary * 1.9F, "a riposte on a reeling enemy is worth far more than the same blow otherwise: " + ordinary + " then " + answered);
+                check(!com.thefarawaydev.realmsofchaos.world.Combat.riposteReady(hero) && com.thefarawaydev.realmsofchaos.world.Combat.momentum(hero) == 2, "the riposte is spent, and momentum builds");
+                // ---- momentum, to five, and lost at a blow
+                for (int i = 0; i < 6; i++) {
+                    plain.damageCooldownTime = 0;
+                    plain.hurtServer(level, level.damageSources().playerAttack(hero), 0.5F);
+                }
+                check(com.thefarawaydev.realmsofchaos.world.Combat.momentum(hero) == com.thefarawaydev.realmsofchaos.world.Combat.MAX_MOMENTUM, "momentum builds to five and no further");
+                advance(server, com.thefarawaydev.realmsofchaos.world.Combat.STAGGER_TICKS * 2 + 2);
+                hero.damageCooldownTime = 0;
+                check(plain.doHurtTarget(level, hero) && hero.getHealth() < whole && com.thefarawaydev.realmsofchaos.world.Combat.momentum(hero) == 0, "a blow taken loses it all");
+                float ordinaryHurt = whole - hero.getHealth();
+                // ---- heavy blows
+                check(foe.strikesHeavy() && !green.strikesHeavy(), "sentinels of a dangerous level strike heavy blows; those of the first do not");
+                Sentinel elite = ModContent.SENTINEL.get().create(level, EntitySpawnReason.TRIGGERED), caster = ModContent.SENTINEL.get().create(level, EntitySpawnReason.TRIGGERED);
+                elite.setUp(Sentinel.Kind.of(Line.ZEUS, Sentinel.Role.SOLDIER), 1, 0.0, true);
+                caster.setUp(Sentinel.Kind.of(Line.ZEUS, Sentinel.Role.CASTER), 3, 6.0, false);
+                check(elite.strikesHeavy() && !caster.strikesHeavy(), "an elite always does; one that fights from afar never");
+                hero.setHealth(hero.getMaxHealth());
+                hero.damageCooldownTime = 0;
+                plain.beginHeavy(level, hero);
+                check(plain.windingUp() && !plain.doHurtTarget(level, hero) && hero.getHealth() == hero.getMaxHealth(), "it draws back first, and strikes nothing while it does");
+                check(Tutorial.seen(hero, Tutorial.Tip.PARRY), "the first one seen brings the tip");
+                check(plain.heavyBlow(level, hero) && !plain.windingUp(), "then it lands");
+                float heavyHurt = hero.getMaxHealth() - hero.getHealth();
+                check(heavyHurt > ordinaryHurt * 1.3F, "and it is much the harder blow: " + ordinaryHurt + " then " + heavyHurt);
+                hero.setHealth(hero.getMaxHealth());
+                hero.damageCooldownTime = 0;
+                hero.setPos(8.5, hero.getY(), 8.5);
+                hero.setDeltaMovement(0, 0, 0);
+                advance(server, com.thefarawaydev.realmsofchaos.world.Combat.PARRY_RECOVERY + 1);
+                plain.beginHeavy(level, hero);
+                com.thefarawaydev.realmsofchaos.world.Combat.press(hero, server.getTickCount());
+                check(!plain.heavyBlow(level, hero) && hero.getHealth() == hero.getMaxHealth() && com.thefarawaydev.realmsofchaos.world.Combat.isStaggered(plain), "a heavy blow parried does nothing, and leaves it reeling");
+                hero.setPos(30.5, hero.getY(), 8.5);
+                plain.beginHeavy(level, hero);
+                check(!plain.heavyBlow(level, hero), "and one stepped away from misses");
+                hero.setPos(8.5, hero.getY(), 8.5);
+                // ---- a bolt sent back
+                advance(server, com.thefarawaydev.realmsofchaos.world.Combat.PARRY_RECOVERY + 1);
+                RelicProjectile bolt = new RelicProjectile(level, bystander, new ItemStack(ModContent.orbItem(Power.FIRE)));
+                bystander.damageCooldownTime = 0;
+                float b0 = bystander.getHealth();
+                com.thefarawaydev.realmsofchaos.world.Combat.press(hero, server.getTickCount());
+                bolt.impact(level, bystander, hero);
+                check(hero.getHealth() == hero.getMaxHealth() && bystander.getHealth() < b0, "a bolt parried goes back to whoever loosed it");
+                // ---- a plunge
+                advance(server, com.thefarawaydev.realmsofchaos.world.Combat.STAGGER_TICKS * 2 + 2);
+                com.thefarawaydev.realmsofchaos.world.Combat.forget(hero);
+                bystander.setPos(foe.getX() + 1.0, foe.getY(), foe.getZ());
+                bystander.damageCooldownTime = 0;
+                foe.damageCooldownTime = 0;
+                float by0 = bystander.getHealth();
+                hero.fallDistance = 3.0;
+                hero.setOnGround(false);
+                foe.hurtServer(level, level.damageSources().playerAttack(hero), 4.0F);
+                check(bystander.getHealth() < by0, "a blow struck while falling shakes those round the one it lands on");
+                hero.fallDistance = 0.0;
+                hero.setOnGround(true);
+                // ---- the meter
+                String meter = com.thefarawaydev.realmsofchaos.ui.HudArt.combatMeter(3, 5, true, true).getString();
+                int on = 0, off = 0;
+                for (char c : meter.toCharArray()) {
+                    if (c == com.thefarawaydev.realmsofchaos.ui.HudGlyphs.ICON + com.thefarawaydev.realmsofchaos.ui.HudGlyphs.ICON_PIP_ON) on++;
+                    if (c == com.thefarawaydev.realmsofchaos.ui.HudGlyphs.ICON + com.thefarawaydev.realmsofchaos.ui.HudGlyphs.ICON_PIP_OFF) off++;
+                }
+                check(on == 3 && off == 2 && meter.indexOf(com.thefarawaydev.realmsofchaos.ui.HudGlyphs.ICON + com.thefarawaydev.realmsofchaos.ui.HudGlyphs.ICON_PARRY_READY) > 0
+                        && meter.indexOf(com.thefarawaydev.realmsofchaos.ui.HudGlyphs.ICON + com.thefarawaydev.realmsofchaos.ui.HudGlyphs.ICON_RIPOSTE) > 0, "the meter shows momentum, the parry and the riposte");
+                check(com.thefarawaydev.realmsofchaos.ui.Options.on(hero, com.thefarawaydev.realmsofchaos.ui.Options.Option.COMBAT), "and is shown unless it is turned off");
+                // ---- a god's blow can be met too
+                GodBoss boss = ModContent.GOD_BOSS.get().create(level, EntitySpawnReason.TRIGGERED);
+                boss.setGod(Gods.get(Line.HADES, 14));
+                boss.setPos(hero.getX() + 2, hero.getY(), hero.getZ());
+                boss.setHome(boss.position());
+                level.addFreshEntity(boss);
+                advance(server, com.thefarawaydev.realmsofchaos.world.Combat.PARRY_RECOVERY + 1);
+                com.thefarawaydev.realmsofchaos.world.Combat.press(hero, server.getTickCount());
+                hero.damageCooldownTime = 0;
+                check(!boss.doHurtTarget(level, hero) && hero.getHealth() == hero.getMaxHealth() && com.thefarawaydev.realmsofchaos.world.Combat.riposteReady(hero), "even a god's blow can be met");
+                boss.discard();
+            } finally {
+                for (Sentinel one : List.of(foe, plain, bystander)) one.discard();
+                hero.setShiftKeyDown(false);
+                hero.remove(net.minecraft.world.entity.Entity.RemovalReason.DISCARDED);
+                com.thefarawaydev.realmsofchaos.world.Combat.forgetAll();
+                com.thefarawaydev.realmsofchaos.ui.Cards.clear(hero);
+                Tutorial.reset(hero);
+                advance(server, Tutorial.DELAY + 2);
+                Scheduler.tick(server);
+                com.thefarawaydev.realmsofchaos.ui.Cards.clear(hero);
+            }
+        });
+
+        step("a seal's boon, a gate that faces the way in, a chart a shrine fills in, the bestiary, a frame for every phase", () -> {
+            ServerPlayer hero = fakePlayer(server, level, "RocFortunate");
+            com.thefarawaydev.realmsofchaos.world.Boons.clear(hero);
+            com.thefarawaydev.realmsofchaos.ui.Cards.clear(hero);
+            com.thefarawaydev.realmsofchaos.ui.Options.reset(hero);
+            Tutorial.reset(hero);
+            hero.setPos(8.5, level.getHeight(net.minecraft.world.level.levelgen.Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, 8, 8), 8.5);
+            level.addNewPlayer(hero);
+            settle(level);
+            try {
+                // ---- boons
+                BlockPos sealAt = new BlockPos(5, 70, 5);
+                var offered = com.thefarawaydev.realmsofchaos.world.Boons.offer(hero, sealAt);
+                check(offered.size() == 3 && new java.util.HashSet<>(offered).size() == 3 && offered.equals(com.thefarawaydev.realmsofchaos.world.Boons.offer(hero, sealAt)), "a seal offers three different boons, the same three each time it is asked");
+                for (var boon : com.thefarawaydev.realmsofchaos.world.Boons.Boon.values()) {
+                    check(!com.thefarawaydev.realmsofchaos.ui.Words.of(boon.displayName()).startsWith("boon.") && !com.thefarawaydev.realmsofchaos.ui.Words.of(boon.description()).startsWith("boon."), boon + " is put into words");
+                }
+                float base = hero.getMaxHealth();
+                double blow = hero.getAttributeValue(net.minecraft.world.entity.ai.attributes.Attributes.ATTACK_DAMAGE);
+                int window = com.thefarawaydev.realmsofchaos.world.Combat.window(hero);
+                check(com.thefarawaydev.realmsofchaos.world.Boons.grant(hero, com.thefarawaydev.realmsofchaos.world.Boons.Boon.VIGOUR) && hero.getMaxHealth() == base + 4.0F, "Vigour: two more hearts");
+                check(com.thefarawaydev.realmsofchaos.world.Boons.grant(hero, com.thefarawaydev.realmsofchaos.world.Boons.Boon.EDGE)
+                        && hero.getAttributeValue(net.minecraft.world.entity.ai.attributes.Attributes.ATTACK_DAMAGE) > blow * 1.09, "Edge: a harder blow");
+                check(com.thefarawaydev.realmsofchaos.world.Boons.grant(hero, com.thefarawaydev.realmsofchaos.world.Boons.Boon.KEEN) && com.thefarawaydev.realmsofchaos.world.Combat.window(hero) == window + 3, "Keen Eye: longer to parry in");
+                for (int i = 0; i < com.thefarawaydev.realmsofchaos.world.Boons.MAX_STACK - 1; i++) check(com.thefarawaydev.realmsofchaos.world.Boons.grant(hero, com.thefarawaydev.realmsofchaos.world.Boons.Boon.VIGOUR), "a boon can be taken again");
+                check(!com.thefarawaydev.realmsofchaos.world.Boons.grant(hero, com.thefarawaydev.realmsofchaos.world.Boons.Boon.VIGOUR) && hero.getMaxHealth() == base + 16.0F, "up to four times");
+                check(!com.thefarawaydev.realmsofchaos.world.Boons.offer(hero, sealAt).contains(com.thefarawaydev.realmsofchaos.world.Boons.Boon.VIGOUR), "one at its limit is not offered again");
+                check(com.thefarawaydev.realmsofchaos.world.Boons.clear(hero) == 6 && hero.getMaxHealth() == base && com.thefarawaydev.realmsofchaos.world.Combat.window(hero) == window
+                        && Math.abs(hero.getAttributeValue(net.minecraft.world.entity.ai.attributes.Attributes.ATTACK_DAMAGE) - blow) < 1.0e-6, "and all of them are laid down together");
+                com.thefarawaydev.realmsofchaos.ui.BoonMenu.open(hero, sealAt);
+                check(hero.containerMenu instanceof com.thefarawaydev.realmsofchaos.ui.BoonMenu, "the boon menu opens");
+                var boons = (com.thefarawaydev.realmsofchaos.ui.BoonMenu) hero.containerMenu;
+                var second = boons.offered().get(1);
+                boons.clicked(com.thefarawaydev.realmsofchaos.ui.BoonMenu.SLOTS[1], 0, net.minecraft.world.inventory.ContainerInput.PICKUP, hero);
+                check(com.thefarawaydev.realmsofchaos.world.Boons.count(hero, second) == 1 && com.thefarawaydev.realmsofchaos.world.Boons.total(hero) == 1
+                        && !(hero.containerMenu instanceof com.thefarawaydev.realmsofchaos.ui.BoonMenu), "a click takes that boon, and only that one");
+                var card = com.thefarawaydev.realmsofchaos.ui.Cards.showing(hero);
+                check(card != null && card.kind() == com.thefarawaydev.realmsofchaos.ui.HudArt.Card.BOON, "and a card says what was taken");
+                com.thefarawaydev.realmsofchaos.world.Boons.clear(hero);
+                com.thefarawaydev.realmsofchaos.ui.BoonMenu.open(hero, sealAt);
+                var first = ((com.thefarawaydev.realmsofchaos.ui.BoonMenu) hero.containerMenu).offered().get(0);
+                hero.closeContainer();
+                check(com.thefarawaydev.realmsofchaos.world.Boons.count(hero, first) == 1 && com.thefarawaydev.realmsofchaos.world.Boons.total(hero) == 1, "closing without choosing takes the first: a seal never gives nothing");
+                com.thefarawaydev.realmsofchaos.world.Boons.clear(hero);
+
+                // ---- the gate faces the way in
+                Passages.Plan turned = null, straight = null;
+                for (Line line : Line.values()) {
+                    for (int index = 1; index <= Passages.COUNT; index++) {
+                        for (int stage = 0; stage < Passages.stages(level, line, index); stage++) {
+                            Passages.Plan plan = Passages.plan(level, line, index, stage);
+                            Passages.Cell way = plan.approach();
+                            check(way != null && plan.connected(plan.exit, way), plan.label() + ": the gate has a way in to face");
+                            check(plan.gateTurned() == (way.x() != plan.exit.x()), plan.label() + ": it stands across that way");
+                            List<BlockPos> gate = plan.gatePositions();
+                            boolean alongZ = gate.stream().map(BlockPos::getX).distinct().count() == 1;
+                            check(gate.size() == 9 && alongZ == plan.gateTurned(), plan.label() + ": nine blocks, in a plane that faces the doorway");
+                            if (plan.gateTurned() && turned == null && line == Line.POSEIDON) turned = plan;
+                            if (!plan.gateTurned() && straight == null && line == Line.POSEIDON) straight = plan;
+                        }
+                    }
+                }
+                check(turned != null && straight != null, "both ways round turn up");
+                Realm.testAlias(Level.OVERWORLD, Realm.ofLine(Line.POSEIDON));
+                for (Passages.Plan plan : List.of(turned, straight)) {
+                    Passages.build(level, plan);
+                    checkPassage(level, plan, "gate level " + plan.label() + ": ");
+                    for (BlockPos g : plan.gatePositions()) check(level.getBlockState(g).is(ModContent.GATE_ASCEND.get()), "the gate stands where the plan says");
+                    check(solid(level, plan.gateOffset(2, 1)) && solid(level, plan.gateOffset(-2, 3)) && solid(level, plan.gateOffset(0, 4)), "in an arch of its own");
+                    BlockPos middle = plan.centre(plan.exit);
+                    BlockPos before = plan.gateTurned() ? middle.offset(plan.approach().x() > plan.exit.x() ? 2 : -2, 1, 0) : middle.offset(0, 1, plan.approach().z() > plan.exit.z() ? 2 : -2);
+                    check(level.getBlockState(before).isAir(), "with open floor between it and the doorway it faces");
+                }
+
+                // ---- a shrine fills the chart in
+                Passages.Plan plan = turned;
+                Passages.Cell shrine = null, sealRoom = plan.seals.get(0);
+                for (Passages.Cell c : plan.cells()) if (plan.kind(c) == Passages.Kind.SHRINE) shrine = c;
+                check(com.thefarawaydev.realmsofchaos.world.Charts.sign(Passages.Kind.SEAL, false).length > 0 && com.thefarawaydev.realmsofchaos.world.Charts.sign(Passages.Kind.ROOM, false).length == 0
+                        && com.thefarawaydev.realmsofchaos.world.Charts.sign(Passages.Kind.SEAL, true) != com.thefarawaydev.realmsofchaos.world.Charts.sign(Passages.Kind.SEAL, false), "rooms that matter have a sign of their own");
+                int before = com.thefarawaydev.realmsofchaos.world.Charts.draw(hero, level, plan);
+                check(before < plan.size * plan.size && !com.thefarawaydev.realmsofchaos.world.Charts.revealed(hero, plan), "a chart starts with only what has been walked: " + before);
+                check(com.thefarawaydev.realmsofchaos.world.Charts.reveal(hero, level, plan.featurePos(shrine)) && !com.thefarawaydev.realmsofchaos.world.Charts.reveal(hero, level, plan.featurePos(shrine)), "a shrine shows its level, once");
+                check(com.thefarawaydev.realmsofchaos.world.Charts.draw(hero, level, plan) == plan.size * plan.size, "then every room is inked in");
+                int[] at = com.thefarawaydev.realmsofchaos.world.Charts.pixel(plan, sealRoom);
+                byte black = net.minecraft.world.level.material.MapColor.COLOR_BLACK.getPackedId(net.minecraft.world.level.material.MapColor.Brightness.NORMAL);
+                check(com.thefarawaydev.realmsofchaos.world.Charts.at(hero, at[0], at[1] + 4) == black && com.thefarawaydev.realmsofchaos.world.Charts.at(hero, at[0] + 2, at[1] + 6) == black
+                        && com.thefarawaydev.realmsofchaos.world.Charts.at(hero, at[0], at[1]) != black, "with a cross where a seal is");
+                int leftmost = (128 - plan.seals.size() * 6 + 2) / 2;
+                byte red = net.minecraft.world.level.material.MapColor.COLOR_RED.getPackedId(net.minecraft.world.level.material.MapColor.Brightness.HIGH);
+                check(com.thefarawaydev.realmsofchaos.world.Charts.at(hero, leftmost, 124) == red && com.thefarawaydev.realmsofchaos.world.Charts.at(hero, leftmost + 6, 124) == red, "and a mark along the bottom for every seal still whole");
+                Realm.testAlias(Level.OVERWORLD, Realm.ABYSS);
+
+                // ---- the bestiary
+                Sentinel.Kind kind = Sentinel.Kind.of(Line.POSEIDON, Sentinel.Role.BRUTE);
+                ProgressData.get(server).clearCounters("bestiary/" + hero.getUUID() + "/");
+                check(com.thefarawaydev.realmsofchaos.ui.BestiaryMenu.known(hero) == 0, "a bestiary starts empty");
+                Sentinel victim = ModContent.SENTINEL.get().create(level, EntitySpawnReason.TRIGGERED);
+                victim.setUp(kind, 1);
+                victim.setPos(hero.getX() + 2, hero.getY(), hero.getZ());
+                level.addFreshEntity(victim);
+                victim.hurtServer(level, level.damageSources().playerAttack(hero), 1.0e5F);
+                check(!victim.isAlive() && com.thefarawaydev.realmsofchaos.ui.BestiaryMenu.slain(hero, kind) == 1 && com.thefarawaydev.realmsofchaos.ui.BestiaryMenu.known(hero) == 1, "a sentinel felled is written down");
+                com.thefarawaydev.realmsofchaos.ui.BestiaryMenu.open(hero);
+                var book = (com.thefarawaydev.realmsofchaos.ui.BestiaryMenu) hero.containerMenu;
+                check(book.page() == Line.ZEUS && com.thefarawaydev.realmsofchaos.ui.BestiaryMenu.kinds(Line.ZEUS).size() == 21, "the book opens at the first tower, twenty-one kinds to a page");
+                book.clicked(com.thefarawaydev.realmsofchaos.ui.BestiaryMenu.TABS[1], 0, net.minecraft.world.inventory.ContainerInput.PICKUP, hero);
+                int where = com.thefarawaydev.realmsofchaos.ui.BestiaryMenu.kinds(Line.POSEIDON).indexOf(kind);
+                var entry = book.getSlot(com.thefarawaydev.realmsofchaos.ui.BestiaryMenu.slotOf(where)).getItem();
+                var blank = book.getSlot(com.thefarawaydev.realmsofchaos.ui.BestiaryMenu.slotOf(where == 0 ? 1 : 0)).getItem().get(net.minecraft.core.component.DataComponents.ITEM_MODEL);
+                var shownAs = entry.get(net.minecraft.core.component.DataComponents.ITEM_MODEL);
+                check(book.page() == Line.POSEIDON && !entry.isEmpty() && (shownAs == null || !shownAs.getPath().startsWith("ui/")) && blank != null && blank.getPath().equals("ui/gem_gray"),
+                        "a kind that has fallen is shown; the rest are blanks: " + shownAs + " / " + blank);
+                hero.closeContainer();
+                CodexMenu.open(hero);
+                ((CodexMenu) hero.containerMenu).clicked(CodexMenu.SLOT_BESTIARY, 0, net.minecraft.world.inventory.ContainerInput.PICKUP, hero);
+                check(hero.containerMenu instanceof com.thefarawaydev.realmsofchaos.ui.BestiaryMenu, "the Codex opens it");
+                hero.closeContainer();
+
+                // ---- a frame for every phase, and what the phase counts
+                ClassLoader assets = RealmsOfChaos.class.getClassLoader();
+                java.util.Set<Character> frames = new java.util.HashSet<>();
+                for (Line line : Line.values()) {
+                    for (String art : new String[]{"", "_aegis", "_wrath"}) check(assets.getResource("assets/realms_of_chaos/textures/gui/hud/frame_" + line.id() + art + ".png") != null, "the frame " + line.id() + art);
+                    frames.add(com.thefarawaydev.realmsofchaos.ui.HudArt.frame(line, 1, false));
+                    frames.add(com.thefarawaydev.realmsofchaos.ui.HudArt.frame(line, 2, true));
+                    frames.add(com.thefarawaydev.realmsofchaos.ui.HudArt.frame(line, 3, false));
+                    check(com.thefarawaydev.realmsofchaos.ui.HudArt.frame(line, 2, false) == com.thefarawaydev.realmsofchaos.ui.HudArt.frame(line, 1, false), "with its aegis down a god's bar is plain again until its wrath");
+                    for (int all = 0; all <= 5; all++) {
+                        String row = com.thefarawaydev.realmsofchaos.ui.HudArt.bossBar(line, 2, true, 0.6F, "Name", all, Math.max(0, all - 1)).getString();
+                        int up = 0, down = 0;
+                        for (char c : row.toCharArray()) {
+                            if (c == com.thefarawaydev.realmsofchaos.ui.HudGlyphs.ICON + com.thefarawaydev.realmsofchaos.ui.HudGlyphs.ICON_PYLON) up++;
+                            if (c == com.thefarawaydev.realmsofchaos.ui.HudGlyphs.ICON + com.thefarawaydev.realmsofchaos.ui.HudGlyphs.ICON_PYLON_GONE) down++;
+                        }
+                        check(com.thefarawaydev.realmsofchaos.ui.HudArt.advance(row) == com.thefarawaydev.realmsofchaos.ui.HudGlyphs.FRAME_WIDTH && up == Math.max(0, all - 1) && down == Math.min(all, 1), "pylons standing and fallen, and the row still a frame wide: " + all);
+                    }
+                }
+                check(frames.size() == 9 && assets.getResource("assets/realms_of_chaos/textures/gui/hud/icons.png") != null
+                        && assets.getResource("assets/realms_of_chaos/textures/gui/hud/card_aegis.png") != null && assets.getResource("assets/realms_of_chaos/textures/gui/hud/card_wrath.png") != null, "nine frames, the icons and the phase cards");
+                com.thefarawaydev.realmsofchaos.ui.Cards.clear(hero);
+                God god = Gods.get(Line.ZEUS, 13);
+                GodBoss boss = ModContent.GOD_BOSS.get().create(level, EntitySpawnReason.TRIGGERED);
+                boss.setGod(god);
+                boss.setPos(hero.getX() + 3, hero.getY(), hero.getZ());
+                boss.setHome(boss.position());
+                level.addFreshEntity(boss);
+                try {
+                    boss.damageCooldownTime = 0;
+                    boss.hurtServer(level, level.damageSources().playerAttack(hero), 1.0e5F);
+                    boss.refreshBar();
+                    String bar = boss.barName().getString();
+                    int standing = 0;
+                    for (char c : bar.toCharArray()) if (c == com.thefarawaydev.realmsofchaos.ui.HudGlyphs.ICON + com.thefarawaydev.realmsofchaos.ui.HudGlyphs.ICON_PYLON) standing++;
+                    check(boss.aegisUp() && bar.charAt(0) == com.thefarawaydev.realmsofchaos.ui.HudGlyphs.PHASE_FRAME[0][0] && standing == Math.min(5, boss.pylons().size()) && standing >= 2,
+                            "under its aegis the bar wears the aegis's frame and counts the pylons: " + standing);
+                    card = com.thefarawaydev.realmsofchaos.ui.Cards.showing(hero);
+                    check(card != null && card.kind() == com.thefarawaydev.realmsofchaos.ui.HudArt.Card.AEGIS && card.lines().get(0).contains(god.englishName()), "and the phase is announced on a card of its own");
+                    boss.endAegis(level, true);
+                    boss.refreshBar();
+                    check(boss.barName().getString().charAt(0) == com.thefarawaydev.realmsofchaos.ui.HudGlyphs.FRAME[0], "the aegis broken, the frame is plain again");
+                    boss.damageCooldownTime = 0;
+                    boss.hurtServer(level, level.damageSources().playerAttack(hero), 1.0e5F);
+                    boss.refreshBar();
+                    bar = boss.barName().getString();
+                    int rings = 0;
+                    for (char c : bar.toCharArray()) if (c == com.thefarawaydev.realmsofchaos.ui.HudGlyphs.ICON + com.thefarawaydev.realmsofchaos.ui.HudGlyphs.ICON_RING) rings++;
+                    check(boss.phase() == 3 && bar.charAt(0) == com.thefarawaydev.realmsofchaos.ui.HudGlyphs.PHASE_FRAME[0][1] && rings == 4, "in its wrath, the wrath's frame, and the rings of floor still left: " + rings);
+                    card = com.thefarawaydev.realmsofchaos.ui.Cards.showing(hero);
+                    check(card != null && card.kind() == com.thefarawaydev.realmsofchaos.ui.HudArt.Card.WRATH, "and the wrath has its card");
+                } finally {
+                    boss.discard();
+                }
+            } finally {
+                hero.remove(net.minecraft.world.entity.Entity.RemovalReason.DISCARDED);
+                com.thefarawaydev.realmsofchaos.world.Boons.clear(hero);
+                com.thefarawaydev.realmsofchaos.ui.Cards.clear(hero);
+                Tutorial.reset(hero);
+                Realm.testAlias(Level.OVERWORLD, Realm.ABYSS);
+                advance(server, Tutorial.DELAY + 2);
+                Scheduler.tick(server);
+                com.thefarawaydev.realmsofchaos.ui.Cards.clear(hero);
+                clearBosses(level);
+            }
+        });
+
         step("the screen: a tip is a card of its own, a long title becomes a card, and short ones stay titles", () -> {
             ServerPlayer hero = fakePlayer(server, level, "RocReader");
             com.thefarawaydev.realmsofchaos.ui.Options.reset(hero);
@@ -4534,7 +4874,7 @@ public final class SelfTest {
                             if (c >= com.thefarawaydev.realmsofchaos.ui.HudGlyphs.FILL && c <= com.thefarawaydev.realmsofchaos.ui.HudGlyphs.FILL + 7) filled += 1 << (c - com.thefarawaydev.realmsofchaos.ui.HudGlyphs.FILL);
                         }
                         check(filled == com.thefarawaydev.realmsofchaos.ui.HudArt.fillWidth(progress), name + ": the fill is as long as the health: " + filled);
-                        check(row.charAt(0) == com.thefarawaydev.realmsofchaos.ui.HudGlyphs.FRAME[god.line().ordinal()]
+                        check(row.charAt(0) == com.thefarawaydev.realmsofchaos.ui.HudArt.frame(god.line(), phase, phase == 2)
                                 && row.indexOf(com.thefarawaydev.realmsofchaos.ui.HudGlyphs.OVERLAY[phase - 1]) > 0, name + ": its tower's frame, and the gems of its phase");
                     }
                 }
@@ -4749,7 +5089,7 @@ public final class SelfTest {
                 font = new String(in.readAllBytes(), java.nio.charset.StandardCharsets.UTF_8);
             }
             check(font.contains("space") && font.contains("bitmap"), "the font has pictures, and the spaces that pull a panel back to the corner");
-            String[] names = {"codex", "forge", "passage", "bag6", "altar", "seal", "deck", "party", "story", "bag3", "settings", "insight"};
+            String[] names = {"codex", "forge", "passage", "bag6", "altar", "seal", "deck", "party", "story", "bag3", "settings", "insight", "boon", "bestiary"};
             com.thefarawaydev.realmsofchaos.ui.Skin.Panel[] panels = com.thefarawaydev.realmsofchaos.ui.Skin.Panel.values();
             check(panels.length == names.length, "a picture for every panel");
             for (int i = 0; i < names.length; i++) {

@@ -53,11 +53,21 @@ public final class Cards {
     }
 
     public static void show(ServerPlayer player, HudArt.Card kind, String heading, String text) {
+        show(player, kind, heading, text, false);
+    }
+
+    /** @param urgent shown at once, in place of whatever card is up: a phase beginning does not wait behind a tip */
+    public static void show(ServerPlayer player, HudArt.Card kind, String heading, String text, boolean urgent) {
         MinecraftServer server = player.level().getServer();
         if (server == null) return;
         Shown card = new Shown(kind, HudArt.lines(heading, text), heading != null && !heading.isBlank());
         Slot slot = SLOTS.computeIfAbsent(player.getUUID(), id -> new Slot());
         slot.player = player;
+        if (urgent) {
+            take(slot);
+            put(server, player, slot, card);
+            return;
+        }
         if (slot.shown != null || server.getTickCount() < slot.until) {
             while (slot.waiting.size() >= MAX_WAITING) slot.waiting.pollFirst();
             slot.waiting.addLast(card);

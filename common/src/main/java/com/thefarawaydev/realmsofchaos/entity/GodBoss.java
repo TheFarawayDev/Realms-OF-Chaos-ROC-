@@ -159,7 +159,7 @@ public class GodBoss extends Monster implements RangedAttackMob {
             UUID.randomUUID(), Component.empty(), BossEvent.BossBarColor.WHITE, BossEvent.BossBarOverlay.PROGRESS);
     private String castName = "";
     /** What the bar last showed, so its picture is only sent again when it would look different. */
-    private int barKey = -1;
+    private int barKey = -1, pylonTotal;
     /** What each challenger did in this trial, for the gods' longer memory; and the answers already given. */
     private final java.util.Map<UUID, Insight.Tally> tallies = new java.util.HashMap<>();
     private final java.util.Map<UUID, Float> lastHealth = new java.util.HashMap<>(), mended = new java.util.HashMap<>();
@@ -620,11 +620,26 @@ public class GodBoss extends Monster implements RangedAttackMob {
     public void refreshBar() {
         God god = god();
         float progress = getMaxHealth() <= 0.0F ? 0.0F : getHealth() / getMaxHealth();
-        boolean shield = shielded();
-        int key = HudArt.fillWidth(progress) | (phase() << 8) | (shield ? 1 << 12 : 0) | (god.index() << 13);
+        // (the aegis, not the moment of its last stand: that belongs to the wrath, and wears the wrath's frame)
+        boolean shield = aegis;
+        // what the phase counts: pylons under an aegis, rings of floor in the wrath
+        int all = 0, lit = 0;
+        if (shield) {
+            pylonTotal = Math.max(pylonTotal, pylons.size());
+            all = Math.min(HudArt.MAX_WIDGETS, pylonTotal);
+            lit = Math.min(all, pylons.size());
+        } else {
+            pylonTotal = 0;
+            if (phase() >= 3) {
+                double start = collapseStart(), left = safeRadius < 0 ? start : safeRadius;
+                all = 4;
+                lit = (int) Math.ceil(4.0 * Math.max(0.0, left - Arena.MIN_SAFE) / Math.max(1.0, start - Arena.MIN_SAFE));
+            }
+        }
+        int key = HudArt.fillWidth(progress) | (phase() << 8) | (shield ? 1 << 12 : 0) | (god.index() << 13) | (lit << 20) | (all << 24);
         if (key == barKey) return;
         barKey = key;
-        bossEvent.setName(HudArt.bossBar(god.line(), phase(), shield, progress, god.englishName()));
+        bossEvent.setName(HudArt.bossBar(god.line(), phase(), shield, progress, god.englishName(), all, lit));
     }
 
     /** The bar as it is drawn now. */
@@ -746,8 +761,11 @@ public class GodBoss extends Monster implements RangedAttackMob {
 
     @Override
     public boolean doHurtTarget(ServerLevel level, net.minecraft.world.entity.Entity target) {
+        // a blow met at the right moment is turned aside, even a god's
+        if (!statue && target instanceof ServerPlayer p && com.thefarawaydev.realmsofchaos.world.Combat.tryParry(level, p, this)) return false;
         ItemStack raised = target instanceof ServerPlayer p && p.isBlocking() ? p.getUseItem().copy() : ItemStack.EMPTY;
         boolean hit = super.doHurtTarget(level, target);
+        if (hit && target instanceof ServerPlayer p) com.thefarawaydev.realmsofchaos.world.Combat.struck(p);
         if (!statue && !raised.isEmpty() && target instanceof ServerPlayer p) {
             tally(p).blocks++;
             int known = Insight.level(p, Insight.Habit.GUARD);
@@ -863,6 +881,7 @@ public class GodBoss extends Monster implements RangedAttackMob {
         }
         boolean afar = fromAfar(source);
         ServerPlayer striker = source.getEntity() instanceof ServerPlayer sp ? sp : null;
+        if (striker != null && !afar) amount = com.thefarawaydev.realmsofchaos.world.Combat.strike(level, striker, this, source, amount);
         // (a god that knows an archer is not waiting to find out again)
         if (afar && striker != null) amount *= 1.0F - 0.12F * Insight.level(striker, Insight.Habit.ARCHER);
         if (afar && stance == Stance.DEFLECT) {
@@ -997,8 +1016,9 @@ public class GodBoss extends Monster implements RangedAttackMob {
                 p.needsSync = true;
             }
             if (p instanceof ServerPlayer sp) {
-                Hud.title(sp, Hud.colored(Component.translatable(hud + "aegis", god.displayName()), god.line().color()),
-                        Hud.colored(Component.translatable(hud + "aegis.sub", pylons.size()), 0xCCCCCC), 5, 60, 15);
+                // a card of the phase's own, put up at once
+                com.thefarawaydev.realmsofchaos.ui.Cards.show(sp, HudArt.Card.AEGIS, com.thefarawaydev.realmsofchaos.ui.Words.of(hud + "aegis", god.displayName()),
+                        com.thefarawaydev.realmsofchaos.ui.Words.of(hud + "aegis.sub", pylons.size()), true);
                 com.thefarawaydev.realmsofchaos.ui.Tutorial.tip(sp, com.thefarawaydev.realmsofchaos.ui.Tutorial.Tip.AEGIS);
             }
         }
@@ -1416,8 +1436,8 @@ public class GodBoss extends Monster implements RangedAttackMob {
         com.thefarawaydev.realmsofchaos.world.Fx.impact(level, position(), 8);
         for (Player p : nearbyPlayers(level, 40)) {
             if (p instanceof ServerPlayer sp) {
-                Hud.title(sp, Hud.colored(Component.translatable("hud." + RealmsOfChaos.MOD_ID + ".laststand", god.displayName()), god.line().color()),
-                        Hud.colored(Component.translatable("hud." + RealmsOfChaos.MOD_ID + ".laststand.sub"), 0xCCCCCC), 5, 50, 15);
+                com.thefarawaydev.realmsofchaos.ui.Cards.show(sp, HudArt.Card.WRATH, com.thefarawaydev.realmsofchaos.ui.Words.of("hud." + RealmsOfChaos.MOD_ID + ".laststand", god.displayName()),
+                        com.thefarawaydev.realmsofchaos.ui.Words.of("hud." + RealmsOfChaos.MOD_ID + ".laststand.sub"), true);
             }
         }
         // two of its tower's sentinels answer the call, as strong as the floor asks

@@ -1,5 +1,7 @@
 package com.thefarawaydev.realmsofchaos.entity;
 
+import net.minecraft.server.level.ServerPlayer;
+import com.thefarawaydev.realmsofchaos.world.Combat;
 import com.thefarawaydev.realmsofchaos.ModContent;
 import com.thefarawaydev.realmsofchaos.RealmsOfChaos;
 import com.thefarawaydev.realmsofchaos.god.God;
@@ -182,6 +184,7 @@ public class Sentinel extends Monster implements RangedAttackMob {
     private int riteCooldown = 80;
     private Goal attackGoal, leapGoal;
     private int moveCooldown = 100;
+    private int heavyCooldown = 60, heavyWindup;
     // ---- traits
     private int fuse = -1, trickCooldown = 60, frenzy, revives, life;
     private boolean illusion, split, wild, sharing;
@@ -498,11 +501,82 @@ public class Sentinel extends Monster implements RangedAttackMob {
         }
     }
 
+    /** How long a heavy blow is drawn back for, and how often one comes. */
+    public static final int HEAVY_WINDUP = 18, HEAVY_EVERY = 110;
+    public static final float HEAVY = 1.8F;
+
+    /** Which sentinels strike heavy blows: those that fight hand to hand, once a level is dangerous enough - and every elite. */
+    public boolean strikesHeavy() {
+        Role role = kind().role;
+        return !illusion && role != Role.MYSTIC && role != Role.CASTER && (threat >= 1.0 || isElite());
+    }
+
+    public boolean windingUp() {
+        return heavyWindup > 0;
+    }
+
+    /** @return true while the sentinel is busy with a heavy blow, or reeling from a parry */
+    private boolean tendHeavy(ServerLevel level, LivingEntity target) {
+        if (!strikesHeavy()) return false;
+        if (Combat.isStaggered(this)) {
+            heavyWindup = 0;
+            return true;
+        }
+        if (heavyWindup > 0) {
+            getNavigation().stop();
+            getLookControl().setLookAt(target);
+            if (heavyWindup % 4 == 0) level.sendParticles(ParticleTypes.ANGRY_VILLAGER, getX(), getY() + getBbHeight() + 0.4, getZ(), 1, 0.2, 0.1, 0.2, 0.0);
+            if (--heavyWindup == 0) heavyBlow(level, target);
+            return true;
+        }
+        if (heavyCooldown > 0) {
+            heavyCooldown--;
+            return false;
+        }
+        if (distanceToSqr(target) > 9.0 || !hasLineOfSight(target)) return false;
+        beginHeavy(level, target);
+        return true;
+    }
+
+    /** Draws back for a heavy blow: it stops, it is loud about it, and anyone watching has most of a second. */
+    public void beginHeavy(ServerLevel level, LivingEntity target) {
+        heavyWindup = HEAVY_WINDUP;
+        heavyCooldown = HEAVY_EVERY + random.nextInt(40);
+        level.playSound(null, blockPosition(), SoundEvents.RAVAGER_ATTACK, SoundSource.HOSTILE, 0.8F, 1.4F);
+        level.sendParticles(ParticleTypes.CRIT, getX(), getY() + getBbHeight() * 0.7, getZ(), 10, 0.3, 0.3, 0.3, 0.1);
+        if (target instanceof ServerPlayer watcher) com.thefarawaydev.realmsofchaos.ui.Tutorial.tip(watcher, com.thefarawaydev.realmsofchaos.ui.Tutorial.Tip.PARRY);
+    }
+
+    /**
+     * The heavy blow lands - unless its target has stepped out of reach, or meets it: a heavy blow parried leaves
+     * the sentinel reeling twice as long. @return true if it did harm
+     */
+    public boolean heavyBlow(ServerLevel level, LivingEntity target) {
+        heavyWindup = 0;
+        if (!target.isAlive() || distanceToSqr(target) > 12.25) return false;
+        if (target instanceof ServerPlayer met && Combat.tryParry(level, met, this)) {
+            Combat.stagger(level, this, Combat.STAGGER_TICKS * 2);
+            return false;
+        }
+        boolean hit = target.hurtServer(level, damageSources().mobAttack(this), (float) getAttributeValue(Attributes.ATTACK_DAMAGE) * HEAVY);
+        if (hit) {
+            Vec3 away = target.position().subtract(position());
+            double d = Math.max(0.01, Math.sqrt(away.x * away.x + away.z * away.z));
+            target.setDeltaMovement(away.x / d * 0.9, 0.35, away.z / d * 0.9);
+            target.needsSync = true;
+            level.playSound(null, target.blockPosition(), SoundEvents.PLAYER_ATTACK_KNOCKBACK, SoundSource.HOSTILE, 1.0F, 0.6F);
+            if (target instanceof ServerPlayer struck) Combat.struck(struck);
+        }
+        return hit;
+    }
+
     /** A brute's blow throws its target back; a Fury's sets it alight; a thief's empties your hand. */
     @Override
     public boolean doHurtTarget(ServerLevel level, Entity target) {
-        if (illusion) return false;
+        if (illusion || Combat.isStaggered(this) || heavyWindup > 0) return false;
+        if (target instanceof ServerPlayer met && Combat.tryParry(level, met, this)) return false;
         boolean hit = super.doHurtTarget(level, target);
+        if (hit && target instanceof ServerPlayer struck) Combat.struck(struck);
         if (hit && kind() == Kind.FURY) target.igniteForSeconds(3.0F);
         if (hit && trait() == Trait.DISARM && target instanceof Player player && trickCooldown <= 0 && disarm(player)) trickCooldown = 160;
         if (hit && kind().role == Role.BRUTE && target instanceof LivingEntity living) {
@@ -555,6 +629,7 @@ public class Sentinel extends Monster implements RangedAttackMob {
     @Override
     public boolean hurtServer(ServerLevel level, DamageSource source, float amount) {
         if (!source.is(net.minecraft.tags.DamageTypeTags.BYPASSES_INVULNERABILITY) && !sharing && !illusion) {
+            if (source.getEntity() instanceof ServerPlayer striker) amount = Combat.strike(level, striker, this, source, amount);
             Vec3 from = source.getSourcePosition();
             if (trait() == Trait.SHIELD) {
                 if (from != null && facing(from)) {
@@ -655,6 +730,10 @@ public class Sentinel extends Monster implements RangedAttackMob {
     public void die(DamageSource source) {
         super.die(source);
         if (!(level() instanceof ServerLevel level) || illusion) return;
+        if (source.getEntity() instanceof ServerPlayer killer) {
+            com.thefarawaydev.realmsofchaos.ui.BestiaryMenu.record(killer, kind());
+            com.thefarawaydev.realmsofchaos.world.Boons.onKill(killer);
+        }
         for (Sentinel ally : allies(level, 12.0)) ally.witness(this);
         if (trait() == Trait.BANNER) {
             // the standard falls: those who fought under it falter
@@ -902,6 +981,7 @@ public class Sentinel extends Monster implements RangedAttackMob {
         if (target == null || !target.isAlive()) return;
         tickTrait(level, target);
         if (!isAlive() || isRemoved()) return;
+        if (tendHeavy(level, target)) return;
         if (kind().role == Role.MYSTIC) {
             if (--riteCooldown <= 0) riteCooldown = rite(level) ? RITE_EVERY : 30;
             return;

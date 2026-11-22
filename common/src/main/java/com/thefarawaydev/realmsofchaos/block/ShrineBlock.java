@@ -71,6 +71,10 @@ public class ShrineBlock extends Block {
         level.sendParticles(Signature.spark(line), pos.getX() + 0.5, pos.getY() + 1.2, pos.getZ() + 0.5, 40, 0.4, 0.5, 0.4, 0.05);
         level.playSound(null, pos, SoundEvents.AMETHYST_BLOCK_CHIME, SoundSource.BLOCKS, 2.0F, 0.7F);
         level.playSound(null, pos, SoundEvents.PLAYER_LEVELUP, SoundSource.BLOCKS, 0.6F, 1.5F);
+        // and it shows the whole of its level on the chart of whoever it blesses
+        if (player instanceof net.minecraft.server.level.ServerPlayer seer && seer.level() instanceof net.minecraft.server.level.ServerLevel here) {
+            com.thefarawaydev.realmsofchaos.world.Charts.reveal(seer, here, pos);
+        }
         Hud.actionBar(player, Hud.colored(Component.translatable(hud + "blessed." + line.id()), line.color()));
         return true;
     }

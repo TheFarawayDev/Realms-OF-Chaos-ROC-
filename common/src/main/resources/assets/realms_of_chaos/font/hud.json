@@ -35,6 +35,24 @@
     },
     {
       "type": "bitmap",
+      "file": "realms_of_chaos:gui/hud/frame_zeus_aegis.png",
+      "ascent": 11,
+      "height": 22,
+      "chars": [
+        ""
+      ]
+    },
+    {
+      "type": "bitmap",
+      "file": "realms_of_chaos:gui/hud/frame_zeus_wrath.png",
+      "ascent": 11,
+      "height": 22,
+      "chars": [
+        ""
+      ]
+    },
+    {
+      "type": "bitmap",
       "file": "realms_of_chaos:gui/hud/frame_poseidon.png",
       "ascent": 11,
       "height": 22,
@@ -44,11 +62,47 @@
     },
     {
       "type": "bitmap",
+      "file": "realms_of_chaos:gui/hud/frame_poseidon_aegis.png",
+      "ascent": 11,
+      "height": 22,
+      "chars": [
+        ""
+      ]
+    },
+    {
+      "type": "bitmap",
+      "file": "realms_of_chaos:gui/hud/frame_poseidon_wrath.png",
+      "ascent": 11,
+      "height": 22,
+      "chars": [
+        ""
+      ]
+    },
+    {
+      "type": "bitmap",
       "file": "realms_of_chaos:gui/hud/frame_hades.png",
       "ascent": 11,
       "height": 22,
       "chars": [
         ""
+      ]
+    },
+    {
+      "type": "bitmap",
+      "file": "realms_of_chaos:gui/hud/frame_hades_aegis.png",
+      "ascent": 11,
+      "height": 22,
+      "chars": [
+        ""
+      ]
+    },
+    {
+      "type": "bitmap",
+      "file": "realms_of_chaos:gui/hud/frame_hades_wrath.png",
+      "ascent": 11,
+      "height": 22,
+      "chars": [
+        ""
       ]
     },
     {
@@ -112,6 +166,42 @@
       "height": 46,
       "chars": [
         ""
+      ]
+    },
+    {
+      "type": "bitmap",
+      "file": "realms_of_chaos:gui/hud/card_aegis.png",
+      "ascent": 9,
+      "height": 46,
+      "chars": [
+        ""
+      ]
+    },
+    {
+      "type": "bitmap",
+      "file": "realms_of_chaos:gui/hud/card_wrath.png",
+      "ascent": 9,
+      "height": 46,
+      "chars": [
+        ""
+      ]
+    },
+    {
+      "type": "bitmap",
+      "file": "realms_of_chaos:gui/hud/card_boon.png",
+      "ascent": 9,
+      "height": 46,
+      "chars": [
+        ""
+      ]
+    },
+    {
+      "type": "bitmap",
+      "file": "realms_of_chaos:gui/hud/icons.png",
+      "ascent": 7,
+      "height": 8,
+      "chars": [
+        ""
       ]
     },
     {

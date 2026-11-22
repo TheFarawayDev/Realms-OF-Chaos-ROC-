@@ -125,6 +125,8 @@ public final class Passages {
         private final int[][] heights, forms;
         private final boolean[][] wides;
         public Cell start, exit;
+        /** True if the exit room is entered from the east or west: its gate stands across that way, facing whoever comes in. */
+        private boolean gateTurned;
         public final List<Cell> seals = new ArrayList<>();
         /** Ordinary rooms and corridors that a patrol of sentinels walks. */
         public final Set<Cell> patrols = new LinkedHashSet<>();
@@ -317,6 +319,10 @@ public final class Passages {
             for (Cell c : cells()) if (dist.get(c) > dist.get(exit)) exit = c;
             kinds[start.x][start.z] = Kind.START;
             kinds[exit.x][exit.z] = Kind.EXIT;
+            // the gate faces the doorway a climber comes through: the one nearest the way in
+            Cell way = null;
+            for (Cell n : neighbours(exit)) if (connected(exit, n) && (way == null || dist.get(n) < dist.get(way))) way = n;
+            gateTurned = way != null && way.x != exit.x;
 
             // seals hide in dead ends and far corners
             List<Cell> free = new ArrayList<>();
@@ -441,9 +447,27 @@ public final class Passages {
         /** The three gate columns of the exit room. */
         public List<BlockPos> gatePositions() {
             List<BlockPos> out = new ArrayList<>();
-            BlockPos c = centre(exit);
-            for (int dx = -1; dx <= 1; dx++) for (int dy = 1; dy <= 3; dy++) out.add(c.offset(dx, dy, 0));
+            for (int a = -1; a <= 1; a++) for (int dy = 1; dy <= 3; dy++) out.add(gateOffset(a, dy));
             return out;
+        }
+
+        /** True if the gate stands north-south, facing east and west. */
+        public boolean gateTurned() {
+            return gateTurned;
+        }
+
+        /** A place in the gate's own plane: {@code along} blocks to one side of its middle, {@code up} above the floor. */
+        public BlockPos gateOffset(int along, int up) {
+            BlockPos c = centre(exit);
+            return gateTurned ? c.offset(0, up, along) : c.offset(along, up, 0);
+        }
+
+        /** The doorway the gate faces, as a step from the exit room: the way a climber comes in. */
+        public Cell approach() {
+            Map<Cell, Integer> dist = distances();
+            Cell way = null;
+            for (Cell n : neighbours(exit)) if (connected(exit, n) && (way == null || dist.get(n) < dist.get(way))) way = n;
+            return way;
         }
 
         /** Which cell a position is in, or null when it is inside a wall or a doorway. */
@@ -724,6 +748,17 @@ public final class Passages {
                 }
             }
         }
+        if (h > HEADROOM + 1) {
+            // and lamps hung from it on chains, each tower's own kind
+            Block lamp = plan.line == Line.ZEUS ? Blocks.LANTERN : plan.line == Line.POSEIDON ? Blocks.SEA_LANTERN : Blocks.SOUL_LANTERN;
+            for (int[] k : new int[][]{{-2, -2}, {2, -2}, {-2, 2}, {2, 2}}) {
+                if (plan.kind(c) == Kind.STAIRWELL && k[1] < 0) continue;      // (the loft is in the way)
+                for (int y = h; y > 6; y--) set(level, m.offset(k[0], y, k[1]), Blocks.IRON_CHAIN);
+                BlockState hung = lamp.defaultBlockState();
+                if (hung.hasProperty(net.minecraft.world.level.block.LanternBlock.HANGING)) hung = hung.setValue(net.minecraft.world.level.block.LanternBlock.HANGING, true);
+                level.setBlock(m.offset(k[0], 6, k[1]), hung, 2);
+            }
+        }
         // a band of trim round its walls, and sconces set into them; a tall room has a second band under its ceiling
         int wall = r + 1;
         for (int d = -r; d <= r; d++) {
@@ -767,13 +802,15 @@ public final class Passages {
                 set(level, m, p.light());
             }
             case EXIT -> {
+                // the gate stands across the way a climber comes in, in an arch of its own, lit at its feet
                 for (BlockPos g : plan.gatePositions()) set(level, g, ModContent.GATE_ASCEND.get());
                 for (int dy = 1; dy <= 4; dy++) {
-                    set(level, m.offset(-2, dy, 0), p.trim());
-                    set(level, m.offset(2, dy, 0), p.trim());
+                    set(level, plan.gateOffset(-2, dy), dy == 4 ? p.trim() : p.pillar());
+                    set(level, plan.gateOffset(2, dy), dy == 4 ? p.trim() : p.pillar());
                 }
-                for (int dx = -1; dx <= 1; dx++) set(level, m.offset(dx, 4, 0), p.trim());
-                for (int dx = -2; dx <= 2; dx++) set(level, m.offset(dx, 0, 0), p.inlay());
+                for (int a = -1; a <= 1; a++) set(level, plan.gateOffset(a, 4), p.trim());
+                set(level, plan.gateOffset(0, 5), p.light());
+                for (int a = -2; a <= 2; a++) set(level, plan.gateOffset(a, 0), Math.abs(a) == 2 ? p.light() : p.inlay());
             }
             case SEAL -> {
                 set(level, m.above(), p.trim());
@@ -1063,6 +1100,8 @@ public final class Passages {
         data.markBuilt(key);
         Bounties.count(player, Bounties.Kind.CACHES, 1);
         List<ItemStack> loot = lootFor(plan, cell, player.getUUID());
+        int fortune = Boons.count(player, Boons.Boon.FORTUNE);
+        if (fortune > 0) loot.add(new ItemStack(ModContent.materialItem(plan.line, plan.tier), fortune));
         int stacks = loot.size();
         for (ItemStack stack : loot) {
             if (!player.getInventory().add(stack) && !stack.isEmpty()) player.drop(stack, false, net.minecraft.util.Prediction.SERVER_ONLY);
@@ -1206,7 +1245,12 @@ public final class Passages {
     public static void breakSeal(ServerLevel level, BlockPos pos, ServerPlayer breaker) {
         if (!level.getBlockState(pos).is(ModContent.PASSAGE_SEAL.get())) return;
         level.setBlock(pos, Blocks.AIR.defaultBlockState(), 3);
-        if (breaker != null) Bounties.count(breaker, Bounties.Kind.SEALS, 1);
+        if (breaker != null) {
+            Bounties.count(breaker, Bounties.Kind.SEALS, 1);
+            // a seal gives something to whoever broke it: one boon of three, for the rest of the passage
+            com.thefarawaydev.realmsofchaos.ui.BoonMenu.open(breaker, pos);
+            com.thefarawaydev.realmsofchaos.ui.Tutorial.tip(breaker, com.thefarawaydev.realmsofchaos.ui.Tutorial.Tip.BOON);
+        }
         double x = pos.getX() + 0.5, y = pos.getY() + 0.5, z = pos.getZ() + 0.5;
         level.sendParticles(ParticleTypes.END_ROD, x, y, z, 60, 0.3, 0.3, 0.3, 0.15);
         level.sendParticles(ParticleTypes.ENCHANT, x, y + 0.5, z, 80, 0.6, 0.6, 0.6, 0.5);

@@ -38,6 +38,7 @@ public final class RealmSafety {
         Traps.tick(server);
         Rooms.tick(server);
         Snares.tick(server);
+        Combat.tick(server);
         Passages.tick(server);
         Hazards.tick(server);
         Craters.tick(server);
@@ -48,6 +49,12 @@ public final class RealmSafety {
         for (ServerPlayer player : server.getPlayerList().getPlayers()) {
             Wards.service(player);
             Skills.service(player, ticker);
+            // boons belong to the passage they were won in: out of it, they are laid down
+            if (Passages.locate(player) == null) {
+                if (Boons.clear(player) > 0) Hud.actionBar(player, Hud.colored(Component.translatable("hud." + com.thefarawaydev.realmsofchaos.RealmsOfChaos.MOD_ID + ".boons.gone"), 0x78E68C));
+            } else if (ticker % 100 == 0) {
+                Boons.apply(player);
+            }
             Realm realm = Realm.of(player.level().dimension());
             if (realm == null || !(player.level() instanceof ServerLevel level)) {
                 STUCK_SECONDS.remove(player.getUUID());

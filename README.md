@@ -16,6 +16,35 @@ The current build is an **Alpha**.
 
 ## What's in 1.2.0
 
+* **Parry, riposte, momentum.** Fighting the realms' creatures is more than trading blows, and none of it needs a
+  key of its own.
+  * **Parry.** Tap sneak - or raise a shield - just as a blow would land and it is turned aside: no harm, the
+    attacker reels (slowed, weakened, and open), and the next blow within three seconds is a **riposte**, half as
+    hard again. A bolt parried goes back to whoever loosed it. Even a god's blow can be met. The moment is seven
+    ticks; a tap that parries nothing has to be waited out.
+  * **Momentum.** Every blow landed without being hit builds it, to five; each point adds 4% to every blow. Being
+    struck loses it all.
+  * **Exposure and the plunge.** A blow on a reeling enemy counts half as much again; a blow struck while falling
+    shakes everything round the one it lands on.
+  * **A combat meter** above the hotbar shows momentum, whether a parry is to hand, and a riposte waiting. It can be
+    turned off in Settings.
+* **Sentinels strike heavy blows.** Those that fight hand to hand - on any level past the first, and every elite -
+  draw back for most of a second before a blow nearly twice as hard. It can be seen coming, stepped away from, or
+  parried, and a heavy blow parried leaves the sentinel reeling twice as long.
+* **A seal's boon.** Whoever breaks a seal is offered three boons and takes one - Vigour, Edge, Swiftness, Ward,
+  Keen Eye (longer to parry in), Thirst (a heart back per sentinel felled) or Fortune (more from every cache). The
+  same boon can be taken up to four times. Boons last until the passage is behind you.
+* **A frame for every phase.** A god's bar is plain metal in its first phase, studded with crystal while its aegis
+  is up - with a pylon on the plaque for each still standing - and toothed, cracked and glowing in its wrath, with
+  the rings of floor still left. The aegis and the wrath are each announced on a card of their own.
+* **A better chart.** Rooms that matter carry a sign (a cross for a seal, a box once it is broken, a diamond for a
+  cache, an arch for the gate); wide rooms are drawn wide; a mark along the top for every level of the passage and
+  along the bottom for every seal. **A shrine shows the whole of its level** on the chart of whoever it blesses.
+* **The gate faces the way in.** The Gate of Ascent stands across the doorway a climber comes through, in an arch
+  of its own, instead of always facing north and south.
+* **A bestiary** (`/roc bestiary`, or from the Codex): every kind of sentinel you have felled, a tower to a page,
+  with what it does and how many have fallen. Tall rooms are hung with lamps on chains, each tower's own kind.
+
 * **Its own things on the screen.** Nothing the mod shows takes over the view.
   * **Tips are cards.** A tip is a small card at the top of the screen with up to three lines on it, shown for a few
     seconds; cards wait their turn instead of replacing one another. Any title too long to fit a small window is
@@ -490,7 +519,7 @@ on a real server: data loading, the hub, building and walking every floor of eve
 towers through the altar menu (with rematches) and all 42 passages, the Ruined Gate and its keystones, the story's
 chapters, the hub's residents, all sixty-three sentinels and their traits, craters, the custom screens and their buttons, the tutorial, impacts, the
 floor's eruptions and the gods' last stands, the three phases of a trial (health gates, pylons, stances, the collapsing floor and its restoration, strikes), gear and difficulty scaling,
-the compass scanner, relays and jammers, waygates, the Field Tower Bag, hub tiers and bounties, the rune chambers, the sidebar, level counts and names, building ahead, the four puzzle rooms, crusher and dart halls, urns and tablets, the Passage Chart, the mastery tree, the menu artwork, cards and tips, the drawn boss bar and the opt-in cast bar, settings, the gods' memory of each player, room shapes and stairwells, the spike, flame and blade halls, parties, group scaling and per-player loot, the wall protection (built, checked room by room for reachability,
+the compass scanner, relays and jammers, waygates, the Field Tower Bag, hub tiers and bounties, the rune chambers, the sidebar, level counts and names, building ahead, the four puzzle rooms, crusher and dart halls, urns and tablets, the Passage Chart, the mastery tree, the menu artwork, cards and tips, the drawn boss bar and the opt-in cast bar, settings, the gods' memory of each player, room shapes and stairwells, the spike, flame and blade halls, parries, ripostes, momentum and plunges, heavy blows, boons, the gate's facing, the shrine's chart, the bestiary, the frames of each phase, parties, group scaling and per-player loot, the wall protection (built, checked room by room for reachability,
 seals struck, guardians, shrine, map), every god's signature move, the relic moves, the forging quick-time rounds,
 tier materials, each tarot card, the Codex, leaving the realms, the welcome and the anti-stuck safeguards.
 

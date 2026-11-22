@@ -108,6 +108,7 @@ public final class Charts {
         MapItemSavedData data = data(player);
         if (data == null) return 0;
         Set<Passages.Cell> seen = Passages.visited(player, plan);
+        boolean shown = revealed(player, plan);
         int sketch = Skills.rank(player, Skills.Skill.CARTOGRAPHER);
         int origin = (SIZE - plan.size * CELL) / 2, inked = 0;
         byte fog = ink(MapColor.NONE, MapColor.Brightness.NORMAL), wall = ink(MapColor.COLOR_BLACK, MapColor.Brightness.NORMAL);
@@ -119,19 +120,25 @@ public final class Charts {
             if (!known && sketch > 0) {
                 for (Passages.Cell n : plan.neighbours(c)) near |= plan.connected(c, n) && seen.contains(n);
             }
-            if (!known && !near) continue;
+            if (!known && !near && !shown) continue;
             inked++;
             Passages.Kind kind = plan.kind(c);
             boolean sealBroken = kind == Passages.Kind.SEAL && !level.getBlockState(plan.sealPos(c)).is(com.thefarawaydev.realmsofchaos.ModContent.PASSAGE_SEAL.get());
             // a room only guessed at is drawn grey; with two ranks of Cartographer its kind shows through
-            MapColor colour = known || sketch >= 2 ? (sealBroken ? MapColor.COLOR_GREEN : floor(kind)) : MapColor.COLOR_LIGHT_GRAY;
+            MapColor colour = known || shown || sketch >= 2 ? (sealBroken ? MapColor.COLOR_GREEN : floor(kind)) : MapColor.COLOR_LIGHT_GRAY;
             byte fill = ink(colour, known ? MapColor.Brightness.HIGH : MapColor.Brightness.LOW);
             int x0 = origin + c.x() * CELL, z0 = origin + c.z() * CELL;
-            for (int dx = 2; dx < CELL - 2; dx++) {
-                for (int dz = 2; dz < CELL - 2; dz++) {
-                    boolean edge = dx == 2 || dz == 2 || dx == CELL - 3 || dz == CELL - 3;
+            // (a wide room is drawn wider)
+            int inset = plan.wide(c) ? 1 : 2;
+            for (int dx = inset; dx < CELL - inset; dx++) {
+                for (int dz = inset; dz < CELL - inset; dz++) {
+                    boolean edge = dx == inset || dz == inset || dx == CELL - inset - 1 || dz == CELL - inset - 1;
                     sheet[(x0 + dx) + (z0 + dz) * SIZE] = edge ? wall : fill;
                 }
+            }
+            // what the room is, as a small sign in its middle - once it has been seen, or a shrine has shown it
+            if (known || shown) {
+                for (int[] dot : sign(kind, sealBroken)) sheet[(x0 + CELL / 2 + dot[0]) + (z0 + CELL / 2 + dot[1]) * SIZE] = wall;
             }
             if (!known) continue;
             // doorways, as far as the wall between two rooms
@@ -145,6 +152,18 @@ public final class Charts {
                     }
                 }
             }
+        }
+        // along the top, a mark for every level of the passage, this one bright; along the bottom, one for every seal
+        byte dim = ink(MapColor.COLOR_GRAY, MapColor.Brightness.NORMAL), bright = ink(MapColor.SNOW, MapColor.Brightness.HIGH);
+        int left = (SIZE - plan.stages * 5 + 2) / 2;
+        for (int s = 0; s < plan.stages; s++) {
+            for (int dx = 0; dx < 3; dx++) for (int dz = 2; dz < 5; dz++) sheet[(left + s * 5 + dx) + dz * SIZE] = s == plan.stage ? bright : dim;
+        }
+        left = (SIZE - plan.seals.size() * 6 + 2) / 2;
+        for (int i = 0; i < plan.seals.size(); i++) {
+            boolean broken = !level.getBlockState(plan.sealPos(plan.seals.get(i))).is(com.thefarawaydev.realmsofchaos.ModContent.PASSAGE_SEAL.get());
+            byte mark = ink(broken ? MapColor.COLOR_GREEN : MapColor.COLOR_RED, MapColor.Brightness.HIGH);
+            for (int dx = 0; dx < 4; dx++) for (int dz = SIZE - 6; dz < SIZE - 2; dz++) sheet[(left + i * 6 + dx) + dz * SIZE] = mark;
         }
         // the owner: a white mark where they stand
         Passages.Cell here = plan.cellAt(player.blockPosition());
@@ -160,6 +179,47 @@ public final class Charts {
         }
         for (int x = 0; x < SIZE; x++) for (int z = 0; z < SIZE; z++) put(data, x, z, sheet[x + z * SIZE]);
         return inked;
+    }
+
+    private static final int[][] CROSS = {{-2, -2}, {-1, -1}, {0, 0}, {1, 1}, {2, 2}, {2, -2}, {1, -1}, {-1, 1}, {-2, 2}};
+    private static final int[][] BOX = {{-2, -2}, {-1, -2}, {0, -2}, {1, -2}, {2, -2}, {-2, 2}, {-1, 2}, {0, 2}, {1, 2}, {2, 2}, {-2, -1}, {-2, 0}, {-2, 1}, {2, -1}, {2, 0}, {2, 1}};
+    private static final int[][] DIAMOND = {{0, -2}, {-1, -1}, {1, -1}, {-2, 0}, {2, 0}, {-1, 1}, {1, 1}, {0, 2}};
+    private static final int[][] PLUS = {{0, -2}, {0, -1}, {0, 0}, {0, 1}, {0, 2}, {-2, 0}, {-1, 0}, {1, 0}, {2, 0}};
+    private static final int[][] ARCH = {{-2, 2}, {-2, 1}, {-2, 0}, {-1, -1}, {0, -2}, {1, -1}, {2, 0}, {2, 1}, {2, 2}};
+    private static final int[][] BANG = {{0, -2}, {0, -1}, {0, 0}, {0, 2}};
+    private static final int[][] NOTHING = {};
+
+    /** The sign drawn in the middle of a room: a cross for a seal (a box once it is broken), a diamond for a cache, and so on. */
+    public static int[][] sign(Passages.Kind kind, boolean sealBroken) {
+        return switch (kind) {
+            case SEAL -> sealBroken ? BOX : CROSS;
+            case TREASURE, ARENA, STAIRWELL, VAULT, CHIMES, BEAM, PLATES -> DIAMOND;
+            case SHRINE -> PLUS;
+            case EXIT -> ARCH;
+            case TRAP, CRUSHER, DARTS, SPIKES, FLAMES, BLADES -> BANG;
+            default -> NOTHING;
+        };
+    }
+
+    private static String shownKey(ServerPlayer player, Passages.Plan plan) {
+        return "chartall/" + player.getUUID() + "/" + plan.line.id() + "/" + plan.index + "/" + plan.stage;
+    }
+
+    /** Has a shrine shown this player the whole of this level? */
+    public static boolean revealed(ServerPlayer player, Passages.Plan plan) {
+        return ProgressData.get(player.level().getServer()).isBuilt(shownKey(player, plan));
+    }
+
+    /**
+     * A shrine shows whoever it blesses the whole of its level: every room is inked in with its sign, though the
+     * doorways between rooms not yet walked stay unknown. @return true if this was news
+     */
+    public static boolean reveal(ServerPlayer player, ServerLevel level, net.minecraft.core.BlockPos shrine) {
+        Passages.Plan plan = Passages.planAt(level, shrine);
+        if (plan == null || revealed(player, plan)) return false;
+        ProgressData.get(level.getServer()).markBuilt(shownKey(player, plan));
+        if (holds(player)) draw(player, level, plan);
+        return true;
     }
 
     /** The colour of one point of a player's chart, for looking at what was drawn. */
