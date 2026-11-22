@@ -2,6 +2,7 @@ name: Build Realms of Chaos
 
 on:
   push:
+    branches: [master]   # other branches (mirrors, work in progress) are not built; pull requests still are
   pull_request:
   workflow_dispatch:
 
