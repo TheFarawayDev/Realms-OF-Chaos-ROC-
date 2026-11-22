@@ -36,6 +36,30 @@ public final class HudArt {
 
     private HudArt() {}
 
+    /**
+     * A line of the mod's language file that only a game with this build's artwork has. Everything drawn is sent
+     * wrapped in it, with plain words as the fallback - so a game that has not got the pictures (an older copy of
+     * the mod than the server's, say) shows the words, never a row of empty boxes. Raise the number whenever
+     * letters are added to the fonts.
+     */
+    public static final String ART_KEY = "art." + RealmsOfChaos.MOD_ID + ".v3";
+
+    /** The artwork where the player's game has it, the plain words where it has not. */
+    public static Component guarded(Component art, Component plain) {
+        return Component.translatableWithFallback(ART_KEY, "%2$s", art, plain);
+    }
+
+    /** As {@link #guarded}, and plain words for a player who has turned the drawn interface off. */
+    public static Component present(net.minecraft.server.level.ServerPlayer player, Component art, Component plain) {
+        return player != null && !Options.on(player, Options.Option.ART) ? plain : guarded(art, plain);
+    }
+
+    /** The combat meter in words. */
+    public static Component plainMeter(int momentum, boolean riposte) {
+        MutableComponent out = Component.translatable("hud." + RealmsOfChaos.MOD_ID + ".momentum", momentum);
+        return riposte ? out.append(" - ").append(Component.translatable("hud." + RealmsOfChaos.MOD_ID + ".riposte")) : out;
+    }
+
     /** Spaces that move the pen by exactly this many pixels, forward or back. */
     public static String space(int pixels) {
         StringBuilder out = new StringBuilder();

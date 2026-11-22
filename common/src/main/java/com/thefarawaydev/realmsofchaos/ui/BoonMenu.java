@@ -32,7 +32,7 @@ public class BoonMenu extends ButtonMenu {
         List<Boons.Boon> offered = Boons.offer(player, seal);
         if (offered.isEmpty()) return;
         player.openMenu(new SimpleMenuProvider((id, inventory, p) -> new BoonMenu(id, inventory, (ServerPlayer) p, offered),
-                Skin.title(Skin.Panel.BOON, Component.translatable(NS))));
+                Skin.title(player, Skin.Panel.BOON, Component.translatable(NS))));
     }
 
     private BoonMenu(int id, Inventory inventory, ServerPlayer viewer, List<Boons.Boon> offered) {

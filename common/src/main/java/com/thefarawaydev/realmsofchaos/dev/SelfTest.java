@@ -4760,6 +4760,77 @@ public final class SelfTest {
             }
         });
 
+        step("nothing drawn is sent bare: plain words stand behind every picture, and the drawn interface can be turned off", () -> {
+            ServerPlayer hero = fakePlayer(server, level, "RocPlainSpoken");
+            com.thefarawaydev.realmsofchaos.ui.Options.reset(hero);
+            com.thefarawaydev.realmsofchaos.ui.Cards.clear(hero);
+            java.util.function.Predicate<String> pictures = text -> text.chars().anyMatch(c -> c >= 0xE000 && c <= 0xF8FF);
+            // the wrapper: a line only this build's language file has, and plain words for a game without it
+            net.minecraft.network.chat.Component art = com.thefarawaydev.realmsofchaos.ui.HudArt.bossBar(Line.ZEUS, 1, false, 0.5F, "Zeus");
+            net.minecraft.network.chat.Component sent = com.thefarawaydev.realmsofchaos.ui.HudArt.guarded(art, net.minecraft.network.chat.Component.literal("Zeus"));
+            check(sent.getContents() instanceof net.minecraft.network.chat.contents.TranslatableContents wrapped
+                    && wrapped.getKey().equals(com.thefarawaydev.realmsofchaos.ui.HudArt.ART_KEY) && "%2$s".equals(wrapped.getFallback()), "a picture travels inside a line of the language file, with words to fall back on");
+            check(com.thefarawaydev.realmsofchaos.ui.Words.pattern(com.thefarawaydev.realmsofchaos.ui.HudArt.ART_KEY).equals("%1$s"), "this build's language file has that line: a game with it shows the picture");
+            check(com.thefarawaydev.realmsofchaos.ui.Words.of(sent).equals(art.getString()) && pictures.test(art.getString()), "(the picture, exactly)");
+            if (!net.minecraft.locale.Language.getInstance().has(com.thefarawaydev.realmsofchaos.ui.HudArt.ART_KEY)) {
+                // this server has not loaded the mod's language file, which is just how an out-of-date game stands
+                check(sent.getString().equals("Zeus"), "a game without the line shows the plain words, and not one box: " + sent.getString());
+            }
+            // every way a picture is sent
+            net.minecraft.network.chat.Component title = com.thefarawaydev.realmsofchaos.ui.Skin.title(hero, com.thefarawaydev.realmsofchaos.ui.Skin.Panel.CODEX, net.minecraft.network.chat.Component.literal("Name"));
+            check(title.getContents() instanceof net.minecraft.network.chat.contents.TranslatableContents && pictures.test(com.thefarawaydev.realmsofchaos.ui.Words.of(title)), "a menu's title is guarded");
+            com.thefarawaydev.realmsofchaos.ui.Cards.tip(hero, "Mind the gap");
+            var card = com.thefarawaydev.realmsofchaos.ui.Cards.showing(hero);
+            String words = com.thefarawaydev.realmsofchaos.ui.Cards.plain(card).getString();
+            check(words.equals("Tip: Mind the gap") && !pictures.test(words), "a card has its words: " + words);
+            var headed = new com.thefarawaydev.realmsofchaos.ui.Cards.Shown(com.thefarawaydev.realmsofchaos.ui.HudArt.Card.NOTICE, List.of("The Marble Halls", "Floor 6"), true);
+            check(com.thefarawaydev.realmsofchaos.ui.Cards.plain(headed).getString().equals("The Marble Halls: Floor 6"), "a card with a heading leads with it");
+            com.thefarawaydev.realmsofchaos.ui.Cards.clear(hero);
+            check(!pictures.test(com.thefarawaydev.realmsofchaos.ui.HudArt.plainMeter(3, true).getString()), "the combat meter has its words");
+
+            // the drawn interface, turned off
+            com.thefarawaydev.realmsofchaos.ui.OptionsMenu.open(hero);
+            var settings = (com.thefarawaydev.realmsofchaos.ui.OptionsMenu) hero.containerMenu;
+            var tile = settings.getSlot(com.thefarawaydev.realmsofchaos.ui.OptionsMenu.SLOT_CASTS + 1).getItem().get(net.minecraft.core.component.DataComponents.ITEM_MODEL);
+            check(tile != null && tile.getPath().equals("ui/tile"), "drawn: a menu's unused slots are the mod's own tiles");
+            settings.clicked(com.thefarawaydev.realmsofchaos.ui.OptionsMenu.SLOT_ART, 0, net.minecraft.world.inventory.ContainerInput.PICKUP, hero);
+            check(!com.thefarawaydev.realmsofchaos.ui.Options.on(hero, com.thefarawaydev.realmsofchaos.ui.Options.Option.ART) && hero.containerMenu instanceof com.thefarawaydev.realmsofchaos.ui.OptionsMenu
+                    && hero.containerMenu != settings, "the switch turns it off, and the screen is drawn again");
+            tile = hero.containerMenu.getSlot(com.thefarawaydev.realmsofchaos.ui.OptionsMenu.SLOT_CASTS + 1).getItem().get(net.minecraft.core.component.DataComponents.ITEM_MODEL);
+            check(tile == null || !tile.getPath().startsWith("ui/"), "plain: the slots are glass again: " + tile);
+            title = com.thefarawaydev.realmsofchaos.ui.Skin.title(hero, com.thefarawaydev.realmsofchaos.ui.Skin.Panel.CODEX, net.minecraft.network.chat.Component.literal("Name"));
+            check(title.getString().equals("Name") && !pictures.test(com.thefarawaydev.realmsofchaos.ui.Words.of(title)), "a menu's title is its name and nothing else");
+            hero.closeContainer();
+            hero.setPos(8.5, level.getHeight(net.minecraft.world.level.levelgen.Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, 8, 8), 8.5);
+            level.addNewPlayer(hero);
+            settle(level);
+            GodBoss boss = ModContent.GOD_BOSS.get().create(level, EntitySpawnReason.TRIGGERED);
+            boss.setGod(Gods.get(Line.POSEIDON, 12));
+            boss.setPos(hero.getX() + 3, hero.getY(), hero.getZ());
+            boss.setHome(boss.position());
+            level.addFreshEntity(boss);
+            try {
+                boss.startSeenByPlayer(hero);
+                check(boss.plainWatchers().contains(hero), "a god's bar is shown to them in words, on the game's own bar");
+                check(!pictures.test(com.thefarawaydev.realmsofchaos.ui.Words.of(boss.barSent(false))) && pictures.test(com.thefarawaydev.realmsofchaos.ui.Words.of(boss.barSent(true))), "the two bars: one drawn, one plain");
+                check(boss.barSent(true).getContents() instanceof net.minecraft.network.chat.contents.TranslatableContents guard
+                        && guard.getKey().equals(com.thefarawaydev.realmsofchaos.ui.HudArt.ART_KEY), "and even the drawn one has words behind it");
+                com.thefarawaydev.realmsofchaos.ui.Options.set(hero, com.thefarawaydev.realmsofchaos.ui.Options.Option.CASTS, true);
+                boss.beginCast(level, boss.god());
+                check(boss.castWatchers().isEmpty(), "the cast bar is not drawn for them either: the move is named in words");
+                boss.endCast();
+                boss.stopSeenByPlayer(hero);
+                check(boss.plainWatchers().isEmpty(), "(and taken away with the god)");
+                com.thefarawaydev.realmsofchaos.ui.Cards.tip(hero, "Mind the gap");
+                check(com.thefarawaydev.realmsofchaos.ui.Cards.showing(hero) != null, "cards still come, in words");
+            } finally {
+                boss.discard();
+                hero.remove(net.minecraft.world.entity.Entity.RemovalReason.DISCARDED);
+                com.thefarawaydev.realmsofchaos.ui.Options.reset(hero);
+                com.thefarawaydev.realmsofchaos.ui.Cards.clear(hero);
+            }
+        });
+
         step("the screen: a tip is a card of its own, a long title becomes a card, and short ones stay titles", () -> {
             ServerPlayer hero = fakePlayer(server, level, "RocReader");
             com.thefarawaydev.realmsofchaos.ui.Options.reset(hero);

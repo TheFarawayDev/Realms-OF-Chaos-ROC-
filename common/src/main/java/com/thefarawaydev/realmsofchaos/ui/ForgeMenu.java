@@ -71,7 +71,7 @@ public class ForgeMenu extends ButtonMenu {
     public static void open(ServerPlayer player, BlockPos forge) {
         Tutorial.tip(player, Tutorial.Tip.FORGE);
         player.openMenu(new SimpleMenuProvider((id, inventory, p) -> new ForgeMenu(id, inventory, (ServerPlayer) p, forge),
-                Skin.title(Skin.Panel.FORGE, Component.translatable("menu." + RealmsOfChaos.MOD_ID + ".forge"))));
+                Skin.title(player, Skin.Panel.FORGE, Component.translatable("menu." + RealmsOfChaos.MOD_ID + ".forge"))));
     }
 
     private ForgeMenu(int id, Inventory inventory, ServerPlayer viewer, BlockPos forge) {

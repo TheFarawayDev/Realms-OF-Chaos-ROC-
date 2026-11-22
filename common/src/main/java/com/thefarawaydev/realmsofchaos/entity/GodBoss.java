@@ -155,9 +155,14 @@ public class GodBoss extends Monster implements RangedAttackMob {
     private long guardUntil;
     private long bristleReady, hintReady;
     /** The cast bar: shown, while the god winds up, to those who have asked for it. */
+    /** The same bar in plain words, for players who have turned the drawn interface off. */
+    private final ServerBossEvent plainEvent = new ServerBossEvent(
+            UUID.randomUUID(), Component.empty(), BossEvent.BossBarColor.WHITE, BossEvent.BossBarOverlay.NOTCHED_10);
+    private Component barArt = Component.empty();
     private final ServerBossEvent castEvent = new ServerBossEvent(
             UUID.randomUUID(), Component.empty(), BossEvent.BossBarColor.WHITE, BossEvent.BossBarOverlay.PROGRESS);
     private String castName = "";
+    private Component castArt = Component.empty();
     /** What the bar last showed, so its picture is only sent again when it would look different. */
     private int barKey = -1, pylonTotal;
     /** What each challenger did in this trial, for the gods' longer memory; and the answers already given. */
@@ -310,6 +315,8 @@ public class GodBoss extends Monster implements RangedAttackMob {
         setTarget(null);
         bossEvent.removeAllPlayers();
         bossEvent.setVisible(false);
+        plainEvent.removeAllPlayers();
+        plainEvent.setVisible(false);
         castEvent.removeAllPlayers();
     }
 
@@ -504,10 +511,12 @@ public class GodBoss extends Monster implements RangedAttackMob {
         setCustomName(god.bossName());
         barKey = -1;
         refreshBar();
-        bossEvent.setColor(god.line().barColor());
-        bossEvent.setOverlay(god.isFinalBoss() ? BossEvent.BossBarOverlay.NOTCHED_20 : BossEvent.BossBarOverlay.NOTCHED_10);
-        bossEvent.setDarkenScreen(god.rank() <= 3);
-        bossEvent.setCreateWorldFog(false);
+        for (ServerBossEvent bar : List.of(bossEvent, plainEvent)) {
+            bar.setColor(god.line().barColor());
+            bar.setOverlay(god.isFinalBoss() ? BossEvent.BossBarOverlay.NOTCHED_20 : BossEvent.BossBarOverlay.NOTCHED_10);
+            bar.setDarkenScreen(god.rank() <= 3);
+            bar.setCreateWorldFog(false);
+        }
         var weapon = ModContent.weaponItem(god);
         if (weapon != null) {
             setItemSlot(EquipmentSlot.MAINHAND, new ItemStack(weapon));
@@ -525,7 +534,7 @@ public class GodBoss extends Monster implements RangedAttackMob {
     public void startSeenByPlayer(ServerPlayer player) {
         super.startSeenByPlayer(player);
         if (!statue) {
-            bossEvent.addPlayer(player);
+            (Options.on(player, Options.Option.ART) ? bossEvent : plainEvent).addPlayer(player);
             // a god that has met this challenger's kind before says so, once, a few seconds into the trial
             if (greeted.add(player.getUUID()) && level().getServer() != null) {
                 Scheduler.after(level().getServer(), 70, () -> {
@@ -539,6 +548,7 @@ public class GodBoss extends Monster implements RangedAttackMob {
     public void stopSeenByPlayer(ServerPlayer player) {
         super.stopSeenByPlayer(player);
         bossEvent.removePlayer(player);
+        plainEvent.removePlayer(player);
         castEvent.removePlayer(player);
     }
 
@@ -547,6 +557,7 @@ public class GodBoss extends Monster implements RangedAttackMob {
         super.customServerAiStep(level);
         if (statue) return;
         bossEvent.setProgress(getHealth() / getMaxHealth());
+        plainEvent.setProgress(getHealth() / getMaxHealth());
         refreshBar();
         God god = god();
 
@@ -639,25 +650,45 @@ public class GodBoss extends Monster implements RangedAttackMob {
         int key = HudArt.fillWidth(progress) | (phase() << 8) | (shield ? 1 << 12 : 0) | (god.index() << 13) | (lit << 20) | (all << 24);
         if (key == barKey) return;
         barKey = key;
-        bossEvent.setName(HudArt.bossBar(god.line(), phase(), shield, progress, god.englishName(), all, lit));
+        // drawn where the player's game has the pictures, in words where it has not - or where they asked for words
+        String key2 = "boss." + RealmsOfChaos.MOD_ID + ".phase.";
+        Component words = phase() >= 3 ? Component.translatable(key2 + "wrath", god.bossName())
+                : phase() == 2 ? Component.translatable(key2 + (shield ? "aegis" : "rage"), god.bossName()) : god.bossName();
+        barArt = HudArt.bossBar(god.line(), phase(), shield, progress, god.englishName(), all, lit);
+        bossEvent.setName(HudArt.guarded(barArt, words));
+        plainEvent.setName(words);
     }
 
     /** The bar as it is drawn now. */
     public Component barName() {
-        return bossEvent.getName();
+        return barArt;
+    }
+
+    /** What a player's screen is sent: the drawn bar with plain words to fall back on, or - art turned off - the words alone. */
+    public Component barSent(boolean drawn) {
+        return drawn ? bossEvent.getName() : plainEvent.getName();
+    }
+
+    public java.util.Collection<ServerPlayer> plainWatchers() {
+        return plainEvent.getPlayers();
     }
 
     public void beginCast(ServerLevel level, God god) {
         castName = com.thefarawaydev.realmsofchaos.ui.Words.of(nextIsSignature() ? god.moveName() : Component.translatable("cast." + RealmsOfChaos.MOD_ID + "." + god.line().id()));
-        castEvent.setName(HudArt.castBar(0.0F, castName));
+        castArt = HudArt.castBar(0.0F, castName);
+        Component words = Component.translatable("hud." + RealmsOfChaos.MOD_ID + ".move.windup", god.displayName(), castName);
+        castEvent.setName(HudArt.guarded(castArt, words));
         for (Player p : nearbyPlayers(level, 40)) {
-            if (p instanceof ServerPlayer sp && Options.on(sp, Options.Option.CASTS)) castEvent.addPlayer(sp);
+            if (!(p instanceof ServerPlayer sp) || !Options.on(sp, Options.Option.CASTS)) continue;
+            if (Options.on(sp, Options.Option.ART)) castEvent.addPlayer(sp);
+            else Hud.actionBar(sp, Hud.colored(words, god.line().color()));         // in words, above the hotbar
         }
     }
 
     private void tendCast() {
         if (castEvent.getPlayers().isEmpty()) return;
-        castEvent.setName(HudArt.castBar(1.0F - abilityCooldown / (float) WINDUP_TICKS, castName));
+        castArt = HudArt.castBar(1.0F - abilityCooldown / (float) WINDUP_TICKS, castName);
+        castEvent.setName(HudArt.guarded(castArt, Component.translatable("hud." + RealmsOfChaos.MOD_ID + ".move.windup", god().displayName(), castName)));
     }
 
     public void endCast() {
@@ -675,7 +706,7 @@ public class GodBoss extends Monster implements RangedAttackMob {
     }
 
     public Component castBarName() {
-        return castEvent.getName();
+        return castArt;
     }
 
     // ---- what the god sees of its challengers --------------------------------------------------------------
@@ -826,8 +857,10 @@ public class GodBoss extends Monster implements RangedAttackMob {
         this.entityData.set(DATA_PHASE, phase);
         God god = god();
         refreshBar();
-        bossEvent.setDarkenScreen(god.rank() <= 3 || phase >= 3);
-        bossEvent.setCreateWorldFog(phase >= 3);
+        for (ServerBossEvent bar : List.of(bossEvent, plainEvent)) {
+            bar.setDarkenScreen(god.rank() <= 3 || phase >= 3);
+            bar.setCreateWorldFog(phase >= 3);
+        }
     }
 
     /** Moves the trial on when the god's health has reached the next threshold. Safe to call at any time. */

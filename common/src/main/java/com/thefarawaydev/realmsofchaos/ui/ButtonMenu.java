@@ -42,6 +42,7 @@ public abstract class ButtonMenu extends ChestMenu {
         super(rows == 6 ? MenuType.GENERIC_9x6 : MenuType.GENERIC_9x3, id, inventory, view, rows);
         this.view = view;
         this.viewer = viewer;
+        Skin.drawFor(viewer);
         this.size = rows * 9;
     }
 
@@ -59,6 +60,7 @@ public abstract class ButtonMenu extends ChestMenu {
     public void clicked(int slot, int button, ContainerInput input, Player player) {
         if (slot >= 0 && slot < size && (input == ContainerInput.PICKUP || input == ContainerInput.QUICK_MOVE)) {
             shiftClick = input == ContainerInput.QUICK_MOVE;
+            Skin.drawFor(viewer);
             press(slot);
             shiftClick = false;
         }

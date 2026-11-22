@@ -38,7 +38,7 @@ public class AltarMenu extends ButtonMenu {
     public static void open(ServerPlayer player, Line line, BlockPos altar) {
         player.openMenu(new SimpleMenuProvider(
                 (id, inventory, p) -> new AltarMenu(id, inventory, (ServerPlayer) p, line, altar),
-                Skin.title(Skin.Panel.ALTAR, Component.translatable(NS + "altar"))));
+                Skin.title(player, Skin.Panel.ALTAR, Component.translatable(NS + "altar"))));
     }
 
     private AltarMenu(int id, Inventory inventory, ServerPlayer viewer, Line line, BlockPos altar) {

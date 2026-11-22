@@ -21,7 +21,7 @@ public class DeckMenu extends ButtonMenu {
 
     public static void open(ServerPlayer player, InteractionHand hand) {
         player.openMenu(new SimpleMenuProvider((id, inventory, p) -> new DeckMenu(id, inventory, (ServerPlayer) p, hand),
-                Skin.title(Skin.Panel.DECK, Component.translatable(NS))));
+                Skin.title(player, Skin.Panel.DECK, Component.translatable(NS))));
     }
 
     private DeckMenu(int id, Inventory inventory, ServerPlayer viewer, InteractionHand hand) {

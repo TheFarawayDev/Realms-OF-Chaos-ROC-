@@ -75,7 +75,7 @@ public class BagMenu extends ChestMenu {
         int rows = HubTiers.bagRows(player.level().getServer());
         int slot = hand == InteractionHand.MAIN_HAND ? player.getInventory().getSelectedSlot() : Inventory.SLOT_OFFHAND;
         player.openMenu(new SimpleMenuProvider((id, inventory, p) -> new BagMenu(id, inventory, player, bag, slot, new Store(bag, rows), rows),
-                Skin.title(rows == 6 ? Skin.Panel.BAG_LARGE : Skin.Panel.BAG, Component.translatable("menu." + RealmsOfChaos.MOD_ID + ".bag", rows * 9))));
+                Skin.title(player, rows == 6 ? Skin.Panel.BAG_LARGE : Skin.Panel.BAG, Component.translatable("menu." + RealmsOfChaos.MOD_ID + ".bag", rows * 9))));
         player.level().playSound(null, player.blockPosition(), SoundEvents.BUNDLE_DROP_CONTENTS, SoundSource.PLAYERS, 0.8F, 1.0F);
     }
 

@@ -215,7 +215,9 @@ public final class Combat {
         int look = st.momentum | (riposte ? 16 : 0);
         if (look == st.shown) return;
         st.shown = look;
-        if (Options.on(player, Options.Option.COMBAT)) Hud.actionBar(player, HudArt.combatMeter(st.momentum, MAX_MOMENTUM, now - st.pressedAt >= PARRY_RECOVERY, riposte));
+        if (Options.on(player, Options.Option.COMBAT)) {
+            Hud.actionBar(player, HudArt.present(player, HudArt.combatMeter(st.momentum, MAX_MOMENTUM, now - st.pressedAt >= PARRY_RECOVERY, riposte), HudArt.plainMeter(st.momentum, riposte)));
+        }
     }
 
     /** Between tests, and when a player leaves. */

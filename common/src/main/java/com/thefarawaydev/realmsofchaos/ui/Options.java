@@ -18,7 +18,9 @@ public final class Options {
         /** A card when a god remembers how you fight. */
         INSIGHT(true),
         /** The combat meter above the hotbar: momentum, parry, riposte. */
-        COMBAT(true);
+        COMBAT(true),
+        /** The drawn interface: panels, boss bars, cards. Off, everything is plain words on the game's own screens. */
+        ART(true);
 
         public final boolean byDefault;
 

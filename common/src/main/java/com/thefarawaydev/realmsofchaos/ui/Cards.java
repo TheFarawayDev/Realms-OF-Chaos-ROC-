@@ -79,10 +79,26 @@ public final class Cards {
     private static void put(MinecraftServer server, ServerPlayer player, Slot slot, Shown card) {
         slot.shown = card;
         slot.until = server.getTickCount() + STAY;
-        slot.bar = new ServerBossEvent(UUID.randomUUID(), HudArt.card(card.kind(), card.lines(), card.headed()),
+        slot.bar = new ServerBossEvent(UUID.randomUUID(), HudArt.present(player, HudArt.card(card.kind(), card.lines(), card.headed()), plain(card)),
                 BossEvent.BossBarColor.WHITE, BossEvent.BossBarOverlay.PROGRESS);
         slot.bar.setProgress(0.0F);
         if (player.connection != null) slot.bar.addPlayer(player);
+    }
+
+    /** A card in plain words, for a game that cannot draw it: its heading (or its kind), then what it says. */
+    public static net.minecraft.network.chat.Component plain(Shown card) {
+        List<String> lines = card.lines();
+        String head = card.headed() ? lines.get(0) : switch (card.kind()) {
+            case TIP -> "Tip";
+            case INSIGHT -> "Insight";
+            case AEGIS -> "Aegis";
+            case WRATH -> "Wrath";
+            case BOON -> "Boon";
+            default -> "";
+        };
+        String rest = String.join(" ", card.headed() ? lines.subList(1, lines.size()) : lines);
+        net.minecraft.network.chat.MutableComponent out = net.minecraft.network.chat.Component.literal(head).withStyle(net.minecraft.network.chat.Style.EMPTY.withColor(card.kind().color));
+        return rest.isEmpty() ? out : out.append(net.minecraft.network.chat.Component.literal((head.isEmpty() ? "" : ": ") + rest).withStyle(net.minecraft.network.chat.Style.EMPTY.withColor(0xFFFFFF)));
     }
 
     private static void take(Slot slot) {

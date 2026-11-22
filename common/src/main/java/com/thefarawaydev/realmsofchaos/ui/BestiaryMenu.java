@@ -29,7 +29,7 @@ public class BestiaryMenu extends ButtonMenu {
 
     public static void open(ServerPlayer player) {
         player.openMenu(new SimpleMenuProvider((id, inventory, p) -> new BestiaryMenu(id, inventory, (ServerPlayer) p),
-                Skin.title(Skin.Panel.BESTIARY, Component.translatable(NS))));
+                Skin.title(player, Skin.Panel.BESTIARY, Component.translatable(NS))));
     }
 
     private BestiaryMenu(int id, Inventory inventory, ServerPlayer viewer) {

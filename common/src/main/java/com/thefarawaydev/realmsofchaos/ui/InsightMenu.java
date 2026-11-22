@@ -22,7 +22,7 @@ public class InsightMenu extends ButtonMenu {
 
     public static void open(ServerPlayer player) {
         player.openMenu(new SimpleMenuProvider((id, inventory, p) -> new InsightMenu(id, inventory, (ServerPlayer) p),
-                Skin.title(Skin.Panel.INSIGHT, Component.translatable(NS))));
+                Skin.title(player, Skin.Panel.INSIGHT, Component.translatable(NS))));
     }
 
     private InsightMenu(int id, Inventory inventory, ServerPlayer viewer) {

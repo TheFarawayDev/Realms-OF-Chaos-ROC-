@@ -57,6 +57,11 @@ The current build is an **Alpha**.
   * **Settings and insight menus**, each with its own panel: `/roc settings`, `/roc insight`, or from the Codex.
   * All of it is fonts whose letters are pictures (`tools/hud_art.py`), composed on the server, so it needs nothing
     on the client but the mod and is the same on Fabric and Forge.
+  * **Words behind every picture.** Everything drawn is sent with plain words to fall back on, so a game that has
+    not got this build's artwork - a client running an older copy of the mod than its server, for one - shows the
+    words instead of a row of empty boxes. And the whole drawn interface can be turned off: Codex > Settings >
+    *Drawn interface*, or `/roc art`. Menus, boss bars, the cast bar and cards are then plain text on the game's
+    own screens. **Client and server must run the same build** to see the artwork.
 * **Gods that remember.** Every trial is watched, player by player: how much harm was done from afar or hand to
   hand, blows taken on a shield, wounds mended mid-fight, time spent out of reach. A habit shown in trial after
   trial is learnt, through three levels, and the next god already has an answer: shots count for less and it

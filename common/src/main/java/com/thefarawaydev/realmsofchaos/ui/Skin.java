@@ -40,6 +40,22 @@ public final class Skin {
 
     private Skin() {}
 
+    /** True while a menu is being drawn for a player who has turned the drawn interface off: tiles and gems stay glass. */
+    private static boolean plain;
+
+    /** Says whose menu is about to be drawn. */
+    public static void drawFor(net.minecraft.server.level.ServerPlayer viewer) {
+        plain = viewer != null && !Options.on(viewer, Options.Option.ART);
+    }
+
+    /**
+     * A menu's title for one player: the panel and the name - or just the name, for a player who has turned the
+     * drawn interface off, or whose game has not got this build's artwork.
+     */
+    public static Component title(net.minecraft.server.level.ServerPlayer player, Panel panel, Component name) {
+        return HudArt.present(player, title(panel, name), name);
+    }
+
     /** A menu title: the panel's artwork laid over the chest screen, then the name written on its header. */
     public static Component title(Panel panel, Component name) {
         Component art = Component.literal(BACK_TO_CORNER + panel.glyph + BACK_TO_TITLE)
@@ -53,6 +69,7 @@ public final class Skin {
     }
 
     private static ItemStack model(ItemStack stack, String name) {
+        if (plain) return stack;
         stack.set(DataComponents.ITEM_MODEL, RealmsOfChaos.id("ui/" + name));
         return stack;
     }

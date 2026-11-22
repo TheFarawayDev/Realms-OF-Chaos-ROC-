@@ -122,6 +122,11 @@ public final class RocCommands {
                     return 1;
                 }))
                 .then(Commands.literal("skills").executes(ctx -> ui(ctx.getSource().getPlayerOrException(), p -> Screens.show(p, Screens.skills(p)))))
+                .then(Commands.literal("art").executes(ctx -> ui(ctx.getSource().getPlayerOrException(), p -> {
+                    boolean on = com.thefarawaydev.realmsofchaos.ui.Options.toggle(p, com.thefarawaydev.realmsofchaos.ui.Options.Option.ART);
+                    p.sendSystemMessage(net.minecraft.network.chat.Component.translatable("menu." + com.thefarawaydev.realmsofchaos.RealmsOfChaos.MOD_ID + ".options.art")
+                            .append(": ").append(net.minecraft.network.chat.Component.translatable("menu." + com.thefarawaydev.realmsofchaos.RealmsOfChaos.MOD_ID + (on ? ".options.on" : ".options.off"))));
+                })))
                 .then(Commands.literal("bestiary").executes(ctx -> ui(ctx.getSource().getPlayerOrException(), com.thefarawaydev.realmsofchaos.ui.BestiaryMenu::open)))
                 .then(Commands.literal("settings").executes(ctx -> ui(ctx.getSource().getPlayerOrException(), com.thefarawaydev.realmsofchaos.ui.OptionsMenu::open)))
                 .then(Commands.literal("insight").executes(ctx -> ui(ctx.getSource().getPlayerOrException(), com.thefarawaydev.realmsofchaos.ui.InsightMenu::open)))
