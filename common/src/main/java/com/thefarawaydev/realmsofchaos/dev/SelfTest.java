@@ -2308,28 +2308,24 @@ public final class SelfTest {
                 check(stood >= 12 && Citadels.woken(level, sky) && Citadels.wake(level, sky, skyAt) == 0, "the garrison stands to, once: " + stood);
                 settle(level);
                 List<Sentinel> garrison = level.getEntitiesOfClass(Sentinel.class, new AABB(skyAt).inflate(Citadels.HALF + 2, 24, Citadels.HALF + 2), e -> e.entityTags().contains(Citadels.CITADEL_TAG));
-                List<Sentinel> titans = new ArrayList<>();
+                List<com.thefarawaydev.realmsofchaos.entity.Titan> titans = level.getEntitiesOfClass(com.thefarawaydev.realmsofchaos.entity.Titan.class, new AABB(skyAt).inflate(Citadels.HALF + 2, 24, Citadels.HALF + 2), e -> true);
                 int halfkin = 0;
                 for (Sentinel s : garrison) {
-                    if (Citadels.titanOf(s) != null) titans.add(s);
                     if (s.entityTags().contains(Citadels.HALFKIN_TAG)) {
                         halfkin++;
                         check(s.hasCustomName() && s.kind().line == Line.ZEUS, "half-kin are the children of the Sky, and named so");
                     }
                 }
                 check(halfkin >= 11 && titans.size() == 1, "half-kin and one fallen god: " + halfkin + ", " + titans.size());
-                Sentinel titan = titans.get(0);
-                check(Citadels.titanOf(titan) == Citadels.Titan.HYPERION && titan.isElite() && titan.getMaxHealth() > 100 && titan.blockPosition().getY() == Citadels.titanPost(skyAt).getY(),
+                com.thefarawaydev.realmsofchaos.entity.Titan titan = titans.get(0);
+                check(titan.kind() == com.thefarawaydev.realmsofchaos.entity.Titan.Kind.HYPERION && titan.getMaxHealth() >= 200 && titan.blockPosition().getY() == Citadels.titanPost(skyAt).getY() && titan.post().equals(Citadels.titanPost(skyAt)),
                         "Hyperion waits on the roof of the keep: " + titan.getMaxHealth());
                 Vec3 was = hero.position();
                 if (level.getPlayerByUUID(hero.getUUID()) == null) level.addNewPlayer(hero);
-                hero.setPos(titan.getX() + 3, titan.getY(), titan.getZ());
-                for (int i = 0; i < 40; i++) Citadels.tick(server);
-                check(Citadels.bar(titan) != null && Citadels.bar(titan).getPlayers().contains(hero), "a fallen god carries a bar for whoever is near");
                 ItemStack gift = Citadels.fallen(titan, hero);
-                check(!gift.isEmpty() && Citadels.fallen(titan, hero).isEmpty(), "the first time it falls to somebody it gives up a piece of the panoply, and only then");
+                check(!gift.isEmpty() && Citadels.felled(hero, Line.ZEUS) && Citadels.fallen(titan, hero).isEmpty(), "the first time it falls to somebody it gives up a piece of the panoply, and only then");
                 for (Sentinel s : garrison) s.discard();
-                Citadels.clear();
+                for (com.thefarawaydev.realmsofchaos.entity.Titan t : titans) t.discard();
                 for (net.minecraft.world.entity.item.ItemEntity dropped : level.getEntitiesOfClass(net.minecraft.world.entity.item.ItemEntity.class, new AABB(skyAt).inflate(30), e -> true)) dropped.discard();
                 hero.setPos(was.x, was.y, was.z);
 
@@ -5875,6 +5871,99 @@ public final class SelfTest {
                 hero.getInventory().clearContent();
                 hero.remove(net.minecraft.world.entity.Entity.RemovalReason.DISCARDED);
                 Realm.testAlias(Level.OVERWORLD, Realm.ABYSS);
+            }
+        });
+
+        step("fallen Titans: three of them, each with three skins, four moves of its own, phases that change the fight, a bar that names each move", () -> {
+            ServerPlayer hero = fakePlayer(server, level, "RocTitanslayer");
+            level.addNewPlayer(hero);
+            com.thefarawaydev.realmsofchaos.world.Onslaughts.clear();
+            try {
+                BlockPos post = new BlockPos(0, level.getHeight(net.minecraft.world.level.levelgen.Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, 0, 0), 0);
+                java.util.Set<com.thefarawaydev.realmsofchaos.entity.Titan.Move> every = java.util.EnumSet.noneOf(com.thefarawaydev.realmsofchaos.entity.Titan.Move.class);
+                for (com.thefarawaydev.realmsofchaos.entity.Titan.Kind kind : com.thefarawaydev.realmsofchaos.entity.Titan.Kind.values()) {
+                    List<com.thefarawaydev.realmsofchaos.entity.Titan.Move> moves = com.thefarawaydev.realmsofchaos.entity.Titan.Move.of(kind);
+                    check(moves.size() == 4 && moves.stream().filter(m -> m.phase == 1).count() == 2 && moves.stream().filter(m -> m.phase == 3).count() == 1, kind + ": two moves from the start, one more in each later phase");
+                    check(!com.thefarawaydev.realmsofchaos.ui.Words.of(kind.displayName()).startsWith("titan."), kind + " has a name");
+                    for (com.thefarawaydev.realmsofchaos.entity.Titan.Move m : moves) {
+                        check(!com.thefarawaydev.realmsofchaos.ui.Words.of(m.displayName()).startsWith("titan.") && !com.thefarawaydev.realmsofchaos.ui.Words.of("titan." + RealmsOfChaos.MOD_ID + ".cue." + m.id()).startsWith("titan."),
+                                m + " has a name, and a word on what to do about it");
+                        check(m.windup >= 15, m + " is wound up long enough to be seen coming: " + m.windup);
+                    }
+                    for (String phase : new String[]{"", "_p2", "_p3"}) {
+                        check(SelfTest.class.getClassLoader().getResource("assets/" + RealmsOfChaos.MOD_ID + "/textures/entity/titan/" + kind.id() + phase + ".png") != null, kind + " has a skin for every phase: " + phase);
+                    }
+                    com.thefarawaydev.realmsofchaos.entity.Titan titan = ModContent.TITAN.get().create(level, net.minecraft.world.entity.EntitySpawnReason.TRIGGERED);
+                    titan.snapTo(post.getX() + 0.5, post.getY(), post.getZ() + 0.5, 0, 0);
+                    titan.setUp(kind, post);
+                    level.addFreshEntity(titan);
+                    settle(level);
+                    check(titan.kind() == kind && titan.phase() == 1 && !titan.getMainHandItem().isEmpty() && titan.getBbHeight() > 2.5, kind + " stands to, armed, half as big again as a man: " + titan.kind() + " " + titan.phase() + " " + titan.getMainHandItem() + " " + titan.getBbHeight());
+                    // phases
+                    java.util.Set<com.thefarawaydev.realmsofchaos.entity.Titan.Move> chosen = java.util.EnumSet.noneOf(com.thefarawaydev.realmsofchaos.entity.Titan.Move.class);
+                    for (int i = 0; i < 60; i++) {
+                        com.thefarawaydev.realmsofchaos.entity.Titan.Move m = titan.choose();
+                        if (m != null) chosen.add(m);
+                    }
+                    check(chosen.stream().allMatch(m -> m.phase == 1) && chosen.size() == 2, kind + ": in its first phase, only its first two moves: " + chosen);
+                    titan.woundTo(level, 0.55F);
+                    check(titan.phase() == 2 && titan.shielded() && !titan.hurtServer(level, level.damageSources().generic(), 5.0F), "below three-fifths its second phase begins, and it is untouchable a moment");
+                    titan.woundTo(level, 0.25F);
+                    check(titan.phase() == 3, "below three-tenths, its last");
+                    chosen.clear();
+                    for (int i = 0; i < 80; i++) {
+                        com.thefarawaydev.realmsofchaos.entity.Titan.Move m = titan.choose();
+                        if (m != null) chosen.add(m);
+                    }
+                    check(chosen.size() >= 3, kind + ": in its last phase, all its moves: " + chosen);
+                    // every move lands on whoever stands where it falls
+                    for (com.thefarawaydev.realmsofchaos.entity.Titan.Move m : moves) {
+                        com.thefarawaydev.realmsofchaos.world.Onslaughts.clear();
+                        hero.removeAllEffects();
+                        hero.setHealth(hero.getMaxHealth());
+                        hero.clearFire();
+                        hero.damageCooldownTime = 0;
+                        hero.setDeltaMovement(0, 0, 0);
+                        hero.setPos(titan.getX(), titan.getY(), titan.getZ() + 3);
+                        hero.lookAt(net.minecraft.commands.arguments.EntityAnchorArgument.Anchor.EYES, titan.position().add(0, 2, 0));
+                        titan.setTarget(hero);
+                        if (m == com.thefarawaydev.realmsofchaos.entity.Titan.Move.REWIND) titan.remember(hero, new Vec3(titan.getX() + 6, titan.getY(), titan.getZ() + 6));
+                        settle(level);
+                        int caught = titan.force(level, m);
+                        titan.flush();
+                        boolean landed = switch (m) {
+                            case CORONA, TIDAL_WALL, AGE_OF_IRON -> com.thefarawaydev.realmsofchaos.world.Onslaughts.running() == 1;
+                            case CALL_OF_THE_DEEP -> caught >= 1 && com.thefarawaydev.realmsofchaos.world.Onslaughts.running() == 1;
+                            case BLINDING_DAWN -> hero.hasEffect(net.minecraft.world.effect.MobEffects.BLINDNESS);
+                            case DEVOUR_TIME -> hero.hasEffect(net.minecraft.world.effect.MobEffects.SLOWNESS);
+                            case REWIND -> Math.abs(hero.getX() - (titan.getX() + 6)) < 0.6 && Math.abs(hero.getZ() - (titan.getZ() + 6)) < 0.6;
+                            case UNDERTOW -> caught >= 1;
+                            default -> hero.getHealth() < hero.getMaxHealth();
+                        };
+                        check(landed, kind + ": " + m + " lands on whoever stands where it falls");
+                        every.add(m);
+                    }
+                    // Blinding Dawn spares whoever looked away
+                    hero.removeAllEffects();
+                    hero.setPos(titan.getX(), titan.getY(), titan.getZ() + 3);
+                    hero.lookAt(net.minecraft.commands.arguments.EntityAnchorArgument.Anchor.EYES, new Vec3(titan.getX(), titan.getY() + 1.6, titan.getZ() + 20));
+                    if (kind == com.thefarawaydev.realmsofchaos.entity.Titan.Kind.HYPERION) check(titan.release(level, com.thefarawaydev.realmsofchaos.entity.Titan.Move.BLINDING_DAWN) == 0 && !hero.hasEffect(net.minecraft.world.effect.MobEffects.BLINDNESS), "Blinding Dawn spares whoever looked away");
+                    // a bar for whoever is near, naming the move it winds up
+                    titan.begin(level, com.thefarawaydev.realmsofchaos.entity.Titan.Move.of(kind).get(0));
+                    for (int i = 0; i < 10; i++) titan.tick();
+                    check(titan.bar().getPlayers().contains(hero) && com.thefarawaydev.realmsofchaos.ui.Words.of(titan.bar().getName()).contains(com.thefarawaydev.realmsofchaos.ui.Words.of(com.thefarawaydev.realmsofchaos.entity.Titan.Move.of(kind).get(0).displayName())),
+                            "its bar names the move it is winding up: " + com.thefarawaydev.realmsofchaos.ui.Words.of(titan.bar().getName()));
+                    // kept to its post
+                    titan.teleportTo(post.getX() + 30, post.getY(), post.getZ());
+                    for (int i = 0; i < 25; i++) titan.tick();
+                    check(titan.distanceToSqr(Vec3.atBottomCenterOf(post)) < 9, "knocked off its roof, it is set back on its post");
+                    for (Sentinel add : level.getEntitiesOfClass(Sentinel.class, titan.getBoundingBox().inflate(32), e -> e.entityTags().contains(com.thefarawaydev.realmsofchaos.entity.Titan.ADD_TAG))) add.discard();
+                    titan.discard();
+                }
+                check(every.size() == 12, "twelve moves in all, every one of them seen to land: " + every.size());
+            } finally {
+                com.thefarawaydev.realmsofchaos.world.Onslaughts.clear();
+                hero.remove(net.minecraft.world.entity.Entity.RemovalReason.DISCARDED);
             }
         });
 

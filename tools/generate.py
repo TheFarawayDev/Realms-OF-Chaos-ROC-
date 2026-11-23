@@ -244,6 +244,10 @@ WHITE, CREAM, BONE = (240, 240, 245), (238, 228, 204), (212, 204, 176)
 # id: (outfit, cloth, trim, hair, skin, headgear, headgear colour, beard, long hair)
 # outfits: toga dress robe armor wild ; headgear: none crown laurel helmet hood wings horns circlet flowers rainbow
 LOOKS = {
+    # --- the fallen Titans, who hold the citadels
+    "hyperion":  ("armor", (232, 186, 70), (255, 244, 200), (255, 226, 130), (246, 214, 160), "crown", (255, 236, 150), True, True),
+    "oceanus":   ("robe", (34, 98, 120), (120, 222, 210), (200, 226, 228), SEA, "crown", (120, 222, 210), True, True),
+    "cronus":    ("robe", (38, 34, 46), (168, 132, 64), (196, 196, 204), PALE, "hood", (38, 34, 46), True, False),
     # --- Zeus line
     "zeus":      ("toga", WHITE, GOLD, (236, 236, 242), LIGHT, "crown", GOLD, True, False),
     "athena":    ("armor", BRONZE, GOLD, (110, 78, 50), LIGHT, "helmet", (70, 110, 200), False, True),
@@ -1060,6 +1064,33 @@ def gen_lang():
         "hud.realms_of_chaos.tab.here": "You are here",
         "hud.realms_of_chaos.tab.listening": "Listening for %s",
         "hud.realms_of_chaos.tab.signal": "Signal",
+        "entity.realms_of_chaos.titan": "Fallen Titan",
+        "titan.realms_of_chaos.move.solar_lance": "Solar Lance",
+        "titan.realms_of_chaos.move.blinding_dawn": "Blinding Dawn",
+        "titan.realms_of_chaos.move.falling_stars": "Falling Stars",
+        "titan.realms_of_chaos.move.corona": "Corona",
+        "titan.realms_of_chaos.move.undertow": "Undertow",
+        "titan.realms_of_chaos.move.waterspouts": "Waterspouts",
+        "titan.realms_of_chaos.move.tidal_wall": "Tidal Wall",
+        "titan.realms_of_chaos.move.call_of_the_deep": "Call of the Deep",
+        "titan.realms_of_chaos.move.scythe_sweep": "Scythe Sweep",
+        "titan.realms_of_chaos.move.devour_time": "Devour Time",
+        "titan.realms_of_chaos.move.rewind": "Rewind",
+        "titan.realms_of_chaos.move.age_of_iron": "Age of Iron",
+        "titan.realms_of_chaos.cue.solar_lance": "Solar Lance - step off the line of light",
+        "titan.realms_of_chaos.cue.blinding_dawn": "Blinding Dawn - look away from Hyperion!",
+        "titan.realms_of_chaos.cue.falling_stars": "Falling Stars - leave the burning rings",
+        "titan.realms_of_chaos.cue.corona": "Corona - jump the rings of fire",
+        "titan.realms_of_chaos.cue.undertow": "Undertow - you will be dragged in: be ready to run",
+        "titan.realms_of_chaos.cue.waterspouts": "Waterspouts - move off the bubbles",
+        "titan.realms_of_chaos.cue.tidal_wall": "Tidal Wall - find the gap",
+        "titan.realms_of_chaos.cue.call_of_the_deep": "Call of the Deep - half-kin rise from the sea",
+        "titan.realms_of_chaos.cue.scythe_sweep": "Scythe Sweep - get behind him",
+        "titan.realms_of_chaos.cue.devour_time": "Devour Time - time slows for you, not for him",
+        "titan.realms_of_chaos.cue.rewind": "Rewind - you will be thrown back to where you stood",
+        "titan.realms_of_chaos.cue.age_of_iron": "Age of Iron - the roof splits: step off the lines",
+        "titan.realms_of_chaos.phase2": "Its power wakes - it has a new move",
+        "titan.realms_of_chaos.phase3": "Its fury - faster, stronger, and its greatest move",
         "hud.realms_of_chaos.trap.sprung": "The room floods!",
         "hud.realms_of_chaos.trap.sprung.sub": "Watch the %s runes light, then press them in that order",
         "hud.realms_of_chaos.trap.status": "Water %s / %s  |  runes %s / %s",
@@ -4463,7 +4494,42 @@ def gen_sentinel_skins():
         os.makedirs(os.path.dirname(path), exist_ok=True)
         img.save(path)
 
+TITANS = {"hyperion": "ZEUS", "oceanus": "POSEIDON", "cronus": "HADES"}
+
+
+def chain_titan(img, gid):
+    """A Titan is a god cast down: a chain across its chest from shoulder to hip, and iron at both wrists."""
+    px = img.load()
+    iron, dark = (120, 122, 132, 255), (62, 62, 72, 255)
+    for i in range(12):
+        x, y = 20 + (i * 8) // 12, 20 + i                      # (the body's front face is 8 wide from x 20, 12 high from y 20)
+        px[x, y] = iron if i % 2 == 0 else dark
+        if x + 1 < 28:
+            px[x + 1, y] = dark if i % 2 == 0 else iron
+        for bx, by in ((x + 16, y + 16),):                    # (and over the jacket layer, so the cloak does not hide it)
+            if px[bx, by][3] > 0:
+                px[bx, by] = iron if i % 2 == 0 else dark
+    for x0, y0 in ((44, 29), (36, 61), (40, 29), (32, 61), (48, 29), (52, 29), (40, 61), (44, 61)):
+        for dx in range(4):
+            px[x0 + dx, y0] = iron
+            px[x0 + dx, y0 + 1] = dark
+    return img
+
+
+def gen_titan_skins():
+    for gid, line in TITANS.items():
+        img = polish_skin(make_skin(gid, line, 1), gid, line, 1)
+        img = apply_layers(img, LOOKS[gid], list(OUTFIT_LAYERS[LOOKS[gid][0]]) + ["cape", "bracers"], gid)
+        img = chain_titan(img, gid)
+        folder = os.path.join(ASSETS, "textures/entity/titan")
+        os.makedirs(folder, exist_ok=True)
+        img.save(os.path.join(folder, f"{gid}.png"))
+        for phase in (2, 3):
+            phase_skin(img, gid, line, 1, phase).save(os.path.join(folder, f"{gid}_p{phase}.png"))
+
+
 def gen_skins():
+    gen_titan_skins()
     previews = {}
     for _, line, rank, g in all_gods():
         img = polish_skin(make_skin(g[0], line, rank), g[0], line, rank)

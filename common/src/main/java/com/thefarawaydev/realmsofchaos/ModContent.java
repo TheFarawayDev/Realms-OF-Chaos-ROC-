@@ -141,6 +141,16 @@ public final class ModContent {
     }
 
     public static final Ref<EntityType<GodBoss>> GOD_BOSS = new Ref<>();
+    public static final Ref<EntityType<com.thefarawaydev.realmsofchaos.entity.Titan>> TITAN = new Ref<>();
+
+    public static EntityType<com.thefarawaydev.realmsofchaos.entity.Titan> createTitanType(ResourceKey<EntityType<?>> key) {
+        return EntityType.Builder.<com.thefarawaydev.realmsofchaos.entity.Titan>of(com.thefarawaydev.realmsofchaos.entity.Titan::new, MobCategory.MONSTER)
+                .sized(0.6F, 1.95F).fireImmune().clientTrackingRange(12).build(key);
+    }
+
+    public static ResourceKey<EntityType<?>> titanKey() {
+        return ResourceKey.create(Registries.ENTITY_TYPE, RealmsOfChaos.id("titan"));
+    }
     public static final Ref<EntityType<RelicProjectile>> RELIC_PROJECTILE = new Ref<>();
     public static final Ref<EntityType<com.thefarawaydev.realmsofchaos.entity.Sentinel>> SENTINEL = new Ref<>();
     public static final Ref<CreativeModeTab> TAB = new Ref<>();

@@ -277,7 +277,10 @@ public final class RocHud {
 
     // ---- the compass tab -------------------------------------------------------------------------------------
 
-    private static final int TAB_W = 176, TAB_H = 54, TAB_SHOW_MS = 4600, TAB_SLIDE_MS = 220;
+    private static final int TAB_W = 176, TAB_H = 54, TAB_SHOW_MS = 4600, TAB_SLIDE_MS = 260;
+    /** The folded tab is the size of a status effect's icon, and stays this long after the last reading. */
+    private static final int ICON = 24, KEEP_ICON_MS = 45_000;
+    private static boolean wasHolding;
     private static int tabValue = Integer.MIN_VALUE;
     private static String tabText = "";
     private static long tabSince, tabLeftAt;
@@ -311,10 +314,25 @@ public final class RocHud {
             tabLeft = com.thefarawaydev.realmsofchaos.ui.CompassTab.secondsLeft(value);
             tabLeftAt = nowMs;
         }
+        // picking a compass up again brings the last reading out with it
+        boolean holding = holdingCompass(mc);
+        if (holding && !wasHolding && nowMs - tabSince > TAB_SHOW_MS + TAB_SLIDE_MS && nowMs - tabSince < KEEP_ICON_MS) tabSince = nowMs - TAB_SLIDE_MS;
+        wasHolding = holding;
         long age = nowMs - tabSince;
-        if (age > TAB_SHOW_MS + TAB_SLIDE_MS) return;
+        int left = Math.max(0, tabLeft - (int) ((nowMs - tabLeftAt) / 1000L));
+        // between readings the tab is folded away to a small compass at the edge of the screen: while a scan runs,
+        // while a compass is in hand, and for a while after the last reading
+        boolean icon = left > 0 || holding || age < KEEP_ICON_MS;
         float out = age < TAB_SLIDE_MS ? ease(age / (float) TAB_SLIDE_MS) : age > TAB_SHOW_MS ? 1.0F - ease((age - TAB_SHOW_MS) / (float) TAB_SLIDE_MS) : 1.0F;
-        int x = width - Math.round((TAB_W + 2) * out), y = Math.max(28, height / 3 - TAB_H / 2);
+        if (age > TAB_SHOW_MS + TAB_SLIDE_MS) out = 0.0F;
+        int y = Math.max(28, height / 3 - TAB_H / 2);
+        if (out <= 0.02F) {
+            if (icon) compassIcon(g, mc, width, y + TAB_H / 2 - ICON / 2, value, words, nowMs, left);
+            return;
+        }
+        // folding out of the icon and back into it: the tab grows from the icon's width to its own, and back
+        int shown = Math.round(ICON + (TAB_W + 2 - ICON) * out), x = width - shown;
+        g.enableScissor(x - 4, y - 2, width, y + TAB_H + 2);
 
         java.util.List<Component> parts = words.getSiblings();
         Component heading = parts.size() > 0 ? parts.get(0) : Component.empty();
@@ -370,7 +388,6 @@ public final class RocHud {
         int tx0 = x + 42, room = TAB_W - 44;
         g.text(font, font.plainSubstrByWidth(heading.getString(), room - 30), tx0, y + 3, accent, false);
         if (!notice) {
-            int left = Math.max(0, tabLeft - (int) ((nowMs - tabLeftAt) / 1000L));
             if (left > 0) {
                 String clock = left / 60 + ":" + String.format(java.util.Locale.ROOT, "%02d", left % 60);
                 g.text(font, clock, x + TAB_W - font.width(clock) - 1, y + 3, 0xFFB8B2CC, false);
@@ -378,7 +395,9 @@ public final class RocHud {
         }
         java.util.List<net.minecraft.util.FormattedCharSequence> lines = font.split(target, room);
         int row = y + 16;
-        for (int i = 0; i < Math.min(notice ? 3 : 1, lines.size()); i++) {
+        // (a reading has its distance under its name; a line with no distance may run on to a second line)
+        int rows = notice ? 3 : distance.getString().isEmpty() ? 2 : 1;
+        for (int i = 0; i < Math.min(rows, lines.size()); i++) {
             g.text(font, lines.get(i), tx0, row, 0xFFF5E6C8, false);
             row += 10;
         }
@@ -398,6 +417,58 @@ public final class RocHud {
                 g.fill(tx0, y + TAB_H - 5, tx0 + Math.round((x + TAB_W - 26 - tx0) * done), y + TAB_H - 3, blend(accent, 0xFFFFFFFF, 0.2F));
             }
         }
+        g.disableScissor();
+    }
+
+    private static boolean holdingCompass(Minecraft mc) {
+        if (mc.player == null) return false;
+        for (net.minecraft.world.item.ItemStack held : new net.minecraft.world.item.ItemStack[]{mc.player.getMainHandItem(), mc.player.getOffhandItem()}) {
+            if (held.is(com.thefarawaydev.realmsofchaos.ModContent.CHAOS_COMPASS.get())) return true;
+            for (Line line : Line.values()) if (held.is(com.thefarawaydev.realmsofchaos.ModContent.seekerItem(line))) return true;
+        }
+        return false;
+    }
+
+    /**
+     * The tab folded away: a small compass, the size of a status effect's icon, at the right-hand edge. Its needle
+     * still points the way, a ring round it fills as a scan goes on, and a dot in its corner shows a clean lock or
+     * a surge.
+     */
+    private static void compassIcon(GuiGraphicsExtractor g, Minecraft mc, int width, int y, int value, Component words, long nowMs, int left) {
+        java.util.List<Component> parts = words.getSiblings();
+        Component heading = parts.isEmpty() ? Component.empty() : parts.get(0);
+        net.minecraft.network.chat.TextColor tc = heading.getStyle().getColor();
+        if (tc == null && !heading.getSiblings().isEmpty()) tc = heading.getSiblings().get(0).getStyle().getColor();
+        int accent = 0xFF000000 | (tc == null ? 0xF5B82E : tc.getValue());
+        int state = com.thefarawaydev.realmsofchaos.ui.CompassTab.state(value);
+        int stateColour = state == com.thefarawaydev.realmsofchaos.ui.CompassTab.LOCK ? 0xFF6BE38A : state == com.thefarawaydev.realmsofchaos.ui.CompassTab.SURGE ? 0xFFFF5A5A : accent;
+        int x = width - ICON - 2;
+        // a frame like a status effect's: ink, a bevel, the accent along the open edge
+        g.fill(x - 1, y - 1, x + ICON + 1, y + ICON + 1, 0xFF05040B);
+        g.fill(x, y, x + ICON, y + ICON, 0xE8141228);
+        g.fill(x, y, x + ICON, y + 1, 0xFF3A3470);
+        g.fill(x, y + ICON - 1, x + ICON, y + ICON, 0xFF0A0818);
+        g.fill(x - 1, y + 3, x, y + ICON - 3, accent);
+        int cx = x + ICON / 2, cy = y + ICON / 2, r = 9;
+        // the ring fills clockwise as the scan goes on
+        float done = com.thefarawaydev.realmsofchaos.ui.CompassTab.seeker(value) || left <= 0 ? 1.0F : com.thefarawaydev.realmsofchaos.ui.CompassTab.progress(value);
+        for (int k = 0; k < 36; k++) {
+            double a = Math.PI * 2 * k / 36;
+            int px = cx + (int) Math.round(Math.sin(a) * r), py = cy - (int) Math.round(Math.cos(a) * r);
+            g.fill(px, py, px + 1, py + 1, k / 36.0F < done ? blend(accent, 0xFFFFFFFF, 0.15F) : 0xFF2A2650);
+        }
+        disc(g, cx, cy, r - 2, 0xFF0E0C1E);
+        int bearing = com.thefarawaydev.realmsofchaos.ui.CompassTab.bearing(value);
+        double turn = bearing == com.thefarawaydev.realmsofchaos.ui.CompassTab.NO_BEARING
+                ? (state == com.thefarawaydev.realmsofchaos.ui.CompassTab.SURGE ? (nowMs % 700) / 700.0 * 360.0 : Math.sin(nowMs / 900.0) * 35.0)
+                : bearing - mc.player.getYRot();
+        double a = Math.toRadians(turn), sx = Math.sin(a), sy = -Math.cos(a);
+        for (int k = -3; k <= r - 3; k++) {
+            int px = cx + (int) Math.round(sx * k), py = cy + (int) Math.round(sy * k);
+            g.fill(px, py, px + 1, py + 1, k >= 0 ? stateColour : 0xFF8A86A8);
+        }
+        g.fill(cx, cy, cx + 1, cy + 1, 0xFFE8E2D0);
+        if (state == com.thefarawaydev.realmsofchaos.ui.CompassTab.LOCK || state == com.thefarawaydev.realmsofchaos.ui.CompassTab.SURGE) g.fill(x + ICON - 5, y + 2, x + ICON - 2, y + 5, stateColour);
     }
 
     private static java.lang.reflect.Field barsField;

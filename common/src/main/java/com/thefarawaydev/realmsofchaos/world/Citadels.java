@@ -493,21 +493,14 @@ public final class Citadels {
             stood++;
         }
         Titan titan = Titan.of(line);
-        Sentinel fallen = spawn(level, titanPost(c), pick(line, Sentinel.Role.KEEPER, random), 3.0, true, site);
+        com.thefarawaydev.realmsofchaos.entity.Titan fallen = ModContent.TITAN.get().create(level, EntitySpawnReason.TRIGGERED);
         if (fallen != null) {
+            BlockPos post = titanPost(c);
+            fallen.snapTo(post.getX() + 0.5, post.getY(), post.getZ() + 0.5, 180.0F, 0.0F);
+            fallen.setUp(com.thefarawaydev.realmsofchaos.entity.Titan.Kind.of(line), post);
             fallen.addTag(TITAN_TAG);
-            fallen.addTag(TITAN_TAG + "/" + titan.id());
-            fallen.setCustomName(Hud.colored(titan.displayName(), line.color()));
-            fallen.setCustomNameVisible(true);
-            var health = fallen.getAttribute(Attributes.MAX_HEALTH);
-            if (health != null) {
-                health.setBaseValue(health.getBaseValue() * 4.0);
-                fallen.setHealth(fallen.getMaxHealth());
-            }
-            var scale = fallen.getAttribute(Attributes.SCALE);
-            if (scale != null) scale.setBaseValue(scale.getBaseValue() * 1.5);
-            fallen.addEffect(new MobEffectInstance(MobEffects.RESISTANCE, MobEffectInstance.INFINITE_DURATION, 0, true, false));
-            if (line == Line.HADES) fallen.addEffect(new MobEffectInstance(MobEffects.FIRE_RESISTANCE, MobEffectInstance.INFINITE_DURATION, 0, true, false));
+            fallen.addTag(CITADEL_TAG);
+            level.addFreshEntity(fallen);
             stood++;
         }
         level.playSound(null, c.above(4), SoundEvents.RAID_HORN.value(), SoundSource.HOSTILE, 6.0F, line == Line.POSEIDON ? 0.7F : 1.0F);
@@ -517,16 +510,10 @@ public final class Citadels {
         return stood;
     }
 
-    /** Which Titan a sentinel is, or null. */
-    public static Titan titanOf(Sentinel mob) {
-        for (Titan t : Titan.values()) if (mob.entityTags().contains(TITAN_TAG + "/" + t.id())) return t;
-        return null;
-    }
-
-    /** A sentinel has fallen to a player: if it was a fallen god, it gives up a piece of the panoply the first time. */
-    public static ItemStack fallen(Sentinel mob, ServerPlayer killer) {
-        Titan titan = titanOf(mob);
-        if (titan == null || !(mob.level() instanceof ServerLevel level)) return ItemStack.EMPTY;
+    /** A fallen Titan has been beaten by a player: it gives up a piece of the panoply the first time. */
+    public static ItemStack fallen(com.thefarawaydev.realmsofchaos.entity.Titan mob, ServerPlayer killer) {
+        if (!(mob.level() instanceof ServerLevel level)) return ItemStack.EMPTY;
+        Titan titan = Titan.of(mob.kind().line);
         ProgressData data = ProgressData.get(level.getServer());
         String key = "titan/" + killer.getUUID() + "/" + titan.id();
         boolean first = !data.isBuilt(key);
@@ -541,47 +528,10 @@ public final class Citadels {
         return gift;
     }
 
-    // ---- a fallen god's bar ----------------------------------------------------------------------------------
-
-    private static final Map<UUID, ServerBossEvent> BARS = new HashMap<>();
-    private static int ticker;
-
-    public static ServerBossEvent bar(Sentinel titan) {
-        return BARS.get(titan.getUUID());
+    public static boolean felled(ServerPlayer player, Line line) {
+        return ProgressData.get(player.level().getServer()).isBuilt("titan/" + player.getUUID() + "/" + Titan.of(line).id());
     }
 
-    /** Called every server tick: keeps each fallen god's bar shown to those near it. */
-    public static void tick(MinecraftServer server) {
-        if (++ticker % 10 != 0) return;
-        ServerLevel level = server.getLevel(Level.OVERWORLD);
-        if (level == null) return;
-        if (ticker % 40 == 0) {
-            for (ServerPlayer p : level.players()) {
-                for (Sentinel s : level.getEntitiesOfClass(Sentinel.class, p.getBoundingBox().inflate(48), e -> e.isAlive() && titanOf(e) != null)) {
-                    BARS.computeIfAbsent(s.getUUID(), id -> new ServerBossEvent(UUID.randomUUID(), s.getDisplayName(), BossEvent.BossBarColor.PURPLE,
-                            BossEvent.BossBarOverlay.NOTCHED_10));
-                }
-            }
-        }
-        for (Iterator<Map.Entry<UUID, ServerBossEvent>> it = BARS.entrySet().iterator(); it.hasNext(); ) {
-            Map.Entry<UUID, ServerBossEvent> e = it.next();
-            if (!(level.getEntity(e.getKey()) instanceof Sentinel titan) || !titan.isAlive()) {
-                e.getValue().removeAllPlayers();
-                it.remove();
-                continue;
-            }
-            ServerBossEvent bar = e.getValue();
-            Titan which = titanOf(titan);
-            bar.setColor(which == null || which.line == Line.HADES ? BossEvent.BossBarColor.PURPLE : which.line == Line.ZEUS ? BossEvent.BossBarColor.YELLOW : BossEvent.BossBarColor.BLUE);
-            bar.setProgress(Math.max(0.0F, Math.min(1.0F, titan.getHealth() / titan.getMaxHealth())));
-            for (ServerPlayer p : new ArrayList<>(bar.getPlayers())) if (p.distanceToSqr(titan) > 40 * 40 || p.level() != level) bar.removePlayer(p);
-            for (ServerPlayer p : level.players()) if (p.distanceToSqr(titan) <= 32 * 32 && !bar.getPlayers().contains(p)) bar.addPlayer(p);
-        }
-    }
-
-    /** Takes down every bar: between tests. */
-    public static void clear() {
-        for (ServerBossEvent bar : BARS.values()) bar.removeAllPlayers();
-        BARS.clear();
-    }
+    /** Nothing to clear any more: a Titan carries its own bar. Kept for the tests that call it. */
+    public static void clear() {}
 }

@@ -63,6 +63,11 @@ public class RealmsOfChaosFabric implements ModInitializer {
         ModContent.SENTINEL.bind(() -> sentinelType);
         FabricDefaultAttributeRegistry.register(sentinelType, com.thefarawaydev.realmsofchaos.entity.Sentinel.createAttributes());
 
+        var titanType = ModContent.createTitanType(ModContent.titanKey());
+        Registry.register(BuiltInRegistries.ENTITY_TYPE, RealmsOfChaos.id("titan"), titanType);
+        ModContent.TITAN.bind(() -> titanType);
+        FabricDefaultAttributeRegistry.register(titanType, com.thefarawaydev.realmsofchaos.entity.Titan.createAttributes());
+
         var projectileType = ModContent.createProjectileType(ModContent.projectileKey());
         Registry.register(BuiltInRegistries.ENTITY_TYPE, RealmsOfChaos.id("relic_projectile"), projectileType);
         ModContent.RELIC_PROJECTILE.bind(() -> projectileType);

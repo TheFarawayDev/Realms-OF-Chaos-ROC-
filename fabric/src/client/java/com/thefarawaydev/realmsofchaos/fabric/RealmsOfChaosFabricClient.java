@@ -11,6 +11,7 @@ public class RealmsOfChaosFabricClient implements ClientModInitializer {
     public void onInitializeClient() {
         EntityRendererRegistry.register(ModContent.GOD_BOSS.get(), GodBossRenderer::new);
         EntityRendererRegistry.register(ModContent.SENTINEL.get(), com.thefarawaydev.realmsofchaos.client.SentinelRenderer::new);
+        EntityRendererRegistry.register(ModContent.TITAN.get(), com.thefarawaydev.realmsofchaos.client.TitanRenderer::new);
         // staff bolts, thrown relics and tarot cards are drawn as the item they carry
         EntityRendererRegistry.register(ModContent.RELIC_PROJECTILE.get(), com.thefarawaydev.realmsofchaos.client.RelicProjectileRenderer::new);
         // each of the mod's menus has a screen of its own

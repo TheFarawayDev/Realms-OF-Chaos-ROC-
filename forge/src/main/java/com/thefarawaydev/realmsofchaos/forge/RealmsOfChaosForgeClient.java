@@ -17,6 +17,7 @@ public final class RealmsOfChaosForgeClient {
     public static void registerRenderers(EntityRenderersEvent.RegisterRenderers event) {
         event.registerEntityRenderer(ModContent.GOD_BOSS.get(), GodBossRenderer::new);
         event.registerEntityRenderer(ModContent.SENTINEL.get(), com.thefarawaydev.realmsofchaos.client.SentinelRenderer::new);
+        event.registerEntityRenderer(ModContent.TITAN.get(), com.thefarawaydev.realmsofchaos.client.TitanRenderer::new);
         // staff bolts, thrown relics and tarot cards are drawn as the item they carry
         event.registerEntityRenderer(ModContent.RELIC_PROJECTILE.get(), com.thefarawaydev.realmsofchaos.client.RelicProjectileRenderer::new);
         // each of the mod's menus has a screen of its own

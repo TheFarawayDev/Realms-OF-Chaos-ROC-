@@ -46,9 +46,20 @@ The current build is an **Alpha**.
   courtyard of fallen statues, and a three-storey keep with the keystone on its roof. The Citadel of the Sky is
   white and gold; the Tides' stands behind a moat; the Shades' is black stone ringed with soul fire. When you come
   within sight of the walls the garrison stands to: **half-kin** - children of the tower's king - at the gate, in
-  the courtyard, on the towers and in the keep, and on the roof beside the keystone a **fallen Titan**
-  (*Hyperion*, *Oceanus* or *Cronus*) with a bar of its own, who gives up a piece of the panoply the first time it
-  falls to you. (`art/renders/citadel-*.png`)
+  the courtyard, on the towers and in the keep, and on the roof beside the keystone a **fallen Titan**, who gives up
+  a piece of the panoply the first time it falls to you. (`art/renders/citadel-*.png`)
+* **Titan fights.** Each Titan is a creature of its own, half as big again as a man, bound in chains, armed, with
+  three skins - itself, lit with its power, cracked open in its fury - and a boss bar that names each move as it
+  winds up, with a line above the hotbar on how to get out of the way. Two moves from the start, a third at
+  three-fifths health, its greatest at three-tenths; each phase begins with a roar that throws everyone back while
+  it is untouchable for two seconds, and a shockwave across the roof. Knocked off its roof, it is set back on it.
+  * **Hyperion, the Fallen Light** - *Solar Lance* (a line of light: step off it); *Blinding Dawn* (blinds only
+    those looking at him); *Falling Stars* (burning rings, then meteors); *Corona* (rings of fire to jump).
+  * **Oceanus, the Fallen Sea** - *Undertow* (drags everyone in for a slam); *Waterspouts* (under whoever stands
+    still); *Tidal Wall* (find the gap); *Call of the Deep* (half-kin rise to fight beside him).
+  * **Cronus, the Fallen King** - *Scythe Sweep* (a cleave in front: get behind him); *Devour Time* (everyone slows,
+    he quickens); *Rewind* (his target is thrown back to where they stood three seconds ago); *Age of Iron* (the
+    roof splits in a star, and he fights faster and harder). (`art/renders/titans.png`)
 * **Far apart.** The citadels lie on a grid a thousand blocks to a square, the three kinds taking turns so no two
   of a kind are neighbours, and any two at least five hundred blocks apart; the Ruined Gates have their own grid,
   never near a citadel. Each keystone is a journey. The Ruined Gate itself is grander: a ring of twelve columns -
@@ -57,7 +68,10 @@ The current build is an **Alpha**.
   slides out from the right edge of the screen when there is something to say - when you use one, on a clean
   lock, a static surge, every few rolls, and at the end of a scan - and slides away after a few seconds. It has a
   dial whose needle keeps to its bearing as you turn, the thing pointed at, how far, the signal in five bars, the
-  time left and how far along the scan is. (`art/renders/compass-tab.png`)
+  time left and how far along the scan is. Between readings it folds back in to a small compass the size of a
+  status effect's icon, its needle still pointing and a ring round it filling as the scan goes on; it stays while
+  a scan runs, while a compass is in hand and for a while after, and the last reading pops out again when a
+  compass is picked up. (`art/renders/compass-fold.png`)
 * **Three kinds of rune chamber: work fast, and remember.** A rune chamber shuts you in and gets worse by the
   moment until its runes are pressed in the right order. A **flooding** chamber shows the order over and over
   while the water rises. A **furnace** shows it **once** - and again only after a mistake - while the heat

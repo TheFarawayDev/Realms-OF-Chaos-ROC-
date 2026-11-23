@@ -826,7 +826,7 @@
       64
     ],
     "columns": 9,
-    "count": 214,
+    "count": 223,
     "source": "assets/realms_of_chaos/textures/entity",
     "tiles": {
       "equipment/humanoid/aegis_cuirass": [
@@ -1684,6 +1684,42 @@
       "sentinel/wrecker": [
         6,
         23
+      ],
+      "titan/cronus": [
+        7,
+        23
+      ],
+      "titan/cronus_p2": [
+        8,
+        23
+      ],
+      "titan/cronus_p3": [
+        0,
+        24
+      ],
+      "titan/hyperion": [
+        1,
+        24
+      ],
+      "titan/hyperion_p2": [
+        2,
+        24
+      ],
+      "titan/hyperion_p3": [
+        3,
+        24
+      ],
+      "titan/oceanus": [
+        4,
+        24
+      ],
+      "titan/oceanus_p2": [
+        5,
+        24
+      ],
+      "titan/oceanus_p3": [
+        6,
+        24
       ]
     }
   },

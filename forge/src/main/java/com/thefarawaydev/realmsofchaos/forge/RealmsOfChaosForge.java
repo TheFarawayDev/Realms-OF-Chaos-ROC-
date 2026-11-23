@@ -60,6 +60,12 @@ public final class RealmsOfChaosForge {
             EntityType<com.thefarawaydev.realmsofchaos.entity.Sentinel> type = (EntityType<com.thefarawaydev.realmsofchaos.entity.Sentinel>) sentinel.get();
             return type;
         });
+        RegistryObject<EntityType<?>> titan = ENTITIES.register("titan", () -> ModContent.createTitanType(ENTITIES.key("titan")));
+        ModContent.TITAN.bind(() -> {
+            @SuppressWarnings("unchecked")
+            EntityType<com.thefarawaydev.realmsofchaos.entity.Titan> type = (EntityType<com.thefarawaydev.realmsofchaos.entity.Titan>) titan.get();
+            return type;
+        });
         RegistryObject<EntityType<?>> projectile = ENTITIES.register("relic_projectile", () -> ModContent.createProjectileType(ENTITIES.key("relic_projectile")));
         ModContent.RELIC_PROJECTILE.bind(() -> {
             @SuppressWarnings("unchecked")
@@ -96,6 +102,7 @@ public final class RealmsOfChaosForge {
         EntityAttributeCreationEvent.BUS.addListener(event -> {
             event.put(ModContent.GOD_BOSS.get(), GodBoss.createAttributes().build());
             event.put(ModContent.SENTINEL.get(), com.thefarawaydev.realmsofchaos.entity.Sentinel.createAttributes().build());
+            event.put(ModContent.TITAN.get(), com.thefarawaydev.realmsofchaos.entity.Titan.createAttributes().build());
         });
         RegisterCommandsEvent.BUS.addListener(event -> RocCommands.register(event.getDispatcher()));
 
