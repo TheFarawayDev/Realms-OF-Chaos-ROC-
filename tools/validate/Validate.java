@@ -78,7 +78,7 @@ public class Validate {
         @SuppressWarnings("unchecked") EntityType<com.thefarawaydev.realmsofchaos.entity.GodBoss> bt = (EntityType<com.thefarawaydev.realmsofchaos.entity.GodBoss>) boss;
         ModContent.GOD_BOSS.bind(() -> bt);
         check(boss != null, "boss type");
-        check(ModContent.tabItems().size() == 3 + 45 + 12 + 6 + 1 + 22 + 4 + 32, "tab item count " + ModContent.tabItems().size());
+        check(ModContent.tabItems().size() == 3 + 45 + 12 + 6 + 1 + 22 + 4 + 32 + 8, "tab item count " + ModContent.tabItems().size());
 
         // 3. dimension types + dimensions parse with vanilla codecs
         HolderLookup.Provider lookup = VanillaRegistries.createWorldLookup();
