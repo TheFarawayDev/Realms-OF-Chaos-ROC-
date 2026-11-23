@@ -23,7 +23,8 @@ public class PanelScreen extends AbstractContainerScreen<ChestMenu> {
         super(menu, inventory, title, 176, 114 + panel.rows * 18);
         this.rows = panel.rows;
         this.texture = RealmsOfChaos.id("textures/gui/screen_" + panel.art + ".png");
-        this.inventoryLabelY = this.imageHeight - 94;
+        // (the parchment half starts a little lower than a chest's does)
+        this.inventoryLabelY = this.imageHeight - 91;
     }
 
     @Override

@@ -305,4 +305,31 @@ public final class HudArt {
         row.append(art(space(HudGlyphs.CARD_WIDTH)));
         return row;
     }
+
+    private static final java.util.Map<java.util.UUID, List<net.minecraft.server.level.ServerBossEvent>> DEMO = new java.util.HashMap<>();
+
+    /** Shows (or, asked again, takes away) one of each drawn bar: a way to see at a glance whether a game draws them. */
+    public static void demo(net.minecraft.server.level.ServerPlayer player) {
+        List<net.minecraft.server.level.ServerBossEvent> up = DEMO.remove(player.getUUID());
+        if (up != null) {
+            for (net.minecraft.server.level.ServerBossEvent bar : up) bar.removeAllPlayers();
+            return;
+        }
+        up = new java.util.ArrayList<>();
+        Component[] names = {
+                bossBar(Line.POSEIDON, 1, false, 0.72F, "Galatea", 0, 0),
+                bossBar(Line.ZEUS, 2, true, 0.5F, "Hermes", 4, 2),
+                bossBar(Line.HADES, 3, false, 0.2F, "Thanatos", 5, 3),
+                castBar(0.6F, "Tidal Surge"),
+                card(Card.TIP, lines(null, "A tip is a small card at the top of the screen, with up to three lines on it."), false),
+                card(Card.NOTICE, lines("A notice", "This one has a heading."), true)};
+        for (Component name : names) {
+            net.minecraft.server.level.ServerBossEvent bar = new net.minecraft.server.level.ServerBossEvent(java.util.UUID.randomUUID(), name,
+                    net.minecraft.world.BossEvent.BossBarColor.WHITE, net.minecraft.world.BossEvent.BossBarOverlay.PROGRESS);
+            bar.setProgress(0.0F);
+            bar.addPlayer(player);
+            up.add(bar);
+        }
+        DEMO.put(player.getUUID(), up);
+    }
 }

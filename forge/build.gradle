@@ -6,8 +6,12 @@ plugins {
 }
 
 // One VERSION file at the repo root drives both loaders (e.g. 1.2.0-alpha, 1.2.0-beta, 1.2.0).
-def mod_version = file('../VERSION').text.trim()
-version = "${mod_version}+mc${minecraft_version}"
+def base_version = file('../VERSION').text.trim()
+// A released build carries its build number (ROC_BUILD, set by the workflow): 1.2.0-alpha.57. The file name and the
+// version the game shows are then different for every build, so an old copy can never pass for a new one.
+def build = System.getenv('ROC_BUILD') ?: ''
+def mod_version = build && base_version.contains('-') ? "${base_version}.${build}" : base_version
+version = "${build && !base_version.contains('-') ? base_version + '.' + build : mod_version}+mc${minecraft_version}"
 group = 'com.thefarawaydev.realmsofchaos'
 base { archivesName = 'realms-of-chaos-forge' }
 

@@ -28,7 +28,9 @@ public final class HudFeed {
     public static final String ILL = "ill";
     public static final int ILL_HELD = 16;
     /** Bits of the options line. */
-    public static final int OPT_CASTS = 1, OPT_COMBAT = 2;
+    public static final int OPT_CASTS = 1, OPT_COMBAT = 2, OPT_ART = 4;
+    /** The build of the mod the world is run by: a game with a different one says so. */
+    public static final String BUILD = "build";
 
     private record Line(int value, String text) {}
 
@@ -73,7 +75,9 @@ public final class HudFeed {
 
     /** What the HUD needs to know of a player's settings. */
     public static void options(ServerPlayer player) {
-        set(player, OPTIONS, (Options.on(player, Options.Option.CASTS) ? OPT_CASTS : 0) | (Options.on(player, Options.Option.COMBAT) ? OPT_COMBAT : 0), null);
+        set(player, OPTIONS, (Options.on(player, Options.Option.CASTS) ? OPT_CASTS : 0) | (Options.on(player, Options.Option.COMBAT) ? OPT_COMBAT : 0)
+                | (Options.on(player, Options.Option.ART) ? OPT_ART : 0), null);
+        set(player, BUILD, 0, Component.literal(com.thefarawaydev.realmsofchaos.RealmsOfChaos.version()));
     }
 
     /** The number last sent on a line, or null: for tests, and for nothing else. */

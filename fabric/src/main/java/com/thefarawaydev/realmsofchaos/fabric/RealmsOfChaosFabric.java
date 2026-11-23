@@ -83,6 +83,8 @@ public class RealmsOfChaosFabric implements ModInitializer {
             ServerLifecycleEvents.SERVER_STARTED.register(SelfTest::run);
         }
 
-        LOGGER.info("{} by {} loaded: 45 gods, 3 realms, 1 hub.", RealmsOfChaos.MOD_NAME, RealmsOfChaos.AUTHOR);
+        net.fabricmc.loader.api.FabricLoader.getInstance().getModContainer(RealmsOfChaos.MOD_ID)
+                .ifPresent(mod -> RealmsOfChaos.version(mod.getMetadata().getVersion().getFriendlyString()));
+        LOGGER.info("{} {} by {} loaded: 45 gods, 3 realms, 1 hub.", RealmsOfChaos.MOD_NAME, RealmsOfChaos.version(), RealmsOfChaos.AUTHOR);
     }
 }

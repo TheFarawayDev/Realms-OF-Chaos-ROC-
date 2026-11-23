@@ -13,11 +13,23 @@ import net.minecraft.world.item.ItemStack;
 public final class Welcome {
     private Welcome() {}
 
+    /** "Realms of Chaos 1.2.0-alpha.57": which build this is, as a line of chat. */
+    public static Component version() {
+        return Hud.colored(Component.translatable("chat." + RealmsOfChaos.MOD_ID + ".version", RealmsOfChaos.version()), 0xA55AD6);
+    }
+
     public static void onJoin(ServerPlayer player) {
         MinecraftServer server = player.level().getServer();
         if (server == null) return;
         ProgressData data = ProgressData.get(server);
         boolean first = data.markWelcomed(player.getUUID());
+        // a build this player has not played on this world before says which it is, once: no doubt about what is installed
+        String build = "playedbuild/" + player.getUUID();
+        int stamp = RealmsOfChaos.version().hashCode() | 1;
+        if (data.counter(build) != stamp) {
+            data.setCounter(build, stamp);
+            player.sendSystemMessage(version());
+        }
         RocAdvancements.sync(player, data);
         // someone who joined before the Field Tower Bag existed is handed one the next time they come in
         String kit = "fieldkit/" + player.getUUID();

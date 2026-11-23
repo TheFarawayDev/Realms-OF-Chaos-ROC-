@@ -66,7 +66,19 @@ public final class RocHud {
         int width = g.guiWidth(), height = g.guiHeight(), middle = width / 2;
         Scoreboard board = mc.level.getScoreboard();
         Objective feed = board.getObjective(HudFeed.OBJECTIVE);
-        int options = number(board, feed, HudFeed.OPTIONS, HudFeed.OPT_COMBAT);
+        int options = number(board, feed, HudFeed.OPTIONS, HudFeed.OPT_COMBAT | HudFeed.OPT_ART);
+        // a game and a world running different builds of the mod: say so, where it cannot be missed
+        if (feed != null && board.getPlayerScoreInfo(ScoreHolder.forNameOnly(HudFeed.BUILD), feed) != null) {
+            String theirs = text(board, feed, HudFeed.BUILD).getString();
+            if (!theirs.isEmpty() && !theirs.equals(RealmsOfChaos.version())) {
+                Component warn = Component.translatable("hud." + RealmsOfChaos.MOD_ID + ".build.differs", RealmsOfChaos.version(), theirs);
+                int w = font.width(warn);
+                g.fill(middle - w / 2 - 4, height - 78, middle + w / 2 + 4, height - 66, 0xD0400000);
+                g.centeredText(font, warn, middle, height - 76, 0xFFFFD0D0);
+            }
+        }
+        // with the drawn interface switched off the game's own bars and text are used: nothing is drawn over them
+        if ((options & HudFeed.OPT_ART) == 0) return;
 
         int top = 3;
         GodBoss god = nearestTrial(mc);
@@ -190,15 +202,17 @@ public final class RocHud {
             int nx = x + BAR_X + Math.round(BAR_W * i / (float) of);
             g.fill(nx, top + 13, nx + 1, top + 18, 0xAA05040B);
         }
-        int w = font.width(words);
-        if (w > 126) {
-            // too long for the plaque: written on a strip of its own just under it
-            g.fill(middle - w / 2 - 3, top + FRAME_H, middle + w / 2 + 3, top + FRAME_H + 11, 0xC005040B);
-            g.centeredText(font, words, middle, top + FRAME_H + 2, 0xFFF5E6C8);
-            return top + FRAME_H + 12;
-        }
-        g.centeredText(font, words, middle, top + 2, 0xFFF5E6C8);
-        return top + FRAME_H + 1;
+        // the first part of the words on the plaque itself, whatever follows on a strip under it
+        String all = words.getString();
+        int cut = all.indexOf(" - ");
+        String head = font.width(all) <= 126 || cut < 0 ? all : all.substring(0, cut), rest = head.length() == all.length() ? "" : all.substring(cut + 3);
+        if (font.width(head) <= 126) g.centeredText(font, head, middle, top + 2, 0xFFF5E6C8);
+        else rest = all;
+        if (rest.isEmpty()) return top + FRAME_H + 1;
+        int w = font.width(rest);
+        g.fill(middle - w / 2 - 4, top + FRAME_H, middle + w / 2 + 4, top + FRAME_H + 11, 0xC005040B);
+        g.centeredText(font, rest, middle, top + FRAME_H + 2, 0xFFD8CBB0);
+        return top + FRAME_H + 12;
     }
 
     /** A card: its artwork, and its lines - the first in the card's colour when it is a heading. */

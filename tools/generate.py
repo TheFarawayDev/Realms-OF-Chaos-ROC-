@@ -789,6 +789,8 @@ def gen_lang():
         "hud.realms_of_chaos.room.already": "This room is already solved",
         "hud.realms_of_chaos.room.beam.scrambled": "Too many turns: the mirrors are thrown about again",
         "hud.realms_of_chaos.room.beam.last": "One more wrong turn and the mirrors are thrown about",
+        "chat.realms_of_chaos.version": "Realms of Chaos %s",
+        "hud.realms_of_chaos.build.differs": "Realms of Chaos: your game has %s, this world runs %s. Install the same build.",
         "hud.realms_of_chaos.passage.afflicted": "This level is afflicted: %s",
         "hud.realms_of_chaos.passage.ill": "Afflicted: %s",
         "hud.realms_of_chaos.passage.ill.held": "%s - held off by the shrine",

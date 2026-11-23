@@ -4,14 +4,17 @@
 set -euo pipefail
 cd "$(dirname "$0")"
 VERSION="$(tr -d '[:space:]' < VERSION)"
+# a numbered build (ROC_BUILD, set by the workflow) has its number in every file name
+STAMP="${VERSION}${ROC_BUILD:+.${ROC_BUILD}}"
 MC="26.3"
 python3 tools/generate.py
+rm -f fabric/build/libs/*.jar forge/build/libs/*.jar
 (cd fabric && ./gradlew --no-daemon build)
 (cd forge  && ./gradlew --no-daemon build)
 OUT="dist/RealmsOfChaos-${VERSION}-mc${MC}"
 rm -rf "$OUT" && mkdir -p "$OUT"
-cp fabric/build/libs/realms-of-chaos-fabric-${VERSION}+mc${MC}.jar "$OUT/"
-cp forge/build/libs/realms-of-chaos-forge-${VERSION}+mc${MC}.jar "$OUT/"
+cp fabric/build/libs/realms-of-chaos-fabric-${STAMP}+mc${MC}.jar "$OUT/"
+cp forge/build/libs/realms-of-chaos-forge-${STAMP}+mc${MC}.jar "$OUT/"
 cp README.md LICENSE "$OUT/"
 (cd dist && rm -f "RealmsOfChaos-${VERSION}-mc${MC}.zip" && zip -qr "RealmsOfChaos-${VERSION}-mc${MC}.zip" "RealmsOfChaos-${VERSION}-mc${MC}")
 rm -rf "$OUT"

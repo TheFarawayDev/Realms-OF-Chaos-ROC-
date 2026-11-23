@@ -36,7 +36,8 @@ public final class Options {
     private Options() {}
 
     private static String key(ServerPlayer player, Option option) {
-        return "opt/" + player.getUUID() + "/" + option.id();
+        // (the drawn interface is kept under a new name: whoever switched it off while it was still faulty has it on again)
+        return "opt/" + player.getUUID() + "/" + (option == Option.ART ? "drawn" : option.id());
     }
 
     public static boolean on(ServerPlayer player, Option option) {

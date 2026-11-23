@@ -107,6 +107,7 @@ public final class RealmsOfChaosForge {
             ServerStartedEvent.BUS.addListener(event -> SelfTest.run(event.getServer()));
         }
 
-        LOGGER.info("{} by {} loaded: 45 gods, 3 realms, 1 hub.", RealmsOfChaos.MOD_NAME, RealmsOfChaos.AUTHOR);
+        RealmsOfChaos.version(context.getContainer().getModInfo().getVersion().toString());
+        LOGGER.info("{} {} by {} loaded: 45 gods, 3 realms, 1 hub.", RealmsOfChaos.MOD_NAME, RealmsOfChaos.version(), RealmsOfChaos.AUTHOR);
     }
 }

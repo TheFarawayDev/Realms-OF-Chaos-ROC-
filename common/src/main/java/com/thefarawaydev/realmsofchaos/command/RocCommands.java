@@ -28,6 +28,21 @@ public final class RocCommands {
                     CodexMenu.open(ctx.getSource().getPlayerOrException());
                     return 1;
                 }))
+                .then(Commands.literal("version").executes(ctx -> ui(ctx.getSource().getPlayerOrException(), p -> p.sendSystemMessage(com.thefarawaydev.realmsofchaos.world.Welcome.version()))))
+                // for whoever runs the server: straight to a floor, and a look at each piece of the interface
+                .then(Commands.literal("dev").requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS))
+                        .then(Commands.literal("tower")
+                                .then(Commands.argument("line", com.mojang.brigadier.arguments.StringArgumentType.word()).executes(ctx -> ui(ctx.getSource().getPlayerOrException(), p -> {
+                                    com.thefarawaydev.realmsofchaos.god.Line line = com.thefarawaydev.realmsofchaos.god.Line.valueOf(com.mojang.brigadier.arguments.StringArgumentType.getString(ctx, "line").toUpperCase(java.util.Locale.ROOT));
+                                    com.thefarawaydev.realmsofchaos.world.Access.attune(p);
+                                    Teleports.enterTower(p, line);
+                                }))))
+                        .then(Commands.literal("card").executes(ctx -> ui(ctx.getSource().getPlayerOrException(), p -> {
+                            com.thefarawaydev.realmsofchaos.ui.Cards.clear(p);
+                            com.thefarawaydev.realmsofchaos.ui.Cards.tip(p, "A tip is a small card at the top of the screen, with up to three lines on it.");
+                            com.thefarawaydev.realmsofchaos.ui.Cards.notice(p, "A notice", "This one has a heading, and waits its turn behind the tip.");
+                        })))
+                        .then(Commands.literal("art").executes(ctx -> ui(ctx.getSource().getPlayerOrException(), com.thefarawaydev.realmsofchaos.ui.HudArt::demo))))
                 // what the buttons of the custom screens run
                 .then(Commands.literal("ui")
                         .then(Commands.literal("home").executes(ctx -> ui(ctx.getSource().getPlayerOrException(), p -> Screens.show(p, Screens.home(p)))))

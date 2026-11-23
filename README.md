@@ -115,8 +115,17 @@ The current build is an **Alpha**.
     above the hotbar is not rewritten within a second; a room says what it is the first time you walk in, not
     every time; a god tells you what it remembers of you only when that has changed; and a god changing its
     stance mid-trial is a card, not a line of chat for everyone.
+  * **Every build says which it is.** A released jar carries its build number in its name and its version
+    (`realms-of-chaos-forge-1.2.0-alpha.57+mc26.3.jar`), the first time you join a world on a new build a line of
+    chat names it, and `/roc version` shows it at any time. If a game and the world it joins run different builds,
+    the HUD says so. Remove older jars from the mods folder when you install a new one.
+  * **Seen in the real game.** The menus, cards, plaques and a god's panel have been looked at in a running
+    Fabric client and a running Forge client (`art/renders/ingame-*.png`).
+  * **For whoever runs the world** (operators): `/roc dev tower <zeus|poseidon|hades>` goes straight to your
+    floor of a tower, `/roc dev card` shows two cards, `/roc dev art` shows the older font-drawn bars.
   * **A switch.** Codex > Settings > *Drawn interface*, or `/roc art`, turns the overlay off: boss bars, the cast
-    bar and cards are then plain text on the game's own screens. **Client and server must run the same build.**
+    bar and cards are then plain text on the game's own screens. It is on unless you turn it off. **Client and server must run the same
+    build.**
 * **Gods that remember.** Every trial is watched, player by player: how much harm was done from afar or hand to
   hand, blows taken on a shield, wounds mended mid-fight, time spent out of reach. A habit shown in trial after
   trial is learnt, through three levels, and the next god already has an answer: shots count for less and it

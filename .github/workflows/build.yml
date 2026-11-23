@@ -12,6 +12,9 @@ permissions:
 jobs:
   build:
     runs-on: ubuntu-24.04
+    # This run's number goes into the mod's version and its jar names (1.2.0-alpha.57): every build can be told apart.
+    env:
+      ROC_BUILD: ${{ github.run_number }}
     steps:
       - uses: actions/checkout@v4
 
@@ -68,6 +71,8 @@ jobs:
           body: |
             Realms of Chaos by TheFarawayDev for Minecraft 26.3 (Fabric and Forge).
             Channel: ${{ steps.ver.outputs.channel }}. Download the jar for your loader: Fabric or Forge.
+            This is build ${{ github.run_number }}. Remove any older Realms of Chaos jar from your mods folder first.
+            In game, `/roc version` shows which build is running: it should say ${{ steps.ver.outputs.version }}.${{ github.run_number }}.
           files: |
             fabric/build/libs/realms-of-chaos-fabric-*[0-9].jar
             forge/build/libs/realms-of-chaos-forge-*[0-9].jar
