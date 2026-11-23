@@ -37,6 +37,29 @@ public final class RocCommands {
                                     com.thefarawaydev.realmsofchaos.world.Access.attune(p);
                                     Teleports.enterTower(p, line);
                                 }))))
+                        .then(Commands.literal("passage")
+                                .then(Commands.argument("line", com.mojang.brigadier.arguments.StringArgumentType.word())
+                                        .then(Commands.argument("index", com.mojang.brigadier.arguments.IntegerArgumentType.integer(1, 14)).executes(ctx -> ui(ctx.getSource().getPlayerOrException(), p -> {
+                                            com.thefarawaydev.realmsofchaos.god.Line line = com.thefarawaydev.realmsofchaos.god.Line.valueOf(com.mojang.brigadier.arguments.StringArgumentType.getString(ctx, "line").toUpperCase(java.util.Locale.ROOT));
+                                            com.thefarawaydev.realmsofchaos.world.Access.attune(p);
+                                            if (com.thefarawaydev.realmsofchaos.world.Realm.of(p.level().dimension()) == null) Teleports.enterTower(p, line);
+                                            com.thefarawaydev.realmsofchaos.world.Passages.enter(p, line, com.mojang.brigadier.arguments.IntegerArgumentType.getInteger(ctx, "index"));
+                                        })))))
+                        .then(Commands.literal("runs").executes(ctx -> ui(ctx.getSource().getPlayerOrException(), p -> {
+                            // where each kind of corridor of this level is: somewhere to go and look
+                            com.thefarawaydev.realmsofchaos.world.Passages.Spot spot = com.thefarawaydev.realmsofchaos.world.Passages.locate(p);
+                            if (spot == null || !(p.level() instanceof net.minecraft.server.level.ServerLevel level)) return;
+                            com.thefarawaydev.realmsofchaos.world.Passages.Plan plan = com.thefarawaydev.realmsofchaos.world.Passages.plan(level, spot);
+                            java.util.Set<Integer> told = new java.util.HashSet<>();
+                            for (com.thefarawaydev.realmsofchaos.world.Passages.Cell c : plan.cells()) {
+                                for (int dir = 0; dir < 2; dir++) {
+                                    int run = plan.run(c, dir);
+                                    if (run == com.thefarawaydev.realmsofchaos.world.Passages.RUN_STRAIGHT || !told.add(run)) continue;
+                                    net.minecraft.core.BlockPos mid = plan.corridorMiddle(c, dir);
+                                    p.sendSystemMessage(net.minecraft.network.chat.Component.literal("run " + run + ": /tp " + mid.getX() + " " + (mid.getY() + 1) + " " + mid.getZ()));
+                                }
+                            }
+                        })))
                         .then(Commands.literal("card").executes(ctx -> ui(ctx.getSource().getPlayerOrException(), p -> {
                             com.thefarawaydev.realmsofchaos.ui.Cards.clear(p);
                             com.thefarawaydev.realmsofchaos.ui.Cards.tip(p, "A tip is a small card at the top of the screen, with up to three lines on it.");

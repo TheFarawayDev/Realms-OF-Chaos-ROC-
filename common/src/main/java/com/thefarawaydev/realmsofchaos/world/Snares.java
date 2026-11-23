@@ -361,17 +361,34 @@ public final class Snares {
         int phase = (int) Math.floorMod(now, (long) JET_PERIOD);
         boolean burn = jetsBurning(now);
         if (phase == JET_WARN) level.playSound(null, mid, SoundEvents.BLAZE_SHOOT, SoundSource.BLOCKS, 0.6F, 0.8F);
+        int kind = plan.jetKind(c, dir);
+        var wisp = kind == Passages.JET_FROST ? ParticleTypes.SNOWFLAKE : kind == Passages.JET_SHOCK ? ParticleTypes.ELECTRIC_SPARK : kind == Passages.JET_VENOM ? ParticleTypes.ITEM_SLIME : ParticleTypes.SMOKE;
+        var burst = kind == Passages.JET_FROST ? ParticleTypes.SNOWFLAKE : kind == Passages.JET_SHOCK ? ParticleTypes.ELECTRIC_SPARK : kind == Passages.JET_VENOM ? ParticleTypes.SNEEZE : ParticleTypes.FLAME;
         for (int k = -1; k <= 1; k++) {
             BlockPos vent = dir == 0 ? mid.offset(0, 0, k) : mid.offset(k, 0, 0);
             double x = vent.getX() + 0.5, y = vent.getY() + 1.05, z = vent.getZ() + 0.5;
-            if (phase < JET_WARN && phase % 4 == 0) level.sendParticles(ParticleTypes.SMOKE, x, y, z, 1, 0.1, 0.05, 0.1, 0.01);
-            if (burn && phase % 2 == 0) level.sendParticles(ParticleTypes.FLAME, x, y + 0.3, z, 3, 0.2, 0.6, 0.2, 0.02);
+            if (phase < JET_WARN && phase % 4 == 0) level.sendParticles(wisp, x, y, z, 1, 0.1, 0.05, 0.1, 0.01);
+            if (burn && phase % 2 == 0) level.sendParticles(burst, x, y + 0.3, z, 3, 0.2, 0.6, 0.2, 0.02);
         }
         if (!burn || phase % 5 != 0) return;
         net.minecraft.world.phys.AABB reach = new net.minecraft.world.phys.AABB(mid).inflate(dir == 0 ? 0.0 : 1.0, 0.0, dir == 0 ? 1.0 : 0.0).expandTowards(0, 2.6, 0);
         for (Player p : level.getEntitiesOfClass(Player.class, reach, e -> e.isAlive() && !e.isSpectator() && !e.isCreative())) {
-            p.hurtServer(level, level.damageSources().inFire(), damage(plan) * 0.6F);
-            p.setRemainingFireTicks(60);
+            switch (kind) {
+                case Passages.JET_FROST -> {
+                    p.hurtServer(level, level.damageSources().freeze(), damage(plan) * 0.5F);
+                    p.setTicksFrozen(Math.min(p.getTicksRequiredToFreeze() + 40, p.getTicksFrozen() + 100));
+                    p.addEffect(new net.minecraft.world.effect.MobEffectInstance(net.minecraft.world.effect.MobEffects.SLOWNESS, 60, 1));
+                }
+                case Passages.JET_SHOCK -> p.hurtServer(level, level.damageSources().lightningBolt(), damage(plan) * 0.8F);
+                case Passages.JET_VENOM -> {
+                    p.hurtServer(level, level.damageSources().magic(), damage(plan) * 0.4F);
+                    p.addEffect(new net.minecraft.world.effect.MobEffectInstance(net.minecraft.world.effect.MobEffects.POISON, 80, 0));
+                }
+                default -> {
+                    p.hurtServer(level, level.damageSources().inFire(), damage(plan) * 0.6F);
+                    p.setRemainingFireTicks(60);
+                }
+            }
         }
     }
 

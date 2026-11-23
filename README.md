@@ -21,7 +21,7 @@ The current build is an **Alpha**.
 * **Corridors.** Rooms stand further apart: seven blocks of lit corridor between two of them, with an arch at each
   end, instead of a doorway through a wall. Some corridors - more of them the deeper the level, and never beside
   the room you arrive in - have **jets** across the middle that smoke, then burn, then rest.
-* **Thirty-eight trap halls that do not say what they are.** A trap hall's floor is the floor of any other room:
+* **Trap halls that do not say what they are.** A trap hall's floor is the floor of any other room:
   no vents, no coloured tiles. The only signs are a few stained tiles, the bones of whoever came before, an urn or
   two in the corners for whoever dares - and, for a moment before a tile goes off, a wisp over it. Each hall is
   something that hurts, a way it moves across the floor, and a size of room:
@@ -41,6 +41,19 @@ The current build is an **Alpha**.
     crossable - by a walker slower than a walk, at every depth - before the mod is built (`Gauntlet.crossable`).
   * **Learnt by being bitten.** The first time a kind of hall catches you a card names it - *Ember Tide*, *The
     Jaw*, *Rime Wheel*, *Hollow Steps* - and says how it is beaten.
+* **Onslaughts: attacks on the whole floor.** Every so often in a trial - sooner, and from a wider choice, the
+  further it has gone - the god turns on the floor itself. **Shockwaves** run out from the middle in three rings
+  and have to be jumped. **Fissures** split the floor in a five-pointed star, and then along the five lines
+  between. A **cross** from wall to wall, then a saltire. **Rings** that go off in turn. A **wall** that sweeps
+  the arena with one gap in it. Each is lit along the ground before it lands - the floor gives it away - follows
+  the shape of the terrain, throws pieces of the paving clear, and always leaves somewhere to stand; a line above
+  the hotbar says what to do. Between them a ripple of dust runs out over the ground every few seconds.
+* **Halls between the rooms.** Two more ways a corridor can run: a **gallery**, seven across and four high with a
+  pillar in each corner, and a **causeway**, a walk three wide with water lying to both sides. Only a quarter of
+  corridors now run straight. Their vents let out fire, frost, sparks or venom, different from corridor to
+  corridor. More rooms are tall and more than half are a step wider.
+* **Forty-six trap halls**, eight of them new: rings that go off in turn, a comb of teeth from either wall, a
+  line that swings from side to side like a pendulum, and two lines that cross the room together.
 * **Corridors that wind.** Fewer than half the corridors between rooms run straight. The rest go round a baffle
   that hides what is ahead - to one side, or either - or pass a nook with an urn at the back of it. The maze
   itself turns three times as often as it carries straight on, and has fewer short cuts.
@@ -121,14 +134,19 @@ The current build is an **Alpha**.
     paragraphs that scroll, a picture of the item a line speaks of, and buttons drawn to match, in columns, with a
     note when pointed at. A page is a menu type of the mod's own with no slots to click; a button pressed travels
     as the menu's button number, so only the game's own packets are used. `art/renders/ingame-page-*.png`.
-  * **Room to read.** A god's panel has a name tab tall enough for the name to sit in with air round it, a
-    health bar clear of its housing on every side, marks where the aegis rises and the wrath begins, and a gem
-    for each phase; the pylons still standing or rings of floor still left are a row of their own under the bar
-    instead of being squeezed onto the tab. The floor plaque is the same family a size smaller, with whatever
+  * **Room to read.** A god's panel has a name tab tall and wide enough for everything on it to sit with air
+    round it: the pylons still standing (or rings of floor still left) at its left, the god's name in the middle
+    of the room between, a gem for each phase at its right. Under it, a health bar clear of its housing on every
+    side, with marks where the aegis rises and the wrath begins. The floor plaque is the same family a size smaller, with whatever
     does not fit on it on a strip beneath. (`art/renders/ingame-hud-*.png`)
   * **Pages get out of the way.** A page with one or two things to do - begin a trial, call a rematch, take a
     chapter as a book - keeps those buttons at its foot, always in view, and closes by itself once one is
     pressed. Only a button that leads to another page keeps a page open.
+  * **A look for every screen.** Each written screen is drawn on its own material, with its own emblem and
+    buttons to match: the Codex on amethyst, the handbook in stitched leather with brass corners and a ribbon, the
+    Oracle's Chronicle on a night sky, the altar on carved stone with a meander, the Bounty Board on planks and
+    cork with its heading on a pinned note, the party on a green banner, mastery in bronze, a waygate in teal, the
+    hub's heart in marble and gold. (`art/renders/ingame-pages-themes.png`, `ingame-page-board.png`)
   * **Every build says which it is.** A released jar carries its build number in its name and its version
     (`realms-of-chaos-forge-1.2.0-alpha.57+mc26.3.jar`), the first time you join a world on a new build a line of
     chat names it, and `/roc version` shows it at any time. If a game and the world it joins run different builds,

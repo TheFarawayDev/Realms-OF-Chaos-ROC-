@@ -32,7 +32,7 @@ import net.minecraft.world.scores.Scoreboard;
  */
 public final class RocHud {
     /** A god's panel and a floor's plaque, as tools/hud_art.py draws them: size, and where the fill lies. */
-    private static final int PANEL_W = 212, PANEL_H = 30, PANEL_BAR_X = 15, PANEL_BAR_W = 182, PANEL_BAR_Y = 17, PANEL_BAR_H = 7;
+    private static final int PANEL_W = 212, PANEL_H = 30, PANEL_BAR_X = 15, PANEL_BAR_W = 182, PANEL_BAR_Y = 17, PANEL_BAR_H = 7, PANEL_TAB_X = 22;
     private static final int PLAQUE_W = 200, PLAQUE_H = 24, PLAQUE_BAR_X = 11, PLAQUE_BAR_W = 178, PLAQUE_BAR_Y = 15, PLAQUE_BAR_H = 5;
     private static final int CARD_W = 220, CARD_H = 46, INK = 0xFFF5E6C8;
     private static final String[] CARDS = {"tip", "insight", "notice", "aegis", "wrath", "boon"};
@@ -183,25 +183,25 @@ public final class RocHud {
         }
         mark(g, bx + Math.round(PANEL_BAR_W * 0.65F), top, 0xFF7EEBFF);
         mark(g, bx + Math.round(PANEL_BAR_W * 0.30F), top, 0xFFFF5A3C);
-        // the name, in the middle of its tab, and a gem at the tab's right for every phase reached
-        g.centeredText(font, god.displayName(), middle, top + 3, INK);
+        // on the name tab: what the phase counts at its left (pylons under an aegis, rings of floor in the wrath), a
+        // gem at its right for every phase reached, and the name in the middle of whatever room is left between them
+        int tabLeft = x + PANEL_TAB_X + 5, tabRight = x + PANEL_W - PANEL_TAB_X - 6;
+        int all = Math.min(6, boss.hudCountAll()), lit = boss.hudCountLit();
+        for (int i = 0; i < all; i++) icon(g, shielded ? (i < lit ? PYLON : PYLON_GONE) : (i < lit ? RING : RING_GONE), tabLeft + i * 8, top + 3);
         int[] gems = {0xFFF0F0FA, 0xFF7EEBFF, 0xFFFF5A3C};
         for (int i = 0; i < 3; i++) {
-            int gx = x + PANEL_W - 41 - 8 - (2 - i) * 7, gy = top + 5;
+            int gx = tabRight - 4 - (2 - i) * 7, gy = top + 5;
             g.fill(gx - 1, gy - 1, gx + 5, gy + 5, 0xFF05040B);
             g.fill(gx, gy, gx + 4, gy + 4, i < phase ? gems[i] : 0xFF2A2550);
             if (i < phase) g.fill(gx, gy, gx + 2, gy + 1, 0xFFFFFFFF);
         }
+        Component name = god.displayName();
+        int nameW = font.width(name), freeLeft = tabLeft + (all > 0 ? all * 8 + 3 : 0), freeRight = tabRight - 22;
+        // (dead centre when that clears both sides; otherwise in the middle of the room there is)
+        int nameX = middle - nameW / 2;
+        if (nameX < freeLeft || nameX + nameW > freeRight) nameX = Math.max(freeLeft, freeLeft + (freeRight - freeLeft - nameW) / 2);
+        g.text(font, name, nameX, top + 3, INK);
         int below = top + PANEL_H + 2;
-        // what the phase counts, in a row of its own under the panel: pylons under an aegis, rings of floor in the wrath
-        int all = Math.min(6, boss.hudCountAll()), lit = boss.hudCountLit();
-        if (all > 0) {
-            int w = all * 10 - 2, start = middle - w / 2;
-            g.fill(start - 4, below - 1, start + w + 4, below + 10, 0xC005040B);
-            g.fill(start - 4, below + 9, start + w + 4, below + 10, shielded ? 0xFF7EEBFF : 0xFFFF5A3C);
-            for (int i = 0; i < all; i++) icon(g, shielded ? (i < lit ? PYLON : PYLON_GONE) : (i < lit ? RING : RING_GONE), start + i * 10, below + 1);
-            below += 13;
-        }
         // the move it is winding up, for those who have asked to see it: a second, thinner bar under the panel
         if (boss.isCasting()) {
             if (castingId != boss.getId()) {

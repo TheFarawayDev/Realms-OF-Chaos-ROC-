@@ -56,6 +56,29 @@ public final class Screens {
     /** The screen each player was last shown. Lets the self-test look at what was sent. */
     private static final Map<UUID, Dialog> LAST = new HashMap<>();
 
+    /** What a written screen is drawn on: each kind has its own material and emblem (see tools/hud_art.py). */
+    public enum Theme {
+        CODEX, HANDBOOK, ORACLE, ALTAR, BOARD, PARTY, MASTERY, WAYGATE, HUB;
+
+        public String id() {
+            return name().toLowerCase(java.util.Locale.ROOT);
+        }
+    }
+
+    /** The look of the screen being put together, and of every screen that has been. */
+    private static Theme current = Theme.CODEX;
+    private static final Map<Dialog, Theme> THEMES = new java.util.WeakHashMap<>();
+
+    public static Theme theme(Dialog dialog) {
+        return THEMES.getOrDefault(dialog, Theme.CODEX);
+    }
+
+    private static Dialog themed(Dialog dialog) {
+        THEMES.put(dialog, current);
+        current = Theme.CODEX;
+        return dialog;
+    }
+
     private Screens() {}
 
     // ---- building blocks -------------------------------------------------------------------------------------
@@ -90,11 +113,11 @@ public final class Screens {
     }
 
     private static Dialog menu(Component title, List<DialogBody> body, List<ActionButton> actions, ActionButton exit, int columns) {
-        return new MultiActionDialog(common(title, body), actions, Optional.of(exit), columns);
+        return themed(new MultiActionDialog(common(title, body), actions, Optional.of(exit), columns));
     }
 
     private static Dialog notice(Component title, List<DialogBody> body, ActionButton action) {
-        return new NoticeDialog(common(title, body), action);
+        return themed(new NoticeDialog(common(title, body), action));
     }
 
     /** Sends a screen to a player. */
@@ -133,6 +156,7 @@ public final class Screens {
 
     /** The Codex of Chaos: where you stand, what to do next, and the way to everything else. */
     public static Dialog home(ServerPlayer player) {
+        current = Theme.CODEX;
         ProgressData data = ProgressData.get(player.level().getServer());
         List<DialogBody> body = new ArrayList<>();
         body.add(text(tr("home.thanks", 0xA55AD6)));
@@ -167,6 +191,7 @@ public final class Screens {
 
     /** The Climber's Handbook: its list of topics. */
     public static Dialog handbook(ServerPlayer player) {
+        current = Theme.HANDBOOK;
         List<ActionButton> actions = new ArrayList<>();
         for (HandbookData.Topic topic : HandbookData.ALL) actions.add(button(topicTitle(topic), null, "/roc ui topic " + topic.id()));
         return menu(tr("handbook", 0x55FFFF), List.of(text(tr("handbook.intro", 0xAAAAAA))), actions, back("/roc ui home"), 2);
@@ -179,6 +204,7 @@ public final class Screens {
 
     /** One topic of the handbook, with buttons on to the next topic and back to the list. */
     public static Dialog topic(ServerPlayer player, HandbookData.Topic topic) {
+        current = Theme.HANDBOOK;
         List<DialogBody> body = new ArrayList<>();
         for (int n = 1; n <= topic.lines(); n++) body.add(text(Component.translatable("handbook." + RealmsOfChaos.MOD_ID + "." + topic.id() + ".line" + n)));
         int at = HandbookData.ALL.indexOf(topic);
@@ -195,6 +221,7 @@ public final class Screens {
 
     /** The Oracle's Chronicle: the chapters written so far to read, the rest named by what will write them. */
     public static Dialog chronicle(ServerPlayer player) {
+        current = Theme.ORACLE;
         List<DialogBody> body = new ArrayList<>();
         body.add(text(tr("chronicle.count", 0xF5B82E, Story.unlockedCount(player), Story.Chapter.values().length)));
         List<ActionButton> actions = new ArrayList<>();
@@ -220,6 +247,7 @@ public final class Screens {
 
     /** One chapter, page after page, with a button to take it away as a book. */
     public static Dialog chapter(ServerPlayer player, Story.Chapter chapter) {
+        current = Theme.ORACLE;
         List<DialogBody> body = new ArrayList<>();
         for (int n = 1; n <= chapter.pages(); n++) {
             body.add(text(Component.translatable("story." + RealmsOfChaos.MOD_ID + "." + chapter.id() + ".page" + n)));
@@ -235,6 +263,7 @@ public final class Screens {
 
     /** The Trial Altar: who waits on this floor, their move, what they give up, and the button that begins. */
     public static Dialog altar(ServerPlayer player, ServerLevel level, Line line, BlockPos altar) {
+        current = Theme.ALTAR;
         AltarBlock.State state = AltarBlock.state(level, player, altar, line);
         God god = AltarBlock.godFor(level, player, altar, line);
         List<DialogBody> body = new ArrayList<>();
@@ -272,6 +301,7 @@ public final class Screens {
 
     /** The party: who is in it and how far each has climbed, everyone else to invite, and any invitation waiting. */
     public static Dialog party(ServerPlayer player) {
+        current = Theme.PARTY;
         MinecraftServer server = player.level().getServer();
         ProgressData data = ProgressData.get(server);
         String menuNs = "menu." + RealmsOfChaos.MOD_ID + ".party.";
@@ -306,6 +336,7 @@ public final class Screens {
 
     /** A Waygate Obelisk: where it can send you, what it costs, and how the channel works. */
     public static Dialog waygate(ServerPlayer player, ServerLevel level, BlockPos pos) {
+        current = Theme.WAYGATE;
         MinecraftServer server = level.getServer();
         String at = pos.getX() + " " + pos.getY() + " " + pos.getZ();
         List<DialogBody> body = new ArrayList<>();
@@ -331,6 +362,7 @@ public final class Screens {
 
     /** Hub Command, at the Heart of the Hub: the hub's tier, what each tier does, and what the next one asks for. */
     public static Dialog hubCommand(ServerPlayer player) {
+        current = Theme.HUB;
         MinecraftServer server = player.level().getServer();
         int tier = com.thefarawaydev.realmsofchaos.world.HubTiers.tier(server);
         List<DialogBody> body = new ArrayList<>();
@@ -356,6 +388,7 @@ public final class Screens {
 
     /** The Bounty Board: today's three bounties, how far along this player is, and the buttons that pay out. */
     public static Dialog bounties(ServerPlayer player) {
+        current = Theme.BOARD;
         MinecraftServer server = player.level().getServer();
         List<DialogBody> body = new ArrayList<>();
         List<ActionButton> actions = new ArrayList<>();
@@ -381,6 +414,7 @@ public final class Screens {
 
     /** The mastery tree: points to spend, the twelve skills in their three branches, and a button to raise each. */
     public static Dialog skills(ServerPlayer player) {
+        current = Theme.MASTERY;
         int free = com.thefarawaydev.realmsofchaos.world.Skills.available(player);
         List<DialogBody> body = new ArrayList<>();
         body.add(text(tr("skills.points", 0xF5B82E, free, com.thefarawaydev.realmsofchaos.world.Skills.earned(player))));

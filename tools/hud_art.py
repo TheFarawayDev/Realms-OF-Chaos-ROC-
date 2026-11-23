@@ -214,7 +214,7 @@ def card(colour, label):
     return img
 
 
-PANEL_W, PANEL_H, PANEL_BAR_X, PANEL_BAR_W = 212, 30, 15, 182
+PANEL_W, PANEL_H, PANEL_BAR_X, PANEL_BAR_W, PANEL_TAB_X = 212, 30, 15, 182, 22
 PLAQUE_W, PLAQUE_H, PLAQUE_BAR_X, PLAQUE_BAR_W = 200, 24, 11, 178
 
 
@@ -234,7 +234,7 @@ def panel(colour, emblem, phase=1):
             px[x, y] = c + (a,)
 
     # the name tab: cut corners, an edge of ink, a rule of the tower's colour along its top
-    tl, tr = 40, PANEL_W - 41
+    tl, tr = PANEL_TAB_X, PANEL_W - PANEL_TAB_X - 1
     for y in range(0, 14):
         inset = max(0, 2 - y)
         for x in range(tl + inset, tr - inset + 1):
@@ -331,6 +331,189 @@ def plaque():
     return img
 
 
+PAGE_W, PAGE_H, PAGE_EDGE = 300, 236, 4
+# what each written screen is drawn on: (frame, frame light, frame dark, line, header, field, footer, emblem rows)
+PAGES = {
+    "codex": ((74, 52, 124), (128, 100, 190), (40, 28, 72), (214, 178, 90), (34, 30, 68), (28, 26, 56), (20, 18, 42),
+              ["....#....", "#...#...#", ".#.###.#.", "..#####..", "#########", "..#####..", ".#.###.#.", "#...#...#", "....#...."]),
+    "handbook": ((104, 66, 38), (150, 102, 60), (62, 38, 22), (206, 170, 116), (64, 40, 24), (32, 27, 22), (46, 31, 20),
+                 ["....#....", "...###...", "..#.#.#..", ".#..#..#.", "#########", ".#..#..#.", "..#.#.#..", "...###...", "....#...."]),
+    "oracle": ((34, 26, 78), (86, 70, 160), (16, 12, 40), (232, 200, 110), (42, 26, 84), (14, 14, 38), (22, 16, 50),
+               ["...###...", ".##...##.", "#..###..#", "#.#####.#", "#.##.##.#", "#.#####.#", "#..###..#", ".##...##.", "...###..."]),
+    "altar": ((112, 112, 122), (170, 170, 182), (62, 62, 72), (236, 150, 60), (58, 58, 68), (22, 22, 28), (36, 36, 44),
+              ["....#....", "...##....", "...###...", "..####.#.", ".#####.#.", ".######..", ".######..", "..####...", "...##...."]),
+    "board": ((150, 108, 62), (190, 146, 92), (98, 66, 36), (70, 70, 78), (226, 204, 160), (60, 44, 30), (48, 34, 22),
+              ["..#####..", ".#######.", ".#######.", ".#######.", "..#####..", "....#....", "....#....", "....#....", "....#...."]),
+    "party": ((44, 116, 66), (96, 176, 112), (22, 66, 36), (236, 206, 110), (26, 72, 42), (18, 34, 26), (16, 46, 28),
+              [".#.......", ".#####...", ".#######.", ".#####...", ".#.......", ".#.......", ".#.......", ".#.......", "###......"]),
+    "mastery": ((156, 108, 52), (214, 164, 92), (92, 60, 26), (250, 220, 130), (72, 50, 24), (30, 26, 18), (48, 34, 16),
+                ["#.......#", "##.....##", ".##...##.", "#.#...#.#", "##.#.#.##", ".##...##.", "..##.##..", "...###...", "....#...."]),
+    "waygate": ((30, 112, 114), (96, 196, 190), (12, 58, 62), (190, 240, 232), (16, 62, 66), (10, 28, 34), (10, 44, 48),
+                ["..#####..", ".#.....#.", "#..###..#", "#.#...#.#", "#.#.#.#.#", "#.#...#.#", "#..###..#", ".#.....#.", "..#####.."]),
+    "hub": ((196, 186, 168), (240, 234, 222), (128, 118, 100), (232, 190, 96), (92, 82, 64), (30, 28, 34), (58, 52, 42),
+            ["....#....", "...###...", "..#####..", ".#######.", "#########", ".#.###.#.", ".#.#.#.#.", ".#.#.#.#.", ".#######."]),
+}
+
+
+def page(name):
+    """What one of the written screens is drawn on. Each has its own material: a codex of amethyst, a leather-bound
+    handbook with stitching and a ribbon, the Oracle's night sky, an altar of carved stone with a meander, a
+    bounty board of planks and cork with its heading on a pinned note, and so on."""
+    import random
+    frame, light, dark, line, header, field, footer, emblem = PAGES[name]
+    w, h, e = PAGE_W + PAGE_EDGE * 2, PAGE_H + PAGE_EDGE * 2, PAGE_EDGE
+    img = Image.new("RGBA", (w, h), (0, 0, 0, 0))
+    px = img.load()
+    rnd = random.Random(name)
+
+    def put(x, y, c, a=255):
+        if 0 <= x < w and 0 <= y < h:
+            px[x, y] = tuple(c[:3]) + (a,)
+
+    # the frame, four deep: ink, its light, its body, its dark - and ink again where the page begins
+    for y in range(h):
+        for x in range(w):
+            ring = min(x, w - 1 - x, y, h - 1 - y)
+            if ring == 0 and (x in (0, w - 1)) and (y in (0, h - 1)):
+                continue
+            if ring > 3:
+                c = field
+            elif ring == 0:
+                c = INK
+            elif ring == 1:
+                c = light if (y == 1 or x == 1) else dark
+            elif ring == 2:
+                c = frame
+            else:
+                c = dark if (y == 3 or x == 3) else light
+            put(x, y, c)
+    # header band, the rule under it, the footer band and the rule over it
+    for y in range(e, e + 24):
+        for x in range(e, w - e):
+            put(x, y, mix(header, (255, 255, 255), 0.06) if y < e + 2 else header)
+    for x in range(e, w - e):
+        put(x, e + 22, line)
+        put(x, e + 23, INK)
+    for y in range(h - e - 30, h - e):
+        for x in range(e, w - e):
+            put(x, y, footer)
+    for x in range(e + 6, w - e - 6):
+        put(x, h - e - 30, shade(line, 0.55))
+    # the field the text lies on, set in a little from the frame, with a grain of its own
+    for y in range(e + 26, h - e - 30):
+        for x in range(e + 6, w - e - 6):
+            put(x, y, mix(field, (255, 255, 255), 0.035))
+    grain = {"codex": 60, "handbook": 140, "oracle": 170, "altar": 110, "board": 520, "party": 70, "mastery": 80, "waygate": 150, "hub": 60}[name]
+    for _ in range(grain):
+        x, y = rnd.randrange(e + 8, w - e - 8), rnd.randrange(e + 28, h - e - 32)
+        if name == "oracle":
+            c = rnd.choice([(255, 255, 255), (170, 190, 255), (255, 226, 150)])
+            put(x, y, mix(field, c, rnd.choice([0.25, 0.4, 0.7])))
+            if rnd.random() < 0.12:
+                for dx, dy in ((1, 0), (-1, 0), (0, 1), (0, -1)):
+                    put(x + dx, y + dy, mix(field, c, 0.22))
+        elif name == "waygate":
+            put(x, y, mix(field, light, 0.3))
+            put(x + 1, y + 1, mix(field, light, 0.12))
+        else:
+            put(x, y, mix(field, light if rnd.random() < 0.5 else INK, 0.16))
+    # an emblem at either end of the header
+    for x0 in (e + 8, w - e - 17):
+        for ry, row in enumerate(emblem):
+            for rx, bit in enumerate(row):
+                if bit == "#":
+                    put(x0 + rx, e + 7 + ry, INK if name == "board" else line)
+    if name == "codex":
+        for cx, cy in ((2, 2), (w - 4, 2), (2, h - 4), (w - 4, h - 4)):
+            for dx in range(2):
+                for dy in range(2):
+                    put(cx + dx, cy + dy, line)
+    elif name == "handbook":
+        # stitching along the leather, brass at the corners, and a ribbon hanging from the head of the page
+        for x in range(8, w - 8, 5):
+            for y in (2, h - 3):
+                put(x, y, line)
+                put(x + 1, y, line)
+        for y in range(8, h - 8, 5):
+            for x in (2, w - 3):
+                put(x, y, line)
+                put(x, y + 1, line)
+        for cx, cy in ((0, 0), (w - 7, 0), (0, h - 7), (w - 7, h - 7)):
+            for dx in range(7):
+                for dy in range(7):
+                    edge = dx in (0, 6) or dy in (0, 6)
+                    put(cx + dx, cy + dy, INK if edge else (240, 206, 120) if dx + dy < 6 else (176, 140, 66))
+        for y in range(e, e + 40):
+            for x in range(w - e - 40, w - e - 33):
+                tip = y >= e + 36 and abs(x - (w - e - 37)) < (y - (e + 35))
+                if not tip:
+                    put(x, y, (40, 150, 150) if x not in (w - e - 40, w - e - 34) else (20, 90, 92))
+    elif name == "oracle":
+        # a second, inner line of gold, and a crescent in each corner
+        for x in range(e + 2, w - e - 2):
+            put(x, e + 25, shade(line, 0.5))
+        for cx, sx in ((e + 3, 1), (w - e - 4, -1)):
+            for cy, sy in ((h - e - 4, -1),):
+                for t in range(6):
+                    put(cx + sx * t, cy, line)
+                    put(cx, cy + sy * t, line)
+    elif name == "altar":
+        # a meander cut along the head and the foot of the stone
+        key = ["#####.", "#...#.", "#.#.#.", "#.###.", "#....."]
+        for x in range(e + 2, w - e - 2):
+            for ry, row in enumerate(key):
+                if row[(x - e) % 6] == "#":
+                    put(x, h - e - 7 + ry, shade(line, 0.5))
+    elif name == "board":
+        # planks with a grain and iron nails; cork behind; the heading on a note pinned to it
+        for y in range(1, h - 1):
+            for x in range(1, w - 1):
+                ring = min(x, w - 1 - x, y, h - 1 - y)
+                if 1 <= ring <= 3 and ((x * 7 + y * 3) % 23 == 0 or (x + y * 5) % 37 == 0):
+                    put(x, y, dark)
+        for cx, cy in ((2, 2), (w - 4, 2), (2, h - 4), (w - 4, h - 4), (w // 2 - 1, 2), (w // 2 - 1, h - 4)):
+            for dx in range(2):
+                for dy in range(2):
+                    put(cx + dx, cy + dy, line)
+        for y in range(e + 2, e + 21):
+            for x in range(e + 30, w - e - 30):
+                edge = y in (e + 2, e + 20) or x in (e + 30, w - e - 31)
+                put(x, y, shade(header, 0.72) if edge else mix(header, (255, 255, 255), 0.1) if y < e + 5 else header)
+        for x in range(e + 30, w - e - 30):
+            put(x, e + 21, shade(field, 0.6))
+        for y in range(e, e + 22):
+            for x in list(range(e, e + 30)) + list(range(w - e - 30, w - e)):
+                put(x, y, field)
+        for cx in (e + 36, w - e - 38):
+            for dx in range(3):
+                for dy in range(3):
+                    put(cx + dx, e + 4 + dy, (200, 60, 50) if (dx, dy) != (0, 0) else (255, 150, 140))
+    elif name == "party":
+        # a fringe of gold along the foot of the cloth
+        for x in range(e + 2, w - e - 2, 3):
+            put(x, h - e - 2, line)
+            put(x, h - e - 1, line)
+    elif name == "mastery":
+        for x in range(e + 2, w - e - 2):
+            if x % 2 == 0:
+                put(x, e + 25, shade(line, 0.5))
+    elif name == "waygate":
+        for x in range(e + 2, w - e - 2):
+            put(x, e + 25, mix(field, light, 0.35 if x % 3 else 0.6))
+    elif name == "hub":
+        for cx, cy in ((2, 2), (w - 5, 2), (2, h - 5), (w - 5, h - 5)):
+            for dx in range(3):
+                for dy in range(3):
+                    put(cx + dx, cy + dy, line if (dx, dy) != (1, 1) else light)
+    return img
+
+
+def gen_pages(assets):
+    out = os.path.join(assets, "textures/gui")
+    for name in PAGES:
+        page(name).save(os.path.join(out, "page_" + name + ".png"))
+
+
 def gen_panels(out):
     """The pictures the game's own HUD layer draws from (the font-drawn ones above are kept for the bars a server names)."""
     for name, (colour, emblem) in TOWERS.items():
@@ -350,6 +533,7 @@ def gen_hud(assets, mod, java_dir, wj, w):
     out = os.path.join(assets, "textures/gui/hud")
     os.makedirs(out, exist_ok=True)
     gen_panels(out)
+    gen_pages(assets)
     providers, art = [], {}
     # spaces: a power of two in either direction, so any gap is a handful of them
     advances = {}

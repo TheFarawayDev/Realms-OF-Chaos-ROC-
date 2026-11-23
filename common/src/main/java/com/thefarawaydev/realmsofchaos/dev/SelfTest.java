@@ -4866,6 +4866,7 @@ public final class SelfTest {
                 check(hero.getHealth() == hero.getMaxHealth(), "and the other half is the place to stand");
 
                 // ---- jets in a corridor
+                java.util.Set<Integer> jetKinds = new java.util.HashSet<>();
                 Passages.Plan jetPlan = null;
                 Passages.Cell jetCell = null;
                 int jetDir = 0, corridors = 0, burning = 0;
@@ -4883,12 +4884,14 @@ public final class SelfTest {
                                 if (!each.jets(c, dir)) continue;
                                 burning++;
                                 check(!c.equals(each.start) && !next.equals(each.start), each.label() + ": never beside the room a climber arrives in");
-                                if (jetPlan == null) { jetPlan = each; jetCell = c; jetDir = dir; }
+                                jetKinds.add(each.jetKind(c, dir));
+                                if (jetPlan == null && each.jetKind(c, dir) == Passages.JET_FLAME) { jetPlan = each; jetCell = c; jetDir = dir; }
                             }
                         }
                     }
                 }
-                check(burning * 12 > corridors && burning * 2 < corridors, "some corridors have jets, most do not: " + burning + " of " + corridors);
+                check(burning * 20 > corridors && burning * 2 < corridors, "some corridors have jets, most do not: " + burning + " of " + corridors);
+                check(jetKinds.size() == 4, "and what they let out differs from corridor to corridor: fire, frost, sparks, venom: " + jetKinds);
                 Passages.build(level, jetPlan);
                 BlockPos mid = jetPlan.corridorMiddle(jetCell, jetDir);
                 check(level.getBlockState(mid).is(com.thefarawaydev.realmsofchaos.world.Snares.VENT) && jetPlan.cellAt(mid) == null, "vents across the middle of the corridor");
@@ -5198,6 +5201,7 @@ public final class SelfTest {
                 }
                 check(all.length >= 36 && hazards.size() == com.thefarawaydev.realmsofchaos.world.Gauntlet.Hazard.values().length && patterns.size() == com.thefarawaydev.realmsofchaos.world.Gauntlet.Pattern.values().length && sizes.size() == 3,
                         "thirty-six or more halls, using every hazard, every pattern and every size: " + all.length);
+                check(all.length >= 46, "forty-six of them now: " + all.length);
                 check(com.thefarawaydev.realmsofchaos.world.Gauntlet.Size.SMALL.half == 3 && com.thefarawaydev.realmsofchaos.world.Gauntlet.Size.NORMAL.half == 4 && com.thefarawaydev.realmsofchaos.world.Gauntlet.Size.WIDE.half == 5, "small, ordinary and wide");
                 // (a path hall: its path is never live, the rest of the floor is - and the doormats never are)
                 boolean[] four = doorSets[0];
@@ -5218,7 +5222,7 @@ public final class SelfTest {
                 // ---- the halls in the plans, and the corridors
                 java.util.Set<com.thefarawaydev.realmsofchaos.world.Gauntlet.Variant> seen = new java.util.HashSet<>();
                 int halls = 0, rooms = 0, corridors = 0, jets = 0;
-                int[] runs = new int[6];
+                int[] runs = new int[8];
                 Passages.Plan best = null;
                 int bestScore = -1;
                 for (Line line : Line.values()) {
@@ -5260,6 +5264,7 @@ public final class SelfTest {
                                 else if (v.size == com.thefarawaydev.realmsofchaos.world.Gauntlet.Size.SMALL) small = true;
                                 else if (v.pattern != com.thefarawaydev.realmsofchaos.world.Gauntlet.Pattern.PATH) plain = true;
                             }
+                            if (!runsHere.contains(Passages.RUN_GALLERY) || !runsHere.contains(Passages.RUN_CAUSEWAY)) continue;
                             int score = (chase ? 4 : 0) + (small ? 4 : 0) + (plain ? 4 : 0) + (runsHere.contains(Passages.RUN_SPLIT) ? 1 : 0)
                                     + (runsHere.contains(Passages.RUN_BEND_LOW) || runsHere.contains(Passages.RUN_BEND_HIGH) ? 1 : 0)
                                     + (runsHere.contains(Passages.RUN_NOOK_LOW) || runsHere.contains(Passages.RUN_NOOK_HIGH) ? 1 : 0);
@@ -5272,7 +5277,7 @@ public final class SelfTest {
                 }
                 RESULTS.add("        trap halls in this world: " + halls + " of " + rooms + " rooms, " + seen.size() + " of " + all.length + " kinds; corridors " + java.util.Arrays.toString(runs) + ", " + jets + " with jets");
                 check(halls * 12 >= rooms && halls * 3 <= rooms && seen.size() >= 30, "trap halls are a good share of the rooms, of thirty kinds or more: " + halls + " of " + rooms + ", " + seen.size() + " kinds");
-                for (int run = 0; run < 6; run++) check(runs[run] * 25 >= corridors, "every way a corridor can run turns up: " + java.util.Arrays.toString(runs));
+                for (int run = 0; run < 8; run++) check(runs[run] * 25 >= corridors, "every way a corridor can run turns up: " + java.util.Arrays.toString(runs));
                 check(runs[Passages.RUN_STRAIGHT] * 2 < corridors && jets >= 20, "fewer than half the corridors run straight: " + runs[0] + " of " + corridors);
                 check(bestScore == 15, "test setup: a level with a chasing hall, a small hall, an ordinary one and every kind of corridor: " + bestScore);
 
@@ -5424,13 +5429,29 @@ public final class SelfTest {
 
                 // ---- corridors: a baffle to go round, a nook with an urn
                 int mid = (Passages.CORRIDOR_FROM + Passages.CORRIDOR_TO) / 2;
-                boolean bend = false, nook = false, split = false;
+                boolean bend = false, nook = false, split = false, gallery = false, causeway = false;
                 for (Passages.Cell c : plan.cells()) {
                     for (int dir = 0; dir < 2; dir++) {
                         int run = plan.run(c, dir);
                         if (run == Passages.RUN_STRAIGHT) continue;
                         boolean low = run == Passages.RUN_BEND_LOW || run == Passages.RUN_SPLIT || run == Passages.RUN_NOOK_LOW;
                         boolean high = run == Passages.RUN_BEND_HIGH || run == Passages.RUN_SPLIT || run == Passages.RUN_NOOK_HIGH;
+                        if (run == Passages.RUN_GALLERY || run == Passages.RUN_CAUSEWAY) {
+                            // a hall, not a passage: wider, higher, and open straight through
+                            for (int k = -3; k <= 3; k += 3) {
+                                check(level.getBlockState(Passages.along(plan, c, dir, mid, k, 1)).isAir() && level.getBlockState(Passages.along(plan, c, dir, mid, k, 4)).isAir(), "a gallery or causeway is seven or more across and four high");
+                            }
+                            if (run == Passages.RUN_GALLERY) {
+                                gallery = true;
+                                check(solid(level, Passages.along(plan, c, dir, mid - 1, 3, 2)) && solid(level, Passages.along(plan, c, dir, mid + 1, -3, 2)) && solid(level, Passages.along(plan, c, dir, mid, 2, 0)),
+                                        "a gallery has a pillar in each corner and a floor to walk on");
+                            } else {
+                                causeway = true;
+                                check(level.getBlockState(Passages.along(plan, c, dir, mid, 3, 0)).is(Blocks.WATER) && level.getBlockState(Passages.along(plan, c, dir, mid, -4, 0)).is(Blocks.WATER)
+                                        && solid(level, Passages.along(plan, c, dir, mid, 1, 0)) && solid(level, Passages.along(plan, c, dir, mid, 3, -1)), "a causeway is a walk with water lying to both sides, over a bed");
+                            }
+                            continue;
+                        }
                         if (run == Passages.RUN_NOOK_LOW || run == Passages.RUN_NOOK_HIGH) {
                             nook = true;
                             check(level.getBlockState(Passages.along(plan, c, dir, mid, low ? -4 : 4, 1)).is(ModContent.ANCIENT_URN.get()), "a nook has an urn at the back of it");
@@ -5448,7 +5469,7 @@ public final class SelfTest {
                         }
                     }
                 }
-                check(bend && nook && split, "bends, nooks and splits all stand in this level");
+                check(bend && nook && split && gallery && causeway, "bends, nooks, splits, a gallery and a causeway all stand in this level");
             } finally {
                 com.thefarawaydev.realmsofchaos.world.Gauntlets.forget();
                 com.thefarawaydev.realmsofchaos.ui.Cards.clear(hero);
@@ -5516,6 +5537,112 @@ public final class SelfTest {
                 com.thefarawaydev.realmsofchaos.ui.Options.reset(hero);
                 hero.closeContainer();
                 Realm.testAlias(Level.OVERWORLD, Realm.ABYSS);
+            }
+        });
+
+        step("onslaughts take the whole floor: every one is lit before it lands, every one leaves somewhere to stand, and the ground ripples between them", () -> {
+            ServerPlayer hero = fakePlayer(server, level, "RocDancer");
+            com.thefarawaydev.realmsofchaos.world.Onslaughts.clear();
+            level.addNewPlayer(hero);
+            try {
+                // ---- on paper: a warning before every blow, never the whole floor at once, a gap that is a gap
+                for (com.thefarawaydev.realmsofchaos.world.Onslaughts.Kind kind : com.thefarawaydev.realmsofchaos.world.Onslaughts.Kind.values()) {
+                    check(!com.thefarawaydev.realmsofchaos.ui.Words.of("hud." + RealmsOfChaos.MOD_ID + ".onslaught." + kind.id()).startsWith("hud."), kind + " says what to do about it");
+                    boolean moving = kind == com.thefarawaydev.realmsofchaos.world.Onslaughts.Kind.SHOCKWAVE || kind == com.thefarawaydev.realmsofchaos.world.Onslaughts.Kind.SWEEP;
+                    for (double aim : new double[]{0.0, 0.9, 2.3, 4.4}) {
+                        int everLive = 0, cells = 0;
+                        for (int gx = -com.thefarawaydev.realmsofchaos.world.Onslaughts.REACH; gx <= com.thefarawaydev.realmsofchaos.world.Onslaughts.REACH; gx++) {
+                            for (int gz = -com.thefarawaydev.realmsofchaos.world.Onslaughts.REACH; gz <= com.thefarawaydev.realmsofchaos.world.Onslaughts.REACH; gz++) {
+                                if (gx * gx + gz * gz > com.thefarawaydev.realmsofchaos.world.Onslaughts.REACH * com.thefarawaydev.realmsofchaos.world.Onslaughts.REACH) continue;
+                                cells++;
+                                int warned = 0;
+                                boolean live = false;
+                                for (int t = 0; t < kind.duration; t++) {
+                                    int state = com.thefarawaydev.realmsofchaos.world.Onslaughts.state(kind, gx + 0.5, gz + 0.5, t, aim);
+                                    if (state == com.thefarawaydev.realmsofchaos.world.Onslaughts.LIVE) {
+                                        check(warned >= (moving ? 4 : com.thefarawaydev.realmsofchaos.world.Onslaughts.WARN_TICKS), kind + ": a place goes off only after it has been lit: " + warned + " ticks at " + gx + "," + gz + " t=" + t);
+                                        live = true;
+                                    }
+                                    warned = state == com.thefarawaydev.realmsofchaos.world.Onslaughts.WARN ? warned + 1 : state == com.thefarawaydev.realmsofchaos.world.Onslaughts.LIVE ? warned : 0;
+                                }
+                                if (live) everLive++;
+                                if (kind == com.thefarawaydev.realmsofchaos.world.Onslaughts.Kind.SWEEP) {
+                                    double across = -(gx + 0.5) * Math.sin(aim) + (gz + 0.5) * Math.cos(aim);
+                                    if (Math.abs(across - com.thefarawaydev.realmsofchaos.world.Onslaughts.gap(aim)) <= 2.0) check(!live, "the gap in a sweeping wall is never part of the wall");
+                                }
+                            }
+                        }
+                        check(everLive * 5 >= cells, kind + " takes a good part of the floor: " + everLive + " of " + cells);
+                        for (int t = 0; t < kind.duration; t++) {
+                            int liveNow = 0;
+                            for (int gx = -com.thefarawaydev.realmsofchaos.world.Onslaughts.REACH; gx <= com.thefarawaydev.realmsofchaos.world.Onslaughts.REACH; gx++) {
+                                for (int gz = -com.thefarawaydev.realmsofchaos.world.Onslaughts.REACH; gz <= com.thefarawaydev.realmsofchaos.world.Onslaughts.REACH; gz++) {
+                                    if (gx * gx + gz * gz <= com.thefarawaydev.realmsofchaos.world.Onslaughts.REACH * com.thefarawaydev.realmsofchaos.world.Onslaughts.REACH && com.thefarawaydev.realmsofchaos.world.Onslaughts.state(kind, gx + 0.5, gz + 0.5, t, aim) == com.thefarawaydev.realmsofchaos.world.Onslaughts.LIVE) liveNow++;
+                                }
+                            }
+                            check(liveNow * 100 <= cells * 66, kind + ": there is always somewhere to stand: " + liveNow + " of " + cells + " at t=" + t);
+                        }
+                    }
+                    check(com.thefarawaydev.realmsofchaos.world.Onslaughts.state(kind, 3.0, 3.0, kind.duration, 0.0) == com.thefarawaydev.realmsofchaos.world.Onslaughts.SAFE && com.thefarawaydev.realmsofchaos.world.Onslaughts.state(kind, com.thefarawaydev.realmsofchaos.world.Onslaughts.REACH + 2.0, 0.0, 30, 0.0) == com.thefarawaydev.realmsofchaos.world.Onslaughts.SAFE, kind + " ends, and stops at the edge of the floor");
+                }
+
+                // ---- in the world: rings. The second ring out goes off first, the middle later
+                Vec3 centre = new Vec3(0.5, level.getHeight(net.minecraft.world.level.levelgen.Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, 0, 0), 0.5);
+                long began = server.getTickCount();
+                com.thefarawaydev.realmsofchaos.world.Onslaughts.begin(level, null, Line.ZEUS, com.thefarawaydev.realmsofchaos.world.Onslaughts.Kind.RINGS, centre, com.thefarawaydev.realmsofchaos.world.Onslaughts.REACH, 4.0F);
+                check(com.thefarawaydev.realmsofchaos.world.Onslaughts.running() == 1, "an onslaught begins");
+                hero.setPos(centre.x + 4.0, centre.y, centre.z);
+                hero.setHealth(hero.getMaxHealth());
+                hero.setDeltaMovement(0, 0, 0);
+                hero.damageCooldownTime = 0;
+                settle(level);
+                advance(server, 10);
+                com.thefarawaydev.realmsofchaos.world.Onslaughts.tick(server);
+                check(hero.getHealth() == hero.getMaxHealth(), "lit, a ring harms nobody yet");
+                advance(server, com.thefarawaydev.realmsofchaos.world.Onslaughts.WARN_TICKS - 10 + 2);
+                com.thefarawaydev.realmsofchaos.world.Onslaughts.tick(server);
+                check(hero.getHealth() < hero.getMaxHealth() && hero.getDeltaMovement().y > 0.4, "then it goes off under whoever stayed on it, and throws them: " + hero.getHealth());
+                float after = hero.getHealth();
+                hero.damageCooldownTime = 0;
+                advance(server, 2);
+                com.thefarawaydev.realmsofchaos.world.Onslaughts.tick(server);
+                check(hero.getHealth() == after, "once, not every tick");
+                hero.setPos(centre.x + 1.0, centre.y, centre.z);
+                hero.setHealth(hero.getMaxHealth());
+                hero.damageCooldownTime = 0;
+                settle(level);
+                com.thefarawaydev.realmsofchaos.world.Onslaughts.tick(server);
+                check(hero.getHealth() == hero.getMaxHealth(), "the ring next to it is somewhere to stand");
+                advance(server, com.thefarawaydev.realmsofchaos.world.Onslaughts.Kind.RINGS.duration);
+                com.thefarawaydev.realmsofchaos.world.Onslaughts.tick(server);
+                check(com.thefarawaydev.realmsofchaos.world.Onslaughts.running() == 0, "and when it has run its course it is over");
+
+                // ---- a shockwave is jumped: it passes under whoever is off the ground
+                com.thefarawaydev.realmsofchaos.world.Onslaughts.begin(level, null, Line.HADES, com.thefarawaydev.realmsofchaos.world.Onslaughts.Kind.SHOCKWAVE, centre, com.thefarawaydev.realmsofchaos.world.Onslaughts.REACH, 4.0F);
+                hero.setPos(centre.x + 5.0, centre.y + 1.2, centre.z);
+                hero.setOnGround(false);
+                hero.setHealth(hero.getMaxHealth());
+                hero.clearFire();
+                hero.damageCooldownTime = 0;
+                settle(level);
+                int reaches = com.thefarawaydev.realmsofchaos.world.Onslaughts.WARN_TICKS + (int) Math.round(5.0 / 0.36);
+                advance(server, reaches);
+                com.thefarawaydev.realmsofchaos.world.Onslaughts.tick(server);
+                check(com.thefarawaydev.realmsofchaos.world.Onslaughts.state(com.thefarawaydev.realmsofchaos.world.Onslaughts.Kind.SHOCKWAVE, 5.0, 0.0, reaches, 0.0) == com.thefarawaydev.realmsofchaos.world.Onslaughts.LIVE && hero.getHealth() == hero.getMaxHealth(), "a wave along the ground passes under whoever jumped it");
+                com.thefarawaydev.realmsofchaos.world.Onslaughts.clear();
+
+                // ---- a ripple is only for show
+                com.thefarawaydev.realmsofchaos.world.Onslaughts.ripple(level, centre, Line.POSEIDON);
+                hero.setPos(centre.x + 3.0, centre.y, centre.z);
+                hero.setHealth(hero.getMaxHealth());
+                for (int i = 0; i < 40; i++) {
+                    advance(server, 1);
+                    com.thefarawaydev.realmsofchaos.world.Onslaughts.tick(server);
+                }
+                check(hero.getHealth() == hero.getMaxHealth(), "the ripple between onslaughts hurts nobody");
+            } finally {
+                com.thefarawaydev.realmsofchaos.world.Onslaughts.clear();
+                hero.remove(net.minecraft.world.entity.Entity.RemovalReason.DISCARDED);
             }
         });
 

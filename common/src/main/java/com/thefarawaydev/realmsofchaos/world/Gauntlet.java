@@ -81,16 +81,24 @@ public final class Gauntlet {
         /** All of the floor but one narrow path, which shows itself only for a moment. */
         PATH,
         /** Nothing until somebody stands still: then the tile they stood on. */
-        CHASE;
+        CHASE,
+        /** Every other ring about the middle, then the rings between. */
+        RINGS,
+        /** Teeth from one wall, then teeth from the other, meshing like a comb. */
+        COMB,
+        /** A line that swings from side wall to side wall and back. */
+        PENDULUM,
+        /** Two lines half a room apart, crossing it together. */
+        TWIN_ROWS;
 
         /** How many turns make one round of this pattern, in a room reaching {@code r} from its middle. */
         public int slots(int r) {
             return switch (this) {
                 case ROWS, COLUMNS, DIAGONAL -> 2 * r + 1;
-                case BOUNCE -> 4 * r;
-                case PINCER, RIPPLE, IMPLODE -> r + 1;
+                case BOUNCE, PENDULUM -> 4 * r;
+                case PINCER, RIPPLE, IMPLODE, TWIN_ROWS -> r + 1;
                 case FLOOD -> r;
-                case CHECKER, STRIPES, LANES -> 2;
+                case CHECKER, STRIPES, LANES, RINGS, COMB -> 2;
                 case WEAVE, QUARTERS, TWIN_SPIRAL, SCATTER, CROSSHAIR -> 4;
                 case SERPENT -> 5;
                 case CROSSFIRE, HAIL -> 3;
@@ -129,6 +137,10 @@ public final class Gauntlet {
                 case CROSSHAIR -> dz == Math.floorMod(hash(1, 0, round * 4 + s, seed), 2 * r + 1) - r || dx == Math.floorMod(hash(0, 1, round * 4 + s, seed), 2 * r + 1) - r;
                 case LANES -> (Math.abs(dx) <= 1 || Math.abs(dz) <= 1) == (s == 0);
                 case PATH, CHASE -> false;
+                case RINGS -> (ring & 1) == s;
+                case COMB -> ((dx & 1) == 0) == ((dz <= 0) == (s == 0));
+                case PENDULUM -> dx + r == (s <= 2 * r ? s : 4 * r - s);
+                case TWIN_ROWS -> Math.floorMod(dz + r - s, r + 1) == 0;
             };
         }
     }
@@ -189,7 +201,15 @@ public final class Gauntlet {
         FALSE_FLOOR(Hazard.LEVITATE, Pattern.STRIPES, Size.WIDE, 32, 14, 14, 5),
         BLIND_MARCH(Hazard.BLIGHT, Pattern.ROWS, Size.NORMAL, 12, 14, 8, 2),
         DARK_WEAVE(Hazard.BLIGHT, Pattern.WEAVE, Size.SMALL, 22, 14, 14, 4),
-        BLACK_TIDE(Hazard.BLIGHT, Pattern.BOUNCE, Size.NORMAL, 10, 14, 7, 6);
+        BLACK_TIDE(Hazard.BLIGHT, Pattern.BOUNCE, Size.NORMAL, 10, 14, 7, 6),
+        TOLLING_RINGS(Hazard.SHOCK, Pattern.RINGS, Size.NORMAL, 34, 14, 14, 1),
+        FROST_RINGS(Hazard.FROST, Pattern.RINGS, Size.SMALL, 34, 14, 14, 0),
+        THE_COMB(Hazard.SPIKE, Pattern.COMB, Size.NORMAL, 34, 14, 16, 2),
+        VENOM_COMB(Hazard.VENOM, Pattern.COMB, Size.WIDE, 34, 16, 16, 3),
+        PENDULUM_FIRE(Hazard.SOULFIRE, Pattern.PENDULUM, Size.NORMAL, 11, 14, 7, 4),
+        GALE_PENDULUM(Hazard.GALE, Pattern.PENDULUM, Size.WIDE, 11, 14, 7, 2),
+        TWIN_TIDES(Hazard.WITHER, Pattern.TWIN_ROWS, Size.WIDE, 12, 16, 8, 3),
+        MARCHING_THORNS(Hazard.SPIKE, Pattern.TWIN_ROWS, Size.NORMAL, 12, 14, 8, 1);
 
         public final Hazard hazard;
         public final Pattern pattern;

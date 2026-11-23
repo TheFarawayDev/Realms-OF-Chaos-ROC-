@@ -27,6 +27,21 @@ public class PageScreen extends AbstractContainerScreen<PageMenu> {
     private static final int WIDTH = 300, HEADER = 24, FOOTER = 30, PAD = 12, BUTTON_H = 18, GAP = 4, PARAGRAPH_GAP = 5;
     private static final int STONE = 0xFF14122A, STONE_EDGE = 0xFF05040B, FIELD = 0xFF1C1A38, GOLD = 0xFFD6B25A, GOLD_DIM = 0xFF7A6532, INK = 0xFFF5E6C8;
 
+    /** How a kind of page is dressed: its buttons' colours, and the ink of its heading when that is not the heading's own. */
+    private record Look(int button, int hover, int rule, int headingInk) {}
+
+    private static final java.util.Map<String, Look> LOOKS = java.util.Map.of(
+            "codex", new Look(0xFF2A2752, 0xFF3A3470, 0xFF4A4690, 0),
+            "handbook", new Look(0xFF4A3220, 0xFF604228, 0xFF8A6A44, 0),
+            "oracle", new Look(0xFF241C52, 0xFF34286E, 0xFF5A48A0, 0),
+            "altar", new Look(0xFF34343E, 0xFF464652, 0xFF70707C, 0),
+            "board", new Look(0xFF6A4A2A, 0xFF805C36, 0xFFA07A4C, 0xFF3A2A18),
+            "party", new Look(0xFF1E4A2C, 0xFF286238, 0xFF3E8A52, 0),
+            "mastery", new Look(0xFF4A3418, 0xFF624622, 0xFF94703A, 0),
+            "waygate", new Look(0xFF124246, 0xFF1A585C, 0xFF2E8A8C, 0),
+            "hub", new Look(0xFF4A4436, 0xFF5E5646, 0xFF8A8068, 0));
+    private static final int EDGE = 4, ART_W = 308, ART_H = 244;
+
     private record Line(FormattedCharSequence text, int indent) {}
 
     /** {@code icon} is the hidden slot its picture rides in, or -1: the item itself arrives a moment after the page does. */
@@ -42,6 +57,8 @@ public class PageScreen extends AbstractContainerScreen<PageMenu> {
     private final List<Button> footer = new ArrayList<>();
     private int columns = 1, contentHeight, scroll, accent = GOLD;
     private boolean laidOut;
+    private String theme = "codex";
+    private Look look = LOOKS.get("codex");
 
     public PageScreen(PageMenu menu, Inventory inventory, Component title) {
         super(menu, inventory, title, WIDTH, 220);
@@ -75,13 +92,16 @@ public class PageScreen extends AbstractContainerScreen<PageMenu> {
             return;
         }
         heading = parts.get(0);
+        String mark = heading.getStyle().getInsertion();
+        theme = mark != null && mark.startsWith(PageMenu.THEME) && LOOKS.containsKey(mark.substring(PageMenu.THEME.length())) ? mark.substring(PageMenu.THEME.length()) : "codex";
+        look = LOOKS.get(theme);
         TextColor colour = heading.getSiblings().isEmpty() ? heading.getStyle().getColor() : heading.getSiblings().get(0).getStyle().getColor();
         accent = colour == null ? GOLD : 0xFF000000 | colour.getValue();
         int textWidth = WIDTH - PAD * 2 - 10;
         for (Component part : parts.get(1).getSiblings()) {
-            String mark = part.getStyle().getInsertion();
-            int icon = mark != null && mark.startsWith(PageMenu.ICON) ? mark.charAt(PageMenu.ICON.length()) - '0' : -1;
-            int indent = mark != null && mark.startsWith(PageMenu.ICON) ? 22 : 0;
+            String pictured = part.getStyle().getInsertion();
+            int icon = pictured != null && pictured.startsWith(PageMenu.ICON) ? pictured.charAt(PageMenu.ICON.length()) - '0' : -1;
+            int indent = icon >= 0 ? 22 : 0;
             List<Line> lines = new ArrayList<>();
             for (FormattedCharSequence row : this.font.split(part, textWidth - indent)) lines.add(new Line(row, indent));
             paragraphs.add(new Paragraph(lines, icon, Math.max(indent > 0 ? 18 : 0, lines.size() * 10)));
@@ -102,7 +122,11 @@ public class PageScreen extends AbstractContainerScreen<PageMenu> {
         // a page with one or two things to do - begin a trial, take a book - keeps them at its foot, where they
         // are seen without scrolling to the end of what is written; a page that is a list of choices keeps its grid
         footer.clear();
-        if (buttons.size() <= 2) {
+        int across = buttons.size() + (exit != null ? 1 : 0), room = Math.min(130, (WIDTH - PAD * 2 - (across - 1) * GAP) / Math.max(1, across)) - 8;
+        boolean fit = buttons.size() <= 2;
+        for (Button button : buttons) fit &= this.font.width(button.label) <= room;
+        // (only if their names fit there: a button is never cut short to make room)
+        if (fit) {
             footer.addAll(buttons);
             buttons.clear();
         }
@@ -148,9 +172,9 @@ public class PageScreen extends AbstractContainerScreen<PageMenu> {
 
     private void drawButton(GuiGraphicsExtractor g, int x, int y, int w, Component label, boolean hover) {
         g.fill(x, y, x + w, y + BUTTON_H, STONE_EDGE);
-        g.fill(x + 1, y + 1, x + w - 1, y + BUTTON_H - 1, hover ? 0xFF3A3470 : 0xFF2A2752);
-        g.fill(x + 1, y + 1, x + w - 1, y + 2, hover ? GOLD : 0xFF4A4690);
-        g.fill(x + 1, y + BUTTON_H - 2, x + w - 1, y + BUTTON_H - 1, 0xFF15132C);
+        g.fill(x + 1, y + 1, x + w - 1, y + BUTTON_H - 1, hover ? look.hover : look.button);
+        g.fill(x + 1, y + 1, x + w - 1, y + 2, hover ? GOLD : look.rule);
+        g.fill(x + 1, y + BUTTON_H - 2, x + w - 1, y + BUTTON_H - 1, 0x66000000);
         if (hover) {
             g.fill(x, y, x + 1, y + BUTTON_H, GOLD);
             g.fill(x + w - 1, y, x + w, y + BUTTON_H, GOLD);
@@ -164,23 +188,18 @@ public class PageScreen extends AbstractContainerScreen<PageMenu> {
         super.extractBackground(g, mouseX, mouseY, partialTick);
         if (!laidOut) layOut();
         int x = panelLeft(), y = panelTop(), h = panelHeight();
-        // the tablet: an edge, a gold line inside it, the header band in the page's colour, the field the text lies on
-        g.fill(x - 2, y - 2, x + WIDTH + 2, y + h + 2, STONE_EDGE);
-        g.fill(x - 1, y - 1, x + WIDTH + 1, y + h + 1, GOLD_DIM);
-        g.fill(x, y, x + WIDTH, y + h, STONE);
-        g.fill(x, y, x + WIDTH, y + HEADER, 0xFF221E44);
-        g.fill(x, y + HEADER - 2, x + WIDTH, y + HEADER - 1, accent);
-        g.fill(x, y + HEADER - 1, x + WIDTH, y + HEADER, STONE_EDGE);
-        g.fill(x + 4, y + 4, x + 7, y + HEADER - 6, accent);
-        g.fill(x + WIDTH - 7, y + 4, x + WIDTH - 4, y + HEADER - 6, accent);
-        for (int k = 0; k < 4; k++) {
-            // (a stud in each corner)
-            int sx = k % 2 == 0 ? x + 2 : x + WIDTH - 4, sy = k < 2 ? y + 2 : y + h - 4;
-            g.fill(sx, sy, sx + 2, sy + 2, GOLD);
+        // what this kind of page is drawn on: its head and as much of its field as there is room for, then its foot
+        net.minecraft.resources.Identifier art = com.thefarawaydev.realmsofchaos.RealmsOfChaos.id("textures/gui/page_" + theme + ".png");
+        int foot = FOOTER + 10 + EDGE, head = h + EDGE * 2 - foot;
+        g.blit(net.minecraft.client.renderer.RenderPipelines.GUI_TEXTURED, art, x - EDGE, y - EDGE, 0.0F, 0.0F, ART_W, head, ART_W, ART_H);
+        g.blit(net.minecraft.client.renderer.RenderPipelines.GUI_TEXTURED, art, x - EDGE, y - EDGE + head, 0.0F, ART_H - foot, ART_W, foot, ART_W, ART_H);
+        if (look.headingInk != 0) {
+            // (a heading written on a note is in dark ink, whatever colour it came in)
+            String plain = heading.getString();
+            g.text(this.font, plain, x + (WIDTH - this.font.width(plain)) / 2, y + 8, look.headingInk, false);
+        } else {
+            g.centeredText(this.font, heading, x + WIDTH / 2, y + 8, 0xFFFFFFFF);
         }
-        g.fill(x + 6, y + HEADER + 2, x + WIDTH - 6, y + h - FOOTER, FIELD);
-        g.fill(x + 6, y + h - FOOTER, x + WIDTH - 6, y + h - FOOTER + 1, GOLD_DIM);
-        g.centeredText(this.font, heading, x + WIDTH / 2, y + 8, 0xFFFFFFFF);
 
         // what is written on it, cut off at the edges of the field
         int top = y + HEADER + 4, view = viewHeight();

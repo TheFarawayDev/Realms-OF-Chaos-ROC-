@@ -70,7 +70,7 @@ public final class Passages {
     public static final int TALL = 8;
     public static final int MAX_SIZE = 6;
     public static final int X0 = 600, PITCH = 160;
-    public static final int LAYOUT_VERSION = 9;
+    public static final int LAYOUT_VERSION = 10;
     public static final String GUARDIAN_TAG = "realms_of_chaos_guardian";
     private static final String HUD = "hud." + RealmsOfChaos.MOD_ID + ".passage.";
 
@@ -78,7 +78,9 @@ public final class Passages {
         SPIKES, FLAMES, BLADES, STAIRWELL, ARC, GAS, CELLS, STORE, GAUNTLET }
 
     /** How the corridor between two rooms runs: straight, round a baffle to one side or either, or past a nook. */
-    public static final int RUN_STRAIGHT = 0, RUN_BEND_LOW = 1, RUN_BEND_HIGH = 2, RUN_SPLIT = 3, RUN_NOOK_LOW = 4, RUN_NOOK_HIGH = 5;
+    public static final int RUN_STRAIGHT = 0, RUN_BEND_LOW = 1, RUN_BEND_HIGH = 2, RUN_SPLIT = 3, RUN_NOOK_LOW = 4, RUN_NOOK_HIGH = 5, RUN_GALLERY = 6, RUN_CAUSEWAY = 7;
+    /** What a corridor's vents let out: fire, frost, sparks or venom. */
+    public static final int JET_FLAME = 0, JET_FROST = 1, JET_SHOCK = 2, JET_VENOM = 3;
 
     /**
      * What weighs on a level. The first three levels of a passage are clean; further in, most carry one: a status
@@ -260,8 +262,9 @@ public final class Passages {
                     }
                     case ROOM, GARDEN, LIBRARY, POOL -> {
                         float roll = random.nextFloat();
-                        h = roll < 0.4F ? HEADROOM : roll < 0.75F ? 7 : TALL;
-                        wide = random.nextFloat() < 0.35F;
+                        // (more of them are tall, and more than half a step wider: room to breathe between the halls)
+                        h = roll < 0.25F ? HEADROOM : roll < 0.6F ? 7 : TALL;
+                        wide = random.nextFloat() < 0.55F;
                         form = kinds[c.x][c.z] == Kind.ROOM ? random.nextInt(4) : random.nextInt(2);
                     }
                     default -> { }
@@ -313,7 +316,9 @@ public final class Passages {
             h ^= h >>> 15;
             h *= 0xD6E8FEB86659FD93L;
             int roll = (int) Math.floorMod(h >>> 24, 100L);
-            return roll < 40 ? RUN_STRAIGHT : roll < 55 ? RUN_BEND_LOW : roll < 70 ? RUN_BEND_HIGH : roll < 80 ? RUN_SPLIT : roll < 90 ? RUN_NOOK_LOW : RUN_NOOK_HIGH;
+            // (a quarter run straight; the rest bend, split, pass a nook, open into a pillared gallery or cross water on a causeway)
+            return roll < 24 ? RUN_STRAIGHT : roll < 34 ? RUN_BEND_LOW : roll < 44 ? RUN_BEND_HIGH : roll < 54 ? RUN_SPLIT : roll < 62 ? RUN_NOOK_LOW : roll < 70 ? RUN_NOOK_HIGH
+                    : roll < 86 ? RUN_GALLERY : RUN_CAUSEWAY;
         }
 
         public int form(Cell c) {
@@ -497,26 +502,31 @@ public final class Passages {
             // joined by a doorway, and a kind already used on the level less likely to be used again
             Kind[] common = {Kind.HALL, Kind.ROOM, Kind.TRAP, Kind.CRUSHER, Kind.DARTS, Kind.SPIKES, Kind.FLAMES, Kind.BLADES, Kind.ARC, Kind.GAS,
                     Kind.GARDEN, Kind.LIBRARY, Kind.POOL, Kind.CELLS, Kind.STORE, Kind.GAUNTLET};
-            float[] weight = {2.4F, 1.5F, 0.6F, 0.4F, 0.4F, 0.4F, 0.4F, 0.4F, 0.35F, 0.35F, 0.9F, 0.8F, 0.7F, 0.8F, 0.8F, 2.2F};
+            float[] weight = {2.4F, 1.8F, 0.4F, 0.22F, 0.22F, 0.22F, 0.22F, 0.22F, 0.22F, 0.22F, 1.0F, 0.9F, 0.8F, 0.8F, 0.8F, 2.0F};
             // the trap halls this level is dangerous enough for, in an order of its own: no hall twice on a level
             List<Gauntlet.Variant> halls = new ArrayList<>();
             for (Gauntlet.Variant v : Gauntlet.Variant.values()) if (v.threat <= threat) halls.add(v);
             Collections.shuffle(halls, random);
             int[] times = new int[common.length];
             for (Cell c : free) {
-                int best = -1;
-                float bestScore = -1.0F;
+                // each kind's share is its weight, less the more it has been used on this level already; a kind that
+                // would meet itself across a doorway has none (not even a corridor does - but trap halls may, since
+                // no two of them are the same hall)
+                float[] share = new float[common.length];
+                float all = 0.0F;
                 for (int k = 0; k < common.length; k++) {
-                    float roll = random.nextFloat();
                     int same = 0;
                     for (Cell n : neighbours(c)) if (connected(c, n) && kinds[n.x][n.z] == common[k]) same++;
-                    // (no kind meets itself across a doorway - not even a corridor. Trap halls may: no two are the same hall)
                     if (common[k] == Kind.GAUNTLET ? halls.isEmpty() : same > 0) continue;
-                    float score = weight[k] * roll / (1.0F + 1.5F * times[k] * (common[k] == Kind.HALL ? 0.25F : common[k] == Kind.GAUNTLET ? 0.45F : 1.0F));
-                    if (score > bestScore) {
-                        bestScore = score;
-                        best = k;
-                    }
+                    share[k] = weight[k] / (1.0F + 1.5F * times[k] * (common[k] == Kind.HALL ? 0.25F : common[k] == Kind.GAUNTLET ? 0.45F : 1.0F));
+                    all += share[k];
+                }
+                float roll = random.nextFloat() * all;
+                int best = -1;
+                for (int k = 0; k < common.length && best < 0; k++) {
+                    if (share[k] <= 0.0F) continue;
+                    roll -= share[k];
+                    if (roll <= 0.0F) best = k;
                 }
                 if (best < 0) best = 0;
                 kinds[c.x][c.z] = common[best];
@@ -627,7 +637,15 @@ public final class Passages {
             long h = seed * 31 + c.x * 7919L + c.z * 104729L + dir * 15485863L;
             h ^= h >>> 17;
             h *= 0x9E3779B97F4A7C15L;
-            return Math.floorMod(h >>> 20, 100) < Math.min(40, 14 + (int) (threat * 2.5));
+            return Math.floorMod(h >>> 20, 100) < Math.min(60, 24 + (int) (threat * 3.0));
+        }
+
+        /** What the vents of a corridor with jets let out: the same in one corridor always, different from corridor to corridor. */
+        public int jetKind(Cell c, int dir) {
+            long h = seed * 17 + c.x * 104729L + c.z * 15485863L + dir * 7919L;
+            h ^= h >>> 13;
+            h *= 0xC2B2AE3D27D4EB4FL;
+            return (int) Math.floorMod(h >>> 22, 4L);
         }
 
         /** The middle of the corridor east or south of a room. */
@@ -913,6 +931,30 @@ public final class Passages {
     private static void wind(ServerLevel level, Plan plan, Cell c, int dir, TowerBuilder.Palette p) {
         int run = plan.run(c, dir), mid = (CORRIDOR_FROM + CORRIDOR_TO) / 2;
         if (run == RUN_STRAIGHT) return;
+        if (run == RUN_GALLERY || run == RUN_CAUSEWAY) {
+            // a hall rather than a passage: seven or nine across and four high, lit from its ceiling. A gallery has a
+            // pillar in each corner and a light in the floor at either side; a causeway is a walk three wide with
+            // water lying to both sides of it
+            int reach = run == RUN_GALLERY ? 3 : 4;
+            for (int d = mid - 1; d <= mid + 1; d++) {
+                for (int k = -reach; k <= reach; k++) {
+                    boolean walk = Math.abs(k) <= 1;
+                    set(level, along(plan, c, dir, d, k, 0), walk ? p.inlay() : run == RUN_CAUSEWAY ? Blocks.WATER : p.top());
+                    for (int y = 1; y <= 4; y++) set(level, along(plan, c, dir, d, k, y), Blocks.AIR);
+                    set(level, along(plan, c, dir, d, k, 5), d == mid && (k == 0 || Math.abs(k) == reach - 1) ? p.light() : p.trim());
+                }
+            }
+            if (run == RUN_GALLERY) {
+                for (int d = mid - 1; d <= mid + 1; d += 2) {
+                    for (int k = -reach; k <= reach; k += reach * 2) {
+                        for (int y = 1; y <= 4; y++) set(level, along(plan, c, dir, d, k, y), p.pillar());
+                    }
+                }
+                set(level, along(plan, c, dir, mid, -reach, 0), p.light());
+                set(level, along(plan, c, dir, mid, reach, 0), p.light());
+            }
+            return;
+        }
         boolean low = run == RUN_BEND_LOW || run == RUN_SPLIT || run == RUN_NOOK_LOW, high = run == RUN_BEND_HIGH || run == RUN_SPLIT || run == RUN_NOOK_HIGH;
         for (int d = mid - 1; d <= mid + 1; d++) {
             for (int k = 2; k <= 4; k++) {

@@ -137,6 +137,8 @@ public class GodBoss extends Monster implements RangedAttackMob {
     private int challengers = 1, mercy;
     /** Once enraged, a god makes the floor erupt under its challengers every so often. */
     private int upheavalCooldown = 160;
+    /** Until the next onslaught - an attack on the whole floor - and which kind the last one was. */
+    private int onslaughtCooldown = 240, lastOnslaught = -1;
     /** Below a fifth of its health a god makes one last stand. */
     private boolean lastStand;
     public static final int UPHEAVAL_WARNING = 20;
@@ -591,6 +593,23 @@ public class GodBoss extends Monster implements RangedAttackMob {
             upheavalCooldown = (int) ((lastStand ? 140 : 220) * (stance == Stance.BRISTLE ? 0.7 : 1.0));
             upheaval(level);
         }
+
+        // the whole floor, every so often: sooner, and from a wider choice, the further the trial has gone
+        if (--onslaughtCooldown <= 0 && !com.thefarawaydev.realmsofchaos.world.Onslaughts.active(this)) {
+            int ph = phase();
+            onslaughtCooldown = (int) ((ph >= 3 ? 220 : ph == 2 ? 280 : 340) * (stance == Stance.BRISTLE ? 0.8 : 1.0));
+            com.thefarawaydev.realmsofchaos.world.Onslaughts.Kind[] early = {com.thefarawaydev.realmsofchaos.world.Onslaughts.Kind.SHOCKWAVE,
+                    com.thefarawaydev.realmsofchaos.world.Onslaughts.Kind.FISSURES, com.thefarawaydev.realmsofchaos.world.Onslaughts.Kind.RINGS};
+            com.thefarawaydev.realmsofchaos.world.Onslaughts.Kind[] kinds = ph >= 2 ? com.thefarawaydev.realmsofchaos.world.Onslaughts.Kind.values() : early;
+            int pick = random.nextInt(kinds.length);
+            if (kinds[pick].ordinal() == lastOnslaught) pick = (pick + 1) % kinds.length;
+            lastOnslaught = kinds[pick].ordinal();
+            float rankShare = (Line.RANKS + 1 - god.rank()) / (float) Line.RANKS;
+            com.thefarawaydev.realmsofchaos.world.Onslaughts.begin(level, this, god.line(), kinds[pick], home(),
+                    safeRadius > 0 ? safeRadius + 1.0 : com.thefarawaydev.realmsofchaos.world.Onslaughts.REACH, (2.5F + 4.5F * rankShare) * damageScale());
+        }
+        // (and between them the ground is not still: a ripple of dust runs out over it)
+        if (tickCount % 150 == 75) com.thefarawaydev.realmsofchaos.world.Onslaughts.ripple(level, home(), god.line());
 
         if (tickCount % 20 == 0) keepUnstuck(level);
         if (tickCount % 10 == 0) updateFloorShift(level);

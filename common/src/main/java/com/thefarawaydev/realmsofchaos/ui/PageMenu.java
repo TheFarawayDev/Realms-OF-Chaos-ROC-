@@ -40,6 +40,8 @@ public class PageMenu extends AbstractContainerMenu {
     public static final int ICONS = 6;
     /** Marks on the parts of a page's title: a paragraph's icon slot, how many columns the buttons stand in, the way-out button. */
     public static final String ICON = "icon", EXIT = "exit";
+    /** The mark on a page's heading that says which look it has. */
+    public static final String THEME = "theme:";
 
     private final Container icons;
     /** What each button does when pressed, in order: a command to run as the player, or null to close the page. Server only. */
@@ -133,7 +135,8 @@ public class PageMenu extends AbstractContainerMenu {
         }
         int across = columns;
         buttons.withStyle(style -> style.withInsertion(String.valueOf(across)));
-        return Component.empty().append(Component.empty().append(dialog.common().title())).append(body).append(buttons);
+        String theme = THEME + Screens.theme(dialog).id();
+        return Component.empty().append(Component.empty().append(dialog.common().title()).withStyle(style -> style.withInsertion(theme))).append(body).append(buttons);
     }
 
     /** What each button of a page does, in the order {@link #pack} lists them. */
