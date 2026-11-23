@@ -121,6 +121,14 @@ The current build is an **Alpha**.
     paragraphs that scroll, a picture of the item a line speaks of, and buttons drawn to match, in columns, with a
     note when pointed at. A page is a menu type of the mod's own with no slots to click; a button pressed travels
     as the menu's button number, so only the game's own packets are used. `art/renders/ingame-page-*.png`.
+  * **Room to read.** A god's panel has a name tab tall enough for the name to sit in with air round it, a
+    health bar clear of its housing on every side, marks where the aegis rises and the wrath begins, and a gem
+    for each phase; the pylons still standing or rings of floor still left are a row of their own under the bar
+    instead of being squeezed onto the tab. The floor plaque is the same family a size smaller, with whatever
+    does not fit on it on a strip beneath. (`art/renders/ingame-hud-*.png`)
+  * **Pages get out of the way.** A page with one or two things to do - begin a trial, call a rematch, take a
+    chapter as a book - keeps those buttons at its foot, always in view, and closes by itself once one is
+    pressed. Only a button that leads to another page keeps a page open.
   * **Every build says which it is.** A released jar carries its build number in its name and its version
     (`realms-of-chaos-forge-1.2.0-alpha.57+mc26.3.jar`), the first time you join a world on a new build a line of
     chat names it, and `/roc version` shows it at any time. If a game and the world it joins run different builds,

@@ -31,10 +31,13 @@ import net.minecraft.world.scores.Scoreboard;
  * <p>What a god is doing is read from the god; the rest from the lines {@link HudFeed} sends.
  */
 public final class RocHud {
-    private static final int FRAME_W = 200, FRAME_H = 22, BAR_X = 9, BAR_W = 182, CARD_W = 220, CARD_H = 46;
+    /** A god's panel and a floor's plaque, as tools/hud_art.py draws them: size, and where the fill lies. */
+    private static final int PANEL_W = 212, PANEL_H = 30, PANEL_BAR_X = 15, PANEL_BAR_W = 182, PANEL_BAR_Y = 17, PANEL_BAR_H = 7;
+    private static final int PLAQUE_W = 200, PLAQUE_H = 24, PLAQUE_BAR_X = 11, PLAQUE_BAR_W = 178, PLAQUE_BAR_Y = 15, PLAQUE_BAR_H = 5;
+    private static final int CARD_W = 220, CARD_H = 46, INK = 0xFFF5E6C8;
     private static final String[] CARDS = {"tip", "insight", "notice", "aegis", "wrath", "boon"};
     private static final int[] CARD_INK = {0xFF55E6F5, 0xFFFFAA3C, 0xFFECD096, 0xFF7EEBFF, 0xFFFF5A3C, 0xFF78E68C};
-    private static final Identifier ICONS = hud("icons"), OVER[] = {hud("over_1"), hud("over_2"), hud("over_3")}, PLAQUE = hud("frame_cast");
+    private static final Identifier ICONS = hud("icons"), PLAQUE = hud("plaque");
     /** Icons in the sheet, as tools/hud_art.py lays them out. */
     private static final int PIP_OFF = 0, PIP_ON = 1, PARRY_READY = 2, PARRY_SPENT = 3, RIPOSTE = 4, PYLON = 5, PYLON_GONE = 6, RING = 7, RING_GONE = 8, ICON_COUNT = 9;
 
@@ -80,7 +83,7 @@ public final class RocHud {
         // with the drawn interface switched off the game's own bars and text are used: nothing is drawn over them
         if ((options & HudFeed.OPT_ART) == 0) return;
 
-        int top = 3;
+        int top = 4;
         GodBoss god = nearestTrial(mc);
         if (god != null) {
             top = boss(g, font, middle, top, god, mc.level.getGameTime(), (options & HudFeed.OPT_CASTS) != 0);
@@ -101,7 +104,7 @@ public final class RocHud {
             }
         }
         if (feed != null && board.getPlayerScoreInfo(ScoreHolder.forNameOnly(HudFeed.CARD), feed) != null) {
-            card(g, font, middle, top + 2, number(board, feed, HudFeed.CARD, 0), text(board, feed, HudFeed.CARD));
+            card(g, font, middle, top + 3, number(board, feed, HudFeed.CARD, 0), text(board, feed, HudFeed.CARD));
         }
         if (feed != null && (options & HudFeed.OPT_COMBAT) != 0 && board.getPlayerScoreInfo(ScoreHolder.forNameOnly(HudFeed.METER), feed) != null) {
             meter(g, middle, height - 62, number(board, feed, HudFeed.METER, 0));
@@ -139,11 +142,12 @@ public final class RocHud {
     }
 
     /** A bar's fill: the colour, a lighter line along its top and a darker one along its bottom. */
-    private static void fill(GuiGraphicsExtractor g, int x, int y, int width, int colour) {
+    private static void fill(GuiGraphicsExtractor g, int x, int y, int width, int height, int colour) {
         if (width <= 0) return;
-        g.fill(x, y, x + width, y + 5, colour);
-        g.fill(x, y, x + width, y + 1, blend(colour, 0xFFFFFFFF, 0.35F));
-        g.fill(x, y + 4, x + width, y + 5, blend(colour, 0xFF000000, 0.35F));
+        g.fill(x, y, x + width, y + height, colour);
+        g.fill(x, y, x + width, y + 1, blend(colour, 0xFFFFFFFF, 0.4F));
+        g.fill(x, y + height - 2, x + width, y + height - 1, blend(colour, 0xFF000000, 0.18F));
+        g.fill(x, y + height - 1, x + width, y + height, blend(colour, 0xFF000000, 0.4F));
     }
 
     private static int blend(int a, int b, float t) {
@@ -153,24 +157,52 @@ public final class RocHud {
         return 0xFF000000 | (r << 16) | (gr << 8) | bl;
     }
 
+    /** A mark on a god's bar where a phase begins: a line through the trough, and a head on the metal above it. */
+    private static void mark(GuiGraphicsExtractor g, int x, int top, int colour) {
+        g.fill(x, top + PANEL_BAR_Y - 1, x + 1, top + PANEL_BAR_Y + PANEL_BAR_H + 1, colour);
+        g.fill(x - 1, top + PANEL_BAR_Y - 3, x + 2, top + PANEL_BAR_Y - 1, colour);
+        g.fill(x + 1, top + PANEL_BAR_Y, x + 2, top + PANEL_BAR_Y + PANEL_BAR_H, 0x66000000);
+    }
+
     /** The god's panel. @return where the next thing below it may start */
     private static int boss(GuiGraphicsExtractor g, Font font, int middle, int top, GodBoss boss, long now, boolean casts) {
         God god = boss.god();
         Line line = god.line();
-        int phase = Math.max(1, Math.min(3, boss.phase())), x = middle - FRAME_W / 2;
+        int phase = Math.max(1, Math.min(3, boss.phase())), x = middle - PANEL_W / 2;
         boolean shielded = boss.hudShielded();
-        String frame = "frame_" + line.id() + (shielded ? "_aegis" : phase >= 3 ? "_wrath" : "");
-        g.blit(RenderPipelines.GUI_TEXTURED, hud(frame), x, top, 0.0F, 0.0F, FRAME_W, FRAME_H, FRAME_W, FRAME_H);
+        String frame = "panel_" + line.id() + (shielded ? "_aegis" : phase >= 3 ? "_wrath" : "");
+        g.blit(RenderPipelines.GUI_TEXTURED, hud(frame), x, top, 0.0F, 0.0F, PANEL_W, PANEL_H, PANEL_W, PANEL_H);
         float health = boss.getMaxHealth() <= 0.0F ? 0.0F : Math.max(0.0F, Math.min(1.0F, boss.getHealth() / boss.getMaxHealth()));
         int colour = shielded ? 0xFF7EEBFF : phase >= 3 ? 0xFFFF5A3C : 0xFF000000 | line.color();
-        fill(g, x + BAR_X, top + 13, health <= 0.0F ? 0 : Math.max(1, Math.round(health * BAR_W)), colour);
-        g.blit(RenderPipelines.GUI_TEXTURED, OVER[phase - 1], x, top, 0.0F, 0.0F, FRAME_W, FRAME_H, FRAME_W, FRAME_H);
-        g.centeredText(font, god.displayName(), middle, top + 2, 0xFFF5E6C8);
-        // what the phase counts, at the left of the plaque: pylons under an aegis, rings of floor in the wrath
-        int all = boss.hudCountAll(), lit = boss.hudCountLit();
-        for (int i = 0; i < all && i < 5; i++) icon(g, shielded ? (i < lit ? PYLON : PYLON_GONE) : (i < lit ? RING : RING_GONE), x + 37 + i * 7, top + 2);
-        int below = top + FRAME_H + 1;
-        // the move it is winding up, for those who have asked to see it: a second, thinner bar on the same panel
+        int bx = x + PANEL_BAR_X, by = top + PANEL_BAR_Y;
+        fill(g, bx, by, health <= 0.0F ? 0 : Math.max(1, Math.round(health * PANEL_BAR_W)), PANEL_BAR_H, colour);
+        // a notch every tenth, and the marks where the aegis rises and the wrath begins
+        for (int i = 1; i < 10; i++) {
+            int nx = bx + Math.round(PANEL_BAR_W * i / 10.0F);
+            g.fill(nx, by, nx + 1, by + PANEL_BAR_H, 0x50000000);
+        }
+        mark(g, bx + Math.round(PANEL_BAR_W * 0.65F), top, 0xFF7EEBFF);
+        mark(g, bx + Math.round(PANEL_BAR_W * 0.30F), top, 0xFFFF5A3C);
+        // the name, in the middle of its tab, and a gem at the tab's right for every phase reached
+        g.centeredText(font, god.displayName(), middle, top + 3, INK);
+        int[] gems = {0xFFF0F0FA, 0xFF7EEBFF, 0xFFFF5A3C};
+        for (int i = 0; i < 3; i++) {
+            int gx = x + PANEL_W - 41 - 8 - (2 - i) * 7, gy = top + 5;
+            g.fill(gx - 1, gy - 1, gx + 5, gy + 5, 0xFF05040B);
+            g.fill(gx, gy, gx + 4, gy + 4, i < phase ? gems[i] : 0xFF2A2550);
+            if (i < phase) g.fill(gx, gy, gx + 2, gy + 1, 0xFFFFFFFF);
+        }
+        int below = top + PANEL_H + 2;
+        // what the phase counts, in a row of its own under the panel: pylons under an aegis, rings of floor in the wrath
+        int all = Math.min(6, boss.hudCountAll()), lit = boss.hudCountLit();
+        if (all > 0) {
+            int w = all * 10 - 2, start = middle - w / 2;
+            g.fill(start - 4, below - 1, start + w + 4, below + 10, 0xC005040B);
+            g.fill(start - 4, below + 9, start + w + 4, below + 10, shielded ? 0xFF7EEBFF : 0xFFFF5A3C);
+            for (int i = 0; i < all; i++) icon(g, shielded ? (i < lit ? PYLON : PYLON_GONE) : (i < lit ? RING : RING_GONE), start + i * 10, below + 1);
+            below += 13;
+        }
+        // the move it is winding up, for those who have asked to see it: a second, thinner bar under the panel
         if (boss.isCasting()) {
             if (castingId != boss.getId()) {
                 castingId = boss.getId();
@@ -178,13 +210,14 @@ public final class RocHud {
             }
             if (casts) {
                 float wound = Math.max(0.0F, Math.min(1.0F, (now - castingSince) / (float) GodBoss.WINDUP));
-                int cx = middle - 60;
-                g.fill(cx - 1, below, cx + 121, below + 12, 0xFF05040B);
-                g.fill(cx, below + 1, cx + 120, below + 11, 0xFF18142C);
-                g.fill(cx, below + 1, cx + Math.round(120 * wound), below + 11, 0xFF7A5A1E);
+                int cx = middle - 66;
+                g.fill(cx - 2, below, cx + 134, below + 14, 0xFF05040B);
+                g.fill(cx - 1, below + 1, cx + 133, below + 13, 0xFF7A6532);
+                g.fill(cx, below + 2, cx + 132, below + 12, 0xFF18142C);
+                g.fill(cx, below + 2, cx + Math.round(132 * wound), below + 12, 0xFF7A5A1E);
                 Component move = boss.hudCastKind() == 2 ? Component.translatable("cast." + RealmsOfChaos.MOD_ID + "." + line.id()) : god.moveName();
-                g.centeredText(font, move, middle, below + 2, 0xFFFFE08A);
-                below += 14;
+                g.centeredText(font, move, middle, below + 3, 0xFFFFE08A);
+                below += 16;
             }
         } else if (castingId == boss.getId()) {
             castingId = -1;
@@ -194,25 +227,27 @@ public final class RocHud {
 
     /** The plaque of the floor or passage: what it is, and how far along. */
     private static int plaque(GuiGraphicsExtractor g, Font font, int middle, int top, int value, Component words) {
-        int x = middle - FRAME_W / 2, line = value & 3, done = (value >> 4) & 255, of = (value >> 12) & 255;
-        g.blit(RenderPipelines.GUI_TEXTURED, PLAQUE, x, top, 0.0F, 0.0F, FRAME_W, FRAME_H, FRAME_W, FRAME_H);
+        int x = middle - PLAQUE_W / 2, line = value & 3, done = (value >> 4) & 255, of = (value >> 12) & 255;
+        g.blit(RenderPipelines.GUI_TEXTURED, PLAQUE, x, top, 0.0F, 0.0F, PLAQUE_W, PLAQUE_H, PLAQUE_W, PLAQUE_H);
         int colour = 0xFF000000 | Line.values()[Math.min(line, Line.values().length - 1)].color();
-        fill(g, x + BAR_X, top + 13, of <= 0 ? 0 : Math.round(BAR_W * Math.min(1.0F, done / (float) of)), colour);
+        int bx = x + PLAQUE_BAR_X, by = top + PLAQUE_BAR_Y;
+        fill(g, bx, by, of <= 0 ? 0 : Math.round(PLAQUE_BAR_W * Math.min(1.0F, done / (float) of)), PLAQUE_BAR_H, colour);
         for (int i = 1; i < of && of <= 20; i++) {
-            int nx = x + BAR_X + Math.round(BAR_W * i / (float) of);
-            g.fill(nx, top + 13, nx + 1, top + 18, 0xAA05040B);
+            int nx = bx + Math.round(PLAQUE_BAR_W * i / (float) of);
+            g.fill(nx, by, nx + 1, by + PLAQUE_BAR_H, 0x9005040B);
         }
         // the first part of the words on the plaque itself, whatever follows on a strip under it
         String all = words.getString();
-        int cut = all.indexOf(" - ");
-        String head = font.width(all) <= 126 || cut < 0 ? all : all.substring(0, cut), rest = head.length() == all.length() ? "" : all.substring(cut + 3);
-        if (font.width(head) <= 126) g.centeredText(font, head, middle, top + 2, 0xFFF5E6C8);
+        int cut = all.indexOf(" - "), room = PLAQUE_W - 70 - 10;
+        String head = font.width(all) <= room || cut < 0 ? all : all.substring(0, cut), rest = head.length() == all.length() ? "" : all.substring(cut + 3);
+        if (font.width(head) <= room) g.centeredText(font, head, middle, top + 3, INK);
         else rest = all;
-        if (rest.isEmpty()) return top + FRAME_H + 1;
-        int w = font.width(rest);
-        g.fill(middle - w / 2 - 4, top + FRAME_H, middle + w / 2 + 4, top + FRAME_H + 11, 0xC005040B);
-        g.centeredText(font, rest, middle, top + FRAME_H + 2, 0xFFD8CBB0);
-        return top + FRAME_H + 12;
+        if (rest.isEmpty()) return top + PLAQUE_H + 2;
+        int w = font.width(rest), sy = top + PLAQUE_H + 2;
+        g.fill(middle - w / 2 - 6, sy, middle + w / 2 + 6, sy + 13, 0xC005040B);
+        g.fill(middle - w / 2 - 6, sy + 12, middle + w / 2 + 6, sy + 13, 0xFF7A6532);
+        g.centeredText(font, rest, middle, sy + 2, 0xFFD8CBB0);
+        return sy + 15;
     }
 
     /** A card: its artwork, and its lines - the first in the card's colour when it is a heading. */

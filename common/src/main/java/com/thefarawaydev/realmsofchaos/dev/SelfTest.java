@@ -5499,6 +5499,13 @@ public final class SelfTest {
                 check(!icons.getItem(0).isEmpty() && (com.thefarawaydev.realmsofchaos.ui.PageMenu.ICON + "0").equals(page.getSiblings().get(1).getSiblings().get(0).getStyle().getInsertion()), "the altar's page pictures the relic to be won");
                 Screens.show(hero, altar);
                 check(hero.containerMenu instanceof com.thefarawaydev.realmsofchaos.ui.PageMenu menu && ItemStack.isSameItem(menu.icon(0), icons.getItem(0)) && menu.slots.size() == com.thefarawaydev.realmsofchaos.ui.PageMenu.ICONS, "and the menu carries it, in slots nobody sees");
+                // (a button that does something rather than lead somewhere takes the page away with it: here, the trial begins)
+                List<String> does = com.thefarawaydev.realmsofchaos.ui.PageMenu.commands(altar);
+                int begin = -1;
+                for (int i = 0; i < does.size(); i++) if (does.get(i) != null && does.get(i).endsWith(" begin")) begin = i;
+                check(begin >= 0, "test setup: the altar's page has a button that begins the trial: " + does);
+                check(hero.containerMenu.clickMenuButton(hero, begin) && hero.containerMenu == hero.inventoryMenu, "pressed, the trial begins and the page closes by itself");
+                clearBosses(level);
                 hero.closeContainer();
 
                 // ---- with the drawn interface off, the game's stock dialog is used instead

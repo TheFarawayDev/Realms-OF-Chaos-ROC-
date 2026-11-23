@@ -214,6 +214,132 @@ def card(colour, label):
     return img
 
 
+PANEL_W, PANEL_H, PANEL_BAR_X, PANEL_BAR_W = 212, 30, 15, 182
+PLAQUE_W, PLAQUE_H, PLAQUE_BAR_X, PLAQUE_BAR_W = 200, 24, 11, 178
+
+
+def panel(colour, emblem, phase=1):
+    """A god's panel, as the game's own HUD layer draws it: roomier than the font-drawn frame.
+
+    A name tab fourteen rows high, so a line of the game's writing sits in it with air above and below; under it a
+    housing for the health bar with a line of metal and a dark trough the fill lies in, a row clear of every edge;
+    and a keystone at each end with the tower's emblem cut into it. What the phase counts - pylons, rings - is no
+    longer squeezed onto the tab: the HUD sets it out in a row of its own under the panel."""
+    img = Image.new("RGBA", (PANEL_W, PANEL_H), (0, 0, 0, 0))
+    px = img.load()
+    hi, lo = mix(colour, (255, 255, 255), 0.45), shade(colour, 0.55)
+
+    def put(x, y, c, a=255):
+        if 0 <= x < PANEL_W and 0 <= y < PANEL_H:
+            px[x, y] = c + (a,)
+
+    # the name tab: cut corners, an edge of ink, a rule of the tower's colour along its top
+    tl, tr = 40, PANEL_W - 41
+    for y in range(0, 14):
+        inset = max(0, 2 - y)
+        for x in range(tl + inset, tr - inset + 1):
+            edge = x in (tl + inset, tr - inset) or y == 0
+            put(x, y, INK if edge else mix(PLATE, shade(colour, 0.3), 0.25), 255 if edge else 240)
+    for x in range(tl + 3, tr - 2):
+        put(x, 1, hi if x % 4 else colour)
+    # the housing: ink, metal, ink, then the trough
+    hl, hr, ht, hb = 11, PANEL_W - 12, 13, 27
+    for y in range(ht, hb + 1):
+        for x in range(hl, hr + 1):
+            ring = min(x - hl, hr - x, y - ht, hb - y)
+            c = INK if ring in (0, 2) else (hi if y == ht + 1 or x == hl + 1 else lo) if ring == 1 else TROUGH
+            put(x, y, c)
+    # a keystone at each end, bevelled, with the emblem in the middle of it
+    for x0 in (0, PANEL_W - 13):
+        for ly in range(17):
+            for lx in range(13):
+                edge = lx in (0, 12) or ly in (0, 16)
+                if (lx in (0, 12)) and (ly in (0, 16)):
+                    continue
+                c = INK if edge else hi if lx == 1 or ly == 1 else lo if lx == 11 or ly == 15 else colour
+                put(x0 + lx, 12 + ly, c)
+        for ry, row in enumerate(emblem):
+            for rx, bit in enumerate(row):
+                if bit == "#":
+                    put(x0 + 4 + rx, 12 + 5 + ry, INK)
+    if phase == 2:
+        # under an aegis: crystal set into the metal, a cold rule under the tab's own, a facet on each keystone
+        for x in range(hl + 6, hr - 4, 6):
+            for y in (ht + 1, hb - 1):
+                put(x, y, AEGIS)
+                put(x + 1, y, mix(AEGIS, (255, 255, 255), 0.6))
+        for x in range(tl + 3, tr - 2):
+            put(x, 2, shade(AEGIS, 0.55) if x % 3 else AEGIS)
+        for x0 in (0, PANEL_W - 13):
+            for i in range(2, 11):
+                put(x0 + i, 12 + 2 + i, mix(AEGIS, (255, 255, 255), 0.5), 150)
+            for y in range(14, 28):
+                put(x0 + (1 if x0 == 0 else 11), y, AEGIS)
+    elif phase == 3:
+        # in its wrath: teeth along the housing, cracks down the tab, the keystones lit from inside
+        for x in range(hl + 3, hr - 2, 4):
+            if not tl - 1 <= x <= tr + 1:
+                put(x, ht - 1, WRATH)
+                put(x + 1, ht - 1, shade(WRATH, 0.6))
+            put(x, hb + 1, WRATH)
+            put(x + 1, hb + 1, shade(WRATH, 0.6))
+            put(x, ht + 1, shade(WRATH, 0.8))
+        for crack in (tl + 16, tr - 30):
+            x = crack
+            for y in range(1, 13):
+                put(x, y, INK)
+                put(x + 1, y, shade(WRATH, 0.5))
+                x += 1 if y % 3 else -2
+        for x0 in (0, PANEL_W - 13):
+            for y in range(14, 28):
+                for x in (x0 + 1, x0 + 11):
+                    put(x, y, mix(WRATH, (255, 220, 120), 0.4 if y % 2 else 0.0))
+    return img
+
+
+def plaque():
+    """The plaque of a floor or a passage level: the same family as a god's panel, a size smaller, with a lozenge at each end."""
+    colour = (236, 208, 150)
+    img = Image.new("RGBA", (PLAQUE_W, PLAQUE_H), (0, 0, 0, 0))
+    px = img.load()
+    hi, lo = mix(colour, (255, 255, 255), 0.45), shade(colour, 0.55)
+
+    def put(x, y, c, a=255):
+        if 0 <= x < PLAQUE_W and 0 <= y < PLAQUE_H:
+            px[x, y] = c + (a,)
+
+    tl, tr = 34, PLAQUE_W - 35
+    for y in range(0, 13):
+        inset = max(0, 2 - y)
+        for x in range(tl + inset, tr - inset + 1):
+            edge = x in (tl + inset, tr - inset) or y == 0
+            put(x, y, INK if edge else mix(PLATE, shade(colour, 0.3), 0.2), 255 if edge else 240)
+    for x in range(tl + 3, tr - 2):
+        put(x, 1, hi if x % 4 else colour)
+    hl, hr, ht, hb = 8, PLAQUE_W - 9, 12, 22
+    for y in range(ht, hb + 1):
+        for x in range(hl, hr + 1):
+            ring = min(x - hl, hr - x, y - ht, hb - y)
+            c = INK if ring == 0 else (hi if y == ht + 1 or x == hl + 1 else lo) if ring == 1 else TROUGH
+            put(x, y, c)
+    for cx in (5, PLAQUE_W - 6):
+        for dy in range(-6, 7):
+            reach = 5 - max(0, abs(dy) - 1)
+            for dx in range(-reach, reach + 1):
+                edge = abs(dx) == reach or abs(dy) == 6
+                put(cx + dx, 17 + dy, INK if edge else hi if dy < 0 and dx <= 0 else lo if dy > 1 else colour)
+    return img
+
+
+def gen_panels(out):
+    """The pictures the game's own HUD layer draws from (the font-drawn ones above are kept for the bars a server names)."""
+    for name, (colour, emblem) in TOWERS.items():
+        panel(colour, emblem).save(os.path.join(out, "panel_" + name + ".png"))
+        panel(colour, emblem, phase=2).save(os.path.join(out, "panel_" + name + "_aegis.png"))
+        panel(colour, emblem, phase=3).save(os.path.join(out, "panel_" + name + "_wrath.png"))
+    plaque().save(os.path.join(out, "plaque.png"))
+
+
 def measured(img):
     """What the game takes a picture's advance to be: its last column that is not empty, and one more."""
     box = img.getchannel("A").getbbox()
@@ -223,6 +349,7 @@ def measured(img):
 def gen_hud(assets, mod, java_dir, wj, w):
     out = os.path.join(assets, "textures/gui/hud")
     os.makedirs(out, exist_ok=True)
+    gen_panels(out)
     providers, art = [], {}
     # spaces: a power of two in either direction, so any gap is a handful of them
     advances = {}

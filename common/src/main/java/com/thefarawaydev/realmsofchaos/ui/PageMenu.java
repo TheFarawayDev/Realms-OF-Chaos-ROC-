@@ -74,6 +74,9 @@ public class PageMenu extends AbstractContainerMenu {
         if (server.level().getServer() != null) {
             server.level().getServer().getCommands().performPrefixedCommand(server.createCommandSourceStack(), command);
         }
+        // a button that did something rather than lead somewhere - begin a trial, a rematch, off to the hub - leaves
+        // nothing to read: the page gets out of the way by itself
+        if (server.containerMenu == this) server.closeContainer();
         return true;
     }
 

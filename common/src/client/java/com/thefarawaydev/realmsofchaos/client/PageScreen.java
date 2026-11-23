@@ -38,6 +38,8 @@ public class PageScreen extends AbstractContainerScreen<PageMenu> {
     private final List<Paragraph> paragraphs = new ArrayList<>();
     private final List<Button> buttons = new ArrayList<>();
     private Button exit;
+    /** The buttons along the foot of the page, always in view: the way out, and - when a page has only one or two things to do - those too. */
+    private final List<Button> footer = new ArrayList<>();
     private int columns = 1, contentHeight, scroll, accent = GOLD;
     private boolean laidOut;
 
@@ -97,6 +99,14 @@ public class PageScreen extends AbstractContainerScreen<PageMenu> {
             if (button.exit) exit = button;
             else buttons.add(button);
         }
+        // a page with one or two things to do - begin a trial, take a book - keeps them at its foot, where they
+        // are seen without scrolling to the end of what is written; a page that is a list of choices keeps its grid
+        footer.clear();
+        if (buttons.size() <= 2) {
+            footer.addAll(buttons);
+            buttons.clear();
+        }
+        if (exit != null) footer.add(exit);
         // (a name too long for its column gets a wider one: fewer buttons across, none cut short)
         for (boolean fits = false; columns > 1 && !fits; ) {
             fits = true;
@@ -130,8 +140,10 @@ public class PageScreen extends AbstractContainerScreen<PageMenu> {
         return new int[]{panelLeft() + PAD + (n % columns) * (buttonWidth() + GAP), y + (n / columns) * (BUTTON_H + GAP)};
     }
 
-    private int[] exitAt() {
-        return new int[]{panelLeft() + (WIDTH - 120) / 2, panelTop() + panelHeight() - FOOTER + 6, 120};
+    /** Where a button of the foot stands, and how wide it is: they share the row, the way out last. */
+    private int[] footerAt(int n) {
+        int count = footer.size(), w = Math.min(130, (WIDTH - PAD * 2 - (count - 1) * GAP) / Math.max(1, count)), all = count * w + (count - 1) * GAP;
+        return new int[]{panelLeft() + (WIDTH - all) / 2 + n * (w + GAP), panelTop() + panelHeight() - FOOTER + 6, w};
     }
 
     private void drawButton(GuiGraphicsExtractor g, int x, int y, int w, Component label, boolean hover) {
@@ -201,11 +213,13 @@ public class PageScreen extends AbstractContainerScreen<PageMenu> {
             g.fill(x + WIDTH - 11, top, x + WIDTH - 8, top + view, STONE_EDGE);
             g.fill(x + WIDTH - 11, gy, x + WIDTH - 8, gy + grip, accent);
         }
-        if (exit != null) {
-            int[] spot = exitAt();
+        for (int n = 0; n < footer.size(); n++) {
+            int[] spot = footerAt(n);
             boolean hover = isHovering(spot[0], spot[1], spot[2], BUTTON_H, mouseX, mouseY);
-            drawButton(g, spot[0], spot[1], spot[2], exit.label, hover);
-            if (hover) over = exit;
+            drawButton(g, spot[0], spot[1], spot[2], footer.get(n).label, hover);
+            // (what the page is for is marked out from the way out of it)
+            if (!footer.get(n).exit) g.fill(spot[0] + 1, spot[1] + 1, spot[0] + spot[2] - 1, spot[1] + 2, accent);
+            if (hover) over = footer.get(n);
         }
         if (over != null && over.tip != null) g.setTooltipForNextFrame(this.font, this.font.split(over.tip, 200), mouseX, mouseY);
     }
@@ -231,10 +245,10 @@ public class PageScreen extends AbstractContainerScreen<PageMenu> {
     public boolean mouseClicked(MouseButtonEvent event, boolean doubled) {
         if (event.button() == com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_LEFT) {
             int top = panelTop() + HEADER + 4;
-            if (exit != null) {
-                int[] spot = exitAt();
+            for (int n = 0; n < footer.size(); n++) {
+                int[] spot = footerAt(n);
                 if (isHovering(spot[0], spot[1], spot[2], BUTTON_H, event.x(), event.y())) {
-                    press(exit);
+                    press(footer.get(n));
                     return true;
                 }
             }
