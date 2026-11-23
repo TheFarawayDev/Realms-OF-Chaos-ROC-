@@ -16,6 +16,16 @@ The current build is an **Alpha**.
 
 ## What's in 1.2.0
 
+* **The hub looks out on the gods and their towers.** Beyond each tower's gate, outside the plaza's wall, a
+  colossus of the tower's god stands on a pedestal on its own floating island, facing the plaza and rising over the
+  gate: **Zeus** in marble with a golden thunderbolt raised, **Poseidon** in prismarine with a golden trident,
+  **Hades** in blackstone, helmed, eyes burning, with his bident. Each is shaped from rounded solids - a robe in
+  folds, a sash, arms, a bearded head under a wreath, crown or helm - so it reads as carved, not stacked. Far off
+  behind each one, to the side, a **model of the tower** rises out of the sky on an island of its own: fifteen floors
+  banded in the stone of each of its stretches, lit windows, buttresses, cornices where its stone changes,
+  pinnacles and a beacon on its summit, clouds drifting about it. They are scenery only - the real towers are
+  still reached through the gates. The plaza itself now sits on an island of rock, its rim on corbels, lanterns
+  hung beneath. (`art/renders/hub-vista-*.png`)
 * **Built like builders build.** Every structure in the mod was rebuilt with a mason's kit of stairs, slabs and
   walls, so nothing is a box of whole blocks any more:
   * **Tower floors**: windows set deep in the wall under round heads, engaged columns with moulded bases and

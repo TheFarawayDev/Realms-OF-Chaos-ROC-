@@ -416,6 +416,17 @@ public final class SelfTest {
                     }
                 }
             }
+            for (com.thefarawaydev.realmsofchaos.god.Line line : com.thefarawaydev.realmsofchaos.god.Line.values()) {
+                BlockPos statue = com.thefarawaydev.realmsofchaos.world.HubVista.statueFoot(line), tower = com.thefarawaydev.realmsofchaos.world.HubVista.towerFoot(line);
+                check(solid(level, statue.below()) && solid(level, statue.above(4)) && solid(level, statue.above(22)) && level.getBlockState(statue.above(45)).isAir(),
+                        line + ": a statue of its god stands beyond its gate, on a pedestal");
+                check(Math.hypot(statue.getX(), statue.getZ()) > 30 && Math.hypot(tower.getX(), tower.getZ()) > 100, line + ": the statue beyond the plaza's wall, the tower far off");
+                int shell = 0;
+                for (int a = -10; a <= 10; a++) for (int b = -10; b <= 10; b++) if (solid(level, tower.offset(a, 75, b))) shell++;
+                check(shell > 40 && solid(level, tower.below()) && solid(level, tower.above(com.thefarawaydev.realmsofchaos.world.HubVista.TOWER_HEIGHT + 5)),
+                        line + ": and a model of its tower, from its island to its crown: " + shell);
+            }
+            check(solid(level, new BlockPos(0, 50, 0)), "the plaza is the top of an island of rock");
             check(level.getBlockState(new BlockPos(HubLife.GARDEN, 65, HubLife.GARDEN)).is(Blocks.CHERRY_LOG)
                     && level.getBlockState(new BlockPos(-HubLife.GARDEN, 69, -HubLife.GARDEN)).is(Blocks.CHERRY_LEAVES), "garden trees");
             // the Heart of the Hub and the Bounty Board stand in the plaza, can be walked up to, and open their screens
