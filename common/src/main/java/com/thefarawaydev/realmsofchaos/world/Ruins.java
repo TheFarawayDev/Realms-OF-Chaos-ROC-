@@ -38,13 +38,21 @@ import net.minecraft.world.level.levelgen.Heightmap;
  * keystone. Set the three keystones in the arch (right-click the pedestal) and the gate wakes.
  */
 public final class Ruins {
-    public static final int VERSION = 1;
-    /** How close a player has to come before a ruin is raised. */
-    public static final int RAISE_DISTANCE = 96;
+    public static final int VERSION = 2;
+    /** How close a player has to come before a ruin is raised: a citadel is raised sooner, being seen from further off. */
+    public static final int RAISE_DISTANCE = 96, CITADEL_RAISE_DISTANCE = 144;
+    /**
+     * The three citadels share one grid of squares this wide, one citadel to a square, the three kinds taking turns
+     * so that no two of a kind are neighbours. A citadel stands in the middle half of its square, so any two are at
+     * least half a square apart. The Ruined Gates have a grid of their own, as wide, set half a square off, and
+     * stand in the middle quarter of their squares: never near a citadel.
+     */
+    public static final int CITADEL_SPACING = 1024, CITADEL_MARGIN = 256, GATE_MARGIN = 384;
     private static final String HUD = "hud." + RealmsOfChaos.MOD_ID + ".";
 
     public enum Kind {
-        GATE(null, 704, 0x6A7E, 6), SKY(Line.ZEUS, 576, 0x51C7, 5), SEA(Line.POSEIDON, 576, 0x5EA5, 5), SHADE(Line.HADES, 576, 0x5AADE, 5);
+        GATE(null, CITADEL_SPACING, 0x6A7E, 10), SKY(Line.ZEUS, CITADEL_SPACING, 0x51C7, Citadels.HALF), SEA(Line.POSEIDON, CITADEL_SPACING, 0x5EA5, Citadels.HALF),
+        SHADE(Line.HADES, CITADEL_SPACING, 0x5AADE, Citadels.HALF);
 
         /** The tower whose keystone a shrine keeps; null for the gate itself. */
         public final Line line;
@@ -80,19 +88,34 @@ public final class Ruins {
 
     // ---- where the ruins are ---------------------------------------------------------------------------------
 
+    /** Where a square's ruin lies. A citadel square's position is the same whichever kind asks: see {@link #holder}. */
     public static Site site(long seed, Kind kind, int rx, int rz) {
-        Random random = new Random(seed ^ (kind.salt * 0x9E3779B97F4A7C15L) ^ (rx * 341873128712L) ^ (rz * 132897987541L));
-        int margin = 96, room = kind.spacing - 2 * margin;
-        return new Site(kind, rx, rz, rx * kind.spacing + margin + random.nextInt(room), rz * kind.spacing + margin + random.nextInt(room));
+        boolean gate = kind == Kind.GATE;
+        long salt = gate ? kind.salt : 0x5C17ADE1L;
+        Random random = new Random(seed ^ (salt * 0x9E3779B97F4A7C15L) ^ (rx * 341873128712L) ^ (rz * 132897987541L));
+        int margin = gate ? GATE_MARGIN : CITADEL_MARGIN, room = kind.spacing - 2 * margin, offset = gate ? kind.spacing / 2 : 0;
+        return new Site(kind, rx, rz, rx * kind.spacing + offset + margin + random.nextInt(room), rz * kind.spacing + offset + margin + random.nextInt(room));
+    }
+
+    /** Which citadel stands in a square: the three take turns, so any three squares side by side hold one of each. */
+    public static Kind holder(long seed, int rx, int rz) {
+        Kind[] citadels = {Kind.SKY, Kind.SEA, Kind.SHADE};
+        return citadels[Math.floorMod(rx + 2 * rz + (int) Math.floorMod(seed, 3L), 3)];
+    }
+
+    /** The square a place lies in, on a kind's grid. */
+    public static int square(Kind kind, double coordinate) {
+        return Math.floorDiv((int) Math.floor(coordinate) - (kind == Kind.GATE ? kind.spacing / 2 : 0), kind.spacing);
     }
 
     /** The ruin of this kind closest to a place. There is always one within a square or two. */
     public static Site nearest(long seed, Kind kind, double x, double z) {
-        int rx = Math.floorDiv((int) Math.floor(x), kind.spacing), rz = Math.floorDiv((int) Math.floor(z), kind.spacing);
+        int rx = square(kind, x), rz = square(kind, z), reach = kind == Kind.GATE ? 1 : 2;
         Site best = null;
         double bestDist = Double.MAX_VALUE;
-        for (int dx = -1; dx <= 1; dx++) {
-            for (int dz = -1; dz <= 1; dz++) {
+        for (int dx = -reach; dx <= reach; dx++) {
+            for (int dz = -reach; dz <= reach; dz++) {
+                if (kind != Kind.GATE && holder(seed, rx + dx, rz + dz) != kind) continue;
                 Site s = site(seed, kind, rx + dx, rz + dz);
                 double d = (s.x - x) * (s.x - x) + (s.z - z) * (s.z - z);
                 if (d < bestDist) {
@@ -126,7 +149,13 @@ public final class Ruins {
             for (Kind kind : Kind.values()) {
                 Site site = nearest(level.getSeed(), kind, player.getX(), player.getZ());
                 double dx = site.x - player.getX(), dz = site.z - player.getZ();
-                if (dx * dx + dz * dz <= RAISE_DISTANCE * RAISE_DISTANCE) ensure(level, site);
+                int raise = kind == Kind.GATE ? RAISE_DISTANCE : CITADEL_RAISE_DISTANCE;
+                if (dx * dx + dz * dz <= raise * raise) ensure(level, site);
+                // within sight of a citadel's walls, its garrison stands to
+                if (kind != Kind.GATE && !player.isCreative() && !player.isSpectator() && dx * dx + dz * dz <= Citadels.WAKE_DISTANCE * Citadels.WAKE_DISTANCE) {
+                    BlockPos c = centre(level, site);
+                    if (c != null) Citadels.wake(level, site, c);
+                }
                 if (kind == Kind.GATE && dx * dx + dz * dz <= 40 * 40) com.thefarawaydev.realmsofchaos.ui.Tutorial.tip(player, com.thefarawaydev.realmsofchaos.ui.Tutorial.Tip.RUIN);
             }
         }
@@ -187,9 +216,7 @@ public final class Ruins {
         Random random = new Random(level.getSeed() ^ site.kind.salt ^ (site.x * 31L + site.z));
         return switch (site.kind) {
             case GATE -> buildGate(level, site, random);
-            case SKY -> buildSky(level, site, random);
-            case SEA -> buildSea(level, site, random);
-            case SHADE -> buildShade(level, site, random);
+            case SKY, SEA, SHADE -> Citadels.build(level, site.kind.line, site.x, site.z, random);
         };
     }
 
@@ -241,13 +268,36 @@ public final class Ruins {
         set(level, pedestal.offset(0, LINTEL_UP + 1, ARCH_BACK), Blocks.MOSSY_STONE_BRICKS);
         for (int dx = -1; dx <= 1; dx++) set(level, pedestal.offset(dx, -1, ARCH_BACK), Blocks.POLISHED_ANDESITE);
         set(level, pedestal, ModContent.GATE_PEDESTAL.get());
-        // broken columns round the edge, two of them still carrying a light
-        int[][] columns = {{-5, -2}, {5, -2}, {-5, 3}, {5, 3}, {-3, 5}, {3, 5}};
-        for (int i = 0; i < columns.length; i++) {
-            int height = 1 + random.nextInt(4);
-            for (int dy = 1; dy <= height; dy++) set(level, c.offset(columns[i][0], dy, columns[i][1]), dy == height && random.nextBoolean() ? Blocks.CRACKED_STONE_BRICKS : Blocks.STONE_BRICKS);
-            if (i < 2) set(level, c.offset(columns[i][0], height + 1, columns[i][1]), Blocks.LANTERN);
-            else if (random.nextBoolean()) set(level, c.offset(columns[i][0], height + 1, columns[i][1]), Blocks.MOSS_CARPET);
+        // a processional way from the south edge to the pedestal
+        for (int dz = 0; dz <= r; dz++) for (int dx = -1; dx <= 1; dx++) set(level, c.offset(dx, 0, dz), dx == 0 ? Blocks.CHISELED_STONE_BRICKS : Blocks.POLISHED_ANDESITE);
+        // a ring of twelve columns: some standing to their full height and lit, most broken, a few fallen across the stones
+        for (int i = 0; i < 12; i++) {
+            double a = Math.PI * 2 * (i + 0.5) / 12;
+            int cx = (int) Math.round(Math.sin(a) * (r - 1.5)), cz = (int) Math.round(Math.cos(a) * (r - 1.5));
+            if (Math.abs(cx) <= 2 && cz > 0) continue;                      // (the way in stays clear)
+            int kind = random.nextInt(5), height = kind == 0 ? 6 : 1 + random.nextInt(4);
+            set(level, c.offset(cx, 1, cz), Blocks.CHISELED_STONE_BRICKS);
+            if (kind == 1) {
+                // fallen: its drum lies along the ground, pointing out of the ring
+                int ox = Integer.signum(cx), oz = Integer.signum(cz);
+                for (int k = 1; k <= 3; k++) {
+                    BlockPos at = c.offset(cx + ox * k, 1, cz + oz * k);
+                    if (Math.abs(cx + ox * k) <= r + 1 && Math.abs(cz + oz * k) <= r + 1) set(level, at, k == 3 ? Blocks.CRACKED_STONE_BRICKS : Blocks.STONE_BRICKS);
+                }
+                continue;
+            }
+            for (int dy = 2; dy <= height; dy++) set(level, c.offset(cx, dy, cz), dy == height && kind != 0 ? Blocks.CRACKED_STONE_BRICKS : Blocks.STONE_BRICKS);
+            if (kind == 0) {
+                set(level, c.offset(cx, height + 1, cz), Blocks.CHISELED_STONE_BRICKS);
+                set(level, c.offset(cx, height + 2, cz), Blocks.LANTERN);
+            } else if (random.nextBoolean()) {
+                set(level, c.offset(cx, height + 1, cz), Blocks.MOSS_CARPET);
+            }
+        }
+        // four braziers about the arch
+        for (int[] b2 : new int[][]{{-4, -4}, {4, -4}, {-4, 4}, {4, 4}}) {
+            set(level, c.offset(b2[0], 1, b2[1]), Blocks.POLISHED_ANDESITE);
+            set(level, c.offset(b2[0], 2, b2[1]), Blocks.CAMPFIRE);
         }
         // whoever was here last left a fire going: its smoke is how the place is seen from far off
         set(level, c.offset(3, 1, 2), Blocks.CAMPFIRE);
@@ -261,97 +311,9 @@ public final class Ruins {
         return c;
     }
 
-    private static List<ItemStack> shrineLoot(Line line, Story.Chapter chapter, Random random) {
-        List<ItemStack> loot = new ArrayList<>();
-        loot.add(new ItemStack(ModContent.keystoneItem(line)));
-        loot.add(chapter.book());
-        loot.add(new ItemStack(Items.EXPERIENCE_BOTTLE, 4 + random.nextInt(5)));
-        loot.add(new ItemStack(Items.GOLDEN_APPLE));
-        loot.add(new ItemStack(Items.IRON_INGOT, 3 + random.nextInt(5)));
-        loot.add(new ItemStack(Items.COOKED_BEEF, 4 + random.nextInt(4)));
-        return loot;
-    }
-
-    /** Shrine of the Sky: an open temple of white stone, four gold-capped columns round the keystone's chest. */
-    private static BlockPos buildSky(ServerLevel level, Site site, Random random) {
-        BlockPos c = prepare(level, site, Blocks.SMOOTH_QUARTZ);
-        int r = site.kind.radius;
-        for (int dx = -r; dx <= r; dx++) {
-            for (int dz = -r; dz <= r; dz++) {
-                double d = Math.sqrt(dx * dx + dz * dz);
-                if (d > r + 0.5) continue;
-                set(level, c.offset(dx, 0, dz), d < 1.5 ? Blocks.CHISELED_QUARTZ_BLOCK : d > r - 0.6 ? Blocks.QUARTZ_BRICKS : Blocks.SMOOTH_QUARTZ);
-            }
-        }
-        for (int[] k : new int[][]{{-3, -3}, {3, -3}, {-3, 3}, {3, 3}}) {
-            for (int dy = 1; dy <= 5; dy++) set(level, c.offset(k[0], dy, k[1]), Blocks.QUARTZ_PILLAR);
-            set(level, c.offset(k[0], 6, k[1]), Blocks.GOLD_BLOCK);
-        }
-        // a broken ring beam across two of the columns, and a light over the middle
-        for (int dx = -2; dx <= 2; dx++) set(level, c.offset(dx, 6, -3), Blocks.QUARTZ_BRICKS);
-        set(level, c.offset(0, 6, 3), Blocks.GLOWSTONE);
-        set(level, c.offset(-1, 6, 3), Blocks.QUARTZ_BRICKS);
-        set(level, c.offset(1, 6, 3), Blocks.QUARTZ_BRICKS);
-        chest(level, c.above(), shrineLoot(Line.ZEUS, Story.Chapter.SKY, random));
-        return c;
-    }
-
-    /** Shrine of the Tides: a ring of prismarine round a pool, sea lanterns at the corners, the chest on an island. */
-    private static BlockPos buildSea(ServerLevel level, Site site, Random random) {
-        BlockPos c = prepare(level, site, Blocks.PRISMARINE_BRICKS);
-        int r = site.kind.radius;
-        for (int dx = -r; dx <= r; dx++) {
-            for (int dz = -r; dz <= r; dz++) {
-                double d = Math.sqrt(dx * dx + dz * dz);
-                if (d > r + 0.5) continue;
-                boolean bridge = Math.abs(dx) == 0 || Math.abs(dz) == 0;
-                if (d >= 2.2 && d < 3.6 && !bridge) {
-                    set(level, c.offset(dx, -1, dz), Blocks.DARK_PRISMARINE);       // the pool has a floor of its own
-                    set(level, c.offset(dx, 0, dz), Blocks.WATER);
-                } else {
-                    set(level, c.offset(dx, 0, dz), d < 1.5 ? Blocks.DARK_PRISMARINE : Blocks.PRISMARINE_BRICKS);
-                }
-            }
-        }
-        for (int[] k : new int[][]{{-3, -3}, {3, -3}, {-3, 3}, {3, 3}}) {
-            for (int dy = 1; dy <= 2; dy++) set(level, c.offset(k[0], dy, k[1]), Blocks.PRISMARINE);
-            set(level, c.offset(k[0], 3, k[1]), Blocks.SEA_LANTERN);
-        }
-        chest(level, c.above(), shrineLoot(Line.POSEIDON, Story.Chapter.SEA, random));
-        return c;
-    }
-
-    /** Shrine of the Shades: basalt standing stones round a pit, steps going down, the chest at the bottom. */
-    private static BlockPos buildShade(ServerLevel level, Site site, Random random) {
-        BlockPos c = prepare(level, site, Blocks.POLISHED_BLACKSTONE_BRICKS);
-        int r = site.kind.radius, depth = 4;
-        // the crypt: a walled box under the floor, open at the top
-        for (int dx = -3; dx <= 3; dx++) {
-            for (int dz = -3; dz <= 3; dz++) {
-                boolean wall = Math.abs(dx) == 3 || Math.abs(dz) == 3;
-                for (int dy = 0; dy >= -depth - 1; dy--) {
-                    set(level, c.offset(dx, dy, dz), wall || dy == -depth - 1 ? Blocks.POLISHED_BLACKSTONE_BRICKS : Blocks.AIR);
-                }
-            }
-        }
-        // steps down the west wall, one block at a time
-        for (int i = 0; i < depth; i++) {
-            for (int dy = -depth; dy <= -1 - i; dy++) set(level, c.offset(-2, dy, -2 + i), Blocks.POLISHED_BLACKSTONE);
-        }
-        set(level, c.offset(2, -depth, 2), Blocks.SOUL_SOIL);
-        set(level, c.offset(2, -depth + 1, 2), Blocks.SOUL_LANTERN);
-        set(level, c.offset(2, -depth, -2), Blocks.SOUL_SOIL);
-        set(level, c.offset(2, -depth + 1, -2), Blocks.SOUL_LANTERN);
-        chest(level, c.offset(1, -depth, 0), shrineLoot(Line.HADES, Story.Chapter.SHADE, random));
-        // standing stones mark the place from above
-        for (int i = 0; i < 6; i++) {
-            double a = Math.PI * 2 * i / 6;
-            int sx = (int) Math.round(Math.cos(a) * (r - 0.5)), sz = (int) Math.round(Math.sin(a) * (r - 0.5));
-            int height = 2 + random.nextInt(3);
-            for (int dy = 1; dy <= height; dy++) set(level, c.offset(sx, dy, sz), Blocks.POLISHED_BASALT);
-            if (i % 2 == 0) set(level, c.offset(sx, height + 1, sz), Blocks.SOUL_LANTERN);
-        }
-        return c;
+    /** Where a citadel keeps its keystone, from the middle of its floor. */
+    public static BlockPos keystoneChest(BlockPos centre) {
+        return Citadels.keystoneChest(centre);
     }
 
     // ---- the pedestal ----------------------------------------------------------------------------------------
@@ -461,7 +423,15 @@ public final class Ruins {
         double dx = site.x + 0.5 - player.getX(), dz = site.z + 0.5 - player.getZ();
         double dist = Math.sqrt(dx * dx + dz * dz);
         int color = kind.line == null ? 0xA55AD6 : kind.line.color();
-        if (dist < 12) {
+        if (com.thefarawaydev.realmsofchaos.ui.CompassTab.drawn(player)) {
+            // on the tab: whose seeker, what it points at, how far - and the needle, which keeps pointing as the player turns
+            Component heading = (kind.line == null ? Component.translatable("item." + RealmsOfChaos.MOD_ID + ".chaos_compass") : new ItemStack(ModContent.seekerItem(kind.line)).getHoverName().copy())
+                    .withStyle(style -> style.withColor(color));
+            boolean here = dist < 12;
+            com.thefarawaydev.realmsofchaos.ui.CompassTab.show(player, heading, kind.displayName(), here ? Component.translatable(HUD + "tab.here") : com.thefarawaydev.realmsofchaos.ui.CompassTab.distance(dist, false),
+                    null, com.thefarawaydev.realmsofchaos.ui.CompassTab.pack(here ? -1 : com.thefarawaydev.realmsofchaos.ui.CompassTab.bearing(dx, dz), 5,
+                            com.thefarawaydev.realmsofchaos.ui.CompassTab.LOCK, true, 0, 1.0, 0));
+        } else if (dist < 12) {
             Hud.actionBar(player, Hud.colored(Component.translatable(HUD + "point.here", kind.displayName()), color));
         } else {
             Hud.actionBar(player, Hud.colored(Component.translatable(HUD + "point", kind.displayName(), (int) Math.round(dist),

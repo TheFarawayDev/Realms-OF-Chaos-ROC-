@@ -19,6 +19,7 @@ import com.thefarawaydev.realmsofchaos.world.Hermitage;
 import com.thefarawaydev.realmsofchaos.world.Scheduler;
 import com.thefarawaydev.realmsofchaos.world.Passages;
 import com.thefarawaydev.realmsofchaos.world.Ruins;
+import com.thefarawaydev.realmsofchaos.world.Citadels;
 import com.thefarawaydev.realmsofchaos.world.Parties;
 import com.thefarawaydev.realmsofchaos.world.Fx;
 import com.thefarawaydev.realmsofchaos.ui.Screens;
@@ -2177,24 +2178,41 @@ public final class SelfTest {
                     int rx = random.nextInt(41) - 20, rz = random.nextInt(41) - 20;
                     Ruins.Site a = Ruins.site(seed, kind, rx, rz);
                     check(a.equals(Ruins.site(seed, kind, rx, rz)), "a ruin stays where it is");
-                    check(a.x() >= rx * kind.spacing + 96 && a.x() < (rx + 1) * kind.spacing - 96 && a.z() >= rz * kind.spacing + 96 && a.z() < (rz + 1) * kind.spacing - 96,
-                            "a ruin lies inside its own square, clear of the edges");
+                    int off = kind == Ruins.Kind.GATE ? kind.spacing / 2 : 0, margin = kind == Ruins.Kind.GATE ? Ruins.GATE_MARGIN : Ruins.CITADEL_MARGIN;
+                    check(Ruins.square(kind, a.x()) == rx && Ruins.square(kind, a.z()) == rz && a.x() >= rx * kind.spacing + off + margin && a.x() < (rx + 1) * kind.spacing + off - margin
+                            && a.z() >= rz * kind.spacing + off + margin && a.z() < (rz + 1) * kind.spacing + off - margin, "a ruin lies inside its own square, clear of the edges");
                 }
-                // the nearest ruin really is the nearest, and never far
+                // the nearest ruin really is the nearest, and never further than a long journey
                 for (int i = 0; i < 60; i++) {
                     double x = random.nextInt(40000) - 20000, z = random.nextInt(40000) - 20000;
                     Ruins.Site near = Ruins.nearest(seed, kind, x, z);
                     double best = Double.MAX_VALUE;
-                    int rx = Math.floorDiv((int) x, kind.spacing), rz = Math.floorDiv((int) z, kind.spacing);
-                    for (int dx = -2; dx <= 2; dx++) {
-                        for (int dz = -2; dz <= 2; dz++) {
+                    int rx = Ruins.square(kind, x), rz = Ruins.square(kind, z);
+                    for (int dx = -3; dx <= 3; dx++) {
+                        for (int dz = -3; dz <= 3; dz++) {
+                            if (kind != Ruins.Kind.GATE && Ruins.holder(seed, rx + dx, rz + dz) != kind) continue;
                             Ruins.Site o = Ruins.site(seed, kind, rx + dx, rz + dz);
                             best = Math.min(best, Math.hypot(o.x() - x, o.z() - z));
                         }
                     }
                     check(Math.abs(Math.hypot(near.x() - x, near.z() - z) - best) < 1e-6, kind + ": nearest is nearest");
-                    check(best <= kind.spacing * 1.2, kind + ": one is always within reach, was " + (int) best);
+                    check(best <= kind.spacing * 1.9, kind + ": one is always within reach, was " + (int) best);
                 }
+            }
+            // spread out: any two citadels at least half a square apart, two of a kind never neighbours, a gate never near one
+            for (int i = 0; i < 200; i++) {
+                int rx = random.nextInt(41) - 20, rz = random.nextInt(41) - 20;
+                Ruins.Site a = Ruins.site(seed, Ruins.holder(seed, rx, rz), rx, rz);
+                for (int dx = -1; dx <= 1; dx++) {
+                    for (int dz = -1; dz <= 1; dz++) {
+                        if (dx == 0 && dz == 0) continue;
+                        Ruins.Site b = Ruins.site(seed, Ruins.holder(seed, rx + dx, rz + dz), rx + dx, rz + dz);
+                        check(Math.hypot(a.x() - b.x(), a.z() - b.z()) >= Ruins.CITADEL_SPACING / 2.0, "two citadels at least half a square apart");
+                        if (Math.abs(dx) + Math.abs(dz) == 1) check(a.kind() != b.kind(), "no two citadels of a kind side by side");
+                    }
+                }
+                Ruins.Site gate = Ruins.nearest(seed, Ruins.Kind.GATE, a.x(), a.z());
+                check(Math.hypot(a.x() - gate.x(), a.z() - gate.z()) >= 150, "a Ruined Gate never stands near a citadel");
             }
             check(!Ruins.site(seed, Ruins.Kind.SKY, 0, 0).equals(Ruins.site(seed + 1, Ruins.Kind.SKY, 0, 0))
                     || !Ruins.site(seed, Ruins.Kind.SKY, 1, 0).equals(Ruins.site(seed + 1, Ruins.Kind.SKY, 1, 0)), "another world, other places");
@@ -2243,43 +2261,77 @@ public final class SelfTest {
                     Ruins.Site shrine = Ruins.nearest(level.getSeed(), kind, hero.getX(), hero.getZ());
                     check(shrine.equals(Ruins.point(hero, kind)), "the seeker of " + line + " points at its shrine");
                     BlockPos sc = Ruins.ensure(level, shrine);
-                    BlockPos chestAt = line == Line.HADES ? sc.offset(1, -4, 0) : sc.above();
+                    BlockPos chestAt = Ruins.keystoneChest(sc);
                     var keep = (net.minecraft.world.level.block.entity.ChestBlockEntity) level.getBlockEntity(chestAt);
-                    check(keep != null && keep.countItem(ModContent.keystoneItem(line)) == 1, "the " + kind + " shrine keeps its keystone");
+                    check(keep != null && keep.countItem(ModContent.keystoneItem(line)) == 1, "the " + kind + " citadel keeps its keystone");
                     Story.Chapter chapter = line == Line.ZEUS ? Story.Chapter.SKY : line == Line.POSEIDON ? Story.Chapter.SEA : Story.Chapter.SHADE;
                     boolean page = false;
                     for (int i = 0; i < keep.getContainerSize(); i++) page |= chapter.isBook(keep.getItem(i));
                     check(page, "and a chapter of the story");
-                    if (line == Line.POSEIDON) {
-                        check(level.getBlockState(sc.offset(2, 0, 2)).is(Blocks.WATER) && solid(level, sc.offset(2, -1, 2)) && solid(level, sc.offset(0, 0, 3)), "a pool with a floor, bridged to the middle");
+                    // a castle: walls all round, four corner towers, a gate in the south wall
+                    for (int sx = -1; sx <= 1; sx += 2) {
+                        check(solid(level, sc.offset(sx * Citadels.WALL, 6, 0)) && solid(level, sc.offset(0, 6, sx * Citadels.WALL)), "a curtain wall on every side");
+                        for (int sz = -1; sz <= 1; sz += 2) check(solid(level, sc.offset(sx * Citadels.WALL + sx * 4, 12, sz * Citadels.WALL)), "a tower at every corner");
                     }
-                    if (line == Line.ZEUS) check(level.getBlockState(sc.offset(3, 6, 3)).is(Blocks.GOLD_BLOCK), "gold-capped columns");
-                    if (line == Line.HADES) {
-                        // the crypt can be walked down into, one step at a time, and back out
-                        Set<BlockPos> seen = new HashSet<>();
-                        java.util.ArrayDeque<BlockPos> queue = new java.util.ArrayDeque<>();
-                        BlockPos start = sc.offset(-4, 1, 2);          // on the rim, between two standing stones
-                        check(solid(level, start.below()) && open(level, start) && open(level, start.above()), "the rim of the crypt");
-                        seen.add(start);
-                        queue.add(start);
-                        while (!queue.isEmpty()) {
-                            BlockPos here = queue.poll();
-                            for (net.minecraft.core.Direction d : net.minecraft.core.Direction.Plane.HORIZONTAL) {
-                                for (int dy = -1; dy <= 1; dy++) {
-                                    BlockPos next = here.relative(d).above(dy);
-                                    if (Math.abs(next.getX() - sc.getX()) > 6 || Math.abs(next.getZ() - sc.getZ()) > 6 || seen.contains(next)) continue;
-                                    if (!solid(level, next.below()) || !open(level, next) || !open(level, next.above())) continue;
-                                    // stepping up needs headroom where you stand; stepping down needs it where you go
-                                    if (dy == 1 && !open(level, here.above(2))) continue;
-                                    if (dy == -1 && !open(level, next.above(2))) continue;
-                                    seen.add(next);
-                                    queue.add(next);
-                                }
+                    if (line == Line.POSEIDON) check(level.getBlockState(sc.offset(Citadels.WALL + 1, 0, 0)).is(Blocks.WATER), "the Tides behind a moat");
+                    // from outside the gate, through the courtyard and up the keep's two stairs to the keystone on its roof
+                    Set<BlockPos> seen = new HashSet<>();
+                    java.util.ArrayDeque<BlockPos> queue = new java.util.ArrayDeque<>();
+                    BlockPos start = sc.offset(0, 1, Citadels.HALF);
+                    check(solid(level, start.below()) && open(level, start) && open(level, start.above()), "ground outside the gate");
+                    seen.add(start);
+                    queue.add(start);
+                    while (!queue.isEmpty()) {
+                        BlockPos here = queue.poll();
+                        for (net.minecraft.core.Direction d : net.minecraft.core.Direction.Plane.HORIZONTAL) {
+                            for (int dy = -1; dy <= 1; dy++) {
+                                BlockPos next = here.relative(d).above(dy);
+                                if (Math.abs(next.getX() - sc.getX()) > Citadels.HALF || Math.abs(next.getZ() - sc.getZ()) > Citadels.HALF || seen.contains(next)) continue;
+                                if (!solid(level, next.below()) || !open(level, next) || !open(level, next.above())) continue;
+                                if (dy == 1 && !open(level, here.above(2))) continue;
+                                if (dy == -1 && !open(level, next.above(2))) continue;
+                                seen.add(next);
+                                queue.add(next);
                             }
                         }
-                        check(seen.contains(sc.offset(0, -4, 0)), "the steps lead down to the chest");
+                    }
+                    check(seen.contains(Citadels.keep(sc).offset(0, 1, 0)), line + ": through the gate and the courtyard into the keep");
+                    check(seen.contains(Citadels.keep(sc).offset(0, Citadels.STOREY + 1, -3)), line + ": up the first stair to the upper storey");
+                    check(seen.contains(chestAt.south()), line + ": and up the second to the keystone on the roof");
+                }
+                // the garrison stands to once: half-kin, and a fallen Titan on the roof
+                Ruins.Site sky = Ruins.nearest(level.getSeed(), Ruins.Kind.SKY, hero.getX(), hero.getZ());
+                BlockPos skyAt = Ruins.ensure(level, sky);
+                Citadels.clear();
+                ProgressData.get(server).unmarkPrefix("citadel/woken/");
+                int stood = Citadels.wake(level, sky, skyAt);
+                check(stood >= 12 && Citadels.woken(level, sky) && Citadels.wake(level, sky, skyAt) == 0, "the garrison stands to, once: " + stood);
+                settle(level);
+                List<Sentinel> garrison = level.getEntitiesOfClass(Sentinel.class, new AABB(skyAt).inflate(Citadels.HALF + 2, 24, Citadels.HALF + 2), e -> e.entityTags().contains(Citadels.CITADEL_TAG));
+                List<Sentinel> titans = new ArrayList<>();
+                int halfkin = 0;
+                for (Sentinel s : garrison) {
+                    if (Citadels.titanOf(s) != null) titans.add(s);
+                    if (s.entityTags().contains(Citadels.HALFKIN_TAG)) {
+                        halfkin++;
+                        check(s.hasCustomName() && s.kind().line == Line.ZEUS, "half-kin are the children of the Sky, and named so");
                     }
                 }
+                check(halfkin >= 11 && titans.size() == 1, "half-kin and one fallen god: " + halfkin + ", " + titans.size());
+                Sentinel titan = titans.get(0);
+                check(Citadels.titanOf(titan) == Citadels.Titan.HYPERION && titan.isElite() && titan.getMaxHealth() > 100 && titan.blockPosition().getY() == Citadels.titanPost(skyAt).getY(),
+                        "Hyperion waits on the roof of the keep: " + titan.getMaxHealth());
+                Vec3 was = hero.position();
+                if (level.getPlayerByUUID(hero.getUUID()) == null) level.addNewPlayer(hero);
+                hero.setPos(titan.getX() + 3, titan.getY(), titan.getZ());
+                for (int i = 0; i < 40; i++) Citadels.tick(server);
+                check(Citadels.bar(titan) != null && Citadels.bar(titan).getPlayers().contains(hero), "a fallen god carries a bar for whoever is near");
+                ItemStack gift = Citadels.fallen(titan, hero);
+                check(!gift.isEmpty() && Citadels.fallen(titan, hero).isEmpty(), "the first time it falls to somebody it gives up a piece of the panoply, and only then");
+                for (Sentinel s : garrison) s.discard();
+                Citadels.clear();
+                for (net.minecraft.world.entity.item.ItemEntity dropped : level.getEntitiesOfClass(net.minecraft.world.entity.item.ItemEntity.class, new AABB(skyAt).inflate(30), e -> true)) dropped.discard();
+                hero.setPos(was.x, was.y, was.z);
 
                 // the pedestal: it says what is missing, takes each keystone once, and wakes the gate at three
                 hero.setItemInHand(InteractionHand.MAIN_HAND, ItemStack.EMPTY);

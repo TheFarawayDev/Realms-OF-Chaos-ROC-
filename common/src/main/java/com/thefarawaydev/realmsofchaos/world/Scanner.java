@@ -80,6 +80,39 @@ public final class Scanner {
         }
     }
 
+    /** The tab's heading while a compass speaks: its own name, in the colour of what it is set to. */
+    private static Component heading(Mode mode) {
+        return Component.translatable("item." + RealmsOfChaos.MOD_ID + ".chaos_compass").withStyle(style -> style.withColor(mode.color));
+    }
+
+    /** Something to say that is not a reading: on the tab, or above the hotbar with the drawn interface off. */
+    private static void say(ServerPlayer player, Mode mode, Component message, int color) {
+        if (com.thefarawaydev.realmsofchaos.ui.CompassTab.drawn(player)) com.thefarawaydev.realmsofchaos.ui.CompassTab.notice(player, heading(mode), message);
+        else Hud.actionBar(player, Hud.colored(message, color));
+    }
+
+    /** A reading on the tab. {@code done}: the scan's last word. */
+    private static void tab(ServerPlayer player, ServerLevel level, Scan scan, Reading reading, long now, boolean done) {
+        String hud = "hud." + RealmsOfChaos.MOD_ID + ".tab.";
+        int state = reading == null ? com.thefarawaydev.realmsofchaos.ui.CompassTab.NORMAL : switch (reading.roll()) {
+            case CLEAN_LOCK -> com.thefarawaydev.realmsofchaos.ui.CompassTab.LOCK;
+            case STATIC_SURGE -> com.thefarawaydev.realmsofchaos.ui.CompassTab.SURGE;
+            default -> com.thefarawaydev.realmsofchaos.ui.CompassTab.NORMAL;
+        };
+        double progress = done ? 1.0 : Math.max(0.0, Math.min(1.0, (now - scan.start) / (double) (scan.end - scan.start)));
+        int quality = (int) Math.round(quality(level, player) * 5);
+        int seconds = done ? 0 : (int) ((scan.end - now + 19) / 20);
+        Component status = done ? Component.translatable(hud + "done") : state == com.thefarawaydev.realmsofchaos.ui.CompassTab.LOCK ? Component.translatable(hud + "lock")
+                : state == com.thefarawaydev.realmsofchaos.ui.CompassTab.SURGE ? Component.translatable(hud + "surge") : null;
+        if (reading == null) {
+            com.thefarawaydev.realmsofchaos.ui.CompassTab.show(player, heading(scan.mode), Component.translatable(hud + "listening", scan.mode.displayName()), null, status,
+                    com.thefarawaydev.realmsofchaos.ui.CompassTab.pack(-1, quality, com.thefarawaydev.realmsofchaos.ui.CompassTab.NORMAL, false, seconds, progress, 0));
+            return;
+        }
+        com.thefarawaydev.realmsofchaos.ui.CompassTab.show(player, heading(scan.mode), reading.target().name(), com.thefarawaydev.realmsofchaos.ui.CompassTab.distance(reading.distance(), reading.roll() == Roll.NORMAL), status,
+                com.thefarawaydev.realmsofchaos.ui.CompassTab.pack(reading.roll() == Roll.STATIC_SURGE ? -1 : com.thefarawaydev.realmsofchaos.ui.CompassTab.bearing(reading.dx(), reading.dz()), quality, state, false, seconds, progress, 0));
+    }
+
     private static final class Scan {
         ServerPlayer player;
         Mode mode;
@@ -282,17 +315,17 @@ public final class Scanner {
         MinecraftServer server = player.level().getServer();
         if (server == null || !(player.level() instanceof ServerLevel level)) return false;
         if (!canScan(player)) {
-            Hud.actionBar(player, Hud.colored(Component.translatable(HUD + "nowhere"), 0xAAAAAA));
+            say(player, mode, Component.translatable(HUD + "nowhere"), 0xAAAAAA);
             return false;
         }
         long now = server.getTickCount();
         Long ready = READY.get(player.getUUID());
         if (ready != null && now < ready && now >= ready - COOLDOWN) {
-            Hud.actionBar(player, Hud.colored(Component.translatable(HUD + "settling", (ready - now + 19) / 20), 0xAAAAAA));
+            say(player, mode, Component.translatable(HUD + "settling", (ready - now + 19) / 20), 0xAAAAAA);
             return false;
         }
         if (targets(level, player, mode).isEmpty()) {
-            Hud.actionBar(player, Hud.colored(Component.translatable(HUD + "nothing", mode.displayName()), 0xAAAAAA));
+            say(player, mode, Component.translatable(HUD + "nothing", mode.displayName()), 0xAAAAAA);
             return false;
         }
         Scan scan = new Scan();
@@ -303,7 +336,8 @@ public final class Scanner {
         scan.nextRoll = now + 20;
         ACTIVE.put(player.getUUID(), scan);
         level.playSound(null, player.blockPosition(), SoundEvents.LODESTONE_COMPASS_LOCK, SoundSource.PLAYERS, 0.8F, 0.8F);
-        Hud.actionBar(player, Hud.colored(Component.translatable(HUD + "start", mode.displayName(), (scan.end - now) / 20), mode.color));
+        if (com.thefarawaydev.realmsofchaos.ui.CompassTab.drawn(player)) tab(player, level, scan, null, now, false);
+        else Hud.actionBar(player, Hud.colored(Component.translatable(HUD + "start", mode.displayName(), (scan.end - now) / 20), mode.color));
         return true;
     }
 
@@ -335,7 +369,8 @@ public final class Scanner {
                 scan.nextRoll = now + (HubTiers.tier(server) >= 4 ? 40 : 40 + level.getRandom().nextInt(21));
                 pulse(player, level, scan, now);
             }
-            if (now % 10 == 0 && holding(player)) show(player, level, scan, now);
+            // (with the drawn interface off, the old line above the hotbar, kept up to date)
+            if (now % 10 == 0 && holding(player) && !com.thefarawaydev.realmsofchaos.ui.CompassTab.drawn(player)) show(player, level, scan, now);
         }
     }
 
@@ -343,7 +378,10 @@ public final class Scanner {
     public static Reading pulse(ServerPlayer player, ServerLevel level, Mode mode) {
         Scan scan = ACTIVE.get(player.getUUID());
         if (scan == null) return null;
-        return pulse(player, level, scan, level.getServer().getTickCount());
+        Reading reading = pulse(player, level, scan, level.getServer().getTickCount());
+        // (asked for: the tab slides out with it, whatever it was)
+        if (reading != null && holding(player) && com.thefarawaydev.realmsofchaos.ui.CompassTab.drawn(player)) tab(player, level, scan, reading, level.getServer().getTickCount(), false);
+        return reading;
     }
 
     private static Reading pulse(ServerPlayer player, ServerLevel level, Scan scan, long now) {
@@ -353,6 +391,8 @@ public final class Scanner {
         scan.last = reading;
         scan.rolls++;
         if (!holding(player)) return reading;
+        // the tab slides out now and then by itself: on a clean lock, a surge, and every fourth roll besides
+        if (com.thefarawaydev.realmsofchaos.ui.CompassTab.drawn(player) && (reading.roll() != Roll.NORMAL || scan.rolls % 4 == 1)) tab(player, level, scan, reading, now, false);
         switch (reading.roll()) {
             case CLEAN_LOCK -> {
                 scan.locks++;
@@ -423,6 +463,7 @@ public final class Scanner {
         }
         // (the bearing is given by the compass rose here, since the player will have turned by the time they read it)
         Component way = Component.translatable(Ruins.directionKey(best.dx(), best.dz()));
+        if (com.thefarawaydev.realmsofchaos.ui.CompassTab.drawn(player) && player.level() instanceof ServerLevel level) tab(player, level, scan, best, level.getServer().getTickCount(), true);
         String key = best.roll() == Roll.CLEAN_LOCK ? "done.lock" : "done";
         player.sendSystemMessage(Hud.colored(Component.translatable(HUD + key, best.target().name(), (int) Math.round(best.distance()), way, scan.locks), scan.mode.color));
         player.level().playSound(null, player.blockPosition(), SoundEvents.LODESTONE_COMPASS_LOCK, SoundSource.PLAYERS, 0.8F, 1.4F);

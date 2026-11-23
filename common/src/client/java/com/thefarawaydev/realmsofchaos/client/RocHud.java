@@ -83,7 +83,8 @@ public final class RocHud {
         // with the drawn interface switched off the game's own bars and text are used: nothing is drawn over them
         if ((options & HudFeed.OPT_ART) == 0) return;
 
-        int top = 4;
+        // (below whatever bars the game itself is showing - a fallen Titan's, a wither's - rather than over them)
+        int top = 4 + 19 * gameBars(mc);
         GodBoss god = nearestTrial(mc);
         if (god != null) {
             top = boss(g, font, middle, top, god, mc.level.getGameTime(), (options & HudFeed.OPT_CASTS) != 0);
@@ -105,6 +106,9 @@ public final class RocHud {
         }
         if (feed != null && board.getPlayerScoreInfo(ScoreHolder.forNameOnly(HudFeed.CARD), feed) != null) {
             card(g, font, middle, top + 3, number(board, feed, HudFeed.CARD, 0), text(board, feed, HudFeed.CARD));
+        }
+        if (feed != null && board.getPlayerScoreInfo(ScoreHolder.forNameOnly(HudFeed.COMPASS), feed) != null) {
+            compass(g, font, mc, width, height, number(board, feed, HudFeed.COMPASS, 0), text(board, feed, HudFeed.COMPASS));
         }
         if (feed != null && (options & HudFeed.OPT_COMBAT) != 0 && board.getPlayerScoreInfo(ScoreHolder.forNameOnly(HudFeed.METER), feed) != null) {
             meter(g, middle, height - 62, number(board, feed, HudFeed.METER, 0));
@@ -269,5 +273,149 @@ public final class RocHud {
         for (int i = 0; i < 5; i++) icon(g, i < momentum ? PIP_ON : PIP_OFF, x + i * 7, y);
         icon(g, (value & 16) != 0 ? PARRY_READY : PARRY_SPENT, x + 39, y);
         if ((value & 32) != 0) icon(g, RIPOSTE, x + 49, y);
+    }
+
+    // ---- the compass tab -------------------------------------------------------------------------------------
+
+    private static final int TAB_W = 176, TAB_H = 54, TAB_SHOW_MS = 4600, TAB_SLIDE_MS = 220;
+    private static int tabValue = Integer.MIN_VALUE;
+    private static String tabText = "";
+    private static long tabSince, tabLeftAt;
+    private static int tabLeft;
+
+    private static float ease(float t) {
+        t = Math.max(0.0F, Math.min(1.0F, t));
+        return 1.0F - (1.0F - t) * (1.0F - t) * (1.0F - t);
+    }
+
+    /** A filled disc, a row at a time. */
+    private static void disc(GuiGraphicsExtractor g, int cx, int cy, int r, int colour) {
+        for (int dy = -r; dy <= r; dy++) {
+            int w = (int) Math.floor(Math.sqrt(r * r - dy * dy + 0.5 * r));
+            g.fill(cx - w, cy + dy, cx + w + 1, cy + dy + 1, colour);
+        }
+    }
+
+    /**
+     * The tab a compass speaks on: it slides out from the right-hand edge when told something, stays a few seconds
+     * and slides away. A dial whose needle keeps to its bearing as the player turns; what it points at; how far; the
+     * signal; and, during a scan, the time left and how far along it is.
+     */
+    private static void compass(GuiGraphicsExtractor g, Font font, Minecraft mc, int width, int height, int value, Component words) {
+        long nowMs = System.currentTimeMillis();
+        String said = words.getString();
+        if (value != tabValue || !said.equals(tabText)) {
+            tabValue = value;
+            tabText = said;
+            tabSince = nowMs;
+            tabLeft = com.thefarawaydev.realmsofchaos.ui.CompassTab.secondsLeft(value);
+            tabLeftAt = nowMs;
+        }
+        long age = nowMs - tabSince;
+        if (age > TAB_SHOW_MS + TAB_SLIDE_MS) return;
+        float out = age < TAB_SLIDE_MS ? ease(age / (float) TAB_SLIDE_MS) : age > TAB_SHOW_MS ? 1.0F - ease((age - TAB_SHOW_MS) / (float) TAB_SLIDE_MS) : 1.0F;
+        int x = width - Math.round((TAB_W + 2) * out), y = Math.max(28, height / 3 - TAB_H / 2);
+
+        java.util.List<Component> parts = words.getSiblings();
+        Component heading = parts.size() > 0 ? parts.get(0) : Component.empty();
+        Component target = parts.size() > 1 ? parts.get(1) : Component.empty();
+        Component distance = parts.size() > 2 ? parts.get(2) : Component.empty();
+        Component status = parts.size() > 3 ? parts.get(3) : Component.empty();
+        net.minecraft.network.chat.TextColor tc = heading.getStyle().getColor();
+        if (tc == null && !heading.getSiblings().isEmpty()) tc = heading.getSiblings().get(0).getStyle().getColor();
+        int accent = 0xFF000000 | (tc == null ? 0xF5B82E : tc.getValue());
+        int state = com.thefarawaydev.realmsofchaos.ui.CompassTab.state(value);
+        boolean notice = state == com.thefarawaydev.realmsofchaos.ui.CompassTab.NOTICE;
+        int stateColour = state == com.thefarawaydev.realmsofchaos.ui.CompassTab.LOCK ? 0xFF6BE38A : state == com.thefarawaydev.realmsofchaos.ui.CompassTab.SURGE ? 0xFFFF5A5A : accent;
+
+        // the tab: ink, a line of the accent along its open edge, a darker header band, the body
+        g.fill(x - 1, y - 1, x + TAB_W + 4, y + TAB_H + 1, 0xFF05040B);
+        g.fill(x, y, x + TAB_W + 4, y + TAB_H, 0xF0141228);
+        g.fill(x, y, x + TAB_W + 4, y + 12, 0xF01C1838);
+        g.fill(x, y + 12, x + TAB_W + 4, y + 13, blend(accent, 0xFF000000, 0.35F));
+        g.fill(x - 1, y + 2, x, y + TAB_H - 2, accent);
+        g.fill(x - 3, y + TAB_H / 2 - 6, x - 1, y + TAB_H / 2 + 6, accent);          // (the handle the tab is pulled out by)
+        g.fill(x - 2, y + TAB_H / 2 - 5, x - 1, y + TAB_H / 2 + 5, blend(accent, 0xFFFFFFFF, 0.4F));
+
+        // the dial
+        int cx = x + 22, cy = y + 33, r = 15;
+        disc(g, cx, cy, r + 1, 0xFF05040B);
+        disc(g, cx, cy, r, blend(accent, 0xFF000000, 0.45F));
+        disc(g, cx, cy, r - 2, 0xFF0E0C1E);
+        for (int k = 0; k < 8; k++) {
+            double a = Math.PI / 4 * k;
+            int tx = cx + (int) Math.round(Math.sin(a) * (r - 4)), ty = cy - (int) Math.round(Math.cos(a) * (r - 4));
+            g.fill(tx, ty, tx + 1, ty + 1, k == 0 ? 0xFFFFFFFF : 0xFF4A4670);
+        }
+        g.fill(cx - 1, cy - r + 1, cx + 2, cy - r + 2, 0xFFFFFFFF);                // (ahead)
+        int bearing = com.thefarawaydev.realmsofchaos.ui.CompassTab.bearing(value);
+        double turn;
+        if (bearing == com.thefarawaydev.realmsofchaos.ui.CompassTab.NO_BEARING) {
+            // a needle with nowhere to point wanders, or - in a surge - spins
+            turn = state == com.thefarawaydev.realmsofchaos.ui.CompassTab.SURGE ? (nowMs % 700) / 700.0 * 360.0 : Math.sin(nowMs / 900.0) * 35.0;
+        } else {
+            float yaw = mc.player.getYRot();
+            turn = bearing - yaw;
+        }
+        double a = Math.toRadians(turn);
+        double sx = Math.sin(a), sy = -Math.cos(a);
+        for (int k = -4; k <= r - 4; k++) {
+            int px = cx + (int) Math.round(sx * k), py = cy + (int) Math.round(sy * k);
+            int colour = k >= 0 ? stateColour : 0xFF8A86A8;
+            g.fill(px, py, px + (k > r - 7 ? 2 : 1), py + (k > r - 7 ? 2 : 1), colour);
+        }
+        disc(g, cx, cy, 1, 0xFFE8E2D0);
+
+        // the words
+        int tx0 = x + 42, room = TAB_W - 44;
+        g.text(font, font.plainSubstrByWidth(heading.getString(), room - 30), tx0, y + 3, accent, false);
+        if (!notice) {
+            int left = Math.max(0, tabLeft - (int) ((nowMs - tabLeftAt) / 1000L));
+            if (left > 0) {
+                String clock = left / 60 + ":" + String.format(java.util.Locale.ROOT, "%02d", left % 60);
+                g.text(font, clock, x + TAB_W - font.width(clock) - 1, y + 3, 0xFFB8B2CC, false);
+            }
+        }
+        java.util.List<net.minecraft.util.FormattedCharSequence> lines = font.split(target, room);
+        int row = y + 16;
+        for (int i = 0; i < Math.min(notice ? 3 : 1, lines.size()); i++) {
+            g.text(font, lines.get(i), tx0, row, 0xFFF5E6C8, false);
+            row += 10;
+        }
+        if (!notice) {
+            g.text(font, distance, tx0, y + 27, 0xFFFFFFFF, false);
+            if (!status.getString().isEmpty()) g.text(font, status, tx0, y + 38, stateColour, false);
+            // the signal, five bars rising
+            int q = com.thefarawaydev.realmsofchaos.ui.CompassTab.quality(value);
+            for (int i = 0; i < 5; i++) {
+                int bx = x + TAB_W - 22 + i * 4, bh = 3 + i * 2;
+                g.fill(bx, y + 46 - bh, bx + 3, y + 46, i < q ? stateColour : 0xFF2A2650);
+            }
+            // how far along the scan is
+            float done = com.thefarawaydev.realmsofchaos.ui.CompassTab.progress(value);
+            if (!com.thefarawaydev.realmsofchaos.ui.CompassTab.seeker(value)) {
+                g.fill(tx0, y + TAB_H - 5, x + TAB_W - 26, y + TAB_H - 3, 0xFF2A2650);
+                g.fill(tx0, y + TAB_H - 5, tx0 + Math.round((x + TAB_W - 26 - tx0) * done), y + TAB_H - 3, blend(accent, 0xFFFFFFFF, 0.2F));
+            }
+        }
+    }
+
+    private static java.lang.reflect.Field barsField;
+    private static boolean barsUnknown;
+
+    /** How many of the game's own boss bars are on the screen. */
+    private static int gameBars(Minecraft mc) {
+        if (barsUnknown) return 0;
+        try {
+            if (barsField == null) {
+                barsField = net.minecraft.client.gui.components.BossHealthOverlay.class.getDeclaredField("events");
+                barsField.setAccessible(true);
+            }
+            Object events = barsField.get(mc.gui.hud.getBossOverlay());
+            return events instanceof java.util.Map<?, ?> map ? Math.min(3, map.size()) : 0;
+        } catch (ReflectiveOperationException | RuntimeException e) {
+            barsUnknown = true;
+            return 0;
+        }
     }
 }

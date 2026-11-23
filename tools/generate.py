@@ -331,8 +331,8 @@ HANDBOOK = [
     ]),
     ("way_in", "Finding the way in", [
         "A Ruined Gate is a broken stone plaza with a dead arch and a campfire still smoking. You will see the smoke first.",
-        "Its chest holds three seekers. Each is a compass for one keystone: right-click it and it tells you how far and which way the shrine is.",
-        "The Shrine of the Sky is a white temple. The Shrine of the Tides is a ring of prismarine round a pool. The Shrine of the Shades is a crypt under standing stones.",
+        "Its chest holds three seekers. Each is a compass for one keystone: right-click it and it tells you how far and which way its citadel is. The citadels lie far apart - a long journey each.",
+        "Each keystone is kept in a citadel - white and gold for the Sky, prismarine behind a moat for the Tides, black stone ringed with soul fire for the Shades. Half-kin hold the walls and towers; on the roof of the keep, beside the keystone, waits a fallen Titan. Climb the keep's stairs to reach it. Go armed.",
         "Bring the three keystones back and right-click the pedestal with each. The arch fills. Step through, and the gate knows you. Nothing carries you to the hub in an instant: you walk through a gate, or you channel at a Waygate Obelisk.",
     ]),
     ("compass", "The compass scans", [
@@ -1045,6 +1045,21 @@ def gen_lang():
         "hud.realms_of_chaos.lesser.holds": "%s holds this arena",
         "hud.realms_of_chaos.lesser.fallen": "%s falls",
         "hud.realms_of_chaos.lesser.gift": "%s lets fall %s",
+        "titan.realms_of_chaos.hyperion": "Hyperion, the Fallen Light",
+        "titan.realms_of_chaos.oceanus": "Oceanus, the Fallen Sea",
+        "titan.realms_of_chaos.cronus": "Cronus, the Fallen King",
+        "citadel.realms_of_chaos.halfkin": "Half-kin of %s",
+        "citadel.realms_of_chaos.woken": "%s: the garrison stands to",
+        "citadel.realms_of_chaos.woken.sub": "Half-kin hold the walls. On the roof of the keep, beside the keystone, %s waits",
+        "citadel.realms_of_chaos.titan.fallen": "%s falls again",
+        "hud.realms_of_chaos.tab.distance.rough": "about %s blocks",
+        "hud.realms_of_chaos.tab.distance.exact": "%s blocks",
+        "hud.realms_of_chaos.tab.lock": "Clean lock",
+        "hud.realms_of_chaos.tab.surge": "Static surge",
+        "hud.realms_of_chaos.tab.done": "Scan complete",
+        "hud.realms_of_chaos.tab.here": "You are here",
+        "hud.realms_of_chaos.tab.listening": "Listening for %s",
+        "hud.realms_of_chaos.tab.signal": "Signal",
         "hud.realms_of_chaos.trap.sprung": "The room floods!",
         "hud.realms_of_chaos.trap.sprung.sub": "Watch the %s runes light, then press them in that order",
         "hud.realms_of_chaos.trap.status": "Water %s / %s  |  runes %s / %s",
@@ -1083,7 +1098,7 @@ def gen_lang():
         # ---- the compass scans
         "hud.realms_of_chaos.scan.mode": "The compass now looks for %s",
         "hud.realms_of_chaos.scan.mode.hub": "the way to the hub",
-        "hud.realms_of_chaos.scan.mode.keystones": "keystone shrines",
+        "hud.realms_of_chaos.scan.mode.keystones": "keystone citadels",
         "hud.realms_of_chaos.scan.mode.network": "relays and waygates",
         "hud.realms_of_chaos.scan.nowhere": "Nothing to scan for here: the compass reads the world outside",
         "hud.realms_of_chaos.scan.nocompass": "You have no Compass of Chaos",
@@ -1767,9 +1782,9 @@ def gen_lang():
 # ----------------------------------------------------------------------------
 # The three keystones a Ruined Gate needs: (keystone name, the seeker compass that finds it, the shrine it lies in)
 KEYSTONES = {
-    "ZEUS": ("Keystone of the Sky", "Seeker of the Sky", "Shrine of the Sky"),
-    "POSEIDON": ("Keystone of the Tides", "Seeker of the Tides", "Shrine of the Tides"),
-    "HADES": ("Keystone of the Shades", "Seeker of the Shades", "Shrine of the Shades"),
+    "ZEUS": ("Keystone of the Sky", "Seeker of the Sky", "Citadel of the Sky"),
+    "POSEIDON": ("Keystone of the Tides", "Seeker of the Tides", "Citadel of the Tides"),
+    "HADES": ("Keystone of the Shades", "Seeker of the Shades", "Citadel of the Shades"),
 }
 
 BLOCKS = ["gate_hub", "gate_zeus", "gate_poseidon", "gate_hades", "gate_ascend", "gate_leave",

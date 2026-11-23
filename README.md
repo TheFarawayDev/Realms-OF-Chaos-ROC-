@@ -41,6 +41,23 @@ The current build is an **Alpha**.
     crossable - by a walker slower than a walk, at every depth - before the mod is built (`Gauntlet.crossable`).
   * **Learnt by being bitten.** The first time a kind of hall catches you a card names it - *Ember Tide*, *The
     Jaw*, *Rime Wheel*, *Hollow Steps* - and says how it is beaten.
+* **Citadels hold the keystones.** The three shrines are now castles of their tower's stone, 43 blocks across: a
+  curtain wall with a wall-walk, a round tower at each corner, a gatehouse with its portcullis drawn up, a
+  courtyard of fallen statues, and a three-storey keep with the keystone on its roof. The Citadel of the Sky is
+  white and gold; the Tides' stands behind a moat; the Shades' is black stone ringed with soul fire. When you come
+  within sight of the walls the garrison stands to: **half-kin** - children of the tower's king - at the gate, in
+  the courtyard, on the towers and in the keep, and on the roof beside the keystone a **fallen Titan**
+  (*Hyperion*, *Oceanus* or *Cronus*) with a bar of its own, who gives up a piece of the panoply the first time it
+  falls to you. (`art/renders/citadel-*.png`)
+* **Far apart.** The citadels lie on a grid a thousand blocks to a square, the three kinds taking turns so no two
+  of a kind are neighbours, and any two at least five hundred blocks apart; the Ruined Gates have their own grid,
+  never near a citadel. Each keystone is a journey. The Ruined Gate itself is grander: a ring of twelve columns -
+  some standing lit, most broken, some fallen - four braziers and a processional way to the arch.
+* **The compass speaks on a tab.** The Compass of Chaos and the seekers no longer write above the hotbar. A tab
+  slides out from the right edge of the screen when there is something to say - when you use one, on a clean
+  lock, a static surge, every few rolls, and at the end of a scan - and slides away after a few seconds. It has a
+  dial whose needle keeps to its bearing as you turn, the thing pointed at, how far, the signal in five bars, the
+  time left and how far along the scan is. (`art/renders/compass-tab.png`)
 * **Three kinds of rune chamber: work fast, and remember.** A rune chamber shuts you in and gets worse by the
   moment until its runes are pressed in the right order. A **flooding** chamber shows the order over and over
   while the water rises. A **furnace** shows it **once** - and again only after a mistake - while the heat

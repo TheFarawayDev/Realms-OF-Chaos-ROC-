@@ -79,7 +79,12 @@ public class ChaosCompassItem extends Item {
             Scanner.Mode mode = Scanner.cycle(compass);
             Scanner.stop(sp);
             level.playSound(null, player.blockPosition(), SoundEvents.SPYGLASS_USE, SoundSource.PLAYERS, 1.0F, 1.2F);
-            Hud.actionBar(sp, Hud.colored(Component.translatable("hud." + RealmsOfChaos.MOD_ID + ".scan.mode", mode.displayName()), mode.color));
+            if (com.thefarawaydev.realmsofchaos.ui.CompassTab.drawn(sp)) {
+                com.thefarawaydev.realmsofchaos.ui.CompassTab.notice(sp, compass.getHoverName().copy().withStyle(style -> style.withColor(mode.color)),
+                        Component.translatable("hud." + RealmsOfChaos.MOD_ID + ".scan.mode", mode.displayName()));
+            } else {
+                Hud.actionBar(sp, Hud.colored(Component.translatable("hud." + RealmsOfChaos.MOD_ID + ".scan.mode", mode.displayName()), mode.color));
+            }
             player.getCooldowns().addCooldown(compass, 10);
             return InteractionResult.SUCCESS;
         }

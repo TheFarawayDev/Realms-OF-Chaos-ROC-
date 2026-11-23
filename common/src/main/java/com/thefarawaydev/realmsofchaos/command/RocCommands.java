@@ -45,6 +45,15 @@ public final class RocCommands {
                                             if (com.thefarawaydev.realmsofchaos.world.Realm.of(p.level().dimension()) == null) Teleports.enterTower(p, line);
                                             com.thefarawaydev.realmsofchaos.world.Passages.enter(p, line, com.mojang.brigadier.arguments.IntegerArgumentType.getInteger(ctx, "index"));
                                         })))))
+                        .then(Commands.literal("citadel")
+                                .then(Commands.argument("kind", com.mojang.brigadier.arguments.StringArgumentType.word()).executes(ctx -> ui(ctx.getSource().getPlayerOrException(), p -> {
+                                    // to the nearest citadel (or gate) of a kind, raised if need be, outside its gate
+                                    if (!(p.level() instanceof net.minecraft.server.level.ServerLevel level) || level.dimension() != net.minecraft.world.level.Level.OVERWORLD) return;
+                                    com.thefarawaydev.realmsofchaos.world.Ruins.Kind kind = com.thefarawaydev.realmsofchaos.world.Ruins.Kind.valueOf(com.mojang.brigadier.arguments.StringArgumentType.getString(ctx, "kind").toUpperCase(java.util.Locale.ROOT));
+                                    com.thefarawaydev.realmsofchaos.world.Ruins.Site site = com.thefarawaydev.realmsofchaos.world.Ruins.nearest(level.getSeed(), kind, p.getX(), p.getZ());
+                                    net.minecraft.core.BlockPos c = com.thefarawaydev.realmsofchaos.world.Ruins.ensure(level, site);
+                                    p.teleportTo(level, c.getX() + 0.5, c.getY() + 1, c.getZ() + 0.5 + kind.radius + 12, java.util.Set.of(), 180.0F, 10.0F, false);
+                                }))))
                         .then(Commands.literal("runs").executes(ctx -> ui(ctx.getSource().getPlayerOrException(), p -> {
                             // where each kind of corridor of this level is: somewhere to go and look
                             com.thefarawaydev.realmsofchaos.world.Passages.Spot spot = com.thefarawaydev.realmsofchaos.world.Passages.locate(p);
