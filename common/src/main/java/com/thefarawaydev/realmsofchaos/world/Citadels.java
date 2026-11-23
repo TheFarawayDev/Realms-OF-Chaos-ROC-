@@ -70,17 +70,17 @@ public final class Citadels {
 
     /** Each citadel's stone. */
     private record Style(Block floor, Block floorAlt, Block wall, Block worn, Block trim, Block pillar, Block glow, Block lantern, Block accent,
-                         Block stairs, Block statue, Block statueHead, Block fire) {}
+                         Block stairs, Block statue, Block statueHead, Block fire, Block roof) {}
 
     private static Style style(Line line) {
         return switch (line) {
-            case ZEUS -> new Style(Blocks.SMOOTH_QUARTZ, Blocks.CALCITE, Blocks.QUARTZ_BRICKS, Blocks.CALCITE, Blocks.SMOOTH_QUARTZ, Blocks.QUARTZ_PILLAR,
-                    Blocks.GLOWSTONE, Blocks.LANTERN, Blocks.GOLD_BLOCK, Blocks.QUARTZ_STAIRS, Blocks.QUARTZ_BLOCK, Blocks.CHISELED_QUARTZ_BLOCK, Blocks.CAMPFIRE);
+            case ZEUS -> new Style(Blocks.SMOOTH_QUARTZ, Blocks.CALCITE, Blocks.QUARTZ_BRICKS, Blocks.CALCITE, Blocks.POLISHED_ANDESITE, Blocks.QUARTZ_PILLAR,
+                    Blocks.GLOWSTONE, Blocks.LANTERN, Blocks.GOLD_BLOCK, Blocks.QUARTZ_STAIRS, Blocks.QUARTZ_BLOCK, Blocks.CHISELED_QUARTZ_BLOCK, Blocks.CAMPFIRE, Blocks.DEEPSLATE_TILES);
             case POSEIDON -> new Style(Blocks.PRISMARINE_BRICKS, Blocks.DARK_PRISMARINE, Blocks.PRISMARINE_BRICKS, Blocks.PRISMARINE, Blocks.DARK_PRISMARINE, Blocks.PRISMARINE,
-                    Blocks.SEA_LANTERN, Blocks.LANTERN, Blocks.SEA_LANTERN, Blocks.PRISMARINE_BRICK_STAIRS, Blocks.PRISMARINE, Blocks.DARK_PRISMARINE, Blocks.CAMPFIRE);
+                    Blocks.SEA_LANTERN, Blocks.LANTERN, Blocks.SEA_LANTERN, Blocks.PRISMARINE_BRICK_STAIRS, Blocks.PRISMARINE, Blocks.DARK_PRISMARINE, Blocks.CAMPFIRE, Blocks.DARK_PRISMARINE);
             case HADES -> new Style(Blocks.POLISHED_BLACKSTONE, Blocks.BLACKSTONE, Blocks.POLISHED_BLACKSTONE_BRICKS, Blocks.CRACKED_POLISHED_BLACKSTONE_BRICKS,
                     Blocks.POLISHED_BASALT, Blocks.POLISHED_BASALT, Blocks.CRYING_OBSIDIAN, Blocks.SOUL_LANTERN, Blocks.CRYING_OBSIDIAN,
-                    Blocks.POLISHED_BLACKSTONE_BRICK_STAIRS, Blocks.BASALT, Blocks.CHISELED_POLISHED_BLACKSTONE, Blocks.SOUL_CAMPFIRE);
+                    Blocks.POLISHED_BLACKSTONE_BRICK_STAIRS, Blocks.BASALT, Blocks.CHISELED_POLISHED_BLACKSTONE, Blocks.SOUL_CAMPFIRE, Blocks.RED_NETHER_BRICKS);
         };
     }
 
@@ -163,7 +163,7 @@ public final class Citadels {
         for (int dx = -HALF; dx <= HALF; dx++) {
             for (int dz = -HALF; dz <= HALF; dz++) {
                 set(level, c.offset(dx, 0, dz), (dx + dz & 1) == 0 || random.nextInt(5) == 0 ? s.floor : s.floorAlt);
-                for (int dy = 1; dy <= 30 && !solid(level, c.offset(dx, -dy, dz)); dy++) set(level, c.offset(dx, -dy, dz), s.wall);
+                for (int dy = 1; dy <= 30 && !solid(level, c.offset(dx, -dy, dz)); dy++) set(level, c.offset(dx, -dy, dz), Mason.weather(s.wall, c.getX() + dx, c.getY() - dy, c.getZ() + dz, 30));
                 for (int dy = 1; dy <= 32; dy++) {
                     if (!level.getBlockState(c.offset(dx, dy, dz)).isAir()) level.setBlock(c.offset(dx, dy, dz), Blocks.AIR.defaultBlockState(), 2);
                 }
@@ -183,6 +183,14 @@ public final class Citadels {
         // a processional way from outside the gate to the door of the keep
         for (int dz = -KEEP_NORTH + KEEP_HALF; dz <= HALF; dz++) {
             for (int dx = -1; dx <= 1; dx++) set(level, c.offset(dx, 0, dz), dx == 0 ? s.trim : s.floor);
+        }
+        // the platform's edge is dressed: a course of stairs all round, stepping up to the floor
+        Mason.Stone stone = Mason.of(s.wall);
+        for (int dx = -HALF; dx <= HALF; dx++) {
+            for (int dz = -HALF; dz <= HALF; dz++) {
+                if (Math.max(Math.abs(dx), Math.abs(dz)) != HALF || (dz > 0 && Math.abs(dx) <= 2) || Math.abs(dx) == Math.abs(dz)) continue;
+                set(level, c.offset(dx, 0, dz), Mason.stair(stone.stairs(), Mason.outward(dx, dz).getOpposite(), false));
+            }
         }
         moat(level, line, c, s);
         curtain(level, c, s, random);
@@ -220,39 +228,95 @@ public final class Citadels {
         }
     }
 
-    /** The curtain wall: two thick, eight high, walked along its top behind a row of crenels, worn here and there. */
+    /**
+     * The curtain wall: two thick and eight high on a battered plinth, buttressed every six blocks, with arrow slits
+     * between the buttresses, and a parapet carried out over the face on a row of corbels, crenellated, walked along
+     * its top.
+     */
     private static void curtain(ServerLevel level, BlockPos c, Style s, Random random) {
-        for (int dx = -WALL; dx <= WALL; dx++) {
-            for (int dz = -WALL; dz <= WALL; dz++) {
+        Mason.Stone stone = Mason.of(s.wall);
+        for (int dx = -WALL - 1; dx <= WALL + 1; dx++) {
+            for (int dz = -WALL - 1; dz <= WALL + 1; dz++) {
                 int ring = Math.max(Math.abs(dx), Math.abs(dz));
                 if (ring < WALL - 1) continue;
-                for (int dy = 1; dy <= 8; dy++) set(level, c.offset(dx, dy, dz), random.nextInt(9) == 0 ? s.worn : dy == 4 || dy == 8 ? s.trim : s.wall);
-                int along = Math.abs(dx) == WALL ? dz : dx;
-                if (ring == WALL && (along & 1) == 0 && random.nextInt(12) != 0) {
-                    set(level, c.offset(dx, 9, dz), s.wall);
-                    if (Math.floorMod(along, 6) == 0) set(level, c.offset(dx, 10, dz), s.lantern);
+                int along = Math.abs(dx) >= Math.abs(dz) ? dz : dx;
+                Direction out = Mason.outward(dx, dz), in = out.getOpposite();
+                boolean corner = Math.abs(dx) > WALL - 3 && Math.abs(dz) > WALL - 3;
+                if (ring == WALL + 1) {
+                    if (corner) continue;                                   // the corner towers stand here
+                    boolean gate = dz > 0 && Math.abs(dx) <= 2;
+                    if (!gate) set(level, c.offset(dx, 1, dz), Mason.stair(stone.stairs(), in, false));   // the plinth
+                    boolean buttress = Math.floorMod(along, 6) == 0 && !gate;
+                    if (buttress) {
+                        for (int dy = 1; dy <= 5; dy++) set(level, c.offset(dx, dy, dz), dy == 1 ? s.trim : s.wall);
+                        set(level, c.offset(dx, 6, dz), Mason.stair(stone.stairs(), in, false));
+                    }
+                    set(level, c.offset(dx, 7, dz), Mason.stair(stone.stairs(), in, true));             // corbels
+                    set(level, c.offset(dx, 8, dz), s.trim);
+                    if ((along & 1) == 0) set(level, c.offset(dx, 9, dz), s.wall);
+                    if (Math.floorMod(along, 6) == 3) set(level, c.offset(dx, 10, dz), s.lantern);
+                    continue;
+                }
+                for (int dy = 1; dy <= 8; dy++) {
+                    Block b = random.nextInt(9) == 0 ? s.worn : dy == 1 || dy == 4 || dy == 8 ? s.trim : Mason.weather(s.wall, c.getX() + dx, c.getY() + dy, c.getZ() + dz, 22);
+                    set(level, c.offset(dx, dy, dz), b);
+                }
+                // an arrow slit in the outer face between each pair of buttresses
+                if (ring == WALL && Math.floorMod(along, 6) == 3 && !corner) {
+                    set(level, c.offset(dx, 5, dz), Blocks.AIR);
+                    set(level, c.offset(dx, 6, dz), Blocks.AIR);
+                    set(level, c.offset(dx, 7, dz), Mason.stair(stone.stairs(), out, true));
                 }
             }
         }
     }
 
-    /** A corner tower: hollow, a landing level with the wall-walk, a roof with crenels, and scaffolding up its middle. */
+    /**
+     * A corner tower: round, banded, slit, its battlements carried out on corbels, an open lookout on top under a
+     * conical roof on four posts; hollow within, a landing level with the wall-walk, scaffolding up its middle.
+     */
     private static void tower(ServerLevel level, BlockPos t, int sx, int sz, Style s) {
-        for (int dx = -5; dx <= 5; dx++) {
-            for (int dz = -5; dz <= 5; dz++) {
+        Mason.Stone stone = Mason.of(s.wall);
+        for (int dx = -6; dx <= 6; dx++) {
+            for (int dz = -6; dz <= 6; dz++) {
                 double d = Math.sqrt(dx * dx + dz * dz);
-                if (d > 4.5) continue;
+                if (d > 5.5) continue;
+                Direction out = Mason.outward(dx, dz), in = out.getOpposite();
+                if (d > 4.5) {
+                    // round the shaft: a plinth at its foot, corbels and a crenellated parapet at its head
+                    BlockPos foot = t.offset(dx, 1, dz);
+                    if (Math.abs(t.getX() + dx - (t.getX() - sx * WALL)) <= HALF && Math.abs(t.getZ() + dz - (t.getZ() - sz * WALL)) <= HALF
+                            && level.getBlockState(foot).isAir()) set(level, foot, Mason.stair(stone.stairs(), in, false));
+                    set(level, t.offset(dx, 13, dz), Mason.stair(stone.stairs(), in, true));
+                    set(level, t.offset(dx, 14, dz), s.trim);
+                    set(level, t.offset(dx, 15, dz), ((dx + dz) & 1) == 0 ? s.wall : Blocks.AIR);
+                    continue;
+                }
                 for (int dy = 1; dy <= 14; dy++) {
                     BlockPos at = t.offset(dx, dy, dz);
-                    if (d > 2.6) set(level, at, dy % 5 == 0 ? s.trim : s.wall);
+                    if (d > 2.6) set(level, at, dy % 5 == 0 || dy == 1 ? s.trim : Mason.weather(s.wall, at.getX(), at.getY(), at.getZ(), 22));
                     else if (dy == 8 || dy == 14) set(level, at, s.floor);
                     else set(level, at, Blocks.AIR);
                 }
-                if (d > 3.6 && ((dx + dz) & 1) == 0) set(level, t.offset(dx, 15, dz), s.wall);
-                else set(level, t.offset(dx, 15, dz), Blocks.AIR);
+                for (int dy = 15; dy <= 16; dy++) set(level, t.offset(dx, dy, dz), Blocks.AIR);
             }
         }
-        // the light in each tower's roof, and the scaffolding that is its stair
+        // the floor of the lookout reaches out to the parapet, and four posts carry its roof
+        for (int dx = -5; dx <= 5; dx++) {
+            for (int dz = -5; dz <= 5; dz++) {
+                double d = Math.sqrt(dx * dx + dz * dz);
+                if (d > 2.6 && d <= 5.5) set(level, t.offset(dx, 14, dz), d > 4.5 ? s.trim : s.floor);
+            }
+        }
+        for (int qx = -1; qx <= 1; qx += 2) {
+            for (int qz = -1; qz <= 1; qz += 2) {
+                for (int dy = 15; dy <= 16; dy++) set(level, t.offset(qx * 3, dy, qz * 3), s.pillar);
+            }
+        }
+        Mason.cone(level, t.above(17), 5, Mason.of(s.roof), s.accent);
+        // arrow slits facing out across the country
+        for (int dy : new int[]{4, 5, 10, 11}) set(level, t.offset(sx * 3, dy, sz * 3), Blocks.AIR);
+        // the light in each tower's ceiling, and the scaffolding that is its stair
         set(level, t.offset(-sx, 14, -sz), s.glow);
         for (int dy = 1; dy <= 14; dy++) set(level, t.above(dy), Blocks.SCAFFOLDING);
         // a door from the courtyard, at ground level
@@ -270,29 +334,55 @@ public final class Citadels {
         }
     }
 
-    /** The gate in the south wall, under two square towers, with the portcullis drawn up. */
+    /**
+     * The gatehouse: two square towers either side of the gate, joined over it into one block, the gate itself under
+     * a round head with the portcullis drawn up, and battlements carried out on corbels all round its top.
+     */
     private static void gatehouse(ServerLevel level, BlockPos c, Style s) {
-        for (int side = -1; side <= 1; side += 2) {
-            for (int dx = 3; dx <= 7; dx++) {
-                for (int dz = WALL - 2; dz <= WALL + 2; dz++) {
-                    for (int dy = 1; dy <= 12; dy++) set(level, c.offset(side * dx, dy, dz), dy % 4 == 0 ? s.trim : s.wall);
-                    if (((dx + dz) & 1) == 0) set(level, c.offset(side * dx, 13, dz), s.wall);
+        Mason.Stone stone = Mason.of(s.wall);
+        int front = WALL + 2, back = WALL - 2;
+        for (int dx = -8; dx <= 8; dx++) {
+            for (int dz = back - 1; dz <= front + 1; dz++) {
+                boolean rim = Math.abs(dx) == 8 || dz == back - 1 || dz == front + 1;
+                boolean passage = Math.abs(dx) <= 2;
+                if (rim) {
+                    // round the top: corbels, a parapet course, merlons
+                    Direction out = Math.abs(dx) == 8 ? (dx > 0 ? Direction.EAST : Direction.WEST) : dz > WALL ? Direction.SOUTH : Direction.NORTH;
+                    if (Math.abs(dx) == 8 && (dz == back - 1 || dz == front + 1)) continue;
+                    set(level, c.offset(dx, 11, dz), Mason.stair(stone.stairs(), out.getOpposite(), true));
+                    set(level, c.offset(dx, 12, dz), s.trim);
+                    if (((dx + dz) & 1) == 0) set(level, c.offset(dx, 13, dz), s.wall);
+                    continue;
+                }
+                for (int dy = passage ? 5 : 1; dy <= 12; dy++) {
+                    BlockPos at = c.offset(dx, dy, dz);
+                    set(level, at, dy % 4 == 0 || dy == 1 ? s.trim : Mason.weather(s.wall, at.getX(), at.getY(), at.getZ(), 22));
                 }
             }
-            set(level, c.offset(side * 5, 13, WALL + 2), s.lantern);
-            set(level, c.offset(side * 3, 3, WALL + 3), s.glow);
         }
+        // the gate: open four high, a round head over it on the outer face, the portcullis drawn up into the wall
         for (int dx = -2; dx <= 2; dx++) {
-            for (int dz = WALL - 1; dz <= WALL; dz++) {
+            for (int dz = back; dz <= front; dz++) {
                 for (int dy = 1; dy <= 4; dy++) set(level, c.offset(dx, dy, dz), Blocks.AIR);
                 set(level, c.offset(dx, 5, dz), dz == WALL ? Blocks.IRON_BARS : s.trim);
             }
-            set(level, c.offset(dx, 6, WALL), s.accent);
+            set(level, c.offset(dx, 6, front), s.accent);
+        }
+        for (int dz = WALL + 1; dz <= front; dz++) {
+            for (int side = -1; side <= 1; side += 2) set(level, c.offset(side * 2, 4, dz), Mason.stair(stone.stairs(), side < 0 ? Direction.WEST : Direction.EAST, true));
         }
         for (int dx = -2; dx <= 2; dx++) {
             BlockPos bar = c.offset(dx, 5, WALL);
             level.setBlock(bar, Block.updateFromNeighbourShapes(Blocks.IRON_BARS.defaultBlockState(), level, bar), 2);
         }
+        // arrow slits in the towers' faces, lanterns either side of the gate, a light over it
+        for (int side = -1; side <= 1; side += 2) {
+            for (int dy : new int[]{6, 7, 9, 10}) set(level, c.offset(side * 5, dy, front), Blocks.AIR);
+            set(level, c.offset(side * 3, 3, front + 1), s.glow);
+            set(level, c.offset(side * 5, 13, front), s.lantern);
+            level.setBlock(c.offset(side * 3, 4, front + 1), Mason.stair(stone.stairs(), Direction.NORTH, true), 2);
+        }
+        set(level, c.offset(0, 9, front + 1), s.accent);
     }
 
     private static BlockState stair(Style s, Direction rising) {
@@ -344,6 +434,42 @@ public final class Citadels {
                 set(level, k.offset(KEEP_HALF, dy, along), s.glow);
             }
         }
+        // dressing the outside: a plinth, a string course between the storeys, corbels under the parapet
+        Mason.Stone stone = Mason.of(s.wall);
+        int o = KEEP_HALF + 1;
+        for (int dx = -o; dx <= o; dx++) {
+            for (int dz = -o; dz <= o; dz++) {
+                if (Math.max(Math.abs(dx), Math.abs(dz)) != o || Math.abs(dx) == Math.abs(dz)) continue;
+                Direction in = Mason.outward(dx, dz).getOpposite();
+                if (!(dz == o && Math.abs(dx) <= 2)) set(level, k.offset(dx, 1, dz), Mason.stair(stone.stairs(), in, false));
+                set(level, k.offset(dx, STOREY, dz), Mason.slab(stone.slab(), true));
+                set(level, k.offset(dx, ROOF, dz), Mason.stair(stone.stairs(), in, true));
+                int along = Math.abs(dx) == o ? dz : dx;
+                if (Math.abs(along) == 4) {
+                    // a hood over each window, a sill under each upper one
+                    if (!(dz == o)) set(level, k.offset(dx, 4, dz), Mason.stair(stone.stairs(), in, true));
+                    set(level, k.offset(dx, 10, dz), Mason.stair(stone.stairs(), in, true));
+                    set(level, k.offset(dx, 7, dz), Mason.stair(stone.stairs(), in, true));
+                }
+            }
+        }
+        // a porch over the door: two columns, a round head, an entablature and a pediment
+        for (int side = -1; side <= 1; side += 2) {
+            for (int dy = 1; dy <= 4; dy++) set(level, k.offset(side * 2, dy, o), dy == 1 ? s.trim : s.pillar);
+            set(level, k.offset(side, 4, o), Mason.stair(stone.stairs(), side < 0 ? Direction.WEST : Direction.EAST, true));
+            set(level, k.offset(side * 2, 0, o + 1), s.trim);
+            set(level, k.offset(side * 3, 1, o), s.fire);
+        }
+        set(level, k.offset(0, 4, o), Mason.slab(stone.slab(), true));
+        for (int dx = -2; dx <= 2; dx++) set(level, k.offset(dx, 5, o), s.trim);
+        Mason.pediment(level, k.offset(0, 6, o), Direction.NORTH, 7, stone, s.accent);
+        // the roof is laid in a pattern: a border inside the parapet, a ring about the middle
+        for (int dx = -KEEP_HALF + 1; dx <= KEEP_HALF - 1; dx++) {
+            for (int dz = -KEEP_HALF + 1; dz <= KEEP_HALF - 1; dz++) {
+                int ring = Math.max(Math.abs(dx), Math.abs(dz));
+                if (ring == KEEP_HALF - 1 || ring == 3) set(level, k.offset(dx, ROOF, dz), s.floorAlt);
+            }
+        }
         // the stairs: up the west side to the upper storey, up the east side to the roof, each through a hole in the floor above
         for (int flight = 0; flight < 2; flight++) {
             int x0 = flight == 0 ? -5 : 4, base = flight == 0 ? 0 : STOREY, top = flight == 0 ? STOREY : ROOF;
@@ -370,10 +496,21 @@ public final class Citadels {
         for (int side = -1; side <= 1; side += 2) {
             BlockPos plinth = c.offset(side * 6, 0, 11);
             set(level, plinth.above(), s.trim);
+            for (Direction d : Direction.Plane.HORIZONTAL) set(level, plinth.above().relative(d), Mason.stair(Mason.of(s.wall).stairs(), d.getOpposite(), false));
             set(level, plinth.above(2), s.statue);
             set(level, plinth.above(3), s.statue);
             set(level, plinth.above(4), s.statueHead);
             set(level, c.offset(side * 6, 1, 15), s.fire);
+        }
+        // lamp posts along the processional way
+        Block post = Mason.of(s.wall).wall();
+        for (int side = -1; side <= 1; side += 2) {
+            for (int dz : new int[]{4, 9}) {
+                set(level, c.offset(side * 3, 1, dz), s.trim);
+                set(level, c.offset(side * 3, 2, dz), post);
+                set(level, c.offset(side * 3, 3, dz), post);
+                set(level, c.offset(side * 3, 4, dz), s.lantern);
+            }
         }
         // fallen ones: a body and a head lying on the stones, the plinth left empty
         int[][] fallen = {{-12, 4, 1}, {12, -2, -1}, {-11, -12, 1}, {11, 10, -1}};

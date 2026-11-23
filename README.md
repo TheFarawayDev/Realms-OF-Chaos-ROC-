@@ -16,6 +16,32 @@ The current build is an **Alpha**.
 
 ## What's in 1.2.0
 
+* **Built like builders build.** Every structure in the mod was rebuilt with a mason's kit of stairs, slabs and
+  walls, so nothing is a box of whole blocks any more:
+  * **Tower floors**: windows set deep in the wall under round heads, engaged columns with moulded bases and
+    capitals, a stepped cornice where the wall meets the ceiling, a ribbed ceiling with a chain chandelier in the
+    middle and four lesser ones, and the gates as proper gateways - pilasters, a round head, an entablature and a
+    pediment. Walls are laid in mixed stone (a few mossy, cracked or worked blocks among the rest), never stripes.
+    The fight ring is untouched: the same flat, walkable ground, nothing within six blocks above it.
+    (`art/renders/build-tower-*.png`)
+  * **Citadels**: round corner towers with banded walls, arrow slits, corbelled battlements and an open lookout
+    under a conical roof in a contrasting stone (slate for the Sky, dark prismarine for the Tides, red nether brick
+    for the Shades); a curtain wall on a battered plinth, buttressed, slit, with its parapet carried out on corbels;
+    a gatehouse that is one block over the gate, with a round head and the portcullis drawn up; a keep with a
+    plinth, a string course, hooded windows, a porch with a pediment and a patterned roof; statues on moulded
+    plinths and lamp posts along the way in. (`art/renders/build-citadel-*.png`)
+  * **The Ruined Gate** is now a ruined temple: a stepped round platform, a gateway of two columns under an
+    entablature and a pediment half fallen, a ring of columns with bases - a few standing under their capitals, most
+    broken off, some lying where they fell - braziers on stepped feet, and grass and moss between the stones. A
+    hillside behind it is cut back in grassed terraces instead of standing over it as a wall, and on falling ground
+    it stands on an earth bank rather than a sheer pillar of stone. (`art/renders/build-ruined-gate*.png`)
+  * **The hub**: the four gate monuments are gateways with pediments, the beacons stand on moulded bases under
+    capitals, the parapet is a joined balustrade with a plinth on its inner face, the garden beds have kerbs, and
+    the cherry trees fork and grow a ragged crown instead of being cubes of leaves. (`art/renders/build-hub.png`)
+  * **Passages**: walls in mixed stone, round-headed arches at the ends of every corridor, and a cornice round the
+    ceiling of every tall room.
+  * In an existing world each place is rebuilt in its new design the next time it is reached: tower floors, the
+    hub, passage levels, Ruined Gates and citadels. A citadel or gate rebuilt this way has its chests filled again.
 * **Gates stay shut.** A level's Gate of Ascent is dark glass in its arch until every seal on the level is broken;
   the last seal opens it, and a level sealed again has its gate shut again.
 * **Corridors.** Rooms stand further apart: seven blocks of lit corridor between two of them, with an arch at each
@@ -412,7 +438,7 @@ The current build is an **Alpha**.
   have earned, and always says what to do next.
 * **The way in has to be found.** The gates were broken on purpose. Until a gate knows you, the realms are closed
   and the **Compass of Chaos** scans for the nearest **Ruined Gate** in the Overworld.
-  * A Ruined Gate is a broken plaza round a dead arch, with a campfire still smoking. Its chest holds the story so
+  * A Ruined Gate is a ruined temple round a dead arch, with a campfire still smoking. Its chest holds the story so
     far and three **seekers** - compasses that each point to the nearest shrine of one keystone.
   * The three **keystones** lie in three kinds of shrine elsewhere in the world: the **Shrine of the Sky** (a
     white temple), the **Shrine of the Tides** (a ring of prismarine round a pool) and the **Shrine of the Shades**

@@ -3,6 +3,7 @@ package com.thefarawaydev.realmsofchaos.world;
 import com.thefarawaydev.realmsofchaos.ModContent;
 import com.thefarawaydev.realmsofchaos.god.Line;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
@@ -17,7 +18,7 @@ public final class RealmBuilder {
     public static final int Y = 64;
     private static final int HUB_RADIUS = 26;
     /** The hub has its own design number, so it can be rebuilt without rebuilding the towers. */
-    public static final int HUB_VERSION = 3;
+    public static final int HUB_VERSION = 5;
     /** The Oracle's Flame: just north of where arrivals appear, on the way to the gate of Zeus. */
     public static final BlockPos ORACLE = new BlockPos(0, Y + 1, -5);
     /** The Heart of the Hub stands south of the middle, facing the Oracle; the Bounty Board north-east of it. */
@@ -102,26 +103,48 @@ public final class RealmBuilder {
         });
     }
 
-    /** A gate arch centred at (cx, cz); the 3x4 opening runs along X when alongX, otherwise along Z. */
-    private static void gate(ServerLevel level, int cx, int cz, boolean alongX, Block pillar, Block lintel, Block accent, Block gateBlock) {
-        for (int i = -3; i <= 3; i++) {
-            int x = alongX ? cx + i : cx;
-            int z = alongX ? cz : cz + i;
-            int a = Math.abs(i);
-            set(level, x, Y, z, accent);
-            if (a == 3) {                                   // outer buttress
-                column(level, x, z, Y + 1, 3, pillar);
-                set(level, x, Y + 4, z, accent);
-            } else if (a == 2) {                            // main pillars
-                column(level, x, z, Y + 1, 5, pillar);
-                set(level, x, Y + 6, z, lintel);
-            } else {                                        // the portal itself
-                column(level, x, z, Y + 1, 4, gateBlock);
-                set(level, x, Y + 5, z, lintel);
-                set(level, x, Y + 6, z, a == 0 ? accent : lintel);
+    /** A gate monument centred at (cx, cz); the 3x4 opening runs along X when alongX, otherwise along Z. */
+    private static void gate(ServerLevel level, int cx, int cz, boolean alongX, Block pillar, Block lintel, Block accent, Block gateBlock, Block stone) {
+        Mason.gateway(level, new BlockPos(cx, Y, cz), alongX ? Direction.NORTH : Direction.EAST, Mason.of(stone), pillar, lintel, accent, accent, gateBlock);
+    }
+
+    /** A pillar on a moulded base under a capital, with a light on top. */
+    private static void beacon(ServerLevel level, int x, int z, Block shaft, Block stone, Block light) {
+        Mason.column(level, new BlockPos(x, Y, z), 4, shaft, Mason.of(stone), true);
+        set(level, x, Y + 5, z, light);
+    }
+
+    /**
+     * A cherry tree that looks grown rather than built: a trunk that forks into three boughs, and a domed crown that
+     * thins out raggedly at its edges, a little lopsided, never a box of leaves.
+     */
+    private static void tree(ServerLevel level, int gx, int gz) {
+        BlockState log = Blocks.CHERRY_LOG.defaultBlockState();
+        BlockState leaves = Blocks.CHERRY_LEAVES.defaultBlockState().setValue(net.minecraft.world.level.block.LeavesBlock.PERSISTENT, true);
+        column(level, gx, gz, Y + 1, 4, Blocks.CHERRY_LOG);
+        int[][] boughs = {{1, 0, 4}, {2, 0, 5}, {-1, 1, 5}, {-2, 1, 6}, {0, -1, 5}, {0, -2, 6}};
+        for (int[] b : boughs) {
+            net.minecraft.core.Direction.Axis axis = b[0] != 0 ? net.minecraft.core.Direction.Axis.X : net.minecraft.core.Direction.Axis.Z;
+            set(level, gx + b[0], Y + b[2], gz + b[1], log.setValue(net.minecraft.world.level.block.RotatedPillarBlock.AXIS, axis));
+        }
+        for (int dx = -4; dx <= 4; dx++) {
+            for (int dz = -4; dz <= 4; dz++) {
+                for (int dy = 4; dy <= 9; dy++) {
+                    double ox = (dx - 0.4) / 3.6, oy = (dy - 6.6) / 2.4, oz = (dz + 0.3) / 3.4;
+                    double e = ox * ox + oy * oy + oz * oz;
+                    if (e > 1.0) continue;
+                    int h = Math.floorMod((gx + dx) * 73856093 ^ (Y + dy) * 19349663 ^ (gz + dz) * 83492791, 100);
+                    if (e > 0.62 && h < 38) continue;                             // a ragged edge
+                    BlockPos at = new BlockPos(gx + dx, Y + dy, gz + dz);
+                    if (level.getBlockState(at).isAir()) level.setBlock(at, leaves, 2);
+                }
             }
         }
-        set(level, cx, Y + 7, cz, lintel);
+        // a few blossoms trail below the crown
+        for (int[] t : new int[][]{{3, 1}, {-3, -1}, {1, -3}, {-1, 3}, {2, 3}}) {
+            BlockPos at = new BlockPos(gx + t[0], Y + 4, gz + t[1]);
+            if (level.getBlockState(at.above()).is(Blocks.CHERRY_LEAVES) && level.getBlockState(at).isAir()) level.setBlock(at, leaves, 2);
+        }
     }
 
     // --- hub -------------------------------------------------------------------------------------
@@ -147,34 +170,39 @@ public final class RealmBuilder {
             set(level, x, Y, z, top);
         });
         // low parapet with lantern posts, plus an invisible wall so nobody walks off the edge
+        java.util.List<BlockPos> rail = new java.util.ArrayList<>();
         annulus(HUB_RADIUS - 0.5, HUB_RADIUS + 1.5, (x, z, d) -> {
-            set(level, x, Y + 1, z, Blocks.STONE_BRICKS);
+            set(level, x, Y + 1, z, d < HUB_RADIUS + 0.5 ? Blocks.POLISHED_ANDESITE : Blocks.STONE_BRICKS);
             set(level, x, Y + 2, z, Blocks.STONE_BRICK_WALL);
+            rail.add(new BlockPos(x, Y + 2, z));
         });
+        // the inner face of the parapet is finished with a plinth of stairs, the rail joined into a balustrade
+        annulus(HUB_RADIUS - 1.5, HUB_RADIUS - 0.5, (x, z, d) -> {
+            if (Math.abs(x) <= 2 || Math.abs(z) <= 2) return;
+            set(level, x, Y + 1, z, Mason.stair(Blocks.POLISHED_ANDESITE_STAIRS, Mason.outward(x, z), false));
+        });
+        Mason.join(level, rail);
         barrierWall(level, HUB_RADIUS - 0.5, HUB_RADIUS + 1.5, Y + 3, Y + 30);
         for (int i = 0; i < 12; i++) {
             double a = Math.PI * 2 * (i + 0.5) / 12;
             int px = (int) Math.round(Math.cos(a) * (HUB_RADIUS - 2)), pz = (int) Math.round(Math.sin(a) * (HUB_RADIUS - 2));
-            column(level, px, pz, Y + 1, 3, Blocks.STONE_BRICK_WALL);
+            set(level, px, Y + 1, pz, Blocks.CHISELED_STONE_BRICKS);
+            column(level, px, pz, Y + 2, 2, Blocks.STONE_BRICK_WALL);
             set(level, px, Y + 4, pz, Blocks.LANTERN);
         }
         // Zeus (north), Poseidon (east), Hades (west): each gate is a small monument in its god's materials
-        gate(level, 0, -18, true, Blocks.QUARTZ_PILLAR, Blocks.GOLD_BLOCK, Blocks.CHISELED_QUARTZ_BLOCK, ModContent.GATE_ZEUS.get());
-        gate(level, 18, 0, false, Blocks.PRISMARINE_BRICKS, Blocks.DARK_PRISMARINE, Blocks.SEA_LANTERN, ModContent.GATE_POSEIDON.get());
-        gate(level, -18, 0, false, Blocks.POLISHED_BLACKSTONE_BRICKS, Blocks.CRYING_OBSIDIAN, Blocks.SHROOMLIGHT, ModContent.GATE_HADES.get());
+        gate(level, 0, -18, true, Blocks.QUARTZ_PILLAR, Blocks.GOLD_BLOCK, Blocks.CHISELED_QUARTZ_BLOCK, ModContent.GATE_ZEUS.get(), Blocks.QUARTZ_BRICKS);
+        gate(level, 18, 0, false, Blocks.PRISMARINE_BRICKS, Blocks.DARK_PRISMARINE, Blocks.SEA_LANTERN, ModContent.GATE_POSEIDON.get(), Blocks.PRISMARINE_BRICKS);
+        gate(level, -18, 0, false, Blocks.POLISHED_BLACKSTONE_BRICKS, Blocks.CRYING_OBSIDIAN, Blocks.SHROOMLIGHT, ModContent.GATE_HADES.get(), Blocks.POLISHED_BLACKSTONE_BRICKS);
         // south: the way out, back to the world you came from
-        gate(level, 0, 18, true, Blocks.MOSSY_STONE_BRICKS, Blocks.EMERALD_BLOCK, Blocks.VERDANT_FROGLIGHT, ModContent.GATE_LEAVE.get());
+        gate(level, 0, 18, true, Blocks.MOSSY_STONE_BRICKS, Blocks.EMERALD_BLOCK, Blocks.VERDANT_FROGLIGHT, ModContent.GATE_LEAVE.get(), Blocks.MOSSY_STONE_BRICKS);
         // flanking beacons in front of each gate
         for (int side = -1; side <= 1; side += 2) {
-            column(level, 5 * side, -15, Y + 1, 4, Blocks.QUARTZ_PILLAR);
-            set(level, 5 * side, Y + 5, -15, Blocks.GLOWSTONE);
-            column(level, 15, 5 * side, Y + 1, 4, Blocks.PRISMARINE_BRICKS);
-            set(level, 15, Y + 5, 5 * side, Blocks.SEA_LANTERN);
-            column(level, -15, 5 * side, Y + 1, 4, Blocks.POLISHED_BLACKSTONE);
-            set(level, -15, Y + 5, 5 * side, Blocks.SOUL_SOIL);
+            beacon(level, 5 * side, -15, Blocks.QUARTZ_PILLAR, Blocks.QUARTZ_BRICKS, Blocks.GLOWSTONE);
+            beacon(level, 15, 5 * side, Blocks.PRISMARINE_BRICKS, Blocks.PRISMARINE_BRICKS, Blocks.SEA_LANTERN);
+            beacon(level, -15, 5 * side, Blocks.POLISHED_BLACKSTONE, Blocks.POLISHED_BLACKSTONE_BRICKS, Blocks.SOUL_SOIL);
             set(level, -15, Y + 6, 5 * side, Blocks.SOUL_FIRE);
-            column(level, 5 * side, 15, Y + 1, 4, Blocks.MOSSY_STONE_BRICKS);
-            set(level, 5 * side, Y + 5, 15, Blocks.VERDANT_FROGLIGHT);
+            beacon(level, 5 * side, 15, Blocks.MOSSY_STONE_BRICKS, Blocks.MOSSY_STONE_BRICKS, Blocks.VERDANT_FROGLIGHT);
         }
         // two Forges of Chaos beside the central medallion
         set(level, 6, Y + 1, 6, ModContent.CHAOS_FORGE.get().defaultBlockState());
@@ -196,21 +224,16 @@ public final class RealmBuilder {
                         set(level, gx + dx, Y, gz + dz, Math.abs(dx) == 2 || Math.abs(dz) == 2 ? Blocks.MOSSY_STONE_BRICKS : Blocks.MOSS_BLOCK);
                     }
                 }
+                // a raised bed: a kerb of slabs round the moss
+                for (int dx = -2; dx <= 2; dx++) {
+                    for (int dz = -2; dz <= 2; dz++) {
+                        if (Math.abs(dx) == 2 || Math.abs(dz) == 2) set(level, gx + dx, Y + 1, gz + dz, Mason.slab(Blocks.MOSSY_STONE_BRICK_SLAB, false));
+                    }
+                }
                 Block[] flowers = {Blocks.PINK_TULIP, Blocks.ALLIUM, Blocks.AZURE_BLUET, Blocks.OXEYE_DAISY};
                 int n = 0;
                 for (int[] f : new int[][]{{-1, -1}, {1, -1}, {-1, 1}, {1, 1}, {0, -1}, {1, 0}}) set(level, gx + f[0], Y + 1, gz + f[1], flowers[n++ % flowers.length]);
-                column(level, gx, gz, Y + 1, 4, Blocks.CHERRY_LOG);
-                BlockState leaves = Blocks.CHERRY_LEAVES.defaultBlockState().setValue(net.minecraft.world.level.block.LeavesBlock.PERSISTENT, true);
-                for (int dx = -2; dx <= 2; dx++) {
-                    for (int dz = -2; dz <= 2; dz++) {
-                        for (int dy = 4; dy <= 6; dy++) {
-                            int reach = dy == 6 ? 1 : 2;
-                            if (Math.abs(dx) > reach || Math.abs(dz) > reach || (Math.abs(dx) == 2 && Math.abs(dz) == 2)) continue;
-                            if (dx == 0 && dz == 0 && dy == 4) continue;
-                            set(level, gx + dx, Y + dy, gz + dz, leaves);
-                        }
-                    }
-                }
+                tree(level, gx, gz);
             }
         }
         // the Oracle's Flame, on gilded stone

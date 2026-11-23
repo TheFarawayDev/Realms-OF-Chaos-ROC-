@@ -4392,8 +4392,10 @@ public final class SelfTest {
                                     && level.getBlockState(at.offset(r - 1, 1, r - 1)).isAir(), in + "its corners are cut off");
                         } else {
                             sawTallWide = true;
-                            check(level.getBlockState(at.offset(5, Passages.TALL, 2)).isAir() && !level.getBlockState(at.offset(5, Passages.TALL + 1, 2)).isAir()
-                                    && !level.getBlockState(at.offset(6, Passages.TALL, 2)).isAir(), in + "eleven across and eight high");
+                            // (its outermost blocks at the ceiling are the cornice: hanging stairs, not wall)
+                            check(level.getBlockState(at.offset(4, Passages.TALL, 2)).isAir() && level.getBlockState(at.offset(5, Passages.TALL, 2)).getBlock() instanceof net.minecraft.world.level.block.StairBlock
+                                    && level.getBlockState(at.offset(5, Passages.TALL - 1, 2)).isAir() && !level.getBlockState(at.offset(5, Passages.TALL + 1, 2)).isAir()
+                                    && !level.getBlockState(at.offset(6, Passages.TALL, 2)).isAir(), in + "eleven across and eight high, under a cornice");
                         }
                     }
                 }

@@ -3,6 +3,7 @@ package com.thefarawaydev.realmsofchaos.world;
 import com.thefarawaydev.realmsofchaos.ModContent;
 import com.thefarawaydev.realmsofchaos.god.Line;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
@@ -16,7 +17,7 @@ import net.minecraft.world.level.block.state.BlockState;
  * solid stands inside the fight ring, the entrance and exit corridors are flat, and the whole floor is enclosed.
  */
 public final class TowerBuilder {
-    public static final int LAYOUT_VERSION = 5;
+    public static final int LAYOUT_VERSION = 6;
 
     public enum Layout { FLAT, MOUNDS, PILLARS, PIT, DAIS, WAVES, MOAT, TERRACES, SPLIT, ZIGGURAT, SUMMIT }
 
@@ -185,6 +186,7 @@ public final class TowerBuilder {
         final HeightFn hf = heights(floor, 0);
         BlockState air = Blocks.AIR.defaultBlockState();
         BlockPos.MutableBlockPos pos = new BlockPos.MutableBlockPos();
+        final Mason.Stone wallStone = Mason.of(p.wall());
 
         int ri = (int) Math.ceil(Tower.WALL_OUTER) + 1;
         for (int x = -ri; x <= ri; x++) {
@@ -195,14 +197,23 @@ public final class TowerBuilder {
                 if (r >= Tower.WALL_INNER) {
                     // ---- the tower shell
                     double sector = (Math.atan2(z, x) + Math.PI) / (Math.PI * 2) * 16.0;
-                    boolean window = !summit && Math.abs(sector - Math.floor(sector) - 0.5) < 0.22;
+                    double off = Math.abs(sector - Math.floor(sector) - 0.5);
+                    boolean window = !summit && off < 0.22;
+                    boolean face = r < Tower.WALL_INNER + 1;            // the course a player sees from inside
+                    Direction out = Mason.outward(x, z);
                     int top = summit ? y0 + 4 : roofY;
                     for (int y = y0 - Tower.DEPTH; y <= top; y++) {
                         int h = y - y0;
-                        Block b = (h == 1 || h == 5 || h == 12) ? p.trim() : p.wall();
-                        if (window && h >= 6 && h <= 11) b = p.glass();
-                        if (!summit && r < Tower.WALL_INNER + 1 && h == 3 && Math.floorMod(x * 7 + z * 13, 9) == 0) b = p.light();
-                        set(level, x, y, z, b);
+                        BlockState b = ((h == 1 || h == 5 || h == 12) ? p.trim() : Mason.weather(p.wall(), x, y, z, 18)).defaultBlockState();
+                        if (window && h >= 6 && h <= 11) {
+                            // a window set deep in the wall under a round head: glass at the back, the reveal open
+                            boolean head = h == 11 && off >= 0.12;
+                            if (face) b = head ? Mason.stair(wallStone.stairs(), out, true) : Blocks.AIR.defaultBlockState();
+                            else if (!head) b = p.glass().defaultBlockState();
+                        }
+                        if (!summit && face && h == 3 && Math.floorMod(x * 7 + z * 13, 9) == 0) b = p.light().defaultBlockState();
+                        if (summit && face && h == 4) b = Mason.stair(wallStone.stairs(), out, true);
+                        level.setBlock(pos.set(x, y, z), b, 2);
                     }
                     if (summit) {
                         if (((x + z) & 1) == 0) set(level, x, y0 + 5, z, p.trim());      // crenellations
@@ -358,44 +369,89 @@ public final class TowerBuilder {
         int y0 = Tower.floorY(floor);
         boolean summit = floor == Tower.FLOORS;
         int roofY = y0 + Tower.ROOM_HEIGHT + 1;
+        Mason.Stone stone = Mason.of(p.wall());
+        Block lantern = line == Line.HADES ? Blocks.SOUL_LANTERN : Blocks.LANTERN;
 
         if (summit) {
-            // four obelisks on the diagonals crown the summit
+            // four obelisks on the diagonals crown the summit: a stepped base, a banded shaft, a capped lamp
             for (int sx = -1; sx <= 1; sx += 2) {
                 for (int sz = -1; sz <= 1; sz += 2) {
                     int x = 14 * sx, z = 14 * sz;
-                    for (int y = 1; y <= 7; y++) set(level, x, y0 + y, z, y == 4 ? p.trim() : p.pillar());
+                    BlockPos foot = new BlockPos(x, y0, z);
+                    Mason.column(level, foot, 7, p.pillar(), stone, true);
+                    set(level, x, y0 + 1, z, p.trim());
+                    set(level, x, y0 + 4, z, p.trim());
                     set(level, x, y0 + 8, z, p.light());
-                    if (line == Line.ZEUS) set(level, x, y0 + 9, z, Blocks.END_ROD);
+                    for (Direction d : Direction.Plane.HORIZONTAL) level.setBlock(foot.above(8).relative(d), Mason.slab(stone.slab(), false), 2);
+                    set(level, x, y0 + 9, z, line == Line.ZEUS ? Blocks.END_ROD : line == Line.HADES ? Blocks.SOUL_SOIL : p.trim());
+                    if (line == Line.HADES) set(level, x, y0 + 10, z, Blocks.SOUL_FIRE);
                 }
             }
             return;
         }
 
-        // engaged columns against the wall between the windows, floor to ceiling
+        // a cornice where the wall meets the ceiling: a stepped band of hanging stairs and slabs all the way round
+        int ri = Tower.WALL_INNER;
+        for (int x = -ri; x <= ri; x++) {
+            for (int z = -ri; z <= ri; z++) {
+                double r = Math.sqrt(x * x + z * z);
+                Direction out = Mason.outward(x, z);
+                if (r >= 20 && r < 21) {
+                    level.setBlock(new BlockPos(x, roofY - 1, z), Mason.stair(stone.stairs(), out, true), 2);
+                    set(level, x, roofY - 2, z, p.trim());
+                    level.setBlock(new BlockPos(x, roofY - 3, z), Mason.stair(stone.stairs(), out, true), 2);
+                } else if (r >= 19 && r < 20) {
+                    level.setBlock(new BlockPos(x, roofY - 1, z), Mason.stair(stone.stairs(), out, true), 2);
+                }
+            }
+        }
+
+        // engaged columns against the wall between the windows: a moulded base, a banded shaft, a capital
         for (int i = 0; i < 16; i++) {
             double a = Math.PI * 2 * i / 16;
             int x = (int) Math.round(Math.cos(a) * 20.2), z = (int) Math.round(Math.sin(a) * 20.2);
             if (Math.abs(x) <= 4) continue;                                  // leave the gates clear
+            BlockPos foot = new BlockPos(x, y0, z);
             for (int y = y0 + 1; y < roofY; y++) {
                 int h = y - y0;
-                set(level, x, y, z, (h == 1 || h == Tower.ROOM_HEIGHT) ? p.trim() : h == 6 ? p.light() : p.pillar());
+                set(level, x, y, z, (h == 1 || h == Tower.ROOM_HEIGHT - 3 || h == Tower.ROOM_HEIGHT) ? p.trim() : h == 6 ? p.light() : p.pillar());
+            }
+            for (Direction d : Direction.Plane.HORIZONTAL) {
+                BlockPos base = foot.above(1).relative(d), head = foot.above(Tower.ROOM_HEIGHT - 4).relative(d);
+                if (layout != Layout.MOAT && level.getBlockState(base).isAir() && Math.hypot(base.getX(), base.getZ()) > Tower.FIGHT_RADIUS + 1.5)
+                    level.setBlock(base, Mason.stair(stone.stairs(), d.getOpposite(), false), 2);
+                if (level.getBlockState(head).isAir()) level.setBlock(head, Mason.stair(stone.stairs(), d.getOpposite(), true), 2);
             }
         }
 
-        // ceiling: two ribs and five hanging lights, all well above anything on the floor
-        int ri = Tower.WALL_INNER;
+        // a ribbed ceiling: two rings and eight ribs running out from the inner ring to the columns
         for (int x = -ri; x <= ri; x++) {
             for (int z = -ri; z <= ri; z++) {
                 double r = Math.sqrt(x * x + z * z);
                 if ((r >= 7.5 && r < 8.5) || (r >= 15.5 && r < 16.5)) set(level, x, roofY - 1, z, p.trim());
             }
         }
-        int[][] hangers = {{0, 0, 4}, {9, 9, 3}, {-9, 9, 3}, {9, -9, 3}, {-9, -9, 3}};
-        for (int[] c : hangers) {
-            for (int d = 1; d < c[2]; d++) set(level, c[0], roofY - d, c[1], p.trim());
-            set(level, c[0], roofY - c[2], c[1], p.light());
+        for (int i = 0; i < 8; i++) {
+            double a = Math.PI * 2 * i / 8;
+            for (double t = 8; t < 19; t += 0.5) {
+                int x = (int) Math.round(Math.cos(a) * t), z = (int) Math.round(Math.sin(a) * t);
+                set(level, x, roofY - 1, z, p.trim());
+            }
         }
+
+        // a great chandelier at the middle and four lesser ones, hung on chains well above anything on the floor
+        set(level, 0, roofY - 1, 0, p.trim());
+        for (int d = 2; d <= 3; d++) set(level, 0, roofY - d, 0, Blocks.IRON_CHAIN);
+        set(level, 0, roofY - 4, 0, p.light());
+        for (Direction d : Direction.Plane.HORIZONTAL) {
+            BlockPos arm = new BlockPos(0, roofY - 4, 0).relative(d);
+            set(level, arm.getX(), arm.getY(), arm.getZ(), p.trim());
+            BlockPos tip = arm.relative(d);
+            level.setBlock(tip, Mason.stair(stone.stairs(), d.getOpposite(), true), 2);
+            level.setBlock(arm.below(), Mason.hanging(lantern), 2);
+        }
+        int[][] lesser = {{9, 9}, {-9, 9}, {9, -9}, {-9, -9}};
+        for (int[] c : lesser) Mason.chandelier(level, new BlockPos(c[0], roofY, c[1]), 4, lantern);
 
         // themed props under the windows (floors whose layout already fills the walkway keep it clear)
         if (layout != Layout.MOAT && layout != Layout.PILLARS) {
@@ -409,22 +465,8 @@ public final class TowerBuilder {
         }
     }
 
-    /** A gate arch across X centred at (cx, cz), standing on the floor at y0. */
+    /** A gate across X centred at (cx, cz), standing on the floor at y0. */
     private static void gate(ServerLevel level, int cx, int y0, int cz, Palette p, Block gateBlock) {
-        for (int i = -3; i <= 3; i++) {
-            int x = cx + i, a = Math.abs(i);
-            set(level, x, y0, cz, p.inlay());
-            if (a == 3) {
-                for (int y = 1; y <= 3; y++) set(level, x, y0 + y, cz, p.pillar());
-                set(level, x, y0 + 4, cz, p.light());
-            } else if (a == 2) {
-                for (int y = 1; y <= 5; y++) set(level, x, y0 + y, cz, p.pillar());
-                set(level, x, y0 + 6, cz, p.trim());
-            } else {
-                for (int y = 1; y <= 4; y++) set(level, x, y0 + y, cz, gateBlock);
-                set(level, x, y0 + 5, cz, p.trim());
-                set(level, x, y0 + 6, cz, a == 0 ? p.light() : p.trim());
-            }
-        }
+        Mason.gateway(level, new BlockPos(cx, y0, cz), Direction.NORTH, Mason.of(p.wall()), p.pillar(), p.trim(), p.light(), p.inlay(), gateBlock);
     }
 }

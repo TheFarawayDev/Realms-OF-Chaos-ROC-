@@ -70,7 +70,7 @@ public final class Passages {
     public static final int TALL = 8;
     public static final int MAX_SIZE = 6;
     public static final int X0 = 600, PITCH = 160;
-    public static final int LAYOUT_VERSION = 10;
+    public static final int LAYOUT_VERSION = 11;
     public static final String GUARDIAN_TAG = "realms_of_chaos_guardian";
     private static final String HUD = "hud." + RealmsOfChaos.MOD_ID + ".passage.";
 
@@ -871,7 +871,7 @@ public final class Passages {
                 for (int x = x0; x < Math.min(w, x0 + 4); x++) {
                     for (int z = -1; z < w; z++) {
                         for (int y = -2; y <= LEVEL_PITCH - 3; y++) {
-                            Block block = y <= 0 || y >= TALL + 1 ? p.fill() : p.wall();
+                            Block block = y <= 0 || y >= TALL + 1 ? p.fill() : Mason.weather(p.wall(), o.getX() + x, o.getY() + y, o.getZ() + z, 14);
                             at.set(o.getX() + x, o.getY() + y, o.getZ() + z);
                             // (what already stands is left alone: a rebuild only pays for what changed)
                             if (!level.getBlockState(at).is(block)) level.setBlock(at, block.defaultBlockState(), 2);
@@ -898,7 +898,12 @@ public final class Passages {
                             doorway(level, floor, p);
                             // a runner down the middle, a lamp over the middle of the corridor, an arch at either end
                             // (one step in from each room: the doorway itself stays a clean three by three, for rooms that shut theirs)
-                            if (k != 0 && (d == CORRIDOR_FROM + 1 || d == CORRIDOR_TO - 1)) set(level, floor.above(3), p.trim());
+                            if (k != 0 && (d == CORRIDOR_FROM + 1 || d == CORRIDOR_TO - 1)) {
+                                // the arch's haunches: stairs hung from the lintel, their backs to the walls
+                                net.minecraft.core.Direction side = dir == 0 ? (k < 0 ? net.minecraft.core.Direction.NORTH : net.minecraft.core.Direction.SOUTH)
+                                        : (k < 0 ? net.minecraft.core.Direction.WEST : net.minecraft.core.Direction.EAST);
+                                level.setBlock(floor.above(3), Mason.stair(Mason.of(p.wall()).stairs(), side, true), 2);
+                            }
                             if (k != 0) set(level, floor, p.top());
                             if (d == mid && k == 0) set(level, floor.above(4), p.light());
                             if (d == mid && jets) set(level, floor, Snares.VENT);
@@ -1039,6 +1044,17 @@ public final class Passages {
                 BlockState hung = lamp.defaultBlockState();
                 if (hung.hasProperty(net.minecraft.world.level.block.LanternBlock.HANGING)) hung = hung.setValue(net.minecraft.world.level.block.LanternBlock.HANGING, true);
                 level.setBlock(m.offset(k[0], 6, k[1]), hung, 2);
+            }
+        }
+        // a tall room's walls meet its ceiling in a cornice of hanging stairs
+        if (h > HEADROOM + 1) {
+            Block cornice = Mason.of(p.wall()).stairs();
+            for (int dx = -r; dx <= r; dx++) {
+                for (int dz = -r; dz <= r; dz++) {
+                    if (Math.max(Math.abs(dx), Math.abs(dz)) != r || cut(plan, c, dx, dz)) continue;
+                    BlockPos at = m.offset(dx, h, dz);
+                    if (level.getBlockState(at).isAir()) level.setBlock(at, Mason.stair(cornice, Mason.outward(dx, dz), true), 2);
+                }
             }
         }
         // a band of trim round its walls, and sconces set into them; a tall room has a second band under its ceiling

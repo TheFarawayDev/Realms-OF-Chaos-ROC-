@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.MinecraftServer;
@@ -38,7 +39,7 @@ import net.minecraft.world.level.levelgen.Heightmap;
  * keystone. Set the three keystones in the arch (right-click the pedestal) and the gate wakes.
  */
 public final class Ruins {
-    public static final int VERSION = 2;
+    public static final int VERSION = 3;
     /** How close a player has to come before a ruin is raised: a citadel is raised sooner, being seen from further off. */
     public static final int RAISE_DISTANCE = 96, CITADEL_RAISE_DISTANCE = 144;
     /**
@@ -196,9 +197,49 @@ public final class Ruins {
                 if (dx * dx + dz * dz > (r + 0.5) * (r + 0.5)) continue;
                 set(level, c.offset(dx, 0, dz), floor);
                 for (int dy = 1; dy <= 24 && !solid(level, c.offset(dx, -dy, dz)); dy++) set(level, c.offset(dx, -dy, dz), Blocks.STONE_BRICKS);
-                for (int dy = 1; dy <= 9; dy++) {
+                for (int dy = 1; dy <= 24; dy++) {
                     if (!level.getBlockState(c.offset(dx, dy, dz)).isAir()) set(level, c.offset(dx, dy, dz), Blocks.AIR);
                 }
+            }
+        }
+        // a hillside round the ruin is cut back in a slope rather than left standing as a wall over it, and grassed
+        int bank = 10;
+        for (int dx = -r - bank; dx <= r + bank; dx++) {
+            for (int dz = -r - bank; dz <= r + bank; dz++) {
+                double d = Math.sqrt(dx * dx + dz * dz);
+                if (d <= r + 0.5 || d > r + bank) continue;
+                int floorAt = 1 + (int) Math.round(d - r - 0.5);
+                boolean cut = false;
+                for (int dy = floorAt; dy <= 26; dy++) {
+                    BlockPos at = c.offset(dx, dy, dz);
+                    BlockState there = level.getBlockState(at);
+                    if (there.isAir() || !there.getFluidState().isEmpty()) continue;
+                    set(level, at, Blocks.AIR);
+                    cut = true;
+                }
+                // and where the land falls away from it, it stands on an earth bank sloping down, not a sheer pillar
+                int bankTop = 1 - floorAt;
+                if (!cut && !level.getBlockState(c.offset(dx, bankTop, dz)).isCollisionShapeFullBlock(level, c.offset(dx, bankTop, dz))) {
+                    boolean filled = false;
+                    for (int dy = bankTop; dy >= bankTop - 24; dy--) {
+                        BlockPos at = c.offset(dx, dy, dz);
+                        BlockState there = level.getBlockState(at);
+                        if (!there.getFluidState().isEmpty() || there.isCollisionShapeFullBlock(level, at)) break;
+                        set(level, at, dy == bankTop ? Blocks.GRASS_BLOCK : Blocks.DIRT);
+                        filled = true;
+                    }
+                    if (filled && level.getBlockState(c.offset(dx, bankTop, dz)).is(Blocks.GRASS_BLOCK)) {
+                        for (int dy = bankTop + 1; dy <= bankTop + 3; dy++) {
+                            BlockPos above = c.offset(dx, dy, dz);
+                            if (!level.getBlockState(above).isAir() && level.getBlockState(above).getFluidState().isEmpty()
+                                    && !level.getBlockState(above).isCollisionShapeFullBlock(level, above)) set(level, above, Blocks.AIR);
+                        }
+                    }
+                }
+                if (!cut) continue;
+                BlockPos ground = c.offset(dx, floorAt - 1, dz);
+                BlockState under = level.getBlockState(ground);
+                if (under.is(Blocks.DIRT) || under.is(Blocks.STONE) || under.is(Blocks.GRAVEL) || under.is(Blocks.COARSE_DIRT)) set(level, ground, Blocks.GRASS_BLOCK);
             }
         }
         return c;
@@ -247,57 +288,114 @@ public final class Ruins {
         return out;
     }
 
-    /** A broken plaza round a dead arch, with a pedestal before it, a campfire still smoking and a chest. */
+    private static void set(ServerLevel level, BlockPos pos, BlockState state) {
+        level.setBlock(pos, state, 2);
+    }
+
+    /**
+     * A ruined temple round a dead arch: a stepped round platform, a ring of twelve columns - a few still standing
+     * under their capitals, most broken off, some fallen across the stones - and the arch itself, a gateway of two
+     * columns under an entablature and a broken pediment, with a pedestal before it, braziers about it, grass and
+     * moss coming up between the stones, a campfire still smoking and a chest.
+     */
     private static BlockPos buildGate(ServerLevel level, Site site, Random random) {
         BlockPos c = prepare(level, site, Blocks.STONE_BRICKS);
         int r = site.kind.radius;
+        Mason.Stone stone = Mason.of(Blocks.STONE_BRICKS), mossy = Mason.of(Blocks.MOSSY_STONE_BRICKS);
         Block[] worn = {Blocks.STONE_BRICKS, Blocks.MOSSY_STONE_BRICKS, Blocks.CRACKED_STONE_BRICKS, Blocks.MOSSY_COBBLESTONE, Blocks.STONE_BRICKS};
-        for (int dx = -r; dx <= r; dx++) {
-            for (int dz = -r; dz <= r; dz++) {
-                if (dx * dx + dz * dz > (r + 0.5) * (r + 0.5)) continue;
-                set(level, c.offset(dx, 0, dz), worn[random.nextInt(worn.length)]);
+        for (int dx = -r - 1; dx <= r + 1; dx++) {
+            for (int dz = -r - 1; dz <= r + 1; dz++) {
+                double d = Math.sqrt(dx * dx + dz * dz);
+                if (d > r + 1.5) continue;
+                if (d > r + 0.5) {
+                    // the platform's edge: one step down all round, worn away here and there
+                    Direction in = Mason.outward(dx, dz).getOpposite();
+                    if (random.nextInt(7) != 0) set(level, c.offset(dx, 0, dz), Mason.stair((random.nextInt(3) == 0 ? mossy : stone).stairs(), in, false));
+                    continue;
+                }
+                // a paved floor: a ring of dressed stone round the edge, worn flags within
+                set(level, c.offset(dx, 0, dz), d > r - 0.5 ? Blocks.POLISHED_ANDESITE : worn[random.nextInt(worn.length)]);
             }
         }
         BlockPos pedestal = pedestalPos(c);
-        // the arch: two pillars, a lintel with three empty sockets, and nothing in between - yet
-        for (int dy = 0; dy <= LINTEL_UP; dy++) {
-            set(level, pedestal.offset(-2, dy, ARCH_BACK), dy % 2 == 0 ? Blocks.MOSSY_STONE_BRICKS : Blocks.STONE_BRICKS);
-            set(level, pedestal.offset(2, dy, ARCH_BACK), dy % 2 == 0 ? Blocks.CRACKED_STONE_BRICKS : Blocks.STONE_BRICKS);
+        BlockPos archMid = pedestal.offset(0, 0, ARCH_BACK);
+        // the gateway: a column either side of the opening, with base and capital, on a sill of polished stone
+        for (int dx = -3; dx <= 3; dx++) set(level, archMid.offset(dx, -1, 0), Blocks.POLISHED_ANDESITE);
+        for (int side = -1; side <= 1; side += 2) {
+            BlockPos col = archMid.offset(side * 2, 0, 0);
+            for (int dy = 0; dy < LINTEL_UP; dy++) set(level, col.above(dy), dy == 0 ? Blocks.CHISELED_STONE_BRICKS : dy == 2 ? Blocks.MOSSY_STONE_BRICKS : Blocks.STONE_BRICKS);
+            Direction outward = side < 0 ? Direction.WEST : Direction.EAST;
+            for (Direction d : new Direction[]{Direction.NORTH, Direction.SOUTH, outward}) {
+                set(level, col.relative(d), Mason.stair(stone.stairs(), d.getOpposite(), false));
+                set(level, col.above(LINTEL_UP - 1).relative(d), Mason.stair(stone.stairs(), d.getOpposite(), true));
+            }
+        }
+        // the entablature across the top, its three sockets waiting, and over it a pediment half fallen
+        for (int dx = -3; dx <= 3; dx++) {
+            set(level, archMid.offset(dx, LINTEL_UP, 0), Math.abs(dx) <= 1 ? Blocks.CHISELED_STONE_BRICKS : Blocks.STONE_BRICKS);
+            for (Direction d : new Direction[]{Direction.NORTH, Direction.SOUTH}) set(level, archMid.offset(dx, LINTEL_UP, 0).relative(d), Mason.slab(stone.slab(), true));
         }
         for (Line line : Line.values()) set(level, socket(pedestal, line), Blocks.CHISELED_STONE_BRICKS);
-        set(level, pedestal.offset(0, LINTEL_UP + 1, ARCH_BACK), Blocks.MOSSY_STONE_BRICKS);
-        for (int dx = -1; dx <= 1; dx++) set(level, pedestal.offset(dx, -1, ARCH_BACK), Blocks.POLISHED_ANDESITE);
+        Mason.pediment(level, archMid.above(LINTEL_UP + 1), Direction.NORTH, 7, mossy, Blocks.CHISELED_STONE_BRICKS);
+        int broken = random.nextBoolean() ? 1 : -1;                         // one side of the pediment has come down
+        for (int dx = 2; dx <= 3; dx++) for (int dy = 1; dy <= 4; dy++) set(level, archMid.offset(broken * dx, LINTEL_UP + dy, 0), Blocks.AIR);
+        set(level, archMid.offset(broken * 3, 0, 2), Blocks.CRACKED_STONE_BRICKS);
+        set(level, archMid.offset(broken * 4, 0, 2), Mason.slab(mossy.slab(), false));
         set(level, pedestal, ModContent.GATE_PEDESTAL.get());
         // a processional way from the south edge to the pedestal
         for (int dz = 0; dz <= r; dz++) for (int dx = -1; dx <= 1; dx++) set(level, c.offset(dx, 0, dz), dx == 0 ? Blocks.CHISELED_STONE_BRICKS : Blocks.POLISHED_ANDESITE);
         // a ring of twelve columns: some standing to their full height and lit, most broken, a few fallen across the stones
+        int[] heights = new int[12];
+        int[][] where = new int[12][];
         for (int i = 0; i < 12; i++) {
             double a = Math.PI * 2 * (i + 0.5) / 12;
             int cx = (int) Math.round(Math.sin(a) * (r - 1.5)), cz = (int) Math.round(Math.cos(a) * (r - 1.5));
+            where[i] = new int[]{cx, cz};
             if (Math.abs(cx) <= 2 && cz > 0) continue;                      // (the way in stays clear)
             int kind = random.nextInt(5), height = kind == 0 ? 6 : 1 + random.nextInt(4);
-            set(level, c.offset(cx, 1, cz), Blocks.CHISELED_STONE_BRICKS);
+            BlockPos foot = c.offset(cx, 0, cz);
+            set(level, foot.above(), Blocks.CHISELED_STONE_BRICKS);
+            for (Direction d : Direction.Plane.HORIZONTAL) {
+                if (level.getBlockState(foot.above().relative(d)).isAir()) set(level, foot.above().relative(d), Mason.stair(stone.stairs(), d.getOpposite(), false));
+            }
             if (kind == 1) {
-                // fallen: its drum lies along the ground, pointing out of the ring
+                // fallen: its drums lie along the ground, pointing out of the ring, the capital beyond them
                 int ox = Integer.signum(cx), oz = Integer.signum(cz);
-                for (int k = 1; k <= 3; k++) {
+                for (int k = 2; k <= 4; k++) {
                     BlockPos at = c.offset(cx + ox * k, 1, cz + oz * k);
-                    if (Math.abs(cx + ox * k) <= r + 1 && Math.abs(cz + oz * k) <= r + 1) set(level, at, k == 3 ? Blocks.CRACKED_STONE_BRICKS : Blocks.STONE_BRICKS);
+                    if (Math.abs(cx + ox * k) <= r + 1 && Math.abs(cz + oz * k) <= r + 1)
+                        set(level, at, k == 4 ? Mason.slab(mossy.slab(), false) : (k == 3 ? Blocks.CRACKED_STONE_BRICKS : Blocks.STONE_BRICKS).defaultBlockState());
                 }
                 continue;
             }
-            for (int dy = 2; dy <= height; dy++) set(level, c.offset(cx, dy, cz), dy == height && kind != 0 ? Blocks.CRACKED_STONE_BRICKS : Blocks.STONE_BRICKS);
+            heights[i] = height;
+            for (int dy = 2; dy <= height; dy++) set(level, c.offset(cx, dy, cz), (dy & 1) == 0 ? Blocks.STONE_BRICKS : Blocks.MOSSY_STONE_BRICKS);
             if (kind == 0) {
+                // still standing: a capital, and a lamp on it
+                for (Direction d : Direction.Plane.HORIZONTAL) set(level, c.offset(cx, height, cz).relative(d), Mason.stair(stone.stairs(), d.getOpposite(), true));
                 set(level, c.offset(cx, height + 1, cz), Blocks.CHISELED_STONE_BRICKS);
                 set(level, c.offset(cx, height + 2, cz), Blocks.LANTERN);
-            } else if (random.nextBoolean()) {
-                set(level, c.offset(cx, height + 1, cz), Blocks.MOSS_CARPET);
+            } else {
+                // broken off: a jagged top
+                Direction lean = Direction.Plane.HORIZONTAL.getRandomDirection(net.minecraft.util.RandomSource.create(random.nextLong()));
+                set(level, c.offset(cx, height + 1, cz), random.nextBoolean() ? Mason.stair(mossy.stairs(), lean, false) : Mason.slab(mossy.slab(), false));
             }
         }
-        // four braziers about the arch
+        // four braziers about the arch, each a bowl on a stepped foot
         for (int[] b2 : new int[][]{{-4, -4}, {4, -4}, {-4, 4}, {4, 4}}) {
-            set(level, c.offset(b2[0], 1, b2[1]), Blocks.POLISHED_ANDESITE);
-            set(level, c.offset(b2[0], 2, b2[1]), Blocks.CAMPFIRE);
+            BlockPos at = c.offset(b2[0], 1, b2[1]);
+            set(level, at, Blocks.POLISHED_ANDESITE);
+            for (Direction d : Direction.Plane.HORIZONTAL) if (level.getBlockState(at.relative(d)).isAir()) set(level, at.relative(d), Mason.stair(Blocks.POLISHED_ANDESITE_STAIRS, d.getOpposite(), false));
+            set(level, at.above(), Blocks.CAMPFIRE);
+        }
+        // grass and moss come up between the stones, away from the way in and the arch
+        for (int i = 0; i < 70; i++) {
+            int dx = random.nextInt(r * 2 + 1) - r, dz = random.nextInt(r * 2 + 1) - r;
+            if (dx * dx + dz * dz > r * r || Math.abs(dx) <= 2 && dz >= -6) continue;
+            BlockPos at = c.offset(dx, 1, dz);
+            if (!level.getBlockState(at).isAir() || !level.getBlockState(at.below()).isCollisionShapeFullBlock(level, at.below())) continue;
+            int roll = random.nextInt(6);
+            set(level, at, roll < 3 ? Blocks.MOSS_CARPET : roll < 5 ? Blocks.SHORT_GRASS : Blocks.FERN);
         }
         // whoever was here last left a fire going: its smoke is how the place is seen from far off
         set(level, c.offset(3, 1, 2), Blocks.CAMPFIRE);
