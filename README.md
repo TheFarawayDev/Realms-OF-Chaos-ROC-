@@ -21,6 +21,29 @@ The current build is an **Alpha**.
 * **Corridors.** Rooms stand further apart: seven blocks of lit corridor between two of them, with an arch at each
   end, instead of a doorway through a wall. Some corridors - more of them the deeper the level, and never beside
   the room you arrive in - have **jets** across the middle that smoke, then burn, then rest.
+* **Thirty-eight trap halls that do not say what they are.** A trap hall's floor is the floor of any other room:
+  no vents, no coloured tiles. The only signs are a few stained tiles, the bones of whoever came before, an urn or
+  two in the corners for whoever dares - and, for a moment before a tile goes off, a wisp over it. Each hall is
+  something that hurts, a way it moves across the floor, and a size of room:
+  * **Eleven hazards**: spikes, fire, soulfire, frost (slows and freezes), venom, lightning, rot (wither),
+    geysers (thrown at the ceiling and dropped), gales (shoved across the floor), lifting (levitated in a tall
+    room, then let go) and blight (blinded).
+  * **Twenty-two patterns**: rows, columns, a line that comes back, two lines that close on the middle, rings
+    that spread or close, a floor taken from the walls inwards, checkers, stripes, a weave, quarters, diagonals,
+    a creeping lattice, a cross-then-saltire, one or two turning arms, a scatter that is different every round,
+    hail, a row and column that cross somewhere new each time, the straight way from door to door being the
+    trap, **one narrow path** that shows itself only for a moment, and halls that **strike where you stood** -
+    never stand still.
+  * **Three sizes**: small (seven across - close work), ordinary, and wide (eleven across - a long way).
+  * **Harder the deeper.** The warning shortens with the level, and the nastier halls only turn up on levels
+    dangerous enough for them. No hall is on a level twice.
+  * **Always fair.** The three tiles just inside every doorway are safe, to watch from. Every hall is proved
+    crossable - by a walker slower than a walk, at every depth - before the mod is built (`Gauntlet.crossable`).
+  * **Learnt by being bitten.** The first time a kind of hall catches you a card names it - *Ember Tide*, *The
+    Jaw*, *Rime Wheel*, *Hollow Steps* - and says how it is beaten.
+* **Corridors that wind.** Fewer than half the corridors between rooms run straight. The rest go round a baffle
+  that hides what is ahead - to one side, or either - or pass a nook with an urn at the back of it. The maze
+  itself turns three times as often as it carries straight on, and has fewer short cuts.
 * **Laid out like a stronghold.** No doorway joins two rooms of the same kind - corridors included - and a kind
   already used on a level is less likely to be used again, so a level is a run of different rooms rather than
   the same hall three times. Two new kinds: **cells**, four barred cells in the corners with a way into each
@@ -559,7 +582,7 @@ on a real server: data loading, the hub, building and walking every floor of eve
 towers through the altar menu (with rematches) and all 42 passages, the Ruined Gate and its keystones, the story's
 chapters, the hub's residents, all sixty-three sentinels and their traits, craters, the custom screens and their buttons, the tutorial, impacts, the
 floor's eruptions and the gods' last stands, the three phases of a trial (health gates, pylons, stances, the collapsing floor and its restoration, strikes), gear and difficulty scaling,
-the compass scanner, relays and jammers, waygates, the Field Tower Bag, hub tiers and bounties, the rune chambers, the sidebar, level counts and names, building ahead, the four puzzle rooms (beam rooms laid out at random, with decoys and a limit of turns), no two rooms of a kind joined, cells and storerooms, afflictions, cards and lines not said twice, crusher and dart halls, urns and tablets, the Passage Chart, the mastery tree, the menu artwork, cards and tips, the drawn boss bar and the opt-in cast bar, settings, the gods' memory of each player, room shapes and stairwells, the spike, flame and blade halls, parries, ripostes, momentum and plunges, heavy blows, boons, the gate's facing, the shrine's chart, the bestiary, the frames of each phase, shut gates, corridors and their jets, the arc and gas halls, the chart's memory, plain-word fallbacks, every menu's words against the language file, parties, group scaling and per-player loot, the wall protection (built, checked room by room for reachability,
+the compass scanner, relays and jammers, waygates, the Field Tower Bag, hub tiers and bounties, the rune chambers, the sidebar, level counts and names, building ahead, the four puzzle rooms (beam rooms laid out at random, with decoys and a limit of turns), no two rooms of a kind joined, cells and storerooms, afflictions, cards and lines not said twice, the thirty-eight trap halls (each proved crossable, each hazard, a chasing hall, a small hall), winding corridors, crusher and dart halls, urns and tablets, the Passage Chart, the mastery tree, the menu artwork, cards and tips, the drawn boss bar and the opt-in cast bar, settings, the gods' memory of each player, room shapes and stairwells, the spike, flame and blade halls, parries, ripostes, momentum and plunges, heavy blows, boons, the gate's facing, the shrine's chart, the bestiary, the frames of each phase, shut gates, corridors and their jets, the arc and gas halls, the chart's memory, plain-word fallbacks, every menu's words against the language file, parties, group scaling and per-player loot, the wall protection (built, checked room by room for reachability,
 seals struck, guardians, shrine, map), every god's signature move, the relic moves, the forging quick-time rounds,
 tier materials, each tarot card, the Codex, leaving the realms, the welcome and the anti-stuck safeguards.
 

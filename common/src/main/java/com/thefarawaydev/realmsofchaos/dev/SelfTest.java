@@ -4249,7 +4249,7 @@ public final class SelfTest {
                         for (Passages.Cell c : plan.cells()) {
                             Passages.Kind kind = plan.kind(c);
                             int h = plan.height(c);
-                            check(h >= Passages.HEADROOM && h <= Passages.TALL && plan.half(c) == (plan.wide(c) ? 5 : 4), plan.label() + ": a room's size is one the level can hold");
+                            check(h >= Passages.HEADROOM && h <= Passages.TALL && plan.half(c) == (plan.wide(c) ? 5 : plan.small(c) ? 3 : 4), plan.label() + ": a room's size is one the level can hold");
                             if (kind == Passages.Kind.BEAM) {
                                 check(plan.wide(c) && h == 7 && plan.form(c) == Passages.FORM_PLAIN, plan.label() + ": a beam room is wide, for its mirrors");
                             } else if (com.thefarawaydev.realmsofchaos.world.Rooms.isPuzzle(kind) || com.thefarawaydev.realmsofchaos.world.Snares.is(kind) || kind == Passages.Kind.TRAP || kind == Passages.Kind.CRUSHER
@@ -4798,7 +4798,7 @@ public final class SelfTest {
                 Passages.Cell west = null, east = null;
                 for (Passages.Cell c : plan.cells()) {
                     Passages.Cell e = new Passages.Cell(c.x() + 1, c.z());
-                    if (west == null && c.x() + 1 < plan.size && plan.connected(c, e) && !plan.wide(c) && !plan.wide(e)) { west = c; east = e; }
+                    if (west == null && c.x() + 1 < plan.size && plan.connected(c, e) && !plan.wide(c) && !plan.wide(e) && !plan.small(c) && !plan.small(e) && plan.run(c, 0) == Passages.RUN_STRAIGHT) { west = c; east = e; }
                 }
                 check(west != null, "test setup: two ordinary rooms side by side");
                 BlockPos m = plan.centre(west);
@@ -4966,7 +4966,7 @@ public final class SelfTest {
                                 times.merge(kind, 1, Integer::sum);
                                 for (Passages.Cell n : new Passages.Cell[]{new Passages.Cell(c.x() + 1, c.z()), new Passages.Cell(c.x(), c.z() + 1)}) {
                                     if (n.x() >= plan.size || n.z() >= plan.size || !plan.connected(c, n)) continue;
-                                    check(plan.kind(n) != kind, plan.label() + " level " + (stage + 1) + ": a doorway joins two rooms of one kind: " + kind);
+                                    check(plan.kind(n) != kind || (kind == Passages.Kind.GAUNTLET && plan.variant(n) != plan.variant(c)), plan.label() + " level " + (stage + 1) + ": a doorway joins two rooms of one kind: " + kind);
                                 }
                                 if (kind != Passages.Kind.BEAM) continue;
                                 var beam = com.thefarawaydev.realmsofchaos.world.Rooms.beam(plan, c);
@@ -4995,6 +4995,11 @@ public final class SelfTest {
                             }
                             for (var e : times.entrySet()) {
                                 if (e.getKey() == Passages.Kind.SEAL || e.getKey() == Passages.Kind.TREASURE || e.getKey() == Passages.Kind.ARENA) continue;
+                                // (trap halls are many kinds under one name: no two on a level are the same hall)
+                                if (e.getKey() == Passages.Kind.GAUNTLET) {
+                                    check(e.getValue() * 2 <= plan.size * plan.size, plan.label() + ": a level is not all trap halls: " + e.getValue());
+                                    continue;
+                                }
                                 check(e.getValue() * 3 <= plan.size * plan.size + 2, plan.label() + ": no one kind of room makes up a level: " + e.getValue() + " of " + e.getKey());
                             }
                             Passages.Affliction a = plan.affliction();
@@ -5157,6 +5162,296 @@ public final class SelfTest {
             } finally {
                 com.thefarawaydev.realmsofchaos.ui.Cards.clear(hero);
                 Passages.unshelter(hero);
+                hero.remove(net.minecraft.world.entity.Entity.RemovalReason.DISCARDED);
+                Realm.testAlias(Level.OVERWORLD, Realm.ABYSS);
+            }
+        });
+
+        step("trap halls: thirty-eight of them, in three sizes, none saying what it is, every one crossable by watching it; corridors that wind", () -> {
+            ServerPlayer hero = fakePlayer(server, level, "RocTreader");
+            com.thefarawaydev.realmsofchaos.world.Gauntlets.forget();
+            com.thefarawaydev.realmsofchaos.ui.Cards.clear(hero);
+            level.addNewPlayer(hero);
+            try {
+                // ---- the halls on paper
+                com.thefarawaydev.realmsofchaos.world.Gauntlet.Variant[] all = com.thefarawaydev.realmsofchaos.world.Gauntlet.Variant.values();
+                java.util.Set<com.thefarawaydev.realmsofchaos.world.Gauntlet.Hazard> hazards = new java.util.HashSet<>();
+                java.util.Set<com.thefarawaydev.realmsofchaos.world.Gauntlet.Pattern> patterns = new java.util.HashSet<>();
+                java.util.Set<com.thefarawaydev.realmsofchaos.world.Gauntlet.Size> sizes = new java.util.HashSet<>();
+                boolean[][] doorSets = {{true, true, true, true}, {true, false, true, false}, {false, true, false, true}, {true, true, false, false}, {false, false, true, false}};
+                for (com.thefarawaydev.realmsofchaos.world.Gauntlet.Variant v : all) {
+                    hazards.add(v.hazard);
+                    patterns.add(v.pattern);
+                    sizes.add(v.size);
+                    check(!com.thefarawaydev.realmsofchaos.ui.Words.of(com.thefarawaydev.realmsofchaos.world.Gauntlets.name(v)).startsWith("trap.") && !com.thefarawaydev.realmsofchaos.ui.Words.of(com.thefarawaydev.realmsofchaos.world.Gauntlets.lesson(v.pattern)).startsWith("trap."), v + " has a name, and a lesson to teach");
+                    check(v.warn(20.0) >= 7 && v.warn(20.0) < v.warn(0.0) && v.warn(0.0) == v.warn, v + " warns for less time the deeper the level, but always warns");
+                    if (v.pattern == com.thefarawaydev.realmsofchaos.world.Gauntlet.Pattern.CHASE) continue;
+                    check(v.warn + v.hold <= v.round(), v + ": a tile is let go before its turn comes round again");
+                    for (double threat : new double[]{0.0, 8.0, 20.0}) {
+                        for (boolean[] doors : doorSets) {
+                            int from = doors[0] ? 0 : doors[1] ? 1 : 2;
+                            check(com.thefarawaydev.realmsofchaos.world.Gauntlet.crossable(v, v.warn(threat), doors, 4242L + v.ordinal(), from), v + " can be crossed by somebody who watches it (threat " + threat + ")");
+                        }
+                        double danger = com.thefarawaydev.realmsofchaos.world.Gauntlet.danger(v, v.warn(threat), doorSets[0], 4242L);
+                        check(danger > 0.04 && danger < 0.75, v + " is neither harmless nor a wall: " + danger);
+                    }
+                }
+                check(all.length >= 36 && hazards.size() == com.thefarawaydev.realmsofchaos.world.Gauntlet.Hazard.values().length && patterns.size() == com.thefarawaydev.realmsofchaos.world.Gauntlet.Pattern.values().length && sizes.size() == 3,
+                        "thirty-six or more halls, using every hazard, every pattern and every size: " + all.length);
+                check(com.thefarawaydev.realmsofchaos.world.Gauntlet.Size.SMALL.half == 3 && com.thefarawaydev.realmsofchaos.world.Gauntlet.Size.NORMAL.half == 4 && com.thefarawaydev.realmsofchaos.world.Gauntlet.Size.WIDE.half == 5, "small, ordinary and wide");
+                // (a path hall: its path is never live, the rest of the floor is - and the doormats never are)
+                boolean[] four = doorSets[0];
+                com.thefarawaydev.realmsofchaos.world.Gauntlet.Variant way = com.thefarawaydev.realmsofchaos.world.Gauntlet.Variant.NARROW_WAY;
+                int pathTiles = 0, liveOff = 0;
+                for (int dx = -4; dx <= 4; dx++) {
+                    for (int dz = -4; dz <= 4; dz++) {
+                        boolean on = com.thefarawaydev.realmsofchaos.world.Gauntlet.onPath(4, four, 99L, dx, dz), mat = com.thefarawaydev.realmsofchaos.world.Gauntlet.doormat(4, four, dx, dz);
+                        boolean everLive = false;
+                        for (int t = 0; t < way.round(); t++) everLive |= com.thefarawaydev.realmsofchaos.world.Gauntlet.state(way, way.warn, four, 99L, dx, dz, t) == com.thefarawaydev.realmsofchaos.world.Gauntlet.LIVE;
+                        if (on) pathTiles++;
+                        check(!(on || mat) || !everLive, "a path tile or a doormat is never live");
+                        if (!on && !mat && everLive) liveOff++;
+                    }
+                }
+                check(pathTiles >= 17 && pathTiles <= 40 && liveOff + pathTiles >= 70, "a narrow path, and everything else a trap: " + pathTiles + " safe, " + liveOff + " not");
+
+                // ---- the halls in the plans, and the corridors
+                java.util.Set<com.thefarawaydev.realmsofchaos.world.Gauntlet.Variant> seen = new java.util.HashSet<>();
+                int halls = 0, rooms = 0, corridors = 0, jets = 0;
+                int[] runs = new int[6];
+                Passages.Plan best = null;
+                int bestScore = -1;
+                for (Line line : Line.values()) {
+                    for (int index = 1; index <= Passages.COUNT; index++) {
+                        for (int stage = 0; stage < Passages.stages(level, line, index); stage++) {
+                            Passages.Plan plan = Passages.plan(level, line, index, stage);
+                            java.util.Set<com.thefarawaydev.realmsofchaos.world.Gauntlet.Variant> here = new java.util.HashSet<>();
+                            boolean chase = false, small = false, plain = false;
+                            java.util.Set<Integer> runsHere = new java.util.HashSet<>();
+                            for (Passages.Cell c : plan.cells()) {
+                                rooms++;
+                                for (int dir = 0; dir < 2; dir++) {
+                                    Passages.Cell n = dir == 0 ? new Passages.Cell(c.x() + 1, c.z()) : new Passages.Cell(c.x(), c.z() + 1);
+                                    int run = plan.run(c, dir);
+                                    if (n.x() >= plan.size || n.z() >= plan.size || !plan.connected(c, n)) {
+                                        check(run == Passages.RUN_STRAIGHT && !plan.jets(c, dir), "no corridor, no bend and no jets");
+                                        continue;
+                                    }
+                                    corridors++;
+                                    runs[run]++;
+                                    runsHere.add(run);
+                                    if (plan.jets(c, dir)) {
+                                        jets++;
+                                        check(run == Passages.RUN_STRAIGHT, plan.label() + ": jets only where a corridor runs straight");
+                                    }
+                                }
+                                com.thefarawaydev.realmsofchaos.world.Gauntlet.Variant v = plan.variant(c);
+                                check((v != null) == (plan.kind(c) == Passages.Kind.GAUNTLET), plan.label() + ": a trap hall has a variant, and nothing else has");
+                                check(plan.small(c) == (v != null && v.size == com.thefarawaydev.realmsofchaos.world.Gauntlet.Size.SMALL), plan.label() + ": only a small trap hall is a small room");
+                                if (v == null) continue;
+                                halls++;
+                                seen.add(v);
+                                check(here.add(v), plan.label() + ": the same hall twice on one level: " + v);
+                                check(v.threat <= plan.threat && plan.half(c) == v.size.half, plan.label() + ": " + v + " is on a level dangerous enough for it, in a room its own size");
+                                check(v.hazard != com.thefarawaydev.realmsofchaos.world.Gauntlet.Hazard.LEVITATE || plan.height(c) == Passages.TALL, plan.label() + ": a hall that lifts people has a long way to drop them");
+                                BlockPos m = plan.centre(c);
+                                check(c.equals(plan.cellAt(m.offset(plan.half(c), 1, 0))) && plan.cellAt(m.offset(plan.half(c) + 1, 1, 0)) == null, plan.label() + ": the room ends where its walls are");
+                                if (v.pattern == com.thefarawaydev.realmsofchaos.world.Gauntlet.Pattern.CHASE) chase = true;
+                                else if (v.size == com.thefarawaydev.realmsofchaos.world.Gauntlet.Size.SMALL) small = true;
+                                else if (v.pattern != com.thefarawaydev.realmsofchaos.world.Gauntlet.Pattern.PATH) plain = true;
+                            }
+                            int score = (chase ? 4 : 0) + (small ? 4 : 0) + (plain ? 4 : 0) + (runsHere.contains(Passages.RUN_SPLIT) ? 1 : 0)
+                                    + (runsHere.contains(Passages.RUN_BEND_LOW) || runsHere.contains(Passages.RUN_BEND_HIGH) ? 1 : 0)
+                                    + (runsHere.contains(Passages.RUN_NOOK_LOW) || runsHere.contains(Passages.RUN_NOOK_HIGH) ? 1 : 0);
+                            if (score > bestScore) {
+                                bestScore = score;
+                                best = plan;
+                            }
+                        }
+                    }
+                }
+                RESULTS.add("        trap halls in this world: " + halls + " of " + rooms + " rooms, " + seen.size() + " of " + all.length + " kinds; corridors " + java.util.Arrays.toString(runs) + ", " + jets + " with jets");
+                check(halls * 12 >= rooms && halls * 3 <= rooms && seen.size() >= 30, "trap halls are a good share of the rooms, of thirty kinds or more: " + halls + " of " + rooms + ", " + seen.size() + " kinds");
+                for (int run = 0; run < 6; run++) check(runs[run] * 25 >= corridors, "every way a corridor can run turns up: " + java.util.Arrays.toString(runs));
+                check(runs[Passages.RUN_STRAIGHT] * 2 < corridors && jets >= 20, "fewer than half the corridors run straight: " + runs[0] + " of " + corridors);
+                check(bestScore == 15, "test setup: a level with a chasing hall, a small hall, an ordinary one and every kind of corridor: " + bestScore);
+
+                // ---- one level built
+                Passages.Plan plan = best;
+                Realm.testAlias(Level.OVERWORLD, Realm.ofLine(plan.line));
+                Passages.build(level, plan);
+                checkPassage(level, plan, "trap level " + plan.label() + ": ");
+                Passages.Cell plainCell = null, chaseCell = null, smallCell = null;
+                for (Passages.Cell c : plan.cells()) {
+                    com.thefarawaydev.realmsofchaos.world.Gauntlet.Variant v = plan.variant(c);
+                    if (v == null) continue;
+                    if (v.pattern == com.thefarawaydev.realmsofchaos.world.Gauntlet.Pattern.CHASE) chaseCell = c;
+                    else if (v.size == com.thefarawaydev.realmsofchaos.world.Gauntlet.Size.SMALL) smallCell = c;
+                    else if (v.pattern != com.thefarawaydev.realmsofchaos.world.Gauntlet.Pattern.PATH && plainCell == null) plainCell = c;
+                    // nothing gives a hall away but stains, bones and an urn: no vents, no coloured tiles
+                    BlockPos m = plan.centre(c);
+                    int r = plan.half(c), stains = 0, skulls = 0, urns = 0;
+                    for (int dx = -r; dx <= r; dx++) {
+                        for (int dz = -r; dz <= r; dz++) {
+                            var floor = level.getBlockState(m.offset(dx, 0, dz));
+                            if (floor.is(com.thefarawaydev.realmsofchaos.world.Gauntlets.stain(v.hazard))) stains++;
+                            else check(com.thefarawaydev.realmsofchaos.world.Gauntlets.ordinaryFloor(plan, floor), plan.label() + ": a trap hall's floor is any room's floor, but for a few stains: " + floor);
+                            if (level.getBlockState(m.offset(dx, 1, dz)).is(Blocks.SKELETON_SKULL)) skulls++;
+                            if (level.getBlockState(m.offset(dx, 1, dz)).is(ModContent.ANCIENT_URN.get())) urns++;
+                        }
+                    }
+                    check(stains >= 1 && stains <= r + 2 && skulls == 1 && urns >= 1 && urns <= 2, plan.label() + ": " + v + " has its stains, its bones and its urns: " + stains + ", " + skulls + ", " + urns);
+                    check(solid(level, m.offset(r + 1, 1, 2)) && level.getBlockState(m.offset(r, 1, 2)).isAir(), plan.label() + ": walls where a room this size has them");
+                }
+
+                // ---- a hall bites: a warning, then harm, then a name for it
+                Passages.Cell cell = plainCell;
+                com.thefarawaydev.realmsofchaos.world.Gauntlet.Variant v = plan.variant(cell);
+                BlockPos m = plan.centre(cell);
+                boolean[] doors = com.thefarawaydev.realmsofchaos.world.Gauntlets.doors(plan, cell);
+                long base = 2_000_000L, warnAt = -1, liveAt = -1;
+                int tx = 0, tz = 1;
+                boolean sawSafe = false;
+                for (long t = base; t < base + 12L * v.round() && liveAt < 0; t++) {
+                    int state = com.thefarawaydev.realmsofchaos.world.Gauntlets.state(plan, cell, tx, tz, t);
+                    if (state == com.thefarawaydev.realmsofchaos.world.Gauntlet.SAFE) sawSafe = true;
+                    if (!sawSafe) continue;
+                    if (state == com.thefarawaydev.realmsofchaos.world.Gauntlet.WARN && warnAt < 0) warnAt = t;
+                    if (state == com.thefarawaydev.realmsofchaos.world.Gauntlet.LIVE && warnAt >= 0) liveAt = t;
+                    if (state == com.thefarawaydev.realmsofchaos.world.Gauntlet.SAFE) warnAt = -1;
+                }
+                check(warnAt >= 0 && liveAt - warnAt == v.warn(plan.threat), v + ": a tile is warned of for exactly its warning before it goes: " + (liveAt - warnAt));
+                hero.setPos(m.getX() + tx + 0.5, m.getY() + 1, m.getZ() + tz + 0.5);
+                hero.setHealth(hero.getMaxHealth());
+                hero.removeAllEffects();
+                hero.damageCooldownTime = 0;
+                settle(level);
+                check(!com.thefarawaydev.realmsofchaos.world.Gauntlets.known(hero, v), "test setup: a hall this climber has not met");
+                com.thefarawaydev.realmsofchaos.world.Gauntlets.tend(level, plan, cell, warnAt);
+                check(hero.getHealth() == hero.getMaxHealth() && !com.thefarawaydev.realmsofchaos.world.Gauntlets.known(hero, v), "a warning harms nobody, and says nothing");
+                com.thefarawaydev.realmsofchaos.world.Gauntlets.tend(level, plan, cell, liveAt);
+                check(hero.getHealth() < hero.getMaxHealth(), v + " hurts whoever stands on a live tile: " + hero.getHealth());
+                check(com.thefarawaydev.realmsofchaos.world.Gauntlets.known(hero, v) && com.thefarawaydev.realmsofchaos.ui.Cards.showing(hero) != null
+                        && com.thefarawaydev.realmsofchaos.ui.Cards.showing(hero).lines().get(0).equals(com.thefarawaydev.realmsofchaos.ui.Words.of(com.thefarawaydev.realmsofchaos.world.Gauntlets.name(v))), "bitten once, the hall has a name and a way through");
+                float after = hero.getHealth();
+                hero.damageCooldownTime = 0;
+                if (com.thefarawaydev.realmsofchaos.world.Gauntlets.state(plan, cell, tx, tz, liveAt + 1) == com.thefarawaydev.realmsofchaos.world.Gauntlet.LIVE) {
+                    com.thefarawaydev.realmsofchaos.world.Gauntlets.tend(level, plan, cell, liveAt + 1);
+                    check(hero.getHealth() == after, "one bite at a time");
+                }
+                // (on a doormat, nothing, for a whole round)
+                int side = doors[0] ? 0 : doors[1] ? 1 : doors[2] ? 2 : 3;
+                int r = plan.half(cell);
+                hero.setPos(m.getX() + com.thefarawaydev.realmsofchaos.world.Gauntlet.SIDES[side][0] * r + 0.5, m.getY() + 1, m.getZ() + com.thefarawaydev.realmsofchaos.world.Gauntlet.SIDES[side][1] * r + 0.5);
+                hero.setDeltaMovement(0, 0, 0);
+                hero.setHealth(hero.getMaxHealth());
+                hero.removeAllEffects();
+                hero.clearFire();
+                settle(level);
+                for (long t = base + 5000; t < base + 5000 + v.round(); t++) {
+                    hero.damageCooldownTime = 0;
+                    com.thefarawaydev.realmsofchaos.world.Gauntlets.tend(level, plan, cell, t);
+                }
+                check(hero.getHealth() == hero.getMaxHealth(), "just inside a doorway is always safe: somewhere to watch from");
+
+                // ---- every hazard does its own harm
+                for (com.thefarawaydev.realmsofchaos.world.Gauntlet.Hazard hazard : com.thefarawaydev.realmsofchaos.world.Gauntlet.Hazard.values()) {
+                    com.thefarawaydev.realmsofchaos.world.Gauntlet.Variant of = null;
+                    for (com.thefarawaydev.realmsofchaos.world.Gauntlet.Variant each : all) if (each.hazard == hazard && of == null) of = each;
+                    hero.setPos(m.getX() + 0.5, m.getY() + 1, m.getZ() + 0.5);
+                    hero.setHealth(hero.getMaxHealth());
+                    hero.removeAllEffects();
+                    hero.clearFire();
+                    hero.setTicksFrozen(0);
+                    hero.setDeltaMovement(0, 0, 0);
+                    hero.damageCooldownTime = 0;
+                    com.thefarawaydev.realmsofchaos.world.Gauntlets.strike(level, plan, of, hero, 2L);
+                    boolean own = switch (hazard) {
+                        case SPIKE -> hero.getDeltaMovement().y > 0.3;
+                        case FLAME, SOULFIRE -> hero.getRemainingFireTicks() > 0;
+                        case FROST -> hero.getTicksFrozen() > 0 && hero.hasEffect(net.minecraft.world.effect.MobEffects.SLOWNESS);
+                        case VENOM -> hero.hasEffect(net.minecraft.world.effect.MobEffects.POISON);
+                        case SHOCK -> true;
+                        case WITHER -> hero.hasEffect(net.minecraft.world.effect.MobEffects.WITHER);
+                        case GEYSER -> hero.getDeltaMovement().y >= 0.9;
+                        case GALE -> Math.abs(hero.getDeltaMovement().x) + Math.abs(hero.getDeltaMovement().z) > 1.0;
+                        case LEVITATE -> hero.hasEffect(net.minecraft.world.effect.MobEffects.LEVITATION);
+                        case BLIGHT -> hero.hasEffect(net.minecraft.world.effect.MobEffects.BLINDNESS);
+                    };
+                    check(hero.getHealth() < hero.getMaxHealth() && own, hazard + " hurts, and in its own way");
+                }
+                hero.removeAllEffects();
+                hero.clearFire();
+                hero.setTicksFrozen(0);
+
+                // ---- a chasing hall: it strikes where somebody stood
+                com.thefarawaydev.realmsofchaos.world.Gauntlets.forget();
+                cell = chaseCell;
+                v = plan.variant(cell);
+                m = plan.centre(cell);
+                int warn = v.warn(plan.threat);
+                long look = (base / v.turn + 50) * v.turn;
+                hero.setPos(m.getX() + 0.5, m.getY() + 1, m.getZ() + 1.5);
+                hero.setDeltaMovement(0, 0, 0);
+                hero.setHealth(hero.getMaxHealth());
+                hero.damageCooldownTime = 0;
+                settle(level);
+                check(com.thefarawaydev.realmsofchaos.world.Gauntlets.state(plan, cell, 0, 1, look) == com.thefarawaydev.realmsofchaos.world.Gauntlet.SAFE, "a chasing hall does nothing until it sees somebody");
+                com.thefarawaydev.realmsofchaos.world.Gauntlets.tend(level, plan, cell, look);
+                check(com.thefarawaydev.realmsofchaos.world.Gauntlets.state(plan, cell, 0, 1, look) == com.thefarawaydev.realmsofchaos.world.Gauntlet.WARN && hero.getHealth() == hero.getMaxHealth(), "it marks the tile they stand on");
+                // (and one who walks away from the mark is not hurt by it)
+                hero.setPos(m.getX() + 0.5, m.getY() + 1, m.getZ() - 1.5);
+                settle(level);
+                check(com.thefarawaydev.realmsofchaos.world.Gauntlets.state(plan, cell, 0, 1, look + warn) == com.thefarawaydev.realmsofchaos.world.Gauntlet.LIVE, "then that tile goes off");
+                com.thefarawaydev.realmsofchaos.world.Gauntlets.tend(level, plan, cell, look + warn);
+                check(hero.getHealth() == hero.getMaxHealth(), "whoever has moved on is not there to be hurt");
+                com.thefarawaydev.realmsofchaos.world.Gauntlets.forget();
+                com.thefarawaydev.realmsofchaos.world.Gauntlets.mark(plan, cell, 0, -2, look + 1000);
+                hero.damageCooldownTime = 0;
+                com.thefarawaydev.realmsofchaos.world.Gauntlets.tend(level, plan, cell, look + 1000 + warn);
+                check(hero.getHealth() < hero.getMaxHealth(), "whoever stood still is");
+                hero.removeAllEffects();
+                hero.clearFire();
+
+                // ---- a small hall: seven across, its doorways a block longer
+                m = plan.centre(smallCell);
+                doors = com.thefarawaydev.realmsofchaos.world.Gauntlets.doors(plan, smallCell);
+                for (side = 0; side < 4; side++) {
+                    BlockPos wall = m.offset(com.thefarawaydev.realmsofchaos.world.Gauntlet.SIDES[side][0] * 4, 1, com.thefarawaydev.realmsofchaos.world.Gauntlet.SIDES[side][1] * 4);
+                    check(doors[side] ? level.getBlockState(wall).isAir() : solid(level, wall), "a small hall's wall is a block nearer, open where there is a doorway");
+                }
+                check(level.getBlockState(m.offset(3, 1, 3)).is(Blocks.SKELETON_SKULL) || level.getBlockState(m.offset(3, 1, 3)).is(ModContent.ANCIENT_URN.get()) || level.getBlockState(m.offset(3, 1, 3)).isAir(), "and its corner is three out");
+
+                // ---- corridors: a baffle to go round, a nook with an urn
+                int mid = (Passages.CORRIDOR_FROM + Passages.CORRIDOR_TO) / 2;
+                boolean bend = false, nook = false, split = false;
+                for (Passages.Cell c : plan.cells()) {
+                    for (int dir = 0; dir < 2; dir++) {
+                        int run = plan.run(c, dir);
+                        if (run == Passages.RUN_STRAIGHT) continue;
+                        boolean low = run == Passages.RUN_BEND_LOW || run == Passages.RUN_SPLIT || run == Passages.RUN_NOOK_LOW;
+                        boolean high = run == Passages.RUN_BEND_HIGH || run == Passages.RUN_SPLIT || run == Passages.RUN_NOOK_HIGH;
+                        if (run == Passages.RUN_NOOK_LOW || run == Passages.RUN_NOOK_HIGH) {
+                            nook = true;
+                            check(level.getBlockState(Passages.along(plan, c, dir, mid, low ? -4 : 4, 1)).is(ModContent.ANCIENT_URN.get()), "a nook has an urn at the back of it");
+                            check(level.getBlockState(Passages.along(plan, c, dir, mid, 0, 1)).isAir() && solid(level, Passages.along(plan, c, dir, mid, low ? 2 : -2, 1)), "off a corridor that runs straight past");
+                            continue;
+                        }
+                        if (run == Passages.RUN_SPLIT) split = true;
+                        else bend = true;
+                        for (int k = -1; k <= 1; k++) {
+                            for (int y = 1; y <= 3; y++) check(solid(level, Passages.along(plan, c, dir, mid, k, y)), "a baffle stands across the straight way: nothing ahead can be seen");
+                        }
+                        for (int k = 2; k <= 4; k++) {
+                            check(level.getBlockState(Passages.along(plan, c, dir, mid, -k, 1)).isAir() == low && level.getBlockState(Passages.along(plan, c, dir, mid, k, 1)).isAir() == high,
+                                    "and the way round it is on the side the plan says");
+                        }
+                    }
+                }
+                check(bend && nook && split, "bends, nooks and splits all stand in this level");
+            } finally {
+                com.thefarawaydev.realmsofchaos.world.Gauntlets.forget();
+                com.thefarawaydev.realmsofchaos.ui.Cards.clear(hero);
                 hero.remove(net.minecraft.world.entity.Entity.RemovalReason.DISCARDED);
                 Realm.testAlias(Level.OVERWORLD, Realm.ABYSS);
             }

@@ -120,6 +120,7 @@ public final class Snares {
                 continue;
             }
             if (is(plan.kind(cell))) tend(level, plan, cell, now);
+            else if (plan.kind(cell) == Kind.GAUNTLET) Gauntlets.tend(level, plan, cell, now);
         }
         if (now % 200 == 0) {
             TENDED.values().removeIf(t -> now - t > 200);

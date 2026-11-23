@@ -70,12 +70,15 @@ public final class Passages {
     public static final int TALL = 8;
     public static final int MAX_SIZE = 6;
     public static final int X0 = 600, PITCH = 160;
-    public static final int LAYOUT_VERSION = 8;
+    public static final int LAYOUT_VERSION = 9;
     public static final String GUARDIAN_TAG = "realms_of_chaos_guardian";
     private static final String HUD = "hud." + RealmsOfChaos.MOD_ID + ".passage.";
 
     public enum Kind { START, EXIT, SEAL, TREASURE, SHRINE, HALL, ROOM, TRAP, GARDEN, LIBRARY, POOL, ARENA, VAULT, CHIMES, BEAM, PLATES, CRUSHER, DARTS,
-        SPIKES, FLAMES, BLADES, STAIRWELL, ARC, GAS, CELLS, STORE }
+        SPIKES, FLAMES, BLADES, STAIRWELL, ARC, GAS, CELLS, STORE, GAUNTLET }
+
+    /** How the corridor between two rooms runs: straight, round a baffle to one side or either, or past a nook. */
+    public static final int RUN_STRAIGHT = 0, RUN_BEND_LOW = 1, RUN_BEND_HIGH = 2, RUN_SPLIT = 3, RUN_NOOK_LOW = 4, RUN_NOOK_HIGH = 5;
 
     /**
      * What weighs on a level. The first three levels of a passage are clean; further in, most carry one: a status
@@ -186,7 +189,9 @@ public final class Passages {
         private final boolean[][] east, south;
         private final int[][] heights, forms;
         private Affliction affliction = Affliction.NONE;
-        private final boolean[][] wides;
+        private final boolean[][] wides, smalls;
+        /** Which trap hall a room is, for the rooms that are one. */
+        private final Gauntlet.Variant[][] variants;
         public Cell start, exit;
         /** True if the exit room is entered from the east or west: its gate stands across that way, facing whoever comes in. */
         private boolean gateTurned;
@@ -214,6 +219,8 @@ public final class Passages {
             this.heights = new int[size][size];
             this.forms = new int[size][size];
             this.wides = new boolean[size][size];
+            this.smalls = new boolean[size][size];
+            this.variants = new Gauntlet.Variant[size][size];
             generate(new Random(seed));
             shape(new Random(seed ^ 0x5DEECE66DL));
             Random ill = new Random(seed ^ 0xAFF11C7EDL);
@@ -244,6 +251,13 @@ public final class Passages {
                         wide = true;
                     }
                     case CELLS, STORE -> h = random.nextBoolean() ? HEADROOM : 7;
+                    case GAUNTLET -> {
+                        // a trap hall is the size its trap needs: a small one is close work, a wide one a long way across
+                        Gauntlet.Variant v = variants[c.x][c.z];
+                        wide = v.size == Gauntlet.Size.WIDE;
+                        smalls[c.x][c.z] = v.size == Gauntlet.Size.SMALL;
+                        h = v.hazard == Gauntlet.Hazard.LEVITATE ? TALL : v.size == Gauntlet.Size.SMALL ? HEADROOM : wide || random.nextBoolean() ? 7 : HEADROOM;
+                    }
                     case ROOM, GARDEN, LIBRARY, POOL -> {
                         float roll = random.nextFloat();
                         h = roll < 0.4F ? HEADROOM : roll < 0.75F ? 7 : TALL;
@@ -273,9 +287,33 @@ public final class Passages {
             return wides[c.x][c.z];
         }
 
-        /** How far a room reaches from its middle: 4, or 5 for a wide one. */
+        /** A small room is seven across. Only trap halls are. */
+        public boolean small(Cell c) {
+            return smalls[c.x][c.z];
+        }
+
+        /** Which trap hall a room is, or null if it is not one. */
+        public Gauntlet.Variant variant(Cell c) {
+            return variants[c.x][c.z];
+        }
+
+        /** How far a room reaches from its middle: 4, 5 for a wide one, 3 for a small one. */
         public int half(Cell c) {
-            return wides[c.x][c.z] ? 5 : 4;
+            return wides[c.x][c.z] ? 5 : smalls[c.x][c.z] ? 3 : 4;
+        }
+
+        /**
+         * How the corridor east (dir 0) or south (dir 1) of a room runs. Fewer than half run straight: the rest go
+         * round a baffle that hides what is ahead, or pass a nook with something in it.
+         */
+        public int run(Cell c, int dir) {
+            Cell other = dir == 0 ? new Cell(c.x + 1, c.z) : new Cell(c.x, c.z + 1);
+            if (other.x >= size || other.z >= size || !connected(c, other)) return RUN_STRAIGHT;
+            long h = seed * 131 + c.x * 15485863L + c.z * 7919L + dir * 104729L;
+            h ^= h >>> 15;
+            h *= 0xD6E8FEB86659FD93L;
+            int roll = (int) Math.floorMod(h >>> 24, 100L);
+            return roll < 40 ? RUN_STRAIGHT : roll < 55 ? RUN_BEND_LOW : roll < 70 ? RUN_BEND_HIGH : roll < 80 ? RUN_SPLIT : roll < 90 ? RUN_NOOK_LOW : RUN_NOOK_HIGH;
         }
 
         public int form(Cell c) {
@@ -380,6 +418,7 @@ public final class Passages {
             start = new Cell(random.nextInt(size), random.nextInt(size));
             boolean[][] seen = new boolean[size][size];
             Deque<Cell> stack = new ArrayDeque<>();
+            Map<Cell, Cell> cameFrom = new HashMap<>();
             stack.push(start);
             seen[start.x][start.z] = true;
             while (!stack.isEmpty()) {
@@ -390,14 +429,22 @@ public final class Passages {
                     stack.pop();
                     continue;
                 }
-                Cell next = fresh.get(random.nextInt(fresh.size()));
+                // (a way that turns is three times as likely as one that carries straight on: the level winds)
+                Cell before = cameFrom.get(cur);
+                List<Cell> lots = new ArrayList<>();
+                for (Cell n : fresh) {
+                    boolean straight = before != null && n.x - cur.x == cur.x - before.x && n.z - cur.z == cur.z - before.z;
+                    for (int k = 0; k < (straight ? 1 : 3); k++) lots.add(n);
+                }
+                Cell next = lots.get(random.nextInt(lots.size()));
                 open(cur, next);
+                cameFrom.put(next, cur);
                 seen[next.x][next.z] = true;
                 stack.push(next);
             }
             for (Cell c : cells()) {
                 for (Cell n : neighbours(c)) {
-                    if ((n.x > c.x || n.z > c.z) && !connected(c, n) && random.nextFloat() < 0.15F) open(c, n);
+                    if ((n.x > c.x || n.z > c.z) && !connected(c, n) && random.nextFloat() < 0.1F) open(c, n);
                 }
             }
 
@@ -449,8 +496,12 @@ public final class Passages {
             // the rest, as a stronghold is laid out: corridors and crossings between rooms, no two rooms of a kind
             // joined by a doorway, and a kind already used on the level less likely to be used again
             Kind[] common = {Kind.HALL, Kind.ROOM, Kind.TRAP, Kind.CRUSHER, Kind.DARTS, Kind.SPIKES, Kind.FLAMES, Kind.BLADES, Kind.ARC, Kind.GAS,
-                    Kind.GARDEN, Kind.LIBRARY, Kind.POOL, Kind.CELLS, Kind.STORE};
-            float[] weight = {2.4F, 1.5F, 0.6F, 0.5F, 0.5F, 0.6F, 0.6F, 0.5F, 0.45F, 0.45F, 0.9F, 0.8F, 0.7F, 0.8F, 0.8F};
+                    Kind.GARDEN, Kind.LIBRARY, Kind.POOL, Kind.CELLS, Kind.STORE, Kind.GAUNTLET};
+            float[] weight = {2.4F, 1.5F, 0.6F, 0.4F, 0.4F, 0.4F, 0.4F, 0.4F, 0.35F, 0.35F, 0.9F, 0.8F, 0.7F, 0.8F, 0.8F, 2.2F};
+            // the trap halls this level is dangerous enough for, in an order of its own: no hall twice on a level
+            List<Gauntlet.Variant> halls = new ArrayList<>();
+            for (Gauntlet.Variant v : Gauntlet.Variant.values()) if (v.threat <= threat) halls.add(v);
+            Collections.shuffle(halls, random);
             int[] times = new int[common.length];
             for (Cell c : free) {
                 int best = -1;
@@ -459,9 +510,9 @@ public final class Passages {
                     float roll = random.nextFloat();
                     int same = 0;
                     for (Cell n : neighbours(c)) if (connected(c, n) && kinds[n.x][n.z] == common[k]) same++;
-                    // (no kind meets itself across a doorway - not even a corridor)
-                    if (same > 0) continue;
-                    float score = weight[k] * roll / (1.0F + 1.5F * times[k] * (common[k] == Kind.HALL ? 0.25F : 1.0F));
+                    // (no kind meets itself across a doorway - not even a corridor. Trap halls may: no two are the same hall)
+                    if (common[k] == Kind.GAUNTLET ? halls.isEmpty() : same > 0) continue;
+                    float score = weight[k] * roll / (1.0F + 1.5F * times[k] * (common[k] == Kind.HALL ? 0.25F : common[k] == Kind.GAUNTLET ? 0.45F : 1.0F));
                     if (score > bestScore) {
                         bestScore = score;
                         best = k;
@@ -469,6 +520,7 @@ public final class Passages {
                 }
                 if (best < 0) best = 0;
                 kinds[c.x][c.z] = common[best];
+                if (common[best] == Kind.GAUNTLET) variants[c.x][c.z] = halls.remove(0);
                 times[best]++;
             }
             // a third of the ordinary rooms have a patrol in them, and more on the levels further in
@@ -515,6 +567,7 @@ public final class Passages {
                         case GAS -> '"';
                         case CELLS -> 'H';
                         case STORE -> 'B';
+                        case GAUNTLET -> 'x';
                     });
                     if (x + 1 < size) rooms.append(east[x][z] ? "--" : "  ");
                     below.append(z + 1 < size && south[x][z] ? "|  " : "   ");
@@ -569,6 +622,8 @@ public final class Passages {
         public boolean jets(Cell c, int dir) {
             Cell other = dir == 0 ? new Cell(c.x + 1, c.z) : new Cell(c.x, c.z + 1);
             if (other.x >= size || other.z >= size || !connected(c, other) || c.equals(start) || other.equals(start)) return false;
+            // (only a straight corridor has room for jets across it)
+            if (run(c, dir) != RUN_STRAIGHT) return false;
             long h = seed * 31 + c.x * 7919L + c.z * 104729L + dir * 15485863L;
             h ^= h >>> 17;
             h *= 0x9E3779B97F4A7C15L;
@@ -607,8 +662,8 @@ public final class Passages {
             if (dx < 0 || dz < 0 || dx >= width() || dz >= width()) return null;
             int ox = dx % CELL, oz = dz % CELL;
             Cell cell = new Cell(dx / CELL, dz / CELL);
-            // (a wide room reaches one block further each way)
-            int reach = wide(cell) ? 1 : 0;
+            // (a wide room reaches one block further each way, a small one a block less)
+            int reach = wide(cell) ? 1 : small(cell) ? -1 : 0;
             if (ox < 1 - reach || ox > ROOM + reach || oz < 1 - reach || oz > ROOM + reach) return null;
             return cell;
         }
@@ -818,7 +873,8 @@ public final class Passages {
                     Cell next = dir == 0 ? e : s;
                     if ((dir == 0 ? c.x : c.z) + 1 >= plan.size || !plan.connected(c, next)) continue;
                     boolean jets = plan.jets(c, dir);
-                    for (int d = CORRIDOR_FROM; d <= CORRIDOR_TO; d++) {
+                    // (a small room's wall is a block nearer its middle: the corridor is a block longer at that end)
+                    for (int d = CORRIDOR_FROM - (plan.small(c) ? 1 : 0); d <= CORRIDOR_TO + (plan.small(next) ? 1 : 0); d++) {
                         for (int k = -1; k <= 1; k++) {
                             BlockPos floor = dir == 0 ? m.offset(d, 0, k) : m.offset(k, 0, d);
                             doorway(level, floor, p);
@@ -835,11 +891,48 @@ public final class Passages {
                             set(level, dir == 0 ? m.offset(d, 2, 2) : m.offset(2, 2, d), p.light());
                         }
                     }
+                    wind(level, plan, c, dir, p);
                 }
             }
         });
         for (Cell c : plan.cells()) steps.add(() -> furnish(level, plan, c, p, random));
         return steps;
+    }
+
+    /** A place in a corridor: {@code d} blocks along it from the room it leaves, {@code k} to one side. */
+    public static BlockPos along(Plan plan, Cell c, int dir, int d, int k, int up) {
+        BlockPos m = plan.centre(c);
+        return dir == 0 ? m.offset(d, up, k) : m.offset(k, up, d);
+    }
+
+    /**
+     * Makes a corridor wind. A bend opens a bay to one side of the corridor's middle and stands a baffle across the
+     * straight way, so the corridor goes round it and nothing ahead can be seen; a split does it on both sides. A
+     * nook is a bay off a straight corridor, with an urn at the back of it.
+     */
+    private static void wind(ServerLevel level, Plan plan, Cell c, int dir, TowerBuilder.Palette p) {
+        int run = plan.run(c, dir), mid = (CORRIDOR_FROM + CORRIDOR_TO) / 2;
+        if (run == RUN_STRAIGHT) return;
+        boolean low = run == RUN_BEND_LOW || run == RUN_SPLIT || run == RUN_NOOK_LOW, high = run == RUN_BEND_HIGH || run == RUN_SPLIT || run == RUN_NOOK_HIGH;
+        for (int d = mid - 1; d <= mid + 1; d++) {
+            for (int k = 2; k <= 4; k++) {
+                if (low) doorway(level, along(plan, c, dir, d, -k, 0), p);
+                if (high) doorway(level, along(plan, c, dir, d, k, 0), p);
+            }
+        }
+        if (run == RUN_NOOK_LOW || run == RUN_NOOK_HIGH) {
+            int side = low ? -1 : 1;
+            set(level, along(plan, c, dir, mid, side * 4, 1), ModContent.ANCIENT_URN.get());
+            set(level, along(plan, c, dir, mid, side * 3, 0), p.light());
+            return;
+        }
+        // the baffle: a slab of wall across the straight way, with a lamp let into each face
+        for (int k = -1; k <= 1; k++) {
+            for (int y = 1; y <= 3; y++) set(level, along(plan, c, dir, mid, k, y), k == 0 && y == 2 ? p.light() : p.wall());
+        }
+        for (int side = -1; side <= 1; side += 2) {
+            if (side < 0 ? low : high) set(level, along(plan, c, dir, mid, side * 3, 0), p.light());
+        }
     }
 
     private static void doorway(ServerLevel level, BlockPos floor, TowerBuilder.Palette p) {
@@ -1009,6 +1102,7 @@ public final class Passages {
             }
             case VAULT, CHIMES, BEAM, PLATES, DARTS -> Rooms.build(level, plan, c, random);
             case SPIKES, FLAMES, BLADES, ARC, GAS -> Snares.build(level, plan, c, p);
+            case GAUNTLET -> Gauntlets.build(level, plan, c, random);
             case CELLS -> {
                 // four cells behind iron bars, one in each corner, each with a way in; what was kept in them is mostly gone
                 List<BlockPos> bars = new ArrayList<>();

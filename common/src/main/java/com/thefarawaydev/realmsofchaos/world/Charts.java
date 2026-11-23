@@ -132,7 +132,7 @@ public final class Charts {
             byte fill = ink(colour, known ? MapColor.Brightness.HIGH : MapColor.Brightness.LOW);
             int x0 = origin + c.x() * CELL, z0 = origin + c.z() * CELL;
             // (a wide room is drawn wider)
-            int inset = plan.wide(c) ? 1 : 2;
+            int inset = plan.wide(c) ? 1 : plan.small(c) ? 3 : 2;
             for (int dx = inset; dx < CELL - inset; dx++) {
                 for (int dz = inset; dz < CELL - inset; dz++) {
                     boolean edge = dx == inset || dz == inset || dx == CELL - inset - 1 || dz == CELL - inset - 1;
@@ -219,7 +219,7 @@ public final class Charts {
             case TREASURE, ARENA, STAIRWELL, VAULT, CHIMES, BEAM, PLATES -> DIAMOND;
             case SHRINE -> PLUS;
             case EXIT -> ARCH;
-            case TRAP, CRUSHER, DARTS, SPIKES, FLAMES, BLADES, ARC, GAS -> BANG;
+            case TRAP, CRUSHER, DARTS, SPIKES, FLAMES, BLADES, ARC, GAS, GAUNTLET -> BANG;
             default -> NOTHING;
         };
     }
