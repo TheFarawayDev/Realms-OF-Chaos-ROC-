@@ -41,10 +41,11 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.ItemStackTemplate;
 
 /**
- * The mod's custom screens. These are not chest menus: they are real screens with a title, text, pictures of items
- * and buttons, built on the game's own dialog system - so they need nothing installed on the client beyond the mod
- * and behave the same on Fabric and Forge. The server decides what a screen says and sends it; every button runs a
- * {@code /roc ui ...} command, which does the thing and usually sends the next screen.
+ * The mod's written screens. These are not chest menus: they are real screens with a title, text, pictures of items
+ * and buttons. What a screen says is put together here in the shape of one of the game's dialogs, and then shown
+ * on a page of the mod's own ({@link PageMenu}, drawn by the client's PageScreen) - or, with the drawn interface
+ * switched off, in the game's stock dialog. The server decides what a screen says and sends it; every button runs
+ * a {@code /roc ui ...} command, which does the thing and usually sends the next screen.
  *
  * Screens with moving parts - the forge's strike bar, the passage map, a tower's floor plan - stay chest menus,
  * because a dialog cannot change while it is open.
@@ -99,7 +100,9 @@ public final class Screens {
     /** Sends a screen to a player. */
     public static void show(ServerPlayer player, Dialog dialog) {
         LAST.put(player.getUUID(), dialog);
-        player.openDialog(Holder.direct(dialog));
+        // on a page of the mod's own; or, with the drawn interface switched off, in the game's stock dialog
+        if (Options.on(player, Options.Option.ART)) PageMenu.open(player, dialog);
+        else player.openDialog(Holder.direct(dialog));
     }
 
     public static Dialog last(ServerPlayer player) {

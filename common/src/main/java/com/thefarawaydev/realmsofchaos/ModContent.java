@@ -131,6 +131,13 @@ public final class ModContent {
                 new net.minecraft.world.SimpleContainer(panel.rows * 9), panel.rows), net.minecraft.world.flag.FeatureFlags.VANILLA_SET);
     }
 
+    /** The menu type of a page: the Codex, the handbook and the other written screens. */
+    public static final Ref<net.minecraft.world.inventory.MenuType<com.thefarawaydev.realmsofchaos.ui.PageMenu>> PAGE = new Ref<>();
+
+    public static net.minecraft.world.inventory.MenuType<com.thefarawaydev.realmsofchaos.ui.PageMenu> createPageType() {
+        return new net.minecraft.world.inventory.MenuType<>(com.thefarawaydev.realmsofchaos.ui.PageMenu::new, net.minecraft.world.flag.FeatureFlags.VANILLA_SET);
+    }
+
     public static final Ref<EntityType<GodBoss>> GOD_BOSS = new Ref<>();
     public static final Ref<EntityType<RelicProjectile>> RELIC_PROJECTILE = new Ref<>();
     public static final Ref<EntityType<com.thefarawaydev.realmsofchaos.entity.Sentinel>> SENTINEL = new Ref<>();

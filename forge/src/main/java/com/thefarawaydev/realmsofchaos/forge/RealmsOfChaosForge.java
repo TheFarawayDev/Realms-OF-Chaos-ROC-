@@ -81,6 +81,12 @@ public final class RealmsOfChaosForge {
                 return type;
             });
         }
+        RegistryObject<net.minecraft.world.inventory.MenuType<?>> page = MENUS.register("page", ModContent::createPageType);
+        ModContent.PAGE.bind(() -> {
+            @SuppressWarnings("unchecked")
+            net.minecraft.world.inventory.MenuType<com.thefarawaydev.realmsofchaos.ui.PageMenu> type = (net.minecraft.world.inventory.MenuType<com.thefarawaydev.realmsofchaos.ui.PageMenu>) page.get();
+            return type;
+        });
         MENUS.register(modBus);
         BLOCKS.register(modBus);
         ITEMS.register(modBus);

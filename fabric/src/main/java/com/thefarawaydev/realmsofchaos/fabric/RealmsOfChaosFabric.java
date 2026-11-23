@@ -49,6 +49,10 @@ public class RealmsOfChaosFabric implements ModInitializer {
             ModContent.MENUS.get(panel.id()).bind(() -> menuType);
         }
 
+        var pageType = ModContent.createPageType();
+        Registry.register(BuiltInRegistries.MENU, RealmsOfChaos.id("page"), pageType);
+        ModContent.PAGE.bind(() -> pageType);
+
         EntityType<GodBoss> bossType = ModContent.createGodBossType(ModContent.godBossKey());
         Registry.register(BuiltInRegistries.ENTITY_TYPE, RealmsOfChaos.id("god_boss"), bossType);
         ModContent.GOD_BOSS.bind(() -> bossType);

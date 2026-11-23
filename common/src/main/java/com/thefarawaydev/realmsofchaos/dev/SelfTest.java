@@ -5457,6 +5457,61 @@ public final class SelfTest {
             }
         });
 
+        step("the written screens are pages of the mod's own: heading, paragraphs, pictures and buttons, and a button pressed does its work", () -> {
+            ServerPlayer hero = fakePlayer(server, level, "RocReader");
+            Realm.testAlias(Level.OVERWORLD, Realm.ofLine(Line.ZEUS));
+            try {
+                com.thefarawaydev.realmsofchaos.ui.Options.set(hero, com.thefarawaydev.realmsofchaos.ui.Options.Option.ART, true);
+                Screens.show(hero, Screens.home(hero));
+                check(hero.containerMenu instanceof com.thefarawaydev.realmsofchaos.ui.PageMenu, "the Codex opens as a page, not a stock dialog");
+                net.minecraft.server.dialog.Dialog home = Screens.last(hero);
+                net.minecraft.network.chat.Component packed = com.thefarawaydev.realmsofchaos.ui.PageMenu.pack(home, null);
+                check(packed.getSiblings().size() == 3, "a page is a heading, its paragraphs and its buttons");
+                check(!com.thefarawaydev.realmsofchaos.ui.Words.of(packed.getSiblings().get(0)).isBlank() && packed.getSiblings().get(1).getSiblings().size() == Screens.bodyLines(home), "every paragraph of the screen is on the page");
+                List<String> commands = com.thefarawaydev.realmsofchaos.ui.PageMenu.commands(home);
+                List<net.minecraft.network.chat.Component> labels = packed.getSiblings().get(2).getSiblings();
+                check(labels.size() == commands.size() && "2".equals(packed.getSiblings().get(2).getStyle().getInsertion()), "a button for every action, in the columns the screen asks for");
+                List<String> run = new ArrayList<>();
+                for (String command : commands) if (command != null) run.add(command);
+                check(run.equals(Screens.commands(home)) && commands.get(commands.size() - 1) == null && com.thefarawaydev.realmsofchaos.ui.PageMenu.EXIT.equals(labels.get(labels.size() - 1).getStyle().getInsertion()),
+                        "the buttons do what the screen's buttons did, and the last is the way out");
+                boolean tips = false;
+                for (net.minecraft.network.chat.Component label : labels) {
+                    check(!com.thefarawaydev.realmsofchaos.ui.Words.of(label).isBlank(), "every button has a name");
+                    tips |= label.getStyle().getHoverEvent() instanceof net.minecraft.network.chat.HoverEvent.ShowText;
+                }
+                check(tips, "and those with something to add say it when pointed at");
+                // (a button pressed runs its command: here, on to the handbook - another page)
+                check(hero.containerMenu.clickMenuButton(hero, commands.indexOf("/roc ui handbook")), "a button can be pressed");
+                check(hero.containerMenu instanceof com.thefarawaydev.realmsofchaos.ui.PageMenu && Screens.commands(Screens.last(hero)).contains("/roc ui topic start"), "and leads to the next page");
+                check(!hero.containerMenu.clickMenuButton(hero, 999) && !hero.containerMenu.clickMenuButton(hero, -1), "a button that is not there does nothing");
+                List<String> list = com.thefarawaydev.realmsofchaos.ui.PageMenu.commands(Screens.last(hero));
+                hero.containerMenu.clickMenuButton(hero, list.indexOf("/roc ui home"));
+                check(Screens.commands(Screens.last(hero)).contains("/roc ui towers"), "back is a button like any other");
+                hero.containerMenu.clickMenuButton(hero, com.thefarawaydev.realmsofchaos.ui.PageMenu.commands(Screens.last(hero)).size() - 1);
+                check(hero.containerMenu == hero.inventoryMenu, "and the way out closes the page");
+
+                // ---- a picture of an item rides in a hidden slot
+                TowerBuilder.ensureFloor(level, Line.ZEUS, 1);
+                net.minecraft.server.dialog.Dialog altar = Screens.altar(hero, level, Line.ZEUS, Tower.altarPos(1));
+                net.minecraft.world.SimpleContainer icons = new net.minecraft.world.SimpleContainer(com.thefarawaydev.realmsofchaos.ui.PageMenu.ICONS);
+                net.minecraft.network.chat.Component page = com.thefarawaydev.realmsofchaos.ui.PageMenu.pack(altar, icons);
+                check(!icons.getItem(0).isEmpty() && (com.thefarawaydev.realmsofchaos.ui.PageMenu.ICON + "0").equals(page.getSiblings().get(1).getSiblings().get(0).getStyle().getInsertion()), "the altar's page pictures the relic to be won");
+                Screens.show(hero, altar);
+                check(hero.containerMenu instanceof com.thefarawaydev.realmsofchaos.ui.PageMenu menu && ItemStack.isSameItem(menu.icon(0), icons.getItem(0)) && menu.slots.size() == com.thefarawaydev.realmsofchaos.ui.PageMenu.ICONS, "and the menu carries it, in slots nobody sees");
+                hero.closeContainer();
+
+                // ---- with the drawn interface off, the game's stock dialog is used instead
+                com.thefarawaydev.realmsofchaos.ui.Options.set(hero, com.thefarawaydev.realmsofchaos.ui.Options.Option.ART, false);
+                Screens.show(hero, Screens.home(hero));
+                check(hero.containerMenu == hero.inventoryMenu && Screens.last(hero) != null, "switched off, a screen is the game's own dialog");
+            } finally {
+                com.thefarawaydev.realmsofchaos.ui.Options.reset(hero);
+                hero.closeContainer();
+                Realm.testAlias(Level.OVERWORLD, Realm.ABYSS);
+            }
+        });
+
         step("every word on the mod's menus is in its language file: nobody is shown a key", () -> {
             ServerPlayer hero = fakePlayer(server, level, "RocProofreader");
             com.thefarawaydev.realmsofchaos.ui.Options.reset(hero);

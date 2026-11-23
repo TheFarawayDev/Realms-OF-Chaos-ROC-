@@ -115,6 +115,12 @@ The current build is an **Alpha**.
     above the hotbar is not rewritten within a second; a room says what it is the first time you walk in, not
     every time; a god tells you what it remembers of you only when that has changed; and a god changing its
     stance mid-trial is a card, not a line of chat for everyone.
+  * **Pages of its own for everything written.** The Codex, the Climber's Handbook, the Oracle's Chronicle and
+    its chapters, the trial altar, the party and mastery screens are no longer the game's stock dialog: each is a
+    page on a tablet of dark stone (`PageScreen`), with a header in the page's own colour, text set out in
+    paragraphs that scroll, a picture of the item a line speaks of, and buttons drawn to match, in columns, with a
+    note when pointed at. A page is a menu type of the mod's own with no slots to click; a button pressed travels
+    as the menu's button number, so only the game's own packets are used. `art/renders/ingame-page-*.png`.
   * **Every build says which it is.** A released jar carries its build number in its name and its version
     (`realms-of-chaos-forge-1.2.0-alpha.57+mc26.3.jar`), the first time you join a world on a new build a line of
     chat names it, and `/roc version` shows it at any time. If a game and the world it joins run different builds,
@@ -273,8 +279,8 @@ The current build is an **Alpha**.
   * The Bounty Board posts three bounties a day, the same for everyone - sentinels felled, seals broken, trials
     won, pylons shattered, caches opened. Each player earns them for themselves and is paid in forge materials.
 * **Custom screens, not just chests.** The Codex, the Climber's Handbook, the Oracle's Chronicle, the Trial Altar
-  and the party are real screens - a title, text, pictures of items and buttons - built on the game's own dialog
-  system, so they work the same on Fabric and Forge. Chapters of the story are read on screen, page by page. The
+  and the party are real screens - a title, text, pictures of items and buttons - drawn as pages of the mod's
+  own on both Fabric and Forge (the game's stock dialog is only used with the drawn interface switched off). Chapters of the story are read on screen, page by page. The
   screens with moving parts (the forge's strike bar, the passage map, a tower's floor plan) are still chest menus.
 * **A tutorial.** A new player is shown the **Climber's Handbook** a few seconds after they first join: nineteen
   topics, from getting in to reading a fight, always there in the Codex. After that, a **tip** appears the first
@@ -591,7 +597,7 @@ on a real server: data loading, the hub, building and walking every floor of eve
 towers through the altar menu (with rematches) and all 42 passages, the Ruined Gate and its keystones, the story's
 chapters, the hub's residents, all sixty-three sentinels and their traits, craters, the custom screens and their buttons, the tutorial, impacts, the
 floor's eruptions and the gods' last stands, the three phases of a trial (health gates, pylons, stances, the collapsing floor and its restoration, strikes), gear and difficulty scaling,
-the compass scanner, relays and jammers, waygates, the Field Tower Bag, hub tiers and bounties, the rune chambers, the sidebar, level counts and names, building ahead, the four puzzle rooms (beam rooms laid out at random, with decoys and a limit of turns), no two rooms of a kind joined, cells and storerooms, afflictions, cards and lines not said twice, the thirty-eight trap halls (each proved crossable, each hazard, a chasing hall, a small hall), winding corridors, crusher and dart halls, urns and tablets, the Passage Chart, the mastery tree, the menu artwork, cards and tips, the drawn boss bar and the opt-in cast bar, settings, the gods' memory of each player, room shapes and stairwells, the spike, flame and blade halls, parries, ripostes, momentum and plunges, heavy blows, boons, the gate's facing, the shrine's chart, the bestiary, the frames of each phase, shut gates, corridors and their jets, the arc and gas halls, the chart's memory, plain-word fallbacks, every menu's words against the language file, parties, group scaling and per-player loot, the wall protection (built, checked room by room for reachability,
+the compass scanner, relays and jammers, waygates, the Field Tower Bag, hub tiers and bounties, the rune chambers, the sidebar, level counts and names, building ahead, the four puzzle rooms (beam rooms laid out at random, with decoys and a limit of turns), no two rooms of a kind joined, cells and storerooms, afflictions, cards and lines not said twice, the written screens as pages (packing, pictures, buttons pressed), the thirty-eight trap halls (each proved crossable, each hazard, a chasing hall, a small hall), winding corridors, crusher and dart halls, urns and tablets, the Passage Chart, the mastery tree, the menu artwork, cards and tips, the drawn boss bar and the opt-in cast bar, settings, the gods' memory of each player, room shapes and stairwells, the spike, flame and blade halls, parries, ripostes, momentum and plunges, heavy blows, boons, the gate's facing, the shrine's chart, the bestiary, the frames of each phase, shut gates, corridors and their jets, the arc and gas halls, the chart's memory, plain-word fallbacks, every menu's words against the language file, parties, group scaling and per-player loot, the wall protection (built, checked room by room for reachability,
 seals struck, guardians, shrine, map), every god's signature move, the relic moves, the forging quick-time rounds,
 tier materials, each tarot card, the Codex, leaving the realms, the welcome and the anti-stuck safeguards.
 

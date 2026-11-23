@@ -25,6 +25,8 @@ public final class RealmsOfChaosForgeClient {
                     (net.minecraft.world.inventory.ChestMenu menu, net.minecraft.world.entity.player.Inventory inventory, net.minecraft.network.chat.Component title) ->
                             new com.thefarawaydev.realmsofchaos.client.PanelScreen(menu, inventory, title, panel));
         }
+        // and the written screens - the Codex, the handbook, the chronicle, the altar - are pages of the mod's own
+        net.minecraft.client.gui.screens.MenuScreens.register(ModContent.PAGE.get(), com.thefarawaydev.realmsofchaos.client.PageScreen::new);
     }
 
     /** The HUD is drawn by the mod: the boss panel, the floor plaque, cards, the combat meter. */
