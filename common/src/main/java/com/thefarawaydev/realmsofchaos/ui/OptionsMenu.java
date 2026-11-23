@@ -81,7 +81,7 @@ public class OptionsMenu extends ButtonMenu {
         view.setItem(SLOT_ART, icon(Items.PAINTING, text(NS + ".art", 0xF5E6C8), art, List.of(text(NS + ".art.lore", 0xAAAAAA), text(NS + ".art.lore2", 0xAAAAAA),
                 text(NS + (art ? ".on" : ".off"), art ? 0x55FF55 : 0xFF5555), text(NS + ".click", 0x55FFFF))));
         view.setItem(SLOT_AGAIN, icon(Items.WRITABLE_BOOK, text(NS + ".again", 0x55FFFF), false, List.of(text(NS + ".again.lore", 0xAAAAAA))));
-        view.setItem(SLOT_BACK, icon(Items.ARROW, text("menu." + RealmsOfChaos.MOD_ID + ".codex.back", 0xFFFFFF), false, List.of()));
+        view.setItem(SLOT_BACK, icon(Items.ARROW, text("menu." + RealmsOfChaos.MOD_ID + ".back", 0xFFFFFF), false, List.of()));
         broadcastChanges();
     }
 }

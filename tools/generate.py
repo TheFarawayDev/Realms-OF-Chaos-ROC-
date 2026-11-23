@@ -803,6 +803,8 @@ def gen_lang():
         "hud.realms_of_chaos.passage.room.flames": "A flame hall. The fire walks row by row: cross behind it",
         "hud.realms_of_chaos.passage.room.blades": "A blade hall. It sweeps wall to wall: go when it has passed",
         "hud.realms_of_chaos.passage.room.stairwell": "A stairwell. Something is kept on the loft",
+        "hud.realms_of_chaos.passage.room.arc": "An arc hall. The arc turns about the pillar: keep ahead of it",
+        "hud.realms_of_chaos.passage.room.gas": "A gas hall. One half fills at a time: stand in the other",
         "menu.realms_of_chaos.passage.kind.vault": "Vault",
         "menu.realms_of_chaos.passage.kind.chimes": "Chime room",
         "menu.realms_of_chaos.passage.kind.beam": "Beam room",
@@ -813,6 +815,8 @@ def gen_lang():
         "menu.realms_of_chaos.passage.kind.flames": "Flame hall",
         "menu.realms_of_chaos.passage.kind.blades": "Blade hall",
         "menu.realms_of_chaos.passage.kind.stairwell": "Stairwell",
+        "menu.realms_of_chaos.passage.kind.arc": "Arc hall",
+        "menu.realms_of_chaos.passage.kind.gas": "Gas hall",
         "screen.realms_of_chaos.home.skills": "Mastery (%s to spend)",
         "screen.realms_of_chaos.home.skills.tip": "Spend the points you have earned on combat, survival and exploration",
         "screen.realms_of_chaos.skills": "Mastery",
@@ -3388,6 +3392,68 @@ def gen_field_textures():
     tile("ancient_urn_top", (150, 94, 62), lambda x, y: (40, 24, 18) if math.hypot(x - 7.5, y - 7.5) < 3.0 else None)
     tile("lore_tablet_side", (128, 126, 118), lambda x, y: (70, 68, 64) if y in (4, 6, 8, 10, 12) and 4 <= x <= 11 and (x * 3 + y) % 5 != 0 else ((236, 196, 84) if y == 2 and 5 <= x <= 10 else None))
     tile("lore_tablet_top", (120, 118, 110), lambda x, y: None)
+
+    # ---- every puzzle block is cut from the same stone as the rune stones: grey, grained, a frame scored a little
+    # way in from its edge, and one sign carved in its middle that is dull until it is lit
+    STONE = (104, 104, 116)
+    stone_rnd = random.Random(hsh("room_stone"))
+    stone_grain = [[1 + stone_rnd.uniform(-0.08, 0.08) for _ in range(16)] for _ in range(16)]
+
+    def carved(name, sign, glow, lit, base=STONE, frame=True):
+        """An 8x8 sign carved in the middle of a stone face."""
+        img = Image.new("RGBA", (16, 16))
+        for y in range(16):
+            for x in range(16):
+                c = shade(base, stone_grain[y][x] * (0.76 if x in (0, 15) or y in (0, 15) else 1.0))
+                if frame and (x in (2, 13) and 2 <= y <= 13 or y in (2, 13) and 2 <= x <= 13):
+                    c = shade(c, 0.82)
+                ry, rx = y - 4, x - 4
+                if sign is not None and 0 <= ry < 8 and 0 <= rx < 8 and sign[ry][rx] == "#":
+                    c = mix(glow, (255, 255, 255), 0.25) if lit else shade(mix(glow, (60, 60, 70), 0.72), 0.9)
+                elif lit and 3 <= x <= 12 and 3 <= y <= 12:
+                    c = mix(c, glow, 0.22)
+                img.putpixel((x, y), c + (255,))
+        img.save(os.path.join(T, name + ".png"))
+
+    eye = ["..####..", ".#....#.", "#..##..#", "#.####.#", "#.####.#", "#..##..#", ".#....#.", "..####.."]
+    step = ["...##...", "..#..#..", ".#....#.", "#..##..#", "#..##..#", ".#....#.", "..#..#..", "...##..."]
+    ring = ["..####..", ".######.", "##....##", "##....##", "##....##", "##....##", ".######.", "..####.."]
+    sun = ["#..##..#", ".#.##.#.", "..####..", "########", "########", "..####..", ".#.##.#.", "#..##..#"]
+    barbs = [".#....#.", "###..###", ".#....#.", "........", "........", ".#....#.", "###..###", ".#....#."]
+    bell = ["...##...", "..####..", "..#..#..", ".##..##.", ".#....#.", "##....##", "########", "...##..."]
+    script = ["######..", "........", "#######.", "........", "#####...", "........", "#######.", "........"]
+    for lit in (False, True):
+        suffix = "_lit" if lit else ""
+        carved("glyph_tile" + suffix, eye, (90, 220, 240), lit)
+        carved("memory_plate" + suffix, step, (250, 215, 90), lit)
+        carved("beam_receiver" + suffix, ring, (255, 240, 170), lit)
+        carved("chime_crystal" + suffix + "_side", bell, (200, 120, 255), lit)
+        carved("chime_crystal" + suffix + "_top", ring, (200, 120, 255), lit)
+        # a mirror: a pane of polished silver set in a stone frame, the glint across it leaning the way it is turned
+        for face in ("side", "top"):
+            img = Image.new("RGBA", (16, 16))
+            for y in range(16):
+                for x in range(16):
+                    c = shade(STONE, stone_grain[y][x] * (0.76 if x in (0, 15) or y in (0, 15) else 1.0))
+                    if 2 <= x <= 13 and 2 <= y <= 13:
+                        edge = x in (2, 13) or y in (2, 13)
+                        d = (x + y) if lit else (x - y + 15)                     # which way the glint leans
+                        pane = mix((92, 112, 140), (214, 232, 248), min(1.0, max(0.0, (d - 6) / 18)))
+                        if abs(d - 15) <= 1:
+                            pane = (250, 253, 255)                              # the glint itself
+                        elif abs(d - 15) == 2 or abs(d - 9) == 0:
+                            pane = mix(pane, (255, 255, 255), 0.45)
+                        c = shade((46, 50, 64), 0.9) if edge else pane
+                        if not edge and (x in (3, 12) or y in (3, 12)):
+                            c = shade(c, 0.86)                                  # the pane sits a little way into its frame
+                    if (x, y) in ((1, 1), (14, 1), (1, 14), (14, 14)):
+                        c = (236, 196, 84)                                      # gold studs in the frame's corners
+                    img.putpixel((x, y), c + (255,))
+            img.save(os.path.join(T, "beam_mirror" + suffix + "_" + face + ".png"))
+    carved("beam_emitter", sun, (255, 230, 130), True)
+    carved("dart_tile", barbs, (230, 80, 70), False)
+    carved("lore_tablet_side", script, (236, 196, 84), False)
+    carved("lore_tablet_top", None, (236, 196, 84), False)
     tile("tower_brazier_side", (84, 70, 56), lambda x, y: (150, 120, 70) if y in (4, 5) else ((54, 44, 36) if y > 12 else None))
     for line, fire in (("zeus", (255, 240, 140)), ("poseidon", (90, 230, 240)), ("hades", (170, 110, 255))):
         tile(f"tower_brazier_{line}_top", (60, 50, 42), lambda x, y: mix(fire, (255, 255, 255), max(0.0, 0.7 - math.hypot(x - 7.5, y - 7.5) / 6)) if math.hypot(x - 7.5, y - 7.5) < 5.2 else None)

@@ -16,6 +16,21 @@ The current build is an **Alpha**.
 
 ## What's in 1.2.0
 
+* **Gates stay shut.** A level's Gate of Ascent is dark glass in its arch until every seal on the level is broken;
+  the last seal opens it, and a level sealed again has its gate shut again.
+* **Corridors.** Rooms stand further apart: seven blocks of lit corridor between two of them, with an arch at each
+  end, instead of a doorway through a wall. Some corridors - more of them the deeper the level, and never beside
+  the room you arrive in - have **jets** across the middle that smoke, then burn, then rest.
+* **Two more trap halls.** An **arc hall**, where a line of lightning turns about a pillar in the middle, and a
+  **gas hall**, where each half of the room fills in turn and the other is the place to stand.
+* **Puzzle blocks cut from one stone.** Glyph tiles, memory plates, beam emitters and receivers, chime crystals,
+  dart tiles and lore tablets are redrawn in the rune stones' style: grey grained stone, a scored frame, one carved
+  sign that is dull until lit. Mirrors are a pane of polished silver in a stone frame, the glint leaning the way
+  the mirror is turned.
+* **A chart that remembers.** Rooms walked are kept with the world instead of being forgotten when the server
+  stops. The room you stand in is outlined in white, a yellow point shows which way you face, and companions on
+  the level show as blue marks.
+
 * **Parry, riposte, momentum.** Fighting the realms' creatures is more than trading blows, and none of it needs a
   key of its own.
   * **Parry.** Tap sneak - or raise a shield - just as a blow would land and it is turned aside: no harm, the
@@ -524,7 +539,7 @@ on a real server: data loading, the hub, building and walking every floor of eve
 towers through the altar menu (with rematches) and all 42 passages, the Ruined Gate and its keystones, the story's
 chapters, the hub's residents, all sixty-three sentinels and their traits, craters, the custom screens and their buttons, the tutorial, impacts, the
 floor's eruptions and the gods' last stands, the three phases of a trial (health gates, pylons, stances, the collapsing floor and its restoration, strikes), gear and difficulty scaling,
-the compass scanner, relays and jammers, waygates, the Field Tower Bag, hub tiers and bounties, the rune chambers, the sidebar, level counts and names, building ahead, the four puzzle rooms, crusher and dart halls, urns and tablets, the Passage Chart, the mastery tree, the menu artwork, cards and tips, the drawn boss bar and the opt-in cast bar, settings, the gods' memory of each player, room shapes and stairwells, the spike, flame and blade halls, parries, ripostes, momentum and plunges, heavy blows, boons, the gate's facing, the shrine's chart, the bestiary, the frames of each phase, parties, group scaling and per-player loot, the wall protection (built, checked room by room for reachability,
+the compass scanner, relays and jammers, waygates, the Field Tower Bag, hub tiers and bounties, the rune chambers, the sidebar, level counts and names, building ahead, the four puzzle rooms, crusher and dart halls, urns and tablets, the Passage Chart, the mastery tree, the menu artwork, cards and tips, the drawn boss bar and the opt-in cast bar, settings, the gods' memory of each player, room shapes and stairwells, the spike, flame and blade halls, parries, ripostes, momentum and plunges, heavy blows, boons, the gate's facing, the shrine's chart, the bestiary, the frames of each phase, shut gates, corridors and their jets, the arc and gas halls, the chart's memory, plain-word fallbacks, every menu's words against the language file, parties, group scaling and per-player loot, the wall protection (built, checked room by room for reachability,
 seals struck, guardians, shrine, map), every god's signature move, the relic moves, the forging quick-time rounds,
 tier materials, each tarot card, the Codex, leaving the realms, the welcome and the anti-stuck safeguards.
 

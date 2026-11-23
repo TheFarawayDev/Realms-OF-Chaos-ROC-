@@ -111,6 +111,8 @@ public class PassageMenu extends ButtonMenu {
                 case FLAMES -> Items.BLAZE_POWDER;
                 case BLADES -> Items.IRON_SWORD;
                 case STAIRWELL -> Items.LADDER;
+                case ARC -> Items.END_ROD;
+                case GAS -> Items.FERMENTED_SPIDER_EYE;
             };
             String name = kind == Passages.Kind.SEAL ? (sealed ? "seal" : "seal.broken") : kind.name().toLowerCase();
             List<Component> lore = new ArrayList<>();

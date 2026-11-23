@@ -59,18 +59,23 @@ public final class Passages {
     public static final int Y = 60;
     public static final int LEVEL_PITCH = 12;
     /** One cell of the maze: a 9x9 room and the walls round it. */
-    public static final int CELL = 12, ROOM = 9, CENTRE = 5;
+    /** A room and the corridor beyond it are sixteen across: nine of room (eleven if wide), and seven of corridor to the next. */
+    public static final int CELL = 16, ROOM = 9, CENTRE = 5;
+    /** How far from a room's middle its corridor begins, and where the next room's wall ends it. */
+    public static final int CORRIDOR_FROM = 5, CORRIDOR_TO = CELL - 5;
+    /** What a gate is made of until every seal on its level is broken. */
+    public static final Block GATE_SHUT = Blocks.TINTED_GLASS;
     public static final int HEADROOM = 5;
     /** The headroom of the tallest rooms. A level is a solid slab twelve blocks deep, from two below its floor. */
     public static final int TALL = 8;
     public static final int MAX_SIZE = 6;
     public static final int X0 = 600, PITCH = 160;
-    public static final int LAYOUT_VERSION = 6;
+    public static final int LAYOUT_VERSION = 7;
     public static final String GUARDIAN_TAG = "realms_of_chaos_guardian";
     private static final String HUD = "hud." + RealmsOfChaos.MOD_ID + ".passage.";
 
     public enum Kind { START, EXIT, SEAL, TREASURE, SHRINE, HALL, ROOM, TRAP, GARDEN, LIBRARY, POOL, ARENA, VAULT, CHIMES, BEAM, PLATES, CRUSHER, DARTS,
-        SPIKES, FLAMES, BLADES, STAIRWELL }
+        SPIKES, FLAMES, BLADES, STAIRWELL, ARC, GAS }
 
     /** How a room is shaped, for the kinds that are not all alike. */
     public static final int FORM_PLAIN = 0, FORM_CUT_CORNERS = 1, FORM_COLONNADE = 2, FORM_SUNKEN = 3;
@@ -361,8 +366,9 @@ public final class Passages {
             for (Cell c : free) {
                 float roll = random.nextFloat();
                 kinds[c.x][c.z] = roll < 0.24F ? Kind.HALL : roll < 0.43F ? Kind.ROOM : roll < 0.49F ? Kind.TRAP : roll < 0.54F ? Kind.CRUSHER
-                        : roll < 0.59F ? Kind.DARTS : roll < 0.65F ? Kind.SPIKES : roll < 0.71F ? Kind.FLAMES : roll < 0.76F ? Kind.BLADES
-                        : roll < 0.85F ? Kind.GARDEN : roll < 0.93F ? Kind.LIBRARY : Kind.POOL;
+                        : roll < 0.58F ? Kind.DARTS : roll < 0.63F ? Kind.SPIKES : roll < 0.68F ? Kind.FLAMES : roll < 0.72F ? Kind.BLADES
+                        : roll < 0.76F ? Kind.ARC : roll < 0.80F ? Kind.GAS
+                        : roll < 0.87F ? Kind.GARDEN : roll < 0.94F ? Kind.LIBRARY : Kind.POOL;
             }
             // a third of the ordinary rooms have a patrol in them, and more on the levels further in
             float chance = Math.min(0.75F, 0.35F + 0.06F * stage);
@@ -404,6 +410,8 @@ public final class Passages {
                         case FLAMES -> 'f';
                         case BLADES -> '%';
                         case STAIRWELL -> 'Z';
+                        case ARC -> '@';
+                        case GAS -> '"';
                     });
                     if (x + 1 < size) rooms.append(east[x][z] ? "--" : "  ");
                     below.append(z + 1 < size && south[x][z] ? "|  " : "   ");
@@ -449,6 +457,25 @@ public final class Passages {
             List<BlockPos> out = new ArrayList<>();
             for (int a = -1; a <= 1; a++) for (int dy = 1; dy <= 3; dy++) out.add(gateOffset(a, dy));
             return out;
+        }
+
+        /**
+         * Corridors with fire in them: a row of vents across the middle of the corridor east (dir 0) or south (dir 1)
+         * of a room, on a clock of their own. None next to the room a climber arrives in, more the deeper the level.
+         */
+        public boolean jets(Cell c, int dir) {
+            Cell other = dir == 0 ? new Cell(c.x + 1, c.z) : new Cell(c.x, c.z + 1);
+            if (other.x >= size || other.z >= size || !connected(c, other) || c.equals(start) || other.equals(start)) return false;
+            long h = seed * 31 + c.x * 7919L + c.z * 104729L + dir * 15485863L;
+            h ^= h >>> 17;
+            h *= 0x9E3779B97F4A7C15L;
+            return Math.floorMod(h >>> 20, 100) < Math.min(40, 14 + (int) (threat * 2.5));
+        }
+
+        /** The middle of the corridor east or south of a room. */
+        public BlockPos corridorMiddle(Cell c, int dir) {
+            int d = (CORRIDOR_FROM + CORRIDOR_TO) / 2;
+            return dir == 0 ? centre(c).offset(d, 0, 0) : centre(c).offset(0, 0, d);
         }
 
         /** True if the gate stands north-south, facing east and west. */
@@ -546,7 +573,7 @@ public final class Passages {
     public static boolean outside(ServerPlayer player, Spot spot) {
         int y = Y + spot.stage() * LEVEL_PITCH;
         return player.getY() < Y - 6 || player.getY() > Y + MAX_STAGES * LEVEL_PITCH + 6
-                || player.getY() < y - 1 || player.getY() > y + HEADROOM + 3;
+                || player.getY() < y - 1 || player.getY() > y + LEVEL_PITCH - 3;
     }
 
     private static String builtKey(Line line, int index, int stage) {
@@ -683,11 +710,28 @@ public final class Passages {
             for (Cell c : plan.cells()) {
                 BlockPos m = plan.centre(c);
                 Cell e = new Cell(c.x + 1, c.z), s = new Cell(c.x, c.z + 1);
-                if (c.x + 1 < plan.size && plan.connected(c, e)) {
-                    for (int d = 5; d <= 7; d++) for (int k = -1; k <= 1; k++) doorway(level, m.offset(d, 0, k), p);
-                }
-                if (c.z + 1 < plan.size && plan.connected(c, s)) {
-                    for (int d = 5; d <= 7; d++) for (int k = -1; k <= 1; k++) doorway(level, m.offset(k, 0, d), p);
+                int mid = (CORRIDOR_FROM + CORRIDOR_TO) / 2;
+                for (int dir = 0; dir < 2; dir++) {
+                    Cell next = dir == 0 ? e : s;
+                    if ((dir == 0 ? c.x : c.z) + 1 >= plan.size || !plan.connected(c, next)) continue;
+                    boolean jets = plan.jets(c, dir);
+                    for (int d = CORRIDOR_FROM; d <= CORRIDOR_TO; d++) {
+                        for (int k = -1; k <= 1; k++) {
+                            BlockPos floor = dir == 0 ? m.offset(d, 0, k) : m.offset(k, 0, d);
+                            doorway(level, floor, p);
+                            // a runner down the middle, a lamp over the middle of the corridor, an arch at either end
+                            // (one step in from each room: the doorway itself stays a clean three by three, for rooms that shut theirs)
+                            if (k != 0 && (d == CORRIDOR_FROM + 1 || d == CORRIDOR_TO - 1)) set(level, floor.above(3), p.trim());
+                            if (k != 0) set(level, floor, p.top());
+                            if (d == mid && k == 0) set(level, floor.above(4), p.light());
+                            if (d == mid && jets) set(level, floor, Snares.VENT);
+                        }
+                        // and a sconce in each wall, a third of the way along
+                        if (d == CORRIDOR_FROM + 2 || d == CORRIDOR_TO - 2) {
+                            set(level, dir == 0 ? m.offset(d, 2, -2) : m.offset(-2, 2, d), p.light());
+                            set(level, dir == 0 ? m.offset(d, 2, 2) : m.offset(2, 2, d), p.light());
+                        }
+                    }
                 }
             }
         });
@@ -803,7 +847,7 @@ public final class Passages {
             }
             case EXIT -> {
                 // the gate stands across the way a climber comes in, in an arch of its own, lit at its feet
-                for (BlockPos g : plan.gatePositions()) set(level, g, ModContent.GATE_ASCEND.get());
+                for (BlockPos g : plan.gatePositions()) set(level, g, GATE_SHUT);
                 for (int dy = 1; dy <= 4; dy++) {
                     set(level, plan.gateOffset(-2, dy), dy == 4 ? p.trim() : p.pillar());
                     set(level, plan.gateOffset(2, dy), dy == 4 ? p.trim() : p.pillar());
@@ -861,7 +905,7 @@ public final class Passages {
                 for (int[] k : CORNERS) set(level, m.offset(k[0], 0, k[1]), Blocks.MOSS_BLOCK);
             }
             case VAULT, CHIMES, BEAM, PLATES, DARTS -> Rooms.build(level, plan, c, random);
-            case SPIKES, FLAMES, BLADES -> Snares.build(level, plan, c, p);
+            case SPIKES, FLAMES, BLADES, ARC, GAS -> Snares.build(level, plan, c, p);
             case STAIRWELL -> {
                 // a loft across the north end, a flight of steps up to it at either side, and a cache up there
                 for (int dx = -5; dx <= 5; dx++) {
@@ -1228,6 +1272,31 @@ public final class Passages {
         ProgressData.get(level.getServer()).unmarkPrefix(wokenKey(plan));
         Rooms.rearm(level, plan);
         for (Cell c : plan.cells()) if (plan.kind(c) == Kind.SPIKES) Snares.lower(level, plan, c);
+        shutGate(level, plan);
+    }
+
+    /** True once a level's gate has opened: every seal broken. */
+    public static boolean gateOpen(ServerLevel level, Plan plan) {
+        return level.getBlockState(plan.gatePositions().get(0)).is(ModContent.GATE_ASCEND.get());
+    }
+
+    /** The last seal is broken: the dark glass in the arch gives way to the gate itself. */
+    public static void openGate(ServerLevel level, Plan plan) {
+        if (gateOpen(level, plan)) return;
+        for (BlockPos g : plan.gatePositions()) {
+            level.setBlock(g, ModContent.GATE_ASCEND.get().defaultBlockState(), 3);
+            level.sendParticles(ParticleTypes.END_ROD, g.getX() + 0.5, g.getY() + 0.5, g.getZ() + 0.5, 4, 0.3, 0.3, 0.3, 0.03);
+        }
+        BlockPos middle = plan.gateOffset(0, 2);
+        level.playSound(null, middle, SoundEvents.END_PORTAL_SPAWN, SoundSource.BLOCKS, 0.6F, 1.4F);
+        level.playSound(null, middle, SoundEvents.GLASS_BREAK, SoundSource.BLOCKS, 1.2F, 0.5F);
+    }
+
+    /** A level sealed again has its gate shut again. */
+    public static void shutGate(ServerLevel level, Plan plan) {
+        for (BlockPos g : plan.gatePositions()) {
+            if (!level.getBlockState(g).is(GATE_SHUT)) level.setBlock(g, GATE_SHUT.defaultBlockState(), 3);
+        }
     }
 
     /** The level a block belongs to, with its plan - or null if it is not in a passage. */
@@ -1268,6 +1337,7 @@ public final class Passages {
         if (plan == null) return;
         ExperienceOrb.award(level, new Vec3(x, y, z), 12 * plan.tier + 4 * plan.stage);
         int left = sealsLeft(level, plan);
+        if (left == 0) openGate(level, plan);
         for (ServerPlayer p : level.getEntitiesOfClass(ServerPlayer.class, plan.box().inflate(4), e -> true)) {
             if (left > 0) {
                 Hud.actionBar(p, Hud.colored(Component.translatable(HUD + "seal.broken", left), 0x55FFFF));
@@ -1330,7 +1400,7 @@ public final class Passages {
 
     private static void arrive(ServerPlayer player, ServerLevel level, Plan plan) {
         Teleports.moveTo(player, level, plan.arrival(), 0.0F);
-        visited(player, plan).add(plan.start);
+        see(player, plan, plan.start);
         // the level after this one is built while this one is explored; and everyone gets a chart to draw it on
         if (!plan.last()) prepare(level, plan.line, plan.index, plan.stage + 1);
         if (Charts.give(player)) Hud.actionBar(player, Hud.colored(Component.translatable(HUD + "chart"), 0xF5B82E));
@@ -1382,8 +1452,36 @@ public final class Passages {
     /** The rooms each player has walked into, per level: what their map shows. Kept for the session. */
     private static final Map<String, Set<Cell>> VISITED = new HashMap<>();
 
+    private static String seenKey(ServerPlayer player, Plan plan, Cell c) {
+        return "seen/" + player.getUUID() + "/" + plan.line.id() + "/" + plan.index + "/" + plan.stage + "/" + c.x + "." + c.z;
+    }
+
+    /** The rooms of a level a player has walked into. It is kept with the world: a chart does not go blank when the server stops. */
     public static Set<Cell> visited(ServerPlayer player, Plan plan) {
-        return VISITED.computeIfAbsent(player.getUUID() + "/" + plan.seed, k -> new HashSet<>());
+        return VISITED.computeIfAbsent(player.getUUID() + "/" + plan.seed, k -> {
+            Set<Cell> seen = new HashSet<>();
+            MinecraftServer server = player.level().getServer();
+            if (server != null) {
+                ProgressData data = ProgressData.get(server);
+                for (Cell c : plan.cells()) if (data.isBuilt(seenKey(player, plan, c))) seen.add(c);
+            }
+            return seen;
+        });
+    }
+
+    /** A player has walked into a room. @return true if it is the first time */
+    public static boolean see(ServerPlayer player, Plan plan, Cell cell) {
+        if (!visited(player, plan).add(cell)) return false;
+        MinecraftServer server = player.level().getServer();
+        if (server != null) ProgressData.get(server).markBuilt(seenKey(player, plan, cell));
+        return true;
+    }
+
+    /** Forgets where a player has been: a level sealed again is unknown again. Also clears what is held in memory, as a restart would. */
+    public static void forgetSeen(ServerPlayer player, boolean kept) {
+        VISITED.keySet().removeIf(k -> k.startsWith(player.getUUID() + "/"));
+        MinecraftServer server = player.level().getServer();
+        if (kept && server != null) ProgressData.get(server).unmarkPrefix("seen/" + player.getUUID() + "/");
     }
 
     /** Wakes sentinels as players walk in, names the room they enter, and keeps the passage bar current. */
@@ -1392,7 +1490,7 @@ public final class Passages {
         Plan plan = plan(level, spot);
         Cell cell = plan.cellAt(player.blockPosition());
         if (cell != null) {
-            visited(player, plan).add(cell);
+            see(player, plan, cell);
             Kind kind = plan.kind(cell);
             boolean sealed = kind == Kind.SEAL && level.getBlockState(plan.sealPos(cell)).is(ModContent.PASSAGE_SEAL.get());
             boolean wakes = sealed || kind == Kind.ARENA || plan.patrols.contains(cell);
@@ -1420,6 +1518,8 @@ public final class Passages {
                     case FLAMES -> "flames";
                     case BLADES -> "blades";
                     case STAIRWELL -> "stairwell";
+                    case ARC -> "arc";
+                    case GAS -> "gas";
                     case EXIT -> sealsLeft(level, plan) > 0 ? "exit.sealed" : plan.last() ? "exit.open" : "exit.deeper";
                     default -> null;
                 };

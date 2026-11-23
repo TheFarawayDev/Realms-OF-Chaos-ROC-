@@ -87,7 +87,7 @@ public final class Charts {
             case SEAL -> MapColor.COLOR_RED;
             case TREASURE, VAULT, CHIMES, BEAM, PLATES, STAIRWELL -> MapColor.GOLD;
             case SHRINE -> MapColor.COLOR_LIGHT_BLUE;
-            case TRAP, CRUSHER, DARTS, SPIKES, FLAMES, BLADES -> MapColor.COLOR_ORANGE;
+            case TRAP, CRUSHER, DARTS, SPIKES, FLAMES, BLADES, ARC, GAS -> MapColor.COLOR_ORANGE;
             case ARENA -> MapColor.COLOR_PURPLE;
             case GARDEN -> MapColor.PLANT;
             case POOL -> MapColor.WATER;
@@ -114,6 +114,9 @@ public final class Charts {
         byte fog = ink(MapColor.NONE, MapColor.Brightness.NORMAL), wall = ink(MapColor.COLOR_BLACK, MapColor.Brightness.NORMAL);
         byte[] sheet = new byte[SIZE * SIZE];
         java.util.Arrays.fill(sheet, fog);
+        // the room the owner stands in is outlined in white; the rest in black
+        Passages.Cell standing = plan.cellAt(player.blockPosition());
+        byte around = ink(MapColor.SNOW, MapColor.Brightness.HIGH);
         for (Passages.Cell c : plan.cells()) {
             boolean known = seen.contains(c);
             boolean near = false;
@@ -133,7 +136,7 @@ public final class Charts {
             for (int dx = inset; dx < CELL - inset; dx++) {
                 for (int dz = inset; dz < CELL - inset; dz++) {
                     boolean edge = dx == inset || dz == inset || dx == CELL - inset - 1 || dz == CELL - inset - 1;
-                    sheet[(x0 + dx) + (z0 + dz) * SIZE] = edge ? wall : fill;
+                    sheet[(x0 + dx) + (z0 + dz) * SIZE] = edge ? (c.equals(standing) ? around : wall) : fill;
                 }
             }
             // what the room is, as a small sign in its middle - once it has been seen, or a shrine has shown it
@@ -176,6 +179,26 @@ public final class Charts {
                 int x = px + d[0], z = pz + d[1];
                 if (x >= 0 && z >= 0 && x < SIZE && z < SIZE) sheet[x + z * SIZE] = mark;
             }
+            // and a yellow point ahead of it, the way they are facing
+            double yaw = Math.toRadians(player.getYRot());
+            byte nose = ink(MapColor.COLOR_YELLOW, MapColor.Brightness.HIGH);
+            for (int step = 2; step <= 3; step++) {
+                int x = px + (int) Math.round(-Math.sin(yaw) * step), z = pz + (int) Math.round(Math.cos(yaw) * step);
+                if (x >= 0 && z >= 0 && x < SIZE && z < SIZE) sheet[x + z * SIZE] = nose;
+            }
+        }
+        // companions: a blue mark for anyone else on the level, in a room that is on the chart
+        byte friend = ink(MapColor.COLOR_LIGHT_BLUE, MapColor.Brightness.HIGH);
+        for (ServerPlayer other : level.getPlayers(o -> o != player && o.isAlive() && !o.isSpectator() && plan.box().contains(o.position()))) {
+            Passages.Cell there = plan.cellAt(other.blockPosition());
+            if (there == null || !(seen.contains(there) || shown)) continue;
+            var m = plan.centre(there);
+            int px = origin + there.x() * CELL + CELL / 2 + (int) Math.round((other.getX() - (m.getX() + 0.5)) * (CELL - 6) / 9.0);
+            int pz = origin + there.z() * CELL + CELL / 2 + (int) Math.round((other.getZ() - (m.getZ() + 0.5)) * (CELL - 6) / 9.0);
+            for (int[] d : new int[][]{{0, 0}, {1, 0}, {0, 1}, {1, 1}}) {
+                int x = px + d[0], z = pz + d[1];
+                if (x >= 0 && z >= 0 && x < SIZE && z < SIZE) sheet[x + z * SIZE] = friend;
+            }
         }
         for (int x = 0; x < SIZE; x++) for (int z = 0; z < SIZE; z++) put(data, x, z, sheet[x + z * SIZE]);
         return inked;
@@ -196,7 +219,7 @@ public final class Charts {
             case TREASURE, ARENA, STAIRWELL, VAULT, CHIMES, BEAM, PLATES -> DIAMOND;
             case SHRINE -> PLUS;
             case EXIT -> ARCH;
-            case TRAP, CRUSHER, DARTS, SPIKES, FLAMES, BLADES -> BANG;
+            case TRAP, CRUSHER, DARTS, SPIKES, FLAMES, BLADES, ARC, GAS -> BANG;
             default -> NOTHING;
         };
     }

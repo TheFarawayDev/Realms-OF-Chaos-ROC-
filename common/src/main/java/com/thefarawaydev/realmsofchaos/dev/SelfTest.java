@@ -231,7 +231,8 @@ public final class SelfTest {
         }
         check(treasure == plan.treasures() && shrines == 1 && arenas == plan.arenas(), at + "one shrine, the treasure rooms and the arena: " + shrines + ", " + treasure + ", " + arenas);
         check(Passages.sealsLeft(level, plan) == plan.seals.size(), at + "all seals whole");
-        for (BlockPos g : plan.gatePositions()) check(level.getBlockState(g).is(ModContent.GATE_ASCEND.get()), at + "gate");
+        // (the gate is shut while a seal stands, and a level is built with all its seals whole)
+        for (BlockPos g : plan.gatePositions()) check(level.getBlockState(g).is(Passages.GATE_SHUT) && !Passages.gateOpen(level, plan), at + "the gate, shut");
 
         // flood from the arrival spot through every place a player can stand
         AABB box = plan.box();
@@ -265,7 +266,9 @@ public final class SelfTest {
             }
             check(seen.contains(beside), at + "room " + c + " (" + plan.kind(c) + ") cannot be walked into");
         }
-        check(seen.contains(plan.gatePositions().get(0)), at + "the gate cannot be walked into");
+        Passages.Cell wayIn = plan.approach();
+        BlockPos gateFront = plan.gateTurned() ? plan.centre(plan.exit).offset(wayIn.x() > plan.exit.x() ? 1 : -1, 1, 0) : plan.centre(plan.exit).offset(0, 1, wayIn.z() > plan.exit.z() ? 1 : -1);
+        check(seen.contains(gateFront) && !seen.contains(plan.gatePositions().get(0)), at + "the gate can be walked up to, and not through while it is shut");
     }
 
     /** A god's health for a trial nobody has scaled: its own, at the world's difficulty. */
@@ -4641,7 +4644,7 @@ public final class SelfTest {
                 for (Passages.Plan plan : List.of(turned, straight)) {
                     Passages.build(level, plan);
                     checkPassage(level, plan, "gate level " + plan.label() + ": ");
-                    for (BlockPos g : plan.gatePositions()) check(level.getBlockState(g).is(ModContent.GATE_ASCEND.get()), "the gate stands where the plan says");
+                    for (BlockPos g : plan.gatePositions()) check(level.getBlockState(g).is(Passages.GATE_SHUT), "the gate stands where the plan says, shut");
                     check(solid(level, plan.gateOffset(2, 1)) && solid(level, plan.gateOffset(-2, 3)) && solid(level, plan.gateOffset(0, 4)), "in an arch of its own");
                     BlockPos middle = plan.centre(plan.exit);
                     BlockPos before = plan.gateTurned() ? middle.offset(plan.approach().x() > plan.exit.x() ? 2 : -2, 1, 0) : middle.offset(0, 1, plan.approach().z() > plan.exit.z() ? 2 : -2);
@@ -4758,6 +4761,219 @@ public final class SelfTest {
                 com.thefarawaydev.realmsofchaos.ui.Cards.clear(hero);
                 clearBosses(level);
             }
+        });
+
+        step("a gate shut until its seals are broken, corridors between rooms with jets in some, an arc hall, a gas hall, a chart that remembers", () -> {
+            ServerPlayer hero = fakePlayer(server, level, "RocPatient");
+            com.thefarawaydev.realmsofchaos.world.Snares.forget();
+            com.thefarawaydev.realmsofchaos.world.Boons.clear(hero);
+            Realm.testAlias(Level.OVERWORLD, Realm.ofLine(Line.POSEIDON));
+            level.addNewPlayer(hero);
+            try {
+                // ---- corridors: rooms stand apart, with a lit corridor between them
+                check(Passages.CELL == 16 && Passages.CORRIDOR_TO - Passages.CORRIDOR_FROM + 1 == 7, "seven blocks of corridor between two rooms");
+                Object[] found = room(level, Line.POSEIDON, Passages.Kind.ARC);
+                Passages.Plan plan = (Passages.Plan) found[0];
+                Passages.Cell arcRoom = (Passages.Cell) found[1];
+                Passages.build(level, plan);
+                checkPassage(level, plan, "corridor level " + plan.label() + ": ");
+                Passages.Cell west = null, east = null;
+                for (Passages.Cell c : plan.cells()) {
+                    Passages.Cell e = new Passages.Cell(c.x() + 1, c.z());
+                    if (west == null && c.x() + 1 < plan.size && plan.connected(c, e) && !plan.wide(c) && !plan.wide(e)) { west = c; east = e; }
+                }
+                check(west != null, "test setup: two ordinary rooms side by side");
+                BlockPos m = plan.centre(west);
+                check(plan.centre(east).getX() - m.getX() == Passages.CELL, "rooms are sixteen apart, middle to middle");
+                for (int d = Passages.CORRIDOR_FROM; d <= Passages.CORRIDOR_TO; d++) {
+                    check(level.getBlockState(m.offset(d, 1, 0)).isAir() && level.getBlockState(m.offset(d, 2, 0)).isAir() && solid(level, m.offset(d, 0, 0)) && solid(level, m.offset(d, 4, 0)), "the corridor is open at " + d);
+                    check(solid(level, m.offset(d, 1, 2)) && solid(level, m.offset(d, 1, -2)), "and walled at " + d);
+                    check(plan.cellAt(m.offset(d, 1, 0)) == null, "it belongs to neither room");
+                }
+
+                // ---- the gate waits for the seals
+                check(!Passages.gateOpen(level, plan) && level.getBlockState(plan.gatePositions().get(4)).is(Passages.GATE_SHUT), "a level's gate is shut while a seal stands");
+                for (int i = 0; i < plan.seals.size(); i++) {
+                    check(!Passages.gateOpen(level, plan), "still shut with " + (plan.seals.size() - i) + " to go");
+                    Passages.breakSeal(level, plan.sealPos(plan.seals.get(i)), hero);
+                }
+                hero.closeContainer();
+                check(Passages.sealsLeft(level, plan) == 0 && Passages.gateOpen(level, plan), "the last seal broken, it opens");
+                for (BlockPos g : plan.gatePositions()) check(level.getBlockState(g).is(ModContent.GATE_ASCEND.get()), "the whole gate");
+                Passages.rearm(level, plan);
+                check(Passages.sealsLeft(level, plan) == plan.seals.size() && !Passages.gateOpen(level, plan) && level.getBlockState(plan.gatePositions().get(0)).is(Passages.GATE_SHUT), "a level sealed again has its gate shut again");
+                com.thefarawaydev.realmsofchaos.world.Boons.clear(hero);
+
+                // ---- the arc hall
+                m = plan.centre(arcRoom);
+                check(solid(level, m.above()) && level.getBlockState(m.offset(1, 1, 0)).isAir(), "an arc hall has a pillar in its middle, and room round it");
+                long turn = 160L * 1000;
+                check(com.thefarawaydev.realmsofchaos.world.Snares.arcDistance(turn, 2.0, 0.0) < 0.01 && com.thefarawaydev.realmsofchaos.world.Snares.arcDistance(turn, 0.0, 2.0) > 1.9
+                        && com.thefarawaydev.realmsofchaos.world.Snares.arcDistance(turn + 40, 0.0, 2.0) < 0.01 && com.thefarawaydev.realmsofchaos.world.Snares.arcDistance(turn, 9.0, 0.0) > 50, "the arc is a line through the pillar that turns, and reaches only so far");
+                hero.setPos(m.getX() + 0.5, m.getY() + 1, m.getZ() + 2.5);
+                hero.setHealth(hero.getMaxHealth());
+                hero.damageCooldownTime = 0;
+                settle(level);
+                com.thefarawaydev.realmsofchaos.world.Snares.tend(level, plan, arcRoom, turn);
+                check(hero.getHealth() == hero.getMaxHealth(), "away from the arc there is no harm");
+                com.thefarawaydev.realmsofchaos.world.Snares.tend(level, plan, arcRoom, turn + 40);
+                check(hero.getHealth() < hero.getMaxHealth(), "as it comes round it strikes: " + hero.getHealth());
+
+                // ---- the gas hall
+                found = room(level, Line.POSEIDON, Passages.Kind.GAS);
+                Passages.Plan gasPlan = (Passages.Plan) found[0];
+                Passages.Cell gasRoom = (Passages.Cell) found[1];
+                Passages.build(level, gasPlan);
+                m = gasPlan.centre(gasRoom);
+                check(level.getBlockState(m.offset(3, 0, 0)).is(com.thefarawaydev.realmsofchaos.world.Snares.GAS_VENT) && level.getBlockState(m.offset(0, 0, -3)).is(com.thefarawaydev.realmsofchaos.world.Snares.GAS_VENT), "a gas hall has a vent in each side of its floor");
+                turn = 200L * 1000;
+                check(com.thefarawaydev.realmsofchaos.world.Snares.gasHalf(turn) == 0 && com.thefarawaydev.realmsofchaos.world.Snares.gasHalf(turn + 50) == 1 && !com.thefarawaydev.realmsofchaos.world.Snares.gasOut(turn + 5)
+                        && com.thefarawaydev.realmsofchaos.world.Snares.gasOut(turn + 25), "the halves take turns, each warned of before it fills");
+                check(com.thefarawaydev.realmsofchaos.world.Snares.inHalf(0, 0, 0) && com.thefarawaydev.realmsofchaos.world.Snares.inHalf(2, 0, 0) && !com.thefarawaydev.realmsofchaos.world.Snares.inHalf(0, 2, 1), "and the middle is in every half: nowhere is always safe");
+                hero.setPos(m.getX() + 0.5, m.getY() + 1, m.getZ() - 1.5);
+                hero.setHealth(hero.getMaxHealth());
+                hero.removeAllEffects();
+                hero.damageCooldownTime = 0;
+                settle(level);
+                com.thefarawaydev.realmsofchaos.world.Snares.tend(level, gasPlan, gasRoom, turn + 5);
+                check(hero.getHealth() == hero.getMaxHealth(), "smoke first: no harm");
+                com.thefarawaydev.realmsofchaos.world.Snares.tend(level, gasPlan, gasRoom, turn + 25);
+                check(hero.getHealth() < hero.getMaxHealth() && hero.hasEffect(net.minecraft.world.effect.MobEffects.POISON), "then that half is foul");
+                hero.setPos(m.getX() + 0.5, m.getY() + 1, m.getZ() + 2.5);
+                hero.setHealth(hero.getMaxHealth());
+                hero.removeAllEffects();
+                hero.damageCooldownTime = 0;
+                settle(level);
+                com.thefarawaydev.realmsofchaos.world.Snares.tend(level, gasPlan, gasRoom, turn + 200 + 25);
+                check(hero.getHealth() == hero.getMaxHealth(), "and the other half is the place to stand");
+
+                // ---- jets in a corridor
+                Passages.Plan jetPlan = null;
+                Passages.Cell jetCell = null;
+                int jetDir = 0, corridors = 0, burning = 0;
+                for (int index = 1; index <= Passages.COUNT; index++) {
+                    for (int stage = 0; stage < Passages.stages(level, Line.POSEIDON, index); stage++) {
+                        Passages.Plan each = Passages.plan(level, Line.POSEIDON, index, stage);
+                        for (Passages.Cell c : each.cells()) {
+                            for (int dir = 0; dir < 2; dir++) {
+                                Passages.Cell next = dir == 0 ? new Passages.Cell(c.x() + 1, c.z()) : new Passages.Cell(c.x(), c.z() + 1);
+                                if (next.x() >= each.size || next.z() >= each.size || !each.connected(c, next)) {
+                                    check(!each.jets(c, dir), each.label() + ": no jets where there is no corridor");
+                                    continue;
+                                }
+                                corridors++;
+                                if (!each.jets(c, dir)) continue;
+                                burning++;
+                                check(!c.equals(each.start) && !next.equals(each.start), each.label() + ": never beside the room a climber arrives in");
+                                if (jetPlan == null) { jetPlan = each; jetCell = c; jetDir = dir; }
+                            }
+                        }
+                    }
+                }
+                check(burning * 12 > corridors && burning * 2 < corridors, "some corridors have jets, most do not: " + burning + " of " + corridors);
+                Passages.build(level, jetPlan);
+                BlockPos mid = jetPlan.corridorMiddle(jetCell, jetDir);
+                check(level.getBlockState(mid).is(com.thefarawaydev.realmsofchaos.world.Snares.VENT) && jetPlan.cellAt(mid) == null, "vents across the middle of the corridor");
+                hero.setPos(mid.getX() + 0.5, mid.getY() + 1, mid.getZ() + 0.5);
+                hero.setHealth(hero.getMaxHealth());
+                hero.clearFire();
+                hero.removeAllEffects();
+                hero.damageCooldownTime = 0;
+                settle(level);
+                turn = 70L * 1000;
+                com.thefarawaydev.realmsofchaos.world.Snares.jets(level, jetPlan, jetCell, jetDir, turn + 4);
+                check(hero.getHealth() == hero.getMaxHealth() && !com.thefarawaydev.realmsofchaos.world.Snares.jetsBurning(turn + 4), "they smoke before they burn");
+                com.thefarawaydev.realmsofchaos.world.Snares.jets(level, jetPlan, jetCell, jetDir, turn + com.thefarawaydev.realmsofchaos.world.Snares.JET_WARN);
+                check(hero.getHealth() < hero.getMaxHealth() && hero.getRemainingFireTicks() > 0, "then they burn whoever is standing on them");
+                hero.setHealth(hero.getMaxHealth());
+                hero.clearFire();
+                hero.damageCooldownTime = 0;
+                com.thefarawaydev.realmsofchaos.world.Snares.jets(level, jetPlan, jetCell, jetDir, turn + 60);
+                check(hero.getHealth() == hero.getMaxHealth(), "and rest, long enough to run through");
+
+                // ---- the chart remembers, and shows where its owner stands
+                Passages.forgetSeen(hero, true);
+                check(Passages.visited(hero, plan).isEmpty(), "(a player who has seen nothing)");
+                check(Passages.see(hero, plan, arcRoom) && !Passages.see(hero, plan, arcRoom), "a room walked into is seen once");
+                Passages.forgetSeen(hero, false);
+                check(Passages.visited(hero, plan).contains(arcRoom) && Passages.visited(hero, plan).size() == 1, "and still known after the server has stopped and started");
+                m = plan.centre(arcRoom);
+                hero.setPos(m.getX() + 2.5, m.getY() + 1, m.getZ() + 0.5);
+                hero.setYRot(0.0F);
+                settle(level);
+                com.thefarawaydev.realmsofchaos.world.Charts.draw(hero, level, plan);
+                int[] at = com.thefarawaydev.realmsofchaos.world.Charts.pixel(plan, arcRoom);
+                byte white = net.minecraft.world.level.material.MapColor.SNOW.getPackedId(net.minecraft.world.level.material.MapColor.Brightness.HIGH);
+                int inset = plan.wide(arcRoom) ? 1 : 2;
+                // (a corner of its outline: a doorway may cut the middle of a side)
+                check(com.thefarawaydev.realmsofchaos.world.Charts.at(hero, at[0] - 9 + inset, at[1] + 4 - 9 + inset) == white, "the room its owner stands in is outlined in white");
+                Passages.Cell elsewhere = arcRoom.equals(plan.start) ? plan.exit : plan.start;
+                Passages.see(hero, plan, elsewhere);
+                com.thefarawaydev.realmsofchaos.world.Charts.draw(hero, level, plan);
+                at = com.thefarawaydev.realmsofchaos.world.Charts.pixel(plan, elsewhere);
+                check(com.thefarawaydev.realmsofchaos.world.Charts.at(hero, at[0] - 9 + (plan.wide(elsewhere) ? 1 : 2), at[1] + 4 - 9 + (plan.wide(elsewhere) ? 1 : 2)) != white, "and no other");
+                Passages.forgetSeen(hero, true);
+            } finally {
+                hero.remove(net.minecraft.world.entity.Entity.RemovalReason.DISCARDED);
+                com.thefarawaydev.realmsofchaos.world.Snares.forget();
+                com.thefarawaydev.realmsofchaos.world.Boons.clear(hero);
+                com.thefarawaydev.realmsofchaos.ui.Cards.clear(hero);
+                Tutorial.reset(hero);
+                Realm.testAlias(Level.OVERWORLD, Realm.ABYSS);
+                advance(server, Tutorial.DELAY + 2);
+                Scheduler.tick(server);
+                com.thefarawaydev.realmsofchaos.ui.Cards.clear(hero);
+            }
+        });
+
+        step("every word on the mod's menus is in its language file: nobody is shown a key", () -> {
+            ServerPlayer hero = fakePlayer(server, level, "RocProofreader");
+            com.thefarawaydev.realmsofchaos.ui.Options.reset(hero);
+            com.thefarawaydev.realmsofchaos.world.Boons.clear(hero);
+            // a bestiary with every kind in it, a little of every habit, so that nothing is left unwritten
+            for (Sentinel.Kind kind : Sentinel.Kind.values()) com.thefarawaydev.realmsofchaos.ui.BestiaryMenu.record(hero, kind);
+            for (var habit : com.thefarawaydev.realmsofchaos.world.Insight.Habit.values()) com.thefarawaydev.realmsofchaos.world.Insight.setPoints(server, hero.getUUID(), habit, 3);
+            CodexMenu.open(hero);
+            check(menuWords(hero, "Codex") >= 8, "the Codex");
+            com.thefarawaydev.realmsofchaos.ui.OptionsMenu.open(hero);
+            check(menuWords(hero, "Settings") >= 8, "Settings");
+            com.thefarawaydev.realmsofchaos.ui.InsightMenu.open(hero);
+            check(menuWords(hero, "What the Gods Know") >= 7, "What the Gods Know");
+            com.thefarawaydev.realmsofchaos.ui.BestiaryMenu.open(hero);
+            for (Line line : Line.values()) {
+                hero.containerMenu.clicked(com.thefarawaydev.realmsofchaos.ui.BestiaryMenu.TABS[line.ordinal()], 0, net.minecraft.world.inventory.ContainerInput.PICKUP, hero);
+                check(menuWords(hero, "Bestiary " + line.id()) >= 21, "the bestiary's page for " + line.id());
+            }
+            com.thefarawaydev.realmsofchaos.ui.BoonMenu.open(hero, new BlockPos(1, 70, 1));
+            check(menuWords(hero, "A Seal's Boon") >= 4, "the boon menu");
+            hero.closeContainer();
+            com.thefarawaydev.realmsofchaos.world.Boons.clear(hero);
+            com.thefarawaydev.realmsofchaos.ui.PartyMenu.open(hero);
+            menuWords(hero, "Party");
+            com.thefarawaydev.realmsofchaos.ui.StoryMenu.open(hero);
+            menuWords(hero, "Story");
+            ForgeMenu.open(hero);
+            menuWords(hero, "Forge");
+            hero.closeContainer();
+            // and what is said rather than shown
+            for (Tutorial.Tip tip : Tutorial.Tip.values()) words(tip.text(), "tip " + tip);
+            for (var boon : com.thefarawaydev.realmsofchaos.world.Boons.Boon.values()) {
+                words(boon.displayName(), "boon " + boon);
+                words(boon.description(), "boon " + boon);
+            }
+            for (Passages.Kind kind : Passages.Kind.values()) {
+                if (kind != Passages.Kind.SEAL) words(net.minecraft.network.chat.Component.translatable("menu.realms_of_chaos.passage.kind." + kind.name().toLowerCase()), "room kind " + kind);
+            }
+            for (String hint : new String[]{"spikes", "flames", "blades", "stairwell", "arc", "gas", "vault", "chimes", "beam", "plates", "crusher", "darts", "trap"}) {
+                words(net.minecraft.network.chat.Component.translatable("hud.realms_of_chaos.passage.room." + hint), "room hint " + hint);
+            }
+            ProgressData.get(server).clearCounters("bestiary/" + hero.getUUID() + "/");
+            com.thefarawaydev.realmsofchaos.world.Insight.forget(hero);
+            com.thefarawaydev.realmsofchaos.ui.Cards.clear(hero);
+            Tutorial.reset(hero);
+            advance(server, Tutorial.DELAY + 2);
+            Scheduler.tick(server);
+            com.thefarawaydev.realmsofchaos.ui.Cards.clear(hero);
         });
 
         step("nothing drawn is sent bare: plain words stand behind every picture, and the drawn interface can be turned off", () -> {
@@ -5224,6 +5440,35 @@ public final class SelfTest {
     }
 
     /** Travel is throttled by the server tick counter; the self-test runs inside one tick, so it winds the clock. */
+    /** Every key of the mod's own that a piece of text uses has to be in its language file, or a player reads the key. */
+    private static void words(net.minecraft.network.chat.Component text, String where) {
+        if (text.getContents() instanceof net.minecraft.network.chat.contents.TranslatableContents t) {
+            if (t.getKey().contains(RealmsOfChaos.MOD_ID)) {
+                check(!com.thefarawaydev.realmsofchaos.ui.Words.pattern(t.getKey()).equals(t.getKey()), where + ": the language file has no words for " + t.getKey());
+            }
+            for (Object arg : t.getArgs()) if (arg instanceof net.minecraft.network.chat.Component inner) words(inner, where);
+        }
+        for (net.minecraft.network.chat.Component sibling : text.getSiblings()) words(sibling, where);
+    }
+
+    /** Reads everything written on the menu a player has open: every icon's name and every line under it. @return how many icons */
+    private static int menuWords(ServerPlayer player, String menu) {
+        int icons = 0;
+        var open = player.containerMenu;
+        for (int i = 0; i < open.slots.size(); i++) {
+            ItemStack stack = open.getSlot(i).getItem();
+            if (stack.isEmpty() || open.getSlot(i).container == player.getInventory()) continue;
+            var name = stack.get(net.minecraft.core.component.DataComponents.CUSTOM_NAME);
+            if (name != null) {
+                words(name, menu + " slot " + i);
+                icons++;
+            }
+            var lore = stack.get(net.minecraft.core.component.DataComponents.LORE);
+            if (lore != null) for (net.minecraft.network.chat.Component line : lore.lines()) words(line, menu + " slot " + i);
+        }
+        return icons;
+    }
+
     private static void advance(MinecraftServer server, int ticks) throws Exception {
         java.lang.reflect.Field f = MinecraftServer.class.getDeclaredField("tickCount");
         f.setAccessible(true);

@@ -37,6 +37,14 @@ public final class Snares {
     /** The traps fill the middle of a hall and leave a step of plain floor inside each wall. */
     public static final int SPAN = 3;
     public static final Block SPIKE_TILE_A = Blocks.POLISHED_TUFF, SPIKE_TILE_B = Blocks.TUFF_BRICKS, VENT = Blocks.SMOOTH_BASALT;
+    /** The arc: once round the hall in this many ticks, reaching this far from the pillar. */
+    public static final int ARC_PERIOD = 160;
+    public static final double ARC_REACH = 4.4, ARC_WIDTH = 0.6;
+    /** Gas: each half of the hall is warned of, then foul, in turn - north, east, south, west. */
+    public static final int GAS_TURN = 50, GAS_WARN = 15, GAS_PERIOD = GAS_TURN * 4;
+    /** A corridor's jets: warned of, then burning, once in this many ticks. */
+    public static final int JET_PERIOD = 70, JET_WARN = 20, JET_BURN = 18;
+    public static final Block GAS_VENT = Blocks.CHISELED_TUFF;
 
     private static final Map<String, Long> TENDED = new HashMap<>();
     private static final Map<UUID, Long> CUT = new HashMap<>();
@@ -44,7 +52,7 @@ public final class Snares {
     private Snares() {}
 
     public static boolean is(Kind kind) {
-        return kind == Kind.SPIKES || kind == Kind.FLAMES || kind == Kind.BLADES;
+        return kind == Kind.SPIKES || kind == Kind.FLAMES || kind == Kind.BLADES || kind == Kind.ARC || kind == Kind.GAS;
     }
 
     /** Which of a spike hall's two colours a tile is. */
@@ -70,12 +78,20 @@ public final class Snares {
                 Block floor = switch (kind) {
                     case SPIKES -> inside ? (spikeGroup(dx, dz) == 0 ? SPIKE_TILE_A : SPIKE_TILE_B) : p.trim();
                     case FLAMES -> inside ? ((dx & 1) == 0 ? VENT : p.inlay()) : p.trim();
+                    // an arc hall's floor is rings about its pillar; a gas hall's is quartered, a vent in the middle of each side
+                    case ARC -> (int) Math.round(Math.hypot(dx, dz)) % 2 == 0 ? p.inlay() : p.top();
+                    case GAS -> (Math.abs(dx) == 3 && dz == 0) || (Math.abs(dz) == 3 && dx == 0) ? GAS_VENT : dx == 0 || dz == 0 ? p.trim() : p.topAlt();
                     // a blade hall's floor is scored from wall to wall, the way the blade runs
                     default -> Math.abs(dz) == 4 ? p.trim() : (dx & 1) == 0 ? p.inlay() : p.top();
                 };
                 level.setBlock(m.offset(dx, 0, dz), floor.defaultBlockState(), 2);
                 if (!level.getBlockState(m.offset(dx, 1, dz)).isAir()) level.setBlock(m.offset(dx, 1, dz), Blocks.AIR.defaultBlockState(), 2);
             }
+        }
+        if (kind == Kind.ARC) {
+            // the pillar the arc turns about
+            level.setBlock(m.above(), p.pillar().defaultBlockState(), 2);
+            level.setBlock(m.above(2), p.light().defaultBlockState(), 2);
         }
         // the hall says what it is from its corners: lights low in the walls, where the floor can be read by them
         for (int[] k : new int[][]{{-4, -4}, {4, -4}, {-4, 4}, {4, 4}}) level.setBlock(m.offset(k[0], 0, k[1]), p.light().defaultBlockState(), 2);
@@ -93,8 +109,17 @@ public final class Snares {
             if (spot == null || !(player.level() instanceof ServerLevel level)) continue;
             Plan plan = Passages.plan(level, spot);
             Cell cell = plan.cellAt(player.blockPosition());
-            if (cell == null || !is(plan.kind(cell)) || !Passages.isBuilt(level, plan.line, plan.index, plan.stage)) continue;
-            tend(level, plan, cell, now);
+            if (!Passages.isBuilt(level, plan.line, plan.index, plan.stage)) continue;
+            if (cell == null) {
+                // between rooms: the corridors near them, if any has jets
+                for (Cell c : plan.cells()) {
+                    for (int dir = 0; dir < 2; dir++) {
+                        if (plan.jets(c, dir) && plan.corridorMiddle(c, dir).distSqr(player.blockPosition()) < 144) jets(level, plan, c, dir, now);
+                    }
+                }
+                continue;
+            }
+            if (is(plan.kind(cell))) tend(level, plan, cell, now);
         }
         if (now % 200 == 0) {
             TENDED.values().removeIf(t -> now - t > 200);
@@ -110,6 +135,8 @@ public final class Snares {
             case SPIKES -> spikes(level, plan, cell, now);
             case FLAMES -> flames(level, plan, cell, now);
             case BLADES -> blades(level, plan, cell, now);
+            case ARC -> arc(level, plan, cell, now);
+            case GAS -> gas(level, plan, cell, now);
             default -> { }
         }
     }
@@ -237,6 +264,113 @@ public final class Snares {
             p.setDeltaMovement(eastward ? 0.9 : -0.9, 0.35, p.getDeltaMovement().z);
             p.needsSync = true;
             level.playSound(null, p.blockPosition(), SoundEvents.PLAYER_ATTACK_CRIT, SoundSource.BLOCKS, 1.0F, 0.8F);
+        }
+    }
+
+    // ---- the arc ------------------------------------------------------------------------------------------
+
+    /** Which way the arc points at this moment, in radians: it and its opposite, a line through the pillar. */
+    public static double arcAngle(long now) {
+        return Math.PI * 2 * Math.floorMod(now, (long) ARC_PERIOD) / ARC_PERIOD;
+    }
+
+    /** How far a point (measured from the pillar) is from the arc's line, or a large number if it is beyond the arc's reach. */
+    public static double arcDistance(long now, double dx, double dz) {
+        double a = arcAngle(now), ux = Math.cos(a), uz = Math.sin(a);
+        double along = dx * ux + dz * uz;
+        return Math.abs(along) > ARC_REACH ? 99.0 : Math.abs(dx * uz - dz * ux);
+    }
+
+    private static void arc(ServerLevel level, Plan plan, Cell cell, long now) {
+        BlockPos m = plan.centre(cell);
+        double cx = m.getX() + 0.5, cz = m.getZ() + 0.5, a = arcAngle(now);
+        if (now % 2 == 0) {
+            for (double r = 0.8; r <= ARC_REACH; r += 0.6) {
+                for (int side = -1; side <= 1; side += 2) {
+                    level.sendParticles(ParticleTypes.ELECTRIC_SPARK, cx + Math.cos(a) * r * side, m.getY() + 1.2, cz + Math.sin(a) * r * side, 1, 0.0, 0.25, 0.0, 0.0);
+                }
+            }
+        }
+        if (Math.floorMod(now, 40L) == 0) level.playSound(null, m, SoundEvents.BEACON_AMBIENT, SoundSource.BLOCKS, 1.2F, 1.8F);
+        for (Player p : inside(level, plan, cell)) {
+            if (arcDistance(now, p.getX() - cx, p.getZ() - cz) > ARC_WIDTH || p.getY() > m.getY() + 2.6) continue;
+            Long cut = CUT.get(p.getUUID());
+            if (cut != null && now - cut < 15 && now >= cut) continue;
+            CUT.put(p.getUUID(), now);
+            p.hurtServer(level, level.damageSources().lightningBolt(), damage(plan));
+            level.playSound(null, p.blockPosition(), SoundEvents.LIGHTNING_BOLT_IMPACT, SoundSource.BLOCKS, 0.4F, 1.6F);
+        }
+    }
+
+    // ---- gas ----------------------------------------------------------------------------------------------
+
+    /** Whether a place in a gas hall is in a half (0 north, 1 east, 2 south, 3 west). The middle lines belong to both sides: nowhere is always safe. */
+    public static boolean inHalf(int half, int dx, int dz) {
+        return switch (half) {
+            case 0 -> dz <= 0;
+            case 1 -> dx >= 0;
+            case 2 -> dz >= 0;
+            default -> dx <= 0;
+        };
+    }
+
+    /** The half whose turn it is, and whether the gas is out yet or only being warned of. */
+    public static int gasHalf(long now) {
+        return (int) (Math.floorMod(now, (long) GAS_PERIOD) / GAS_TURN);
+    }
+
+    public static boolean gasOut(long now) {
+        return Math.floorMod(now, (long) GAS_TURN) >= GAS_WARN;
+    }
+
+    private static void gas(ServerLevel level, Plan plan, Cell cell, long now) {
+        BlockPos m = plan.centre(cell);
+        int half = gasHalf(now), phase = (int) Math.floorMod(now, (long) GAS_TURN);
+        boolean out = gasOut(now);
+        if (phase == 0) level.playSound(null, m, SoundEvents.FIRE_EXTINGUISH, SoundSource.BLOCKS, 0.7F, 0.6F);
+        if (now % (out ? 3 : 6) == 0) {
+            for (int dx = -4; dx <= 4; dx += 2) {
+                for (int dz = -4; dz <= 4; dz += 2) {
+                    if (!inHalf(half, dx, dz)) continue;
+                    level.sendParticles(out ? ParticleTypes.SNEEZE : ParticleTypes.SMOKE, m.getX() + dx + 0.5, m.getY() + (out ? 1.4 : 1.1), m.getZ() + dz + 0.5, out ? 2 : 1, 0.5, 0.3, 0.5, 0.01);
+                }
+            }
+        }
+        if (!out || phase % 10 != 5) return;
+        for (Player p : inside(level, plan, cell)) {
+            int dx = p.getBlockX() - m.getX(), dz = p.getBlockZ() - m.getZ();
+            if (!inHalf(half, dx, dz)) continue;
+            p.hurtServer(level, level.damageSources().magic(), damage(plan) * 0.4F);
+            p.addEffect(new net.minecraft.world.effect.MobEffectInstance(net.minecraft.world.effect.MobEffects.POISON, 60, 0));
+        }
+    }
+
+    // ---- corridor jets -------------------------------------------------------------------------------------
+
+    public static boolean jetsBurning(long now) {
+        int phase = (int) Math.floorMod(now, (long) JET_PERIOD);
+        return phase >= JET_WARN && phase < JET_WARN + JET_BURN;
+    }
+
+    /** One tick of the jets in the corridor east (dir 0) or south (dir 1) of a room. */
+    public static void jets(ServerLevel level, Plan plan, Cell c, int dir, long now) {
+        Long last = TENDED.put(key(plan, c) + "/jets" + dir, now);
+        if (last != null && last == now) return;
+        BlockPos mid = plan.corridorMiddle(c, dir);
+        int phase = (int) Math.floorMod(now, (long) JET_PERIOD);
+        boolean burn = jetsBurning(now);
+        if (phase == JET_WARN) level.playSound(null, mid, SoundEvents.BLAZE_SHOOT, SoundSource.BLOCKS, 0.6F, 0.8F);
+        for (int k = -1; k <= 1; k++) {
+            BlockPos vent = dir == 0 ? mid.offset(0, 0, k) : mid.offset(k, 0, 0);
+            double x = vent.getX() + 0.5, y = vent.getY() + 1.05, z = vent.getZ() + 0.5;
+            if (phase < JET_WARN && phase % 4 == 0) level.sendParticles(ParticleTypes.SMOKE, x, y, z, 1, 0.1, 0.05, 0.1, 0.01);
+            if (burn && phase % 2 == 0) level.sendParticles(ParticleTypes.FLAME, x, y + 0.3, z, 3, 0.2, 0.6, 0.2, 0.02);
+        }
+        if (!burn || phase % 5 != 0) return;
+        net.minecraft.world.phys.AABB reach = new net.minecraft.world.phys.AABB(mid).inflate(dir == 0 ? 0.0 : 1.0, 0.0, dir == 0 ? 1.0 : 0.0).expandTowards(0, 2.6, 0);
+        for (Player p : level.getEntitiesOfClass(Player.class, reach, e -> e.isAlive() && !e.isSpectator() && !e.isCreative())) {
+            p.hurtServer(level, level.damageSources().inFire(), damage(plan) * 0.6F);
+            p.setRemainingFireTicks(60);
         }
     }
 

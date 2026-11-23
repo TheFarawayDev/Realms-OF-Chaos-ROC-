@@ -67,7 +67,7 @@ public class InsightMenu extends ButtonMenu {
         fill(DyeColor.BLACK);
         view.setItem(SLOT_ABOUT, icon(Items.ENDER_EYE, text(NS + ".about", 0xFFAA3C), true, List.of(
                 text(NS + ".about.1", 0xAAAAAA), text(NS + ".about.2", 0xAAAAAA), text(NS + ".about.3", 0x55FFFF))));
-        view.setItem(SLOT_BACK, icon(Items.ARROW, text("menu." + RealmsOfChaos.MOD_ID + ".codex.back", 0xFFFFFF), false, List.of()));
+        view.setItem(SLOT_BACK, icon(Items.ARROW, text("menu." + RealmsOfChaos.MOD_ID + ".back", 0xFFFFFF), false, List.of()));
         for (Insight.Habit habit : Insight.Habit.values()) {
             int known = Insight.level(viewer, habit);
             List<Component> lore = new ArrayList<>();
