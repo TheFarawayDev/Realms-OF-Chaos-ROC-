@@ -7,9 +7,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.level.ServerBossEvent;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.world.BossEvent;
 
 /**
  * Cards: a tip, something a god has learnt about you, a notice too long for a title. Each is a small panel at the
@@ -27,8 +25,8 @@ public final class Cards {
     public record Shown(HudArt.Card kind, List<String> lines, boolean headed) {}
 
     private static final class Slot {
-        ServerBossEvent bar;
         Shown shown;
+        int count;
         /** Whose screen this is. */
         ServerPlayer player;
         /** The tick the card showing is taken away at; or, with none showing, the tick the next may be put up. */
@@ -79,10 +77,14 @@ public final class Cards {
     private static void put(MinecraftServer server, ServerPlayer player, Slot slot, Shown card) {
         slot.shown = card;
         slot.until = server.getTickCount() + STAY;
-        slot.bar = new ServerBossEvent(UUID.randomUUID(), HudArt.present(player, HudArt.card(card.kind(), card.lines(), card.headed()), plain(card)),
-                BossEvent.BossBarColor.WHITE, BossEvent.BossBarOverlay.PROGRESS);
-        slot.bar.setProgress(0.0F);
-        if (player.connection != null) slot.bar.addPlayer(player);
+        slot.count++;
+        if (Options.on(player, Options.Option.ART)) {
+            // the player's own HUD draws it: which card, whether its first line is a heading, and its lines
+            HudFeed.set(player, HudFeed.CARD, card.kind().ordinal() | (card.headed() ? 16 : 0) | (slot.count << 8),
+                    net.minecraft.network.chat.Component.literal(String.join("\n", card.lines())));
+        } else {
+            Hud.actionBar(player, plain(card));
+        }
     }
 
     /** A card in plain words, for a game that cannot draw it: its heading (or its kind), then what it says. */
@@ -102,11 +104,7 @@ public final class Cards {
     }
 
     private static void take(Slot slot) {
-        if (slot.bar != null) {
-            slot.bar.removeAllPlayers();
-            slot.bar.setVisible(false);
-        }
-        slot.bar = null;
+        if (slot.shown != null && slot.player != null) HudFeed.clear(slot.player, HudFeed.CARD);
         slot.shown = null;
     }
 

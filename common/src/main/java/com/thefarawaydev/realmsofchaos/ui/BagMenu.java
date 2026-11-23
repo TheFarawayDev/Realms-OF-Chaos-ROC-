@@ -61,7 +61,7 @@ public class BagMenu extends ChestMenu {
     }
 
     private BagMenu(int id, Inventory inventory, ServerPlayer owner, ItemStack bag, int bagSlot, Store store, int rows) {
-        super(rows == 6 ? MenuType.GENERIC_9x6 : MenuType.GENERIC_9x3, id, inventory, store, rows);
+        super(Skin.menuType(rows), id, inventory, store, rows);
         this.owner = owner;
         this.bag = bag;
         this.bagSlot = bagSlot;

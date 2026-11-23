@@ -114,6 +114,23 @@ public final class ModContent {
     public static final List<Def<Item>> ITEM_DEFS = new ArrayList<>();
 
     // ---- entity / tab -------------------------------------------------------------------------
+    /**
+     * A menu type for each of the mod's menus, by id ("panel_codex", ...). They are chest menus underneath - the
+     * server owns every slot - but registered as types of their own, so the game opens the mod's own screen for
+     * each instead of a chest's.
+     */
+    public static final Map<String, Ref<net.minecraft.world.inventory.MenuType<net.minecraft.world.inventory.ChestMenu>>> MENUS = new java.util.LinkedHashMap<>();
+
+    static {
+        for (com.thefarawaydev.realmsofchaos.ui.Skin.Panel panel : com.thefarawaydev.realmsofchaos.ui.Skin.Panel.values()) MENUS.put(panel.id(), new Ref<>());
+    }
+
+    /** Makes the menu type for one panel. On the player's side it makes an empty chest of the right size for the server to fill. */
+    public static net.minecraft.world.inventory.MenuType<net.minecraft.world.inventory.ChestMenu> createMenuType(com.thefarawaydev.realmsofchaos.ui.Skin.Panel panel) {
+        return new net.minecraft.world.inventory.MenuType<>((id, inventory) -> new net.minecraft.world.inventory.ChestMenu(MENUS.get(panel.id()).get(), id, inventory,
+                new net.minecraft.world.SimpleContainer(panel.rows * 9), panel.rows), net.minecraft.world.flag.FeatureFlags.VANILLA_SET);
+    }
+
     public static final Ref<EntityType<GodBoss>> GOD_BOSS = new Ref<>();
     public static final Ref<EntityType<RelicProjectile>> RELIC_PROJECTILE = new Ref<>();
     public static final Ref<EntityType<com.thefarawaydev.realmsofchaos.entity.Sentinel>> SENTINEL = new Ref<>();

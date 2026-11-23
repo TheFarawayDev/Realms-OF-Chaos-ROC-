@@ -49,6 +49,7 @@ public final class RealmSafety {
         for (ServerPlayer player : server.getPlayerList().getPlayers()) {
             Wards.service(player);
             Skills.service(player, ticker);
+            com.thefarawaydev.realmsofchaos.ui.HudFeed.options(player);
             // boons belong to the passage they were won in: out of it, they are laid down
             if (Passages.locate(player) == null) {
                 if (Boons.clear(player) > 0) Hud.actionBar(player, Hud.colored(Component.translatable("hud." + com.thefarawaydev.realmsofchaos.RealmsOfChaos.MOD_ID + ".boons.gone"), 0x78E68C));
@@ -59,6 +60,7 @@ public final class RealmSafety {
             if (realm == null || !(player.level() instanceof ServerLevel level)) {
                 STUCK_SECONDS.remove(player.getUUID());
                 hideBar(player.getUUID());
+                com.thefarawaydev.realmsofchaos.ui.HudFeed.clear(player, com.thefarawaydev.realmsofchaos.ui.HudFeed.FLOOR);
                 continue;
             }
             Line line = realm.line();
@@ -110,11 +112,19 @@ public final class RealmSafety {
     public static void updateBar(ServerPlayer player, Line line, int floor) {
         if (line == null) {
             hideBar(player.getUUID());
+            com.thefarawaydev.realmsofchaos.ui.HudFeed.clear(player, com.thefarawaydev.realmsofchaos.ui.HudFeed.FLOOR);
+            return;
+        }
+        Component words = Component.translatable("hud." + RealmsOfChaos.MOD_ID + ".bar", Tower.towerName(line), floor, Tower.tierName(line, floor));
+        if (com.thefarawaydev.realmsofchaos.ui.Options.on(player, com.thefarawaydev.realmsofchaos.ui.Options.Option.ART)) {
+            // the player's own HUD draws the plaque: which tower, how far up, and the words
+            hideBar(player.getUUID());
+            com.thefarawaydev.realmsofchaos.ui.HudFeed.set(player, com.thefarawaydev.realmsofchaos.ui.HudFeed.FLOOR, line.ordinal() | (floor << 4) | (Tower.FLOORS << 12), words);
             return;
         }
         ServerBossEvent bar = BARS.computeIfAbsent(player.getUUID(), id -> new ServerBossEvent(
                 UUID.randomUUID(), Component.empty(), BossEvent.BossBarColor.WHITE, BossEvent.BossBarOverlay.NOTCHED_20));
-        bar.setName(Component.translatable("hud." + RealmsOfChaos.MOD_ID + ".bar", Tower.towerName(line), floor, Tower.tierName(line, floor)));
+        bar.setName(words);
         bar.setColor(line.barColor());
         bar.setProgress(floor / (float) Tower.FLOORS);
         if (!bar.getPlayers().contains(player)) {
@@ -125,10 +135,17 @@ public final class RealmSafety {
 
     /** The bar inside a passage: where it leads, and how many of its seals are broken. */
     public static void updatePassageBar(ServerPlayer player, Passages.Plan plan, int broken) {
+        int total = plan.seals.size();
+        Component words = Component.translatable("hud." + RealmsOfChaos.MOD_ID + ".passage.bar", Tower.towerName(plan.line), plan.label(), plan.stage + 1, plan.stages, broken, total);
+        if (com.thefarawaydev.realmsofchaos.ui.Options.on(player, com.thefarawaydev.realmsofchaos.ui.Options.Option.ART)) {
+            hideBar(player.getUUID());
+            com.thefarawaydev.realmsofchaos.ui.HudFeed.set(player, com.thefarawaydev.realmsofchaos.ui.HudFeed.FLOOR, plan.line.ordinal() | 4 | (broken << 4) | (total << 12), words);
+            return;
+        }
+        com.thefarawaydev.realmsofchaos.ui.HudFeed.clear(player, com.thefarawaydev.realmsofchaos.ui.HudFeed.FLOOR);
         ServerBossEvent bar = BARS.computeIfAbsent(player.getUUID(), id -> new ServerBossEvent(
                 UUID.randomUUID(), Component.empty(), BossEvent.BossBarColor.WHITE, BossEvent.BossBarOverlay.NOTCHED_20));
-        int total = plan.seals.size();
-        bar.setName(Component.translatable("hud." + RealmsOfChaos.MOD_ID + ".passage.bar", Tower.towerName(plan.line), plan.label(), plan.stage + 1, plan.stages, broken, total));
+        bar.setName(words);
         bar.setColor(plan.line.barColor());
         bar.setProgress(total == 0 ? 1.0F : broken / (float) total);
         if (!bar.getPlayers().contains(player)) {

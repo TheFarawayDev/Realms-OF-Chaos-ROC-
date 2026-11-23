@@ -39,7 +39,7 @@ public abstract class ButtonMenu extends ChestMenu {
     }
 
     private ButtonMenu(int id, Inventory inventory, ServerPlayer viewer, int rows, SimpleContainer view) {
-        super(rows == 6 ? MenuType.GENERIC_9x6 : MenuType.GENERIC_9x3, id, inventory, view, rows);
+        super(Skin.menuType(rows), id, inventory, view, rows);
         this.view = view;
         this.viewer = viewer;
         Skin.drawFor(viewer);
@@ -127,9 +127,7 @@ public abstract class ButtonMenu extends ChestMenu {
     }
 
     protected static ItemStack filler(DyeColor color) {
-        ItemStack stack = new ItemStack(Items.STAINED_GLASS_PANE.pick(color));
-        stack.set(DataComponents.TOOLTIP_DISPLAY, new TooltipDisplay(true, TooltipDisplay.DEFAULT.hiddenComponents()));
-        // an unused slot is not a pane of glass: it is a blank tile of the menu's own panel
-        return Skin.tile(stack);
+        // an unused slot is simply empty: the menu's own screen draws the slot
+        return ItemStack.EMPTY;
     }
 }

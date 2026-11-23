@@ -91,6 +91,11 @@ public class GodBoss extends Monster implements RangedAttackMob {
     private static final EntityDataAccessor<Integer> DATA_GOD = SynchedEntityData.defineId(GodBoss.class, EntityDataSerializers.INT);
     private static final EntityDataAccessor<Boolean> DATA_CASTING = SynchedEntityData.defineId(GodBoss.class, EntityDataSerializers.BOOLEAN);
     private static final EntityDataAccessor<Integer> DATA_PHASE = SynchedEntityData.defineId(GodBoss.class, EntityDataSerializers.INT);
+    /** What the player's HUD reads: whether this is a trial at all, and what the phase is counting. */
+    private static final EntityDataAccessor<Boolean> DATA_TRIAL = SynchedEntityData.defineId(GodBoss.class, EntityDataSerializers.BOOLEAN);
+    private static final EntityDataAccessor<Integer> DATA_HUD = SynchedEntityData.defineId(GodBoss.class, EntityDataSerializers.INT);
+    /** How long a god winds up for, for the HUD's cast bar. */
+    public static final int WINDUP = 24;
     private static final String MINION_TAG = "realms_of_chaos_minion";
     private static final int WINDUP_TICKS = 24;
     /** The share of its health at which a god raises its aegis, and at which its wrath begins. */
@@ -163,6 +168,8 @@ public class GodBoss extends Monster implements RangedAttackMob {
             UUID.randomUUID(), Component.empty(), BossEvent.BossBarColor.WHITE, BossEvent.BossBarOverlay.PROGRESS);
     private String castName = "";
     private Component castArt = Component.empty();
+    private int hudCast;
+    private final java.util.Set<ServerPlayer> castWatchers = new java.util.HashSet<>();
     /** What the bar last showed, so its picture is only sent again when it would look different. */
     private int barKey = -1, pylonTotal;
     /** What each challenger did in this trial, for the gods' longer memory; and the answers already given. */
@@ -211,6 +218,8 @@ public class GodBoss extends Monster implements RangedAttackMob {
     protected void defineSynchedData(SynchedEntityData.Builder builder) {
         super.defineSynchedData(builder);
         builder.define(DATA_GOD, 0);
+        builder.define(DATA_TRIAL, true);
+        builder.define(DATA_HUD, 0);
         builder.define(DATA_CASTING, false);
         builder.define(DATA_PHASE, 1);
     }
@@ -303,6 +312,7 @@ public class GodBoss extends Monster implements RangedAttackMob {
      */
     public void setStatue(boolean statue) {
         this.statue = statue;
+        this.entityData.set(DATA_TRIAL, !statue);
         if (!statue) return;
         this.goalSelector.removeAllGoals(goal -> true);
         this.targetSelector.removeAllGoals(goal -> true);
@@ -534,7 +544,8 @@ public class GodBoss extends Monster implements RangedAttackMob {
     public void startSeenByPlayer(ServerPlayer player) {
         super.startSeenByPlayer(player);
         if (!statue) {
-            (Options.on(player, Options.Option.ART) ? bossEvent : plainEvent).addPlayer(player);
+            // one bar for a god, never two: the HUD's panel - or, for a player who has turned that off, the game's own bar in words
+            if (!Options.on(player, Options.Option.ART)) plainEvent.addPlayer(player);
             // a god that has met this challenger's kind before says so, once, a few seconds into the trial
             if (greeted.add(player.getUUID()) && level().getServer() != null) {
                 Scheduler.after(level().getServer(), 70, () -> {
@@ -655,8 +666,9 @@ public class GodBoss extends Monster implements RangedAttackMob {
         Component words = phase() >= 3 ? Component.translatable(key2 + "wrath", god.bossName())
                 : phase() == 2 ? Component.translatable(key2 + (shield ? "aegis" : "rage"), god.bossName()) : god.bossName();
         barArt = HudArt.bossBar(god.line(), phase(), shield, progress, god.englishName(), all, lit);
-        bossEvent.setName(HudArt.guarded(barArt, words));
         plainEvent.setName(words);
+        // the player's own HUD draws the panel from the god itself: its health and phase it has already, the rest is here
+        this.entityData.set(DATA_HUD, (shield ? 1 : 0) | (all << 4) | (lit << 8) | (hudCast << 12));
     }
 
     /** The bar as it is drawn now. */
@@ -664,9 +676,32 @@ public class GodBoss extends Monster implements RangedAttackMob {
         return barArt;
     }
 
-    /** What a player's screen is sent: the drawn bar with plain words to fall back on, or - art turned off - the words alone. */
-    public Component barSent(boolean drawn) {
-        return drawn ? bossEvent.getName() : plainEvent.getName();
+    /** The bar in words, as it is shown to a player who has turned the drawn interface off. */
+    public Component barWords() {
+        return plainEvent.getName();
+    }
+
+    /** True for a god in a trial, false for a statue: only a trial has a panel on the HUD. */
+    public boolean inTrial() {
+        return this.entityData.get(DATA_TRIAL);
+    }
+
+    public boolean hudShielded() {
+        return (this.entityData.get(DATA_HUD) & 1) != 0;
+    }
+
+    /** How many pylons (under an aegis) or rings of floor (in the wrath) there are in all, and how many still stand. */
+    public int hudCountAll() {
+        return (this.entityData.get(DATA_HUD) >> 4) & 15;
+    }
+
+    public int hudCountLit() {
+        return (this.entityData.get(DATA_HUD) >> 8) & 15;
+    }
+
+    /** What is being wound up: 0 nothing, 1 the god's own move, 2 its tower's. */
+    public int hudCastKind() {
+        return (this.entityData.get(DATA_HUD) >> 12) & 3;
     }
 
     public java.util.Collection<ServerPlayer> plainWatchers() {
@@ -676,24 +711,28 @@ public class GodBoss extends Monster implements RangedAttackMob {
     public void beginCast(ServerLevel level, God god) {
         castName = com.thefarawaydev.realmsofchaos.ui.Words.of(nextIsSignature() ? god.moveName() : Component.translatable("cast." + RealmsOfChaos.MOD_ID + "." + god.line().id()));
         castArt = HudArt.castBar(0.0F, castName);
+        hudCast = nextIsSignature() ? 1 : 2;
+        barKey = -1;
+        refreshBar();
         Component words = Component.translatable("hud." + RealmsOfChaos.MOD_ID + ".move.windup", god.displayName(), castName);
-        castEvent.setName(HudArt.guarded(castArt, words));
+        castWatchers.clear();
         for (Player p : nearbyPlayers(level, 40)) {
             if (!(p instanceof ServerPlayer sp) || !Options.on(sp, Options.Option.CASTS)) continue;
-            if (Options.on(sp, Options.Option.ART)) castEvent.addPlayer(sp);
+            if (Options.on(sp, Options.Option.ART)) castWatchers.add(sp);           // their HUD shows it, on the god's own panel
             else Hud.actionBar(sp, Hud.colored(words, god.line().color()));         // in words, above the hotbar
         }
     }
 
     private void tendCast() {
-        if (castEvent.getPlayers().isEmpty()) return;
-        castArt = HudArt.castBar(1.0F - abilityCooldown / (float) WINDUP_TICKS, castName);
-        castEvent.setName(HudArt.guarded(castArt, Component.translatable("hud." + RealmsOfChaos.MOD_ID + ".move.windup", god().displayName(), castName)));
     }
 
     public void endCast() {
         if (isCasting()) this.entityData.set(DATA_CASTING, false);
-        if (!castEvent.getPlayers().isEmpty()) castEvent.removeAllPlayers();
+        castWatchers.clear();
+        if (hudCast != 0) {
+            hudCast = 0;
+            barKey = -1;
+        }
     }
 
     /** The move on the cast bar, and who is being shown it. */
@@ -702,7 +741,7 @@ public class GodBoss extends Monster implements RangedAttackMob {
     }
 
     public java.util.Collection<ServerPlayer> castWatchers() {
-        return castEvent.getPlayers();
+        return castWatchers;
     }
 
     public Component castBarName() {

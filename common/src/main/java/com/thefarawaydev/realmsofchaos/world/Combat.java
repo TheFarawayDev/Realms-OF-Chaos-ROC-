@@ -215,8 +215,13 @@ public final class Combat {
         int look = st.momentum | (riposte ? 16 : 0);
         if (look == st.shown) return;
         st.shown = look;
-        if (Options.on(player, Options.Option.COMBAT)) {
-            Hud.actionBar(player, HudArt.present(player, HudArt.combatMeter(st.momentum, MAX_MOMENTUM, now - st.pressedAt >= PARRY_RECOVERY, riposte), HudArt.plainMeter(st.momentum, riposte)));
+        if (!Options.on(player, Options.Option.COMBAT)) return;
+        if (Options.on(player, Options.Option.ART)) {
+            // the player's own HUD draws it; with nothing to show it is taken away
+            if (st.momentum == 0 && !riposte) com.thefarawaydev.realmsofchaos.ui.HudFeed.clear(player, com.thefarawaydev.realmsofchaos.ui.HudFeed.METER);
+            else com.thefarawaydev.realmsofchaos.ui.HudFeed.set(player, com.thefarawaydev.realmsofchaos.ui.HudFeed.METER, st.momentum | (now - st.pressedAt >= PARRY_RECOVERY ? 16 : 0) | (riposte ? 32 : 0), null);
+        } else {
+            Hud.actionBar(player, HudArt.plainMeter(st.momentum, riposte));
         }
     }
 

@@ -823,8 +823,8 @@ public final class SelfTest {
                             check(walked.contains(plan.start) && walked.containsAll(plan.seals) && walked.containsAll(plan.patrols)
                                     && walked.size() < plan.size * plan.size, in + "rooms walked into are remembered: " + walked);
                             for (Passages.Cell c : plan.cells()) {
-                                boolean shown = !map.getSlot(com.thefarawaydev.realmsofchaos.ui.PassageMenu.slotOf(plan, c)).getItem().is(
-                                        net.minecraft.world.item.Items.STAINED_GLASS_PANE.pick(net.minecraft.world.item.DyeColor.BLACK));
+                                // (a room not on the map is an empty slot of the map's own screen)
+                                boolean shown = !map.getSlot(com.thefarawaydev.realmsofchaos.ui.PassageMenu.slotOf(plan, c)).getItem().isEmpty();
                                 boolean hinted = plan.neighbours(c).stream().anyMatch(n -> walked.contains(n) && plan.connected(c, n));
                                 check(shown == (walked.contains(c) || hinted), in + "map shows " + c + " only if explored or a door leads there");
                             }
@@ -4994,7 +4994,7 @@ public final class SelfTest {
             }
             // every way a picture is sent
             net.minecraft.network.chat.Component title = com.thefarawaydev.realmsofchaos.ui.Skin.title(hero, com.thefarawaydev.realmsofchaos.ui.Skin.Panel.CODEX, net.minecraft.network.chat.Component.literal("Name"));
-            check(title.getContents() instanceof net.minecraft.network.chat.contents.TranslatableContents && pictures.test(com.thefarawaydev.realmsofchaos.ui.Words.of(title)), "a menu's title is guarded");
+            check(title.getString().equals("Name") && !pictures.test(title.getString()), "a menu's title is its name: its picture is its screen's own background, not text");
             com.thefarawaydev.realmsofchaos.ui.Cards.tip(hero, "Mind the gap");
             var card = com.thefarawaydev.realmsofchaos.ui.Cards.showing(hero);
             String words = com.thefarawaydev.realmsofchaos.ui.Cards.plain(card).getString();
@@ -5007,13 +5007,12 @@ public final class SelfTest {
             // the drawn interface, turned off
             com.thefarawaydev.realmsofchaos.ui.OptionsMenu.open(hero);
             var settings = (com.thefarawaydev.realmsofchaos.ui.OptionsMenu) hero.containerMenu;
-            var tile = settings.getSlot(com.thefarawaydev.realmsofchaos.ui.OptionsMenu.SLOT_CASTS + 1).getItem().get(net.minecraft.core.component.DataComponents.ITEM_MODEL);
-            check(tile != null && tile.getPath().equals("ui/tile"), "drawn: a menu's unused slots are the mod's own tiles");
+            check(settings.getType() == ModContent.MENUS.get("panel_settings").get() && settings.getSlot(com.thefarawaydev.realmsofchaos.ui.OptionsMenu.SLOT_CASTS + 1).getItem().isEmpty(), "a menu is a type of its own, with a screen of its own; its unused slots are simply empty");
+            check(RealmsOfChaos.class.getClassLoader().getResource("assets/realms_of_chaos/textures/gui/screen_settings.png") != null, "and that screen has its background");
             settings.clicked(com.thefarawaydev.realmsofchaos.ui.OptionsMenu.SLOT_ART, 0, net.minecraft.world.inventory.ContainerInput.PICKUP, hero);
             check(!com.thefarawaydev.realmsofchaos.ui.Options.on(hero, com.thefarawaydev.realmsofchaos.ui.Options.Option.ART) && hero.containerMenu instanceof com.thefarawaydev.realmsofchaos.ui.OptionsMenu
                     && hero.containerMenu != settings, "the switch turns it off, and the screen is drawn again");
-            tile = hero.containerMenu.getSlot(com.thefarawaydev.realmsofchaos.ui.OptionsMenu.SLOT_CASTS + 1).getItem().get(net.minecraft.core.component.DataComponents.ITEM_MODEL);
-            check(tile == null || !tile.getPath().startsWith("ui/"), "plain: the slots are glass again: " + tile);
+            check(hero.containerMenu.getSlot(com.thefarawaydev.realmsofchaos.ui.OptionsMenu.SLOT_CASTS + 1).getItem().isEmpty(), "(still nothing in an unused slot)");
             title = com.thefarawaydev.realmsofchaos.ui.Skin.title(hero, com.thefarawaydev.realmsofchaos.ui.Skin.Panel.CODEX, net.minecraft.network.chat.Component.literal("Name"));
             check(title.getString().equals("Name") && !pictures.test(com.thefarawaydev.realmsofchaos.ui.Words.of(title)), "a menu's title is its name and nothing else");
             hero.closeContainer();
@@ -5028,9 +5027,7 @@ public final class SelfTest {
             try {
                 boss.startSeenByPlayer(hero);
                 check(boss.plainWatchers().contains(hero), "a god's bar is shown to them in words, on the game's own bar");
-                check(!pictures.test(com.thefarawaydev.realmsofchaos.ui.Words.of(boss.barSent(false))) && pictures.test(com.thefarawaydev.realmsofchaos.ui.Words.of(boss.barSent(true))), "the two bars: one drawn, one plain");
-                check(boss.barSent(true).getContents() instanceof net.minecraft.network.chat.contents.TranslatableContents guard
-                        && guard.getKey().equals(com.thefarawaydev.realmsofchaos.ui.HudArt.ART_KEY), "and even the drawn one has words behind it");
+                check(!pictures.test(com.thefarawaydev.realmsofchaos.ui.Words.of(boss.barWords())) && boss.inTrial(), "in words, with no pictures in them");
                 com.thefarawaydev.realmsofchaos.ui.Options.set(hero, com.thefarawaydev.realmsofchaos.ui.Options.Option.CASTS, true);
                 boss.beginCast(level, boss.god());
                 check(boss.castWatchers().isEmpty(), "the cast bar is not drawn for them either: the move is named in words");
@@ -5405,14 +5402,27 @@ public final class SelfTest {
             // and the menus use them
             CodexMenu.open(viewer);
             CodexMenu codex = (CodexMenu) viewer.containerMenu;
-            int tiles = 0, gems = 0;
+            int empty = 0, gems = 0;
             for (int i = 0; i < 54; i++) {
+                if (codex.getSlot(i).getItem().isEmpty()) {
+                    empty++;
+                    continue;
+                }
                 var model = codex.getSlot(i).getItem().get(net.minecraft.core.component.DataComponents.ITEM_MODEL);
-                if (model == null) continue;
-                if (model.equals(RealmsOfChaos.id("ui/tile"))) tiles++;
-                if (model.getPath().startsWith("ui/gem_")) gems++;
+                if (model != null && model.getPath().startsWith("ui/gem_")) gems++;
             }
-            check(tiles >= 10 && gems >= 3, "the Codex is tiles and gems, not glass panes: " + tiles + " tiles, " + gems + " gems");
+            check(codex.getType() == ModContent.MENUS.get("panel_codex").get(), "the Codex is a menu type of its own, so the game opens the mod's own screen for it");
+            check(empty >= 10 && gems >= 3, "its unused slots are empty and its meters are gems: " + empty + " empty, " + gems + " gems");
+            for (com.thefarawaydev.realmsofchaos.ui.Skin.Panel each : com.thefarawaydev.realmsofchaos.ui.Skin.Panel.values()) {
+                check(ModContent.MENUS.get(each.id()).get() != null && net.minecraft.core.registries.BuiltInRegistries.MENU.getKey(ModContent.MENUS.get(each.id()).get()) != null, each + " is registered as a menu type");
+                try (var in = assets.getResourceAsStream("assets/realms_of_chaos/textures/gui/screen_" + each.art + ".png")) {
+                    check(in != null, "the screen background for " + each.art);
+                    var image = javax.imageio.ImageIO.read(in);
+                    check(image.getWidth() == 176 && image.getHeight() == 114 + each.rows * 18, each.art + ": the size of its screen");
+                    // on a screen the slots are part of the picture: nothing is left see-through but the corners
+                    check((image.getRGB(16, 26) >>> 24) == 255 && (image.getRGB(88, 8) >>> 24) == 255, each.art + ": its slots are drawn in");
+                }
+            }
             check(codex.getSlot(CodexMenu.SLOT_HUB).getItem().is(ModContent.CHAOS_COMPASS.get()), "its buttons keep their own icons");
             viewer.closeContainer();
         });

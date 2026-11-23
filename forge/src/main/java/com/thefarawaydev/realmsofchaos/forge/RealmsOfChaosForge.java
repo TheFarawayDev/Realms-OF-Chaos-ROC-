@@ -35,6 +35,7 @@ public final class RealmsOfChaosForge {
     private static final DeferredRegister<Item> ITEMS = DeferredRegister.create(ForgeRegistries.ITEMS, RealmsOfChaos.MOD_ID);
     private static final DeferredRegister<EntityType<?>> ENTITIES = DeferredRegister.create(Registries.ENTITY_TYPE, RealmsOfChaos.MOD_ID);
     private static final DeferredRegister<CreativeModeTab> TABS = DeferredRegister.create(Registries.CREATIVE_MODE_TAB, RealmsOfChaos.MOD_ID);
+    private static final DeferredRegister<net.minecraft.world.inventory.MenuType<?>> MENUS = DeferredRegister.create(Registries.MENU, RealmsOfChaos.MOD_ID);
 
     public RealmsOfChaosForge(FMLJavaModLoadingContext context) {
         var modBus = context.getModBusGroup();
@@ -72,6 +73,15 @@ public final class RealmsOfChaosForge {
                 .build());
         ModContent.TAB.bind(tab);
 
+        for (com.thefarawaydev.realmsofchaos.ui.Skin.Panel panel : com.thefarawaydev.realmsofchaos.ui.Skin.Panel.values()) {
+            RegistryObject<net.minecraft.world.inventory.MenuType<?>> menu = MENUS.register(panel.id(), () -> ModContent.createMenuType(panel));
+            ModContent.MENUS.get(panel.id()).bind(() -> {
+                @SuppressWarnings("unchecked")
+                net.minecraft.world.inventory.MenuType<net.minecraft.world.inventory.ChestMenu> type = (net.minecraft.world.inventory.MenuType<net.minecraft.world.inventory.ChestMenu>) menu.get();
+                return type;
+            });
+        }
+        MENUS.register(modBus);
         BLOCKS.register(modBus);
         ITEMS.register(modBus);
         ENTITIES.register(modBus);

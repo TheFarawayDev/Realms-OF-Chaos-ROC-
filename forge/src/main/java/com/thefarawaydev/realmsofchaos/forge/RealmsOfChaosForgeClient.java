@@ -19,5 +19,17 @@ public final class RealmsOfChaosForgeClient {
         event.registerEntityRenderer(ModContent.SENTINEL.get(), com.thefarawaydev.realmsofchaos.client.SentinelRenderer::new);
         // staff bolts, thrown relics and tarot cards are drawn as the item they carry
         event.registerEntityRenderer(ModContent.RELIC_PROJECTILE.get(), com.thefarawaydev.realmsofchaos.client.RelicProjectileRenderer::new);
+        // each of the mod's menus has a screen of its own
+        for (com.thefarawaydev.realmsofchaos.ui.Skin.Panel panel : com.thefarawaydev.realmsofchaos.ui.Skin.Panel.values()) {
+            net.minecraft.client.gui.screens.MenuScreens.register(ModContent.MENUS.get(panel.id()).get(),
+                    (net.minecraft.world.inventory.ChestMenu menu, net.minecraft.world.entity.player.Inventory inventory, net.minecraft.network.chat.Component title) ->
+                            new com.thefarawaydev.realmsofchaos.client.PanelScreen(menu, inventory, title, panel));
+        }
+    }
+
+    /** The HUD is drawn by the mod: the boss panel, the floor plaque, cards, the combat meter. */
+    @SubscribeEvent
+    public static void addHud(net.minecraftforge.client.event.AddGuiOverlayLayersEvent event) {
+        event.getLayeredDraw().add(RealmsOfChaos.id("hud"), (graphics, delta) -> com.thefarawaydev.realmsofchaos.client.RocHud.draw(graphics));
     }
 }

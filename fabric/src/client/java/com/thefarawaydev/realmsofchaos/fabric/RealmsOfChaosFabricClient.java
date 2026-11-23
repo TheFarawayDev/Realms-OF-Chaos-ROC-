@@ -13,5 +13,14 @@ public class RealmsOfChaosFabricClient implements ClientModInitializer {
         EntityRendererRegistry.register(ModContent.SENTINEL.get(), com.thefarawaydev.realmsofchaos.client.SentinelRenderer::new);
         // staff bolts, thrown relics and tarot cards are drawn as the item they carry
         EntityRendererRegistry.register(ModContent.RELIC_PROJECTILE.get(), com.thefarawaydev.realmsofchaos.client.RelicProjectileRenderer::new);
+        // each of the mod's menus has a screen of its own
+        for (com.thefarawaydev.realmsofchaos.ui.Skin.Panel panel : com.thefarawaydev.realmsofchaos.ui.Skin.Panel.values()) {
+            net.minecraft.client.gui.screens.MenuScreens.register(ModContent.MENUS.get(panel.id()).get(),
+                    (net.minecraft.world.inventory.ChestMenu menu, net.minecraft.world.entity.player.Inventory inventory, net.minecraft.network.chat.Component title) ->
+                            new com.thefarawaydev.realmsofchaos.client.PanelScreen(menu, inventory, title, panel));
+        }
+        // and the HUD is drawn by the mod: the boss panel, the floor plaque, cards, the combat meter
+        net.fabricmc.fabric.api.client.rendering.v1.hud.HudElementRegistry.addLast(com.thefarawaydev.realmsofchaos.RealmsOfChaos.id("hud"),
+                (graphics, delta) -> com.thefarawaydev.realmsofchaos.client.RocHud.draw(graphics));
     }
 }

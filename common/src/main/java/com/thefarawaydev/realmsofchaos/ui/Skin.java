@@ -25,14 +25,22 @@ public final class Skin {
 
     /** One panel for each kind of menu. The letter is its picture in the font. */
     public enum Panel {
-        CODEX('\uE000', 6), FORGE('\uE001', 6), PASSAGE('\uE002', 6), BAG_LARGE('\uE003', 6),
-        ALTAR('\uE004', 3), SEAL('\uE005', 3), DECK('\uE006', 6), PARTY('\uE007', 6), STORY('\uE008', 6), BAG('\uE009', 3),
-        SETTINGS('\uE00A', 3), INSIGHT('\uE00B', 6), BOON('\uE00C', 3), BESTIARY('\uE00D', 6);
+        CODEX('\uE000', 6, "codex"), FORGE('\uE001', 6, "forge"), PASSAGE('\uE002', 6, "passage"), BAG_LARGE('\uE003', 6, "bag6"),
+        ALTAR('\uE004', 3, "altar"), SEAL('\uE005', 3, "seal"), DECK('\uE006', 6, "deck"), PARTY('\uE007', 6, "party"), STORY('\uE008', 6, "story"),
+        BAG('\uE009', 3, "bag3"), SETTINGS('\uE00A', 3, "settings"), INSIGHT('\uE00B', 6, "insight"), BOON('\uE00C', 3, "boon"), BESTIARY('\uE00D', 6, "bestiary");
 
         public final char glyph;
         public final int rows;
+        /** The name of its artwork: textures/gui/screen_NAME.png is its screen's background. */
+        public final String art;
 
-        Panel(char glyph, int rows) {
+        /** The id of its menu type. */
+        public String id() {
+            return "panel_" + art;
+        }
+
+        Panel(char glyph, int rows, String art) {
+            this.art = art;
             this.glyph = glyph;
             this.rows = rows;
         }
@@ -53,7 +61,19 @@ public final class Skin {
      * drawn interface off, or whose game has not got this build's artwork.
      */
     public static Component title(net.minecraft.server.level.ServerPlayer player, Panel panel, Component name) {
-        return HudArt.present(player, title(panel, name), name);
+        // (the menu about to be made is this panel's: its constructor asks which type to be)
+        opening = panel;
+        return name;
+    }
+
+    private static Panel opening;
+
+    /** The menu type of the menu being opened: the panel named in the title just made for it, or a chest of that size. */
+    public static net.minecraft.world.inventory.MenuType<?> menuType(int rows) {
+        Panel panel = opening;
+        opening = null;
+        if (panel != null && panel.rows == rows) return com.thefarawaydev.realmsofchaos.ModContent.MENUS.get(panel.id()).get();
+        return rows == 6 ? net.minecraft.world.inventory.MenuType.GENERIC_9x6 : net.minecraft.world.inventory.MenuType.GENERIC_9x3;
     }
 
     /** A menu title: the panel's artwork laid over the chest screen, then the name written on its header. */
@@ -74,7 +94,7 @@ public final class Skin {
         return stack;
     }
 
-    /** Makes a stack look like the blank tile that fills an unused slot. */
+    /** Makes a stack look like the blank tile that fills an unused slot. (The menus' own screens draw their slots: nothing fills them now.) */
     public static ItemStack tile(ItemStack stack) {
         return model(stack, "tile");
     }

@@ -3617,6 +3617,14 @@ def gen_ui():
         for c in range(9):
             well(8 + c * 18, 161 + shift, UI_PARCH_D, mix(UI_PARCH, (255, 255, 255), 0.5))
         img.save(os.path.join(G, f"panel_{name}.png"))
+        # the same panel as a screen's background: there the slots are part of the picture
+        screen = img.copy()
+        sp = screen.load()
+        for y in range(height):
+            for x in range(176):
+                if sp[x, y][3] == 0 and 2 <= x <= 173 and 2 <= y <= height - 3:
+                    sp[x, y] = (UI_WELL if y < split else shade(UI_PARCH, 0.82)) + (255,)
+        screen.save(os.path.join(G, f"screen_{name}.png"))
         providers.append({"type": "bitmap", "file": f"{MOD}:gui/panel_{name}.png", "ascent": 13, "height": height, "chars": [glyph]})
     wj(os.path.join(ASSETS, "font/ui.json"), {"providers": providers})
 
