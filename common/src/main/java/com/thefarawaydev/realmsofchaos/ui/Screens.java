@@ -58,7 +58,7 @@ public final class Screens {
 
     /** What a written screen is drawn on: each kind has its own material and emblem (see tools/hud_art.py). */
     public enum Theme {
-        CODEX, HANDBOOK, ORACLE, ALTAR, BOARD, PARTY, MASTERY, WAYGATE, HUB;
+        CODEX, HANDBOOK, ORACLE, ALTAR, BOARD, PARTY, MASTERY, WAYGATE, HUB, FORGE;
 
         public String id() {
             return name().toLowerCase(java.util.Locale.ROOT);
@@ -173,6 +173,7 @@ public final class Screens {
         actions.add(button(tr("home.handbook", 0x55FFFF), tr("home.handbook.tip", 0xAAAAAA), "/roc ui handbook"));
         actions.add(button(tr("home.party", 0x55FF55), tr("home.party.tip", 0xAAAAAA), "/roc ui party"));
         actions.add(button(tr("home.forge", 0xFFAA00), tr("home.forge.tip", 0xAAAAAA), "/roc forge"));
+        actions.add(button(tr("home.commission", 0xFF7A3C), tr("home.commission.tip", 0xAAAAAA), "/roc ui commission"));
         actions.add(button(tr("home.skills", 0xF5B82E, com.thefarawaydev.realmsofchaos.world.Skills.available(player)), tr("home.skills.tip", 0xAAAAAA), "/roc ui skills"));
         actions.add(button(tr(Sidebar.enabled(player) ? "home.sidebar.on" : "home.sidebar.off", 0x55FFFF), tr("home.sidebar.tip", 0xAAAAAA), "/roc ui sidebar"));
         actions.add(button(tr("home.settings", 0xF5E6C8), tr("home.settings.tip", 0xAAAAAA), "/roc settings"));
@@ -181,6 +182,53 @@ public final class Screens {
         actions.add(button(tr("home.hub", 0xFFFFFF), null, "/roc hub"));
         actions.add(button(tr("home.leave", 0xFFFFFF), null, "/roc leave"));
         return menu(tr("home", 0xA55AD6), body, actions, close(), 2);
+    }
+
+    // ---- commissions: the forge makes a thing, slowly ---------------------------------------------------------
+
+    private static Component costLine(com.thefarawaydev.realmsofchaos.world.Commissions.Order order) {
+        MutableComponent line = Component.empty();
+        boolean first = true;
+        for (Map.Entry<net.minecraft.world.item.Item, Integer> part : order.cost().entrySet()) {
+            if (!first) line.append(Component.literal(", "));
+            line.append(Component.literal(part.getValue() + " x ")).append(new ItemStack(part.getKey()).getHoverName());
+            first = false;
+        }
+        return tr("commission.cost", 0xAAAAAA, line, order.minutes());
+    }
+
+    /** The commission desk: what the forge is making for this player, and what it could make. */
+    public static Dialog commission(ServerPlayer player) {
+        current = Theme.FORGE;
+        com.thefarawaydev.realmsofchaos.world.Commissions.Order order = com.thefarawaydev.realmsofchaos.world.Commissions.current(player);
+        List<DialogBody> body = new ArrayList<>();
+        body.add(text(tr("commission.intro", 0xAAAAAA)));
+        List<ActionButton> actions = new ArrayList<>();
+        if (order == null) {
+            body.add(text(tr("commission.idle", 0xF5E6C8)));
+        } else if (com.thefarawaydev.realmsofchaos.world.Commissions.ready(player)) {
+            body.add(item(order.make(), tr("commission.ready", 0x55FF55, order.name())));
+            actions.add(button(tr("commission.claim", 0x55FF55), null, "/roc ui commission claim"));
+        } else {
+            body.add(item(order.make(), tr("commission.working", 0xFFAA00, order.name(), com.thefarawaydev.realmsofchaos.world.Commissions.minutesLeft(player))));
+        }
+        actions.add(button(tr("commission.armour", 0xF5E6C8), null, "/roc ui commission list armour"));
+        for (Line line : Line.values()) actions.add(button(tr("commission.relics", line.color(), Tower.towerName(line)), null, "/roc ui commission list " + line.id()));
+        return menu(tr("commission", 0xFF7A3C), body, actions, back("/roc ui home"), 2);
+    }
+
+    /** One shelf of what can be commissioned: the armour, or the relics of one tower. */
+    public static Dialog commissionList(ServerPlayer player, String shelf) {
+        current = Theme.FORGE;
+        List<DialogBody> body = new ArrayList<>();
+        body.add(text(tr("commission.list", 0xAAAAAA)));
+        List<ActionButton> actions = new ArrayList<>();
+        for (com.thefarawaydev.realmsofchaos.world.Commissions.Order order : com.thefarawaydev.realmsofchaos.world.Commissions.shelf(shelf)) {
+            boolean open = com.thefarawaydev.realmsofchaos.world.Commissions.unlocked(player, order);
+            Component label = open ? order.name() : tr("commission.locked", 0x777777, order.name());
+            actions.add(button(label, open ? costLine(order) : tr("commission.locked.tip", 0xAAAAAA), "/roc ui commission order " + order.id()));
+        }
+        return menu(tr("commission", 0xFF7A3C), body, actions, back("/roc ui commission"), 2);
     }
 
     // ---- the handbook ----------------------------------------------------------------------------------------

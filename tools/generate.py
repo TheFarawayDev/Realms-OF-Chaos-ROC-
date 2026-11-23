@@ -11,6 +11,7 @@ Run:  python3 tools/generate.py
 """
 import hashlib, json, math, os, random
 import hud_art
+import panoply_art
 from PIL import Image
 
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
@@ -354,7 +355,7 @@ HANDBOOK = [
         "A passage has anywhere from one to ten levels - more the higher in a tower - and each is named: 7-B2 is passage 7, wing B, level 2. Wings are three levels long and each is built of different stone.",
         "You are handed a Passage Chart: a map that starts blank and inks in each room as you walk into it. The next level is built while you explore the one you are on.",
         "Puzzle rooms keep a cache locked. A vault: press the glyph tiles until all nine are lit (each turns its neighbours too). A chime room: ring all four crystals before the first falls silent. A beam room: set the mirrors so the light reaches the receiver - some are decoys, and turns are counted. A trembling floor: only one path of plates holds - it glimmers every few seconds, and has to be walked from its first plate.",
-        "Trap halls are only to be got through. A crusher hall marks a row, and a breath later brings the ceiling down on it. A dart hall has marked tiles that loose arrows from the walls. Most trap halls do not show what they are: look for stained tiles and old bones, watch for a wisp over a tile before it goes off, and wait just inside the doorway, where it is always safe.",
+        "A rune chamber shuts you in: press its runes in order to get out. A flood shows the order over and over; a furnace shows it once; the gloom wants it backwards. Trap halls are only to be got through. A crusher hall marks a row, and a breath later brings the ceiling down on it. A dart hall has marked tiles that loose arrows from the walls. Most trap halls do not show what they are: look for stained tiles and old bones, watch for a wisp over a tile before it goes off, and wait just inside the doorway, where it is always safe.",
         "Urns can be smashed for a little loot - or for the sentinel hiding inside. Lore tablets tell a line of the tower's story.",
     ]),
     ("mastery", "Mastery", [
@@ -996,6 +997,54 @@ def gen_lang():
         "screen.realms_of_chaos.home.sidebar.on": "Sidebar: on",
         "screen.realms_of_chaos.home.sidebar.off": "Sidebar: off",
         "screen.realms_of_chaos.home.sidebar.tip": "A panel at the side of the screen: where you are, the trial's phase, the hub, your signal, today's bounties",
+        "hud.realms_of_chaos.trap.sprung.embers": "The room is a furnace!",
+        "hud.realms_of_chaos.trap.sprung.sub.embers": "The %s runes light ONCE. Remember the order, then press it",
+        "hud.realms_of_chaos.trap.status.embers": "Heat %s / %s  |  runes %s / %s",
+        "hud.realms_of_chaos.trap.wrong.embers": "Wrong rune: the heat builds. The order is shown once more",
+        "hud.realms_of_chaos.trap.full.embers": "The furnace is at its height - press the runes or hold on!",
+        "hud.realms_of_chaos.trap.failed.embers": "The furnace lets you go. It will light again if you come back",
+        "hud.realms_of_chaos.trap.sprung.gloom": "The dark closes in!",
+        "hud.realms_of_chaos.trap.sprung.sub.gloom": "Watch the %s runes light, then press them BACKWARDS",
+        "hud.realms_of_chaos.trap.status.gloom": "Gloom %s / %s  |  runes %s / %s",
+        "hud.realms_of_chaos.trap.wrong.gloom": "Wrong rune: the dark thickens. Last rune first",
+        "hud.realms_of_chaos.trap.full.gloom": "The dark is complete - press the runes or hold on!",
+        "hud.realms_of_chaos.trap.failed.gloom": "The dark lets you go. It will close in again if you come back",
+        "screen.realms_of_chaos.home.commission": "Commissions",
+        "screen.realms_of_chaos.home.commission.tip": "Have the forge make a relic or a piece of armour. It takes a long time",
+        "screen.realms_of_chaos.commission": "Commissions",
+        "screen.realms_of_chaos.commission.intro": "The forge will make what the gods would otherwise have to be beaten for. It asks for a great deal of a tower's forge material, and for time: it works only while you are in the world.",
+        "screen.realms_of_chaos.commission.idle": "Nothing is being made for you. One thing at a time.",
+        "screen.realms_of_chaos.commission.working": "Being made: %s - about %s minutes of play left",
+        "screen.realms_of_chaos.commission.ready": "Finished: %s",
+        "screen.realms_of_chaos.commission.claim": "Take it",
+        "screen.realms_of_chaos.commission.armour": "Armour of the old stories",
+        "screen.realms_of_chaos.commission.relics": "Relics: %s",
+        "screen.realms_of_chaos.commission.list": "Point at a thing to see what it costs. Choosing one hands the materials over and sets the forge to work.",
+        "screen.realms_of_chaos.commission.cost": "Costs %s. Takes %s minutes of play",
+        "screen.realms_of_chaos.commission.locked": "%s (not yet)",
+        "screen.realms_of_chaos.commission.locked.tip": "The forge makes a god's relic only for someone who has stood on that god's floor",
+        "hud.realms_of_chaos.commission.busy": "The forge is already making something for you",
+        "hud.realms_of_chaos.commission.short": "Not enough: %s x %s needed",
+        "hud.realms_of_chaos.commission.locked": "Reach that god's floor first",
+        "hud.realms_of_chaos.commission.placed": "The forge sets to work on %s",
+        "hud.realms_of_chaos.commission.done": "Your commission is finished",
+        "hud.realms_of_chaos.commission.done.sub": "%s waits at the forge. Open the Codex and choose Commissions",
+        "hud.realms_of_chaos.commission.taken": "You take %s from the forge",
+        "lesser.realms_of_chaos.eris": "Eris, Strife",
+        "lesser.realms_of_chaos.nemesis": "Nemesis, Retribution",
+        "lesser.realms_of_chaos.tyche": "Tyche, Fortune",
+        "lesser.realms_of_chaos.boreas": "Boreas, the North Wind",
+        "lesser.realms_of_chaos.glaucus": "Glaucus of the Deep",
+        "lesser.realms_of_chaos.leucothea": "Leucothea, the White Goddess",
+        "lesser.realms_of_chaos.phorcys": "Phorcys, the Old One",
+        "lesser.realms_of_chaos.ceto": "Ceto, Mother of Monsters",
+        "lesser.realms_of_chaos.styx": "Styx, the Oath",
+        "lesser.realms_of_chaos.lethe": "Lethe, Forgetting",
+        "lesser.realms_of_chaos.achlys": "Achlys, the Death-Mist",
+        "lesser.realms_of_chaos.geras": "Geras, Old Age",
+        "hud.realms_of_chaos.lesser.holds": "%s holds this arena",
+        "hud.realms_of_chaos.lesser.fallen": "%s falls",
+        "hud.realms_of_chaos.lesser.gift": "%s lets fall %s",
         "hud.realms_of_chaos.trap.sprung": "The room floods!",
         "hud.realms_of_chaos.trap.sprung.sub": "Watch the %s runes light, then press them in that order",
         "hud.realms_of_chaos.trap.status": "Water %s / %s  |  runes %s / %s",
@@ -1710,6 +1759,7 @@ def gen_lang():
             lang[f"item.realms_of_chaos.{gid}_weapon"] = wname
             lang[f"advancement.realms_of_chaos.{gid}.desc"] = (
                 f"Defeat {name}, {title}. Rank {rank} of the line of {info['label']}.")
+    lang.update(panoply_art.lang())
     wj(os.path.join(ASSETS, "lang/en_us.json"), lang)
 
 # ----------------------------------------------------------------------------
@@ -4695,6 +4745,7 @@ if __name__ == "__main__":
     gen_block_textures()
     gen_field_textures()
     gen_ui()
+    panoply_art.gen_panoply(ASSETS, MOD, wj)
     hud_art.gen_hud(ASSETS, MOD, os.path.join(ROOT, "common/src/main/java", *JAVA_PKG.split(".")), wj, w)
     gen_tarot()
     gen_dolls()

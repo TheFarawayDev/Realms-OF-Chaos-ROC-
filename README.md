@@ -41,6 +41,27 @@ The current build is an **Alpha**.
     crossable - by a walker slower than a walk, at every depth - before the mod is built (`Gauntlet.crossable`).
   * **Learnt by being bitten.** The first time a kind of hall catches you a card names it - *Ember Tide*, *The
     Jaw*, *Rime Wheel*, *Hollow Steps* - and says how it is beaten.
+* **Three kinds of rune chamber: work fast, and remember.** A rune chamber shuts you in and gets worse by the
+  moment until its runes are pressed in the right order. A **flooding** chamber shows the order over and over
+  while the water rises. A **furnace** shows it **once** - and again only after a mistake - while the heat
+  builds and burns. A chamber of **gloom** shows it over and over but wants it pressed **backwards**, while the
+  dark closes in. Which one a chamber is, it only says when it springs.
+* **The panoply: eight pieces of armour from the old stories**, each with one power, two for each part of the
+  body - so whoever owns them all still has to choose. *Helm of Hades* (unseen while you sneak), *Helm of
+  Athena* (night is as day, and what means you harm is lit), *Aegis Cuirass* (wards every blow; a second wind
+  when badly hurt, once a minute), *Nemean Pelt* (hard to wound, hard to move), *Girdle of Hippolyta*
+  (strength), *Greaves of Achilles* (swift-footed), *Talaria* (leap high, land soft), *Treads of the Styx* (fire
+  and deep water cannot harm you). Each has its own look when worn. (`art/renders/ingame-panoply-worn.png`)
+* **Twelve lesser gods hold the arenas.** Four to a tower, met in turn as its passages are climbed - Eris,
+  Nemesis, Tyche and Boreas; Glaucus, Leucothea, Phorcys and Ceto; Styx, Lethe, Achlys and Geras. An arena's
+  champion is one of them: named, larger, half as much health again. The first time each falls to you it lets
+  fall the piece of the panoply it keeps; after that, one time in eight.
+* **Commissions: the slow way to a relic.** From the Codex, the forge can be asked to make any piece of the
+  panoply or any god's relic - for a great deal of a tower's forge material (twenty to thirty-four for a relic,
+  ten from each tower for armour) and a long wait: half an hour of play for the least relic, nearly two hours for
+  a king's. One thing at a time; it works only while you are in the world, and keeps the thing until it is
+  fetched. Beating the god is always quicker - and the forge makes a god's relic only for someone who has stood
+  on that god's floor.
 * **Onslaughts: attacks on the whole floor.** Every so often in a trial - sooner, and from a wider choice, the
   further it has gone - the god turns on the floor itself. **Shockwaves** run out from the middle in three rings
   and have to be jumped. **Fissures** split the floor in a five-pointed star, and then along the five lines
@@ -623,7 +644,7 @@ on a real server: data loading, the hub, building and walking every floor of eve
 towers through the altar menu (with rematches) and all 42 passages, the Ruined Gate and its keystones, the story's
 chapters, the hub's residents, all sixty-three sentinels and their traits, craters, the custom screens and their buttons, the tutorial, impacts, the
 floor's eruptions and the gods' last stands, the three phases of a trial (health gates, pylons, stances, the collapsing floor and its restoration, strikes), gear and difficulty scaling,
-the compass scanner, relays and jammers, waygates, the Field Tower Bag, hub tiers and bounties, the rune chambers, the sidebar, level counts and names, building ahead, the four puzzle rooms (beam rooms laid out at random, with decoys and a limit of turns), no two rooms of a kind joined, cells and storerooms, afflictions, cards and lines not said twice, the written screens as pages (packing, pictures, buttons pressed), the thirty-eight trap halls (each proved crossable, each hazard, a chasing hall, a small hall), winding corridors, crusher and dart halls, urns and tablets, the Passage Chart, the mastery tree, the menu artwork, cards and tips, the drawn boss bar and the opt-in cast bar, settings, the gods' memory of each player, room shapes and stairwells, the spike, flame and blade halls, parries, ripostes, momentum and plunges, heavy blows, boons, the gate's facing, the shrine's chart, the bestiary, the frames of each phase, shut gates, corridors and their jets, the arc and gas halls, the chart's memory, plain-word fallbacks, every menu's words against the language file, parties, group scaling and per-player loot, the wall protection (built, checked room by room for reachability,
+the compass scanner, relays and jammers, waygates, the Field Tower Bag, hub tiers and bounties, the rune chambers, the sidebar, level counts and names, building ahead, the four puzzle rooms (beam rooms laid out at random, with decoys and a limit of turns), no two rooms of a kind joined, cells and storerooms, afflictions, cards and lines not said twice, the written screens as pages (packing, pictures, buttons pressed), onslaughts, the three rune chambers, the panoply, commissions, the lesser gods, the thirty-eight trap halls (each proved crossable, each hazard, a chasing hall, a small hall), winding corridors, crusher and dart halls, urns and tablets, the Passage Chart, the mastery tree, the menu artwork, cards and tips, the drawn boss bar and the opt-in cast bar, settings, the gods' memory of each player, room shapes and stairwells, the spike, flame and blade halls, parries, ripostes, momentum and plunges, heavy blows, boons, the gate's facing, the shrine's chart, the bestiary, the frames of each phase, shut gates, corridors and their jets, the arc and gas halls, the chart's memory, plain-word fallbacks, every menu's words against the language file, parties, group scaling and per-player loot, the wall protection (built, checked room by room for reachability,
 seals struck, guardians, shrine, map), every god's signature move, the relic moves, the forging quick-time rounds,
 tier materials, each tarot card, the Codex, leaving the realms, the welcome and the anti-stuck safeguards.
 

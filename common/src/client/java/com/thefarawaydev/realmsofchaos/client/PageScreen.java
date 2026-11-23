@@ -39,7 +39,8 @@ public class PageScreen extends AbstractContainerScreen<PageMenu> {
             "party", new Look(0xFF1E4A2C, 0xFF286238, 0xFF3E8A52, 0),
             "mastery", new Look(0xFF4A3418, 0xFF624622, 0xFF94703A, 0),
             "waygate", new Look(0xFF124246, 0xFF1A585C, 0xFF2E8A8C, 0),
-            "hub", new Look(0xFF4A4436, 0xFF5E5646, 0xFF8A8068, 0));
+            "hub", new Look(0xFF4A4436, 0xFF5E5646, 0xFF8A8068, 0),
+            "forge", new Look(0xFF3A2A22, 0xFF523828, 0xFFB0623A, 0));
     private static final int EDGE = 4, ART_W = 308, ART_H = 244;
 
     private record Line(FormattedCharSequence text, int indent) {}

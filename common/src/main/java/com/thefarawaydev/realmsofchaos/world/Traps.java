@@ -43,19 +43,62 @@ public final class Traps {
     /** Where the four rune stones stand, from the middle of the room (two blocks up, on a pillar). */
     private static final int[][] CORNERS = {{-3, -3}, {3, -3}, {3, 3}, {-3, 3}};
 
+    /**
+     * What a rune chamber does to whoever it has caught, and how its order has to be remembered. A flooding chamber
+     * shows its order over and over while the water rises. A furnace shows it once - and again only after a
+     * mistake - while the heat builds. A chamber of gloom shows it over and over, but wants it pressed backwards,
+     * while the dark closes in.
+     */
+    public enum Peril {
+        FLOOD, EMBERS, GLOOM;
+
+        public String id() {
+            return name().toLowerCase(java.util.Locale.ROOT);
+        }
+
+        /** What its lines of text are filed under: the flood's are the plain ones. */
+        String suffix() {
+            return this == FLOOD ? "" : "." + id();
+        }
+    }
+
+    /** Which peril a chamber holds: fixed by where it is. */
+    public static Peril peril(Passages.Plan plan, Passages.Cell cell) {
+        long h = plan.seed * 43 + cell.x() * 15485863L + cell.z() * 7919L;
+        h ^= h >>> 17;
+        h *= 0x9E3779B97F4A7C15L;
+        return Peril.values()[(int) Math.floorMod(h >>> 21, (long) Peril.values().length)];
+    }
+
     public static final class Trap {
         final ServerLevel level;
         final Passages.Plan plan;
         final Passages.Cell cell;
+        final Peril peril;
+        /** The order the runes light in, and the order they have to be pressed in: the same, except in the gloom. */
+        final int[] shown;
         final int[] order;
         int pressed, ticks, water, fullTicks, lit = -1, flashUntil;
         boolean full;
 
-        Trap(ServerLevel level, Passages.Plan plan, Passages.Cell cell, int[] order) {
+        Trap(ServerLevel level, Passages.Plan plan, Passages.Cell cell, int[] shown) {
             this.level = level;
             this.plan = plan;
             this.cell = cell;
-            this.order = order;
+            this.peril = Traps.peril(plan, cell);
+            this.shown = shown;
+            this.order = shown.clone();
+            if (peril == Peril.GLOOM) {
+                for (int i = 0; i < order.length; i++) order[i] = shown[shown.length - 1 - i];
+            }
+        }
+
+        public Peril peril() {
+            return peril;
+        }
+
+        public int[] shown() {
+            return shown.clone();
         }
 
         public int[] order() {
@@ -185,9 +228,11 @@ public final class Traps {
             if (level.getBlockState(door).isAir()) level.setBlock(door, glass, 3);
         }
         level.playSound(null, m, SoundEvents.IRON_DOOR_CLOSE, SoundSource.BLOCKS, 2.0F, 0.6F);
-        level.playSound(null, m, SoundEvents.AMBIENT_UNDERWATER_ENTER, SoundSource.BLOCKS, 2.0F, 0.8F);
+        level.playSound(null, m, trap.peril == Peril.FLOOD ? SoundEvents.AMBIENT_UNDERWATER_ENTER : trap.peril == Peril.EMBERS ? SoundEvents.BLAZE_SHOOT : SoundEvents.WARDEN_HEARTBEAT,
+                SoundSource.BLOCKS, 2.0F, 0.8F);
         for (ServerPlayer p : inside(level, plan, cell)) {
-            Hud.title(p, Hud.colored(Component.translatable(HUD + "sprung"), 0x55FFFF), Hud.colored(Component.translatable(HUD + "sprung.sub", trap.order.length), 0xFFFFFF), 5, 70, 15);
+            Hud.title(p, Hud.colored(Component.translatable(HUD + "sprung" + trap.peril.suffix()), trap.peril == Peril.FLOOD ? 0x55FFFF : trap.peril == Peril.EMBERS ? 0xFF7A3C : 0xB45CFF),
+                    Hud.colored(Component.translatable(HUD + "sprung.sub" + trap.peril.suffix(), trap.order.length), 0xFFFFFF), 5, 70, 15);
         }
         return trap;
     }
@@ -212,16 +257,21 @@ public final class Traps {
         if (trap.water >= LAYERS) return false;
         trap.water++;
         BlockPos m = trap.plan.centre(trap.cell);
-        for (int dx = -4; dx <= 4; dx++) {
-            for (int dz = -4; dz <= 4; dz++) {
-                BlockPos at = m.offset(dx, trap.water, dz);
-                if (trap.level.getBlockState(at).isAir()) trap.level.setBlock(at, Blocks.WATER.defaultBlockState(), 2);
+        if (trap.peril == Peril.FLOOD) {
+            for (int dx = -4; dx <= 4; dx++) {
+                for (int dz = -4; dz <= 4; dz++) {
+                    BlockPos at = m.offset(dx, trap.water, dz);
+                    if (trap.level.getBlockState(at).isAir()) trap.level.setBlock(at, Blocks.WATER.defaultBlockState(), 2);
+                }
             }
+            trap.level.playSound(null, m, SoundEvents.GENERIC_SPLASH, SoundSource.BLOCKS, 1.5F, 0.6F);
+        } else {
+            // (heat and dark are not built of blocks: the room only gets worse to stand in)
+            trap.level.playSound(null, m, trap.peril == Peril.EMBERS ? SoundEvents.FIRECHARGE_USE : SoundEvents.SCULK_SHRIEKER_SHRIEK, SoundSource.BLOCKS, 1.2F, 0.6F);
         }
-        trap.level.playSound(null, m, SoundEvents.GENERIC_SPLASH, SoundSource.BLOCKS, 1.5F, 0.6F);
         if (trap.water >= LAYERS && !trap.full) {
             trap.full = true;
-            for (ServerPlayer p : inside(trap.level, trap.plan, trap.cell)) Hud.actionBar(p, Hud.colored(Component.translatable(HUD + "full"), 0xFF5555));
+            for (ServerPlayer p : inside(trap.level, trap.plan, trap.cell)) Hud.actionBar(p, Hud.colored(Component.translatable(HUD + "full" + trap.peril.suffix()), 0xFF5555));
         }
         return true;
     }
@@ -303,7 +353,7 @@ public final class Traps {
                 raise(trap);
                 level.playSound(null, pos, SoundEvents.NOTE_BLOCK_BASS.value(), SoundSource.BLOCKS, 2.0F, 0.5F);
                 level.sendParticles(ParticleTypes.SMOKE, pos.getX() + 0.5, pos.getY() + 1.1, pos.getZ() + 0.5, 12, 0.3, 0.2, 0.3, 0.02);
-                for (ServerPlayer p : inside(level, trap.plan, trap.cell)) Hud.actionBar(p, Hud.colored(Component.translatable(HUD + "wrong"), 0xFF5555));
+                for (ServerPlayer p : inside(level, trap.plan, trap.cell)) Hud.actionBar(p, Hud.colored(Component.translatable(HUD + "wrong" + trap.peril.suffix()), 0xFF5555));
                 return false;
             }
         }
@@ -317,6 +367,14 @@ public final class Traps {
         int at = ticks - SHOW_DELAY;
         if (at < 0) return -1;
         at %= Math.max(SHOW_EVERY, order.length * (GLOW + GAP) + 40);
+        int index = at / (GLOW + GAP);
+        return index < order.length && at % (GLOW + GAP) < GLOW ? order[index] : -1;
+    }
+
+    /** Which rune a furnace's one showing of its order has lit at this tick, or -1: it is not shown twice. */
+    public static int shownOnce(int[] order, int ticks) {
+        int at = ticks - SHOW_DELAY;
+        if (at < 0) return -1;
         int index = at / (GLOW + GAP);
         return index < order.length && at % (GLOW + GAP) < GLOW ? order[index] : -1;
     }
@@ -336,24 +394,52 @@ public final class Traps {
             return;
         }
         trap.ticks++;
-        if (trap.ticks >= trap.flashUntil) setLit(trap, shown(trap.order, trap.ticks));
+        if (trap.ticks >= trap.flashUntil) setLit(trap, trap.peril == Peril.EMBERS ? shownOnce(trap.shown, trap.ticks) : shown(trap.shown, trap.ticks));
+        if (trap.peril != Peril.FLOOD && trap.water > 0) {
+            // what a furnace or the gloom does while it builds: seen every half second, felt every two
+            BlockPos m = trap.plan.centre(trap.cell);
+            if (trap.ticks % 10 == 0) {
+                trap.level.sendParticles(trap.peril == Peril.EMBERS ? ParticleTypes.FLAME : ParticleTypes.SQUID_INK, m.getX() + 0.5, m.getY() + (trap.peril == Peril.EMBERS ? 1.1 : 2.0), m.getZ() + 0.5,
+                        6 * trap.water, 3.5, trap.peril == Peril.EMBERS ? 0.1 : 1.0, 3.5, 0.01);
+            }
+            if (trap.ticks % 40 == 0 && !trap.full) {
+                for (ServerPlayer p : caught) {
+                    if (p.isCreative()) continue;
+                    if (trap.peril == Peril.EMBERS) {
+                        p.hurtServer(trap.level, trap.level.damageSources().inFire(), 0.5F * trap.water);
+                        p.setRemainingFireTicks(30);
+                    } else {
+                        p.addEffect(new net.minecraft.world.effect.MobEffectInstance(net.minecraft.world.effect.MobEffects.DARKNESS, 80, 0, true, false, false));
+                        if (trap.water >= 3) p.addEffect(new net.minecraft.world.effect.MobEffectInstance(net.minecraft.world.effect.MobEffects.SLOWNESS, 60, 0, true, false, false));
+                    }
+                }
+            }
+        }
         if (!trap.full && trap.ticks % fillEvery(trap.plan) == 0) raise(trap);
         if (trap.full) {
             trap.fullTicks++;
             if (trap.fullTicks % 40 == 0) {
                 for (ServerPlayer p : caught) {
-                    if (!p.isCreative()) p.hurtServer(trap.level, trap.level.damageSources().drown(), 2.0F);
+                    if (p.isCreative()) continue;
+                    switch (trap.peril) {
+                        case FLOOD -> p.hurtServer(trap.level, trap.level.damageSources().drown(), 2.0F);
+                        case EMBERS -> {
+                            p.hurtServer(trap.level, trap.level.damageSources().inFire(), 2.0F);
+                            p.setRemainingFireTicks(60);
+                        }
+                        case GLOOM -> p.hurtServer(trap.level, trap.level.damageSources().wither(), 2.0F);
+                    }
                 }
             }
             if (trap.fullTicks >= FULL_TICKS) {
                 end(trap);
-                for (ServerPlayer p : caught) Hud.actionBar(p, Hud.colored(Component.translatable(HUD + "failed"), 0xFFAA00));
+                for (ServerPlayer p : caught) Hud.actionBar(p, Hud.colored(Component.translatable(HUD + "failed" + trap.peril.suffix()), 0xFFAA00));
                 return;
             }
         }
         if (trap.ticks % 20 == 0 && !trap.full) {
             for (ServerPlayer p : caught) {
-                Hud.actionBar(p, Hud.colored(Component.translatable(HUD + "status", trap.water, LAYERS, trap.pressed, trap.order.length), 0x55FFFF));
+                Hud.actionBar(p, Hud.colored(Component.translatable(HUD + "status" + trap.peril.suffix(), trap.water, LAYERS, trap.pressed, trap.order.length), 0x55FFFF));
             }
         }
     }

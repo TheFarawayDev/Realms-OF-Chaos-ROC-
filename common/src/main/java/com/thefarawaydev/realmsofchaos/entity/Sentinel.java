@@ -733,6 +733,7 @@ public class Sentinel extends Monster implements RangedAttackMob {
         if (source.getEntity() instanceof ServerPlayer killer) {
             com.thefarawaydev.realmsofchaos.ui.BestiaryMenu.record(killer, kind());
             com.thefarawaydev.realmsofchaos.world.Boons.onKill(killer);
+            com.thefarawaydev.realmsofchaos.world.Lesser.fallen(this, killer);
         }
         for (Sentinel ally : allies(level, 12.0)) ally.witness(this);
         if (trait() == Trait.BANNER) {

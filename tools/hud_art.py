@@ -350,6 +350,8 @@ PAGES = {
                 ["#.......#", "##.....##", ".##...##.", "#.#...#.#", "##.#.#.##", ".##...##.", "..##.##..", "...###...", "....#...."]),
     "waygate": ((30, 112, 114), (96, 196, 190), (12, 58, 62), (190, 240, 232), (16, 62, 66), (10, 28, 34), (10, 44, 48),
                 ["..#####..", ".#.....#.", "#..###..#", "#.#...#.#", "#.#.#.#.#", "#.#...#.#", "#..###..#", ".#.....#.", "..#####.."]),
+    "forge": ((70, 66, 72), (128, 122, 130), (36, 34, 40), (255, 138, 60), (58, 40, 32), (26, 22, 22), (44, 30, 24),
+              [".#######.", ".#######.", "..#####..", "...###...", "...###...", "..#####..", ".#######.", "#########", "#########"]),
     "hub": ((196, 186, 168), (240, 234, 222), (128, 118, 100), (232, 190, 96), (92, 82, 64), (30, 28, 34), (58, 52, 42),
             ["....#....", "...###...", "..#####..", ".#######.", "#########", ".#.###.#.", ".#.#.#.#.", ".#.#.#.#.", ".#######."]),
 }
@@ -403,7 +405,7 @@ def page(name):
     for y in range(e + 26, h - e - 30):
         for x in range(e + 6, w - e - 6):
             put(x, y, mix(field, (255, 255, 255), 0.035))
-    grain = {"codex": 60, "handbook": 140, "oracle": 170, "altar": 110, "board": 520, "party": 70, "mastery": 80, "waygate": 150, "hub": 60}[name]
+    grain = {"forge": 120, "codex": 60, "handbook": 140, "oracle": 170, "altar": 110, "board": 520, "party": 70, "mastery": 80, "waygate": 150, "hub": 60}[name]
     for _ in range(grain):
         x, y = rnd.randrange(e + 8, w - e - 8), rnd.randrange(e + 28, h - e - 32)
         if name == "oracle":
@@ -500,6 +502,15 @@ def page(name):
     elif name == "waygate":
         for x in range(e + 2, w - e - 2):
             put(x, e + 25, mix(field, light, 0.35 if x % 3 else 0.6))
+    elif name == "forge":
+        # embers along the foot of the iron, and rivets down its sides
+        for x in range(e + 2, w - e - 2):
+            if (x * 7) % 5 < 2:
+                put(x, h - e - 2, line if x % 3 else (255, 210, 120))
+        for y in range(10, h - 8, 12):
+            for x in (2, w - 3):
+                put(x, y, light)
+                put(x, y + 1, dark)
     elif name == "hub":
         for cx, cy in ((2, 2), (w - 5, 2), (2, h - 5), (w - 5, h - 5)):
             for dx in range(3):

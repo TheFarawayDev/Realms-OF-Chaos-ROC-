@@ -99,6 +99,8 @@ public final class ModContent {
     public static final Ref<Item> CHAOS_CODEX = new Ref<>();
     public static final Ref<Item> FIELD_BAG = new Ref<>();
     public static final Map<String, Ref<Item>> WEAPONS = new HashMap<>();
+    /** The eight pieces of the panoply, by id. */
+    public static final Map<String, Ref<Item>> PANOPLY = new java.util.LinkedHashMap<>();
     public static final Map<String, Ref<Item>> BLOCK_ITEMS = new HashMap<>();
     public static final Ref<Item> TAROT_DECK = new Ref<>();
     public static final Map<Tarot, Ref<Item>> TAROT = new HashMap<>();
@@ -145,6 +147,11 @@ public final class ModContent {
 
     static {
         // blocks
+        for (com.thefarawaydev.realmsofchaos.item.Panoply.Piece piece : com.thefarawaydev.realmsofchaos.item.Panoply.Piece.values()) {
+            Ref<Item> ref = new Ref<>();
+            PANOPLY.put(piece.id(), ref);
+            item(piece.id(), ref, key -> com.thefarawaydev.realmsofchaos.item.Panoply.create(piece, key));
+        }
         block("gate_hub", GATE_HUB, key -> gate(GateBlock.Kind.HUB, key));
         block("gate_zeus", GATE_ZEUS, key -> gate(GateBlock.Kind.ZEUS, key));
         block("gate_poseidon", GATE_POSEIDON, key -> gate(GateBlock.Kind.POSEIDON, key));
@@ -389,6 +396,7 @@ public final class ModContent {
         for (Line line : Line.values()) {
             for (int tier = 1; tier <= 4; tier++) out.add(materialItem(line, tier));
         }
+        for (com.thefarawaydev.realmsofchaos.item.Panoply.Piece piece : com.thefarawaydev.realmsofchaos.item.Panoply.Piece.values()) out.add(piece.item());
         for (Line line : Line.values()) out.add(seekerItem(line));
         for (Line line : Line.values()) out.add(keystoneItem(line));
         out.add(TAROT_DECK.get());

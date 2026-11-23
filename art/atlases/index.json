@@ -5,407 +5,439 @@
       16
     ],
     "columns": 16,
-    "count": 100,
+    "count": 108,
     "source": "assets/realms_of_chaos/textures/item",
     "tiles": {
-      "amphitrite_weapon": [
+      "aegis_cuirass": [
         0,
+        0
+      ],
+      "amphitrite_weapon": [
+        1,
         0
       ],
       "apollo_weapon": [
-        1,
+        2,
         0
       ],
       "ares_weapon": [
-        2,
+        3,
         0
       ],
       "artemis_weapon": [
-        3,
+        4,
         0
       ],
       "asclepius_weapon": [
-        4,
+        5,
         0
       ],
       "athena_weapon": [
-        5,
+        6,
         0
       ],
       "benthesikyme_weapon": [
-        6,
+        7,
         0
       ],
       "chaos_codex": [
-        7,
+        8,
         0
       ],
       "chaos_compass": [
-        8,
+        9,
         0
       ],
       "charon_weapon": [
-        9,
+        10,
         0
       ],
       "chrysaor_weapon": [
-        10,
+        11,
         0
       ],
       "cymopoleia_weapon": [
-        11,
+        12,
         0
       ],
       "deimos_weapon": [
-        12,
+        13,
         0
       ],
       "dionysus_weapon": [
-        13,
+        14,
         0
       ],
       "erinyes_weapon": [
-        14,
+        15,
         0
       ],
       "essence_hades": [
-        15,
-        0
+        0,
+        1
       ],
       "essence_poseidon": [
-        0,
+        1,
         1
       ],
       "essence_zeus": [
-        1,
+        2,
         1
       ],
       "field_bag": [
-        2,
+        3,
         1
       ],
       "galatea_weapon": [
-        3,
+        4,
         1
       ],
       "galene_weapon": [
-        4,
+        5,
+        1
+      ],
+      "girdle_of_hippolyta": [
+        6,
+        1
+      ],
+      "greaves_of_achilles": [
+        7,
         1
       ],
       "hades_weapon": [
-        5,
+        8,
         1
       ],
       "halia_weapon": [
-        6,
+        9,
         1
       ],
       "hebe_weapon": [
-        7,
+        10,
         1
       ],
       "hecate_weapon": [
-        8,
+        11,
+        1
+      ],
+      "helm_of_athena": [
+        12,
+        1
+      ],
+      "helm_of_hades": [
+        13,
         1
       ],
       "hermes_weapon": [
-        9,
+        14,
         1
       ],
       "hygeia_weapon": [
-        10,
+        15,
         1
       ],
       "hypnos_weapon": [
-        11,
-        1
+        0,
+        2
       ],
       "iris_weapon": [
-        12,
-        1
+        1,
+        2
       ],
       "keres_weapon": [
-        13,
-        1
+        2,
+        2
       ],
       "keystone_hades": [
-        14,
-        1
+        3,
+        2
       ],
       "keystone_poseidon": [
-        15,
-        1
+        4,
+        2
       ],
       "keystone_zeus": [
-        0,
+        5,
         2
       ],
       "macaria_weapon": [
-        1,
+        6,
         2
       ],
       "material_hades_1": [
-        2,
+        7,
         2
       ],
       "material_hades_2": [
-        3,
+        8,
         2
       ],
       "material_hades_3": [
-        4,
+        9,
         2
       ],
       "material_poseidon_1": [
-        5,
+        10,
         2
       ],
       "material_poseidon_2": [
-        6,
+        11,
         2
       ],
       "material_poseidon_3": [
-        7,
+        12,
         2
       ],
       "material_zeus_1": [
-        8,
+        13,
         2
       ],
       "material_zeus_2": [
-        9,
+        14,
         2
       ],
       "material_zeus_3": [
-        10,
+        15,
         2
       ],
       "melinoe_weapon": [
-        11,
-        2
+        0,
+        3
       ],
       "moirai_weapon": [
-        12,
-        2
+        1,
+        3
       ],
       "morpheus_weapon": [
-        13,
-        2
+        2,
+        3
+      ],
+      "nemean_pelt": [
+        3,
+        3
       ],
       "nereus_weapon": [
-        14,
-        2
+        4,
+        3
       ],
       "nike_weapon": [
-        15,
-        2
+        5,
+        3
       ],
       "nyx_weapon": [
-        0,
+        6,
         3
       ],
       "oneiroi_weapon": [
-        1,
+        7,
         3
       ],
       "orb_drain": [
-        2,
+        8,
         3
       ],
       "orb_fire": [
-        3,
+        9,
         3
       ],
       "orb_freeze": [
-        4,
+        10,
         3
       ],
       "orb_knockback": [
-        5,
+        11,
         3
       ],
       "orb_lightning": [
-        6,
+        12,
         3
       ],
       "orb_none": [
-        7,
+        13,
         3
       ],
       "orb_sweep": [
-        8,
+        14,
         3
       ],
       "palaemon_weapon": [
-        9,
+        15,
         3
       ],
       "pan_weapon": [
-        10,
-        3
+        0,
+        4
       ],
       "pegasus_weapon": [
-        11,
-        3
+        1,
+        4
       ],
       "persephone_weapon": [
-        12,
-        3
+        2,
+        4
       ],
       "phobos_weapon": [
-        13,
-        3
+        3,
+        4
       ],
       "poseidon_weapon": [
-        14,
-        3
+        4,
+        4
       ],
       "proteus_weapon": [
-        15,
-        3
+        5,
+        4
       ],
       "rhode_weapon": [
-        0,
+        6,
         4
       ],
       "seeker_hades": [
-        1,
+        7,
         4
       ],
       "seeker_poseidon": [
-        2,
+        8,
         4
       ],
       "seeker_zeus": [
-        3,
+        9,
+        4
+      ],
+      "styx_treads": [
+        10,
+        4
+      ],
+      "talaria": [
+        11,
         4
       ],
       "tarot_chariot": [
-        4,
+        12,
         4
       ],
       "tarot_death": [
-        5,
+        13,
         4
       ],
       "tarot_deck": [
-        6,
+        14,
         4
       ],
       "tarot_devil": [
-        7,
+        15,
         4
       ],
       "tarot_emperor": [
-        8,
-        4
-      ],
-      "tarot_empress": [
-        9,
-        4
-      ],
-      "tarot_fool": [
-        10,
-        4
-      ],
-      "tarot_hanged_man": [
-        11,
-        4
-      ],
-      "tarot_hermit": [
-        12,
-        4
-      ],
-      "tarot_hierophant": [
-        13,
-        4
-      ],
-      "tarot_high_priestess": [
-        14,
-        4
-      ],
-      "tarot_judgement": [
-        15,
-        4
-      ],
-      "tarot_justice": [
         0,
         5
       ],
-      "tarot_lovers": [
+      "tarot_empress": [
         1,
         5
       ],
-      "tarot_magician": [
+      "tarot_fool": [
         2,
         5
       ],
-      "tarot_moon": [
+      "tarot_hanged_man": [
         3,
         5
       ],
-      "tarot_star": [
+      "tarot_hermit": [
         4,
         5
       ],
-      "tarot_strength": [
+      "tarot_hierophant": [
         5,
         5
       ],
-      "tarot_sun": [
+      "tarot_high_priestess": [
         6,
         5
       ],
-      "tarot_temperance": [
+      "tarot_judgement": [
         7,
         5
       ],
-      "tarot_tower": [
+      "tarot_justice": [
         8,
         5
       ],
-      "tarot_wheel_of_fortune": [
+      "tarot_lovers": [
         9,
         5
       ],
-      "tarot_world": [
+      "tarot_magician": [
         10,
         5
       ],
-      "thanatos_weapon": [
+      "tarot_moon": [
         11,
         5
       ],
-      "thetis_weapon": [
+      "tarot_star": [
         12,
         5
       ],
-      "triton_weapon": [
+      "tarot_strength": [
         13,
         5
       ],
-      "voodoo_doll_binding": [
+      "tarot_sun": [
         14,
         5
       ],
-      "voodoo_doll_embers": [
+      "tarot_temperance": [
         15,
         5
       ],
-      "voodoo_doll_pain": [
+      "tarot_tower": [
         0,
         6
       ],
-      "voodoo_doll_rot": [
+      "tarot_wheel_of_fortune": [
         1,
         6
       ],
-      "zagreus_weapon": [
+      "tarot_world": [
         2,
         6
       ],
-      "zeus_weapon": [
+      "thanatos_weapon": [
         3,
+        6
+      ],
+      "thetis_weapon": [
+        4,
+        6
+      ],
+      "triton_weapon": [
+        5,
+        6
+      ],
+      "voodoo_doll_binding": [
+        6,
+        6
+      ],
+      "voodoo_doll_embers": [
+        7,
+        6
+      ],
+      "voodoo_doll_pain": [
+        8,
+        6
+      ],
+      "voodoo_doll_rot": [
+        9,
+        6
+      ],
+      "zagreus_weapon": [
+        10,
+        6
+      ],
+      "zeus_weapon": [
+        11,
         6
       ]
     }
@@ -794,800 +826,864 @@
       64
     ],
     "columns": 9,
-    "count": 198,
+    "count": 214,
     "source": "assets/realms_of_chaos/textures/entity",
     "tiles": {
-      "god/amphitrite": [
+      "equipment/humanoid/aegis_cuirass": [
         0,
         0
+      ],
+      "equipment/humanoid/girdle_of_hippolyta": [
+        1,
+        0
+      ],
+      "equipment/humanoid/greaves_of_achilles": [
+        2,
+        0
+      ],
+      "equipment/humanoid/helm_of_athena": [
+        3,
+        0
+      ],
+      "equipment/humanoid/helm_of_hades": [
+        4,
+        0
+      ],
+      "equipment/humanoid/nemean_pelt": [
+        5,
+        0
+      ],
+      "equipment/humanoid/styx_treads": [
+        6,
+        0
+      ],
+      "equipment/humanoid/talaria": [
+        7,
+        0
+      ],
+      "equipment/humanoid_leggings/aegis_cuirass": [
+        8,
+        0
+      ],
+      "equipment/humanoid_leggings/girdle_of_hippolyta": [
+        0,
+        1
+      ],
+      "equipment/humanoid_leggings/greaves_of_achilles": [
+        1,
+        1
+      ],
+      "equipment/humanoid_leggings/helm_of_athena": [
+        2,
+        1
+      ],
+      "equipment/humanoid_leggings/helm_of_hades": [
+        3,
+        1
+      ],
+      "equipment/humanoid_leggings/nemean_pelt": [
+        4,
+        1
+      ],
+      "equipment/humanoid_leggings/styx_treads": [
+        5,
+        1
+      ],
+      "equipment/humanoid_leggings/talaria": [
+        6,
+        1
+      ],
+      "god/amphitrite": [
+        7,
+        1
       ],
       "god/amphitrite_p2": [
-        1,
-        0
+        8,
+        1
       ],
       "god/amphitrite_p3": [
-        2,
-        0
+        0,
+        2
       ],
       "god/apollo": [
-        3,
-        0
+        1,
+        2
       ],
       "god/apollo_p2": [
-        4,
-        0
+        2,
+        2
       ],
       "god/apollo_p3": [
-        5,
-        0
+        3,
+        2
       ],
       "god/ares": [
-        6,
-        0
+        4,
+        2
       ],
       "god/ares_p2": [
-        7,
-        0
+        5,
+        2
       ],
       "god/ares_p3": [
-        8,
-        0
+        6,
+        2
       ],
       "god/artemis": [
-        0,
-        1
+        7,
+        2
       ],
       "god/artemis_p2": [
-        1,
-        1
+        8,
+        2
       ],
       "god/artemis_p3": [
-        2,
-        1
+        0,
+        3
       ],
       "god/asclepius": [
-        3,
-        1
+        1,
+        3
       ],
       "god/asclepius_p2": [
-        4,
-        1
+        2,
+        3
       ],
       "god/asclepius_p3": [
-        5,
-        1
+        3,
+        3
       ],
       "god/athena": [
-        6,
-        1
+        4,
+        3
       ],
       "god/athena_p2": [
-        7,
-        1
+        5,
+        3
       ],
       "god/athena_p3": [
-        8,
-        1
+        6,
+        3
       ],
       "god/benthesikyme": [
-        0,
-        2
+        7,
+        3
       ],
       "god/benthesikyme_p2": [
-        1,
-        2
+        8,
+        3
       ],
       "god/benthesikyme_p3": [
-        2,
-        2
+        0,
+        4
       ],
       "god/charon": [
-        3,
-        2
+        1,
+        4
       ],
       "god/charon_p2": [
-        4,
-        2
+        2,
+        4
       ],
       "god/charon_p3": [
-        5,
-        2
+        3,
+        4
       ],
       "god/chrysaor": [
-        6,
-        2
+        4,
+        4
       ],
       "god/chrysaor_p2": [
-        7,
-        2
+        5,
+        4
       ],
       "god/chrysaor_p3": [
-        8,
-        2
+        6,
+        4
       ],
       "god/cymopoleia": [
-        0,
-        3
+        7,
+        4
       ],
       "god/cymopoleia_p2": [
-        1,
-        3
+        8,
+        4
       ],
       "god/cymopoleia_p3": [
-        2,
-        3
+        0,
+        5
       ],
       "god/deimos": [
-        3,
-        3
+        1,
+        5
       ],
       "god/deimos_p2": [
-        4,
-        3
+        2,
+        5
       ],
       "god/deimos_p3": [
-        5,
-        3
+        3,
+        5
       ],
       "god/dionysus": [
-        6,
-        3
+        4,
+        5
       ],
       "god/dionysus_p2": [
-        7,
-        3
+        5,
+        5
       ],
       "god/dionysus_p3": [
-        8,
-        3
+        6,
+        5
       ],
       "god/erinyes": [
-        0,
-        4
+        7,
+        5
       ],
       "god/erinyes_p2": [
-        1,
-        4
+        8,
+        5
       ],
       "god/erinyes_p3": [
-        2,
-        4
+        0,
+        6
       ],
       "god/galatea": [
-        3,
-        4
+        1,
+        6
       ],
       "god/galatea_p2": [
-        4,
-        4
+        2,
+        6
       ],
       "god/galatea_p3": [
-        5,
-        4
+        3,
+        6
       ],
       "god/galene": [
-        6,
-        4
+        4,
+        6
       ],
       "god/galene_p2": [
-        7,
-        4
+        5,
+        6
       ],
       "god/galene_p3": [
-        8,
-        4
+        6,
+        6
       ],
       "god/hades": [
-        0,
-        5
+        7,
+        6
       ],
       "god/hades_p2": [
-        1,
-        5
+        8,
+        6
       ],
       "god/hades_p3": [
-        2,
-        5
+        0,
+        7
       ],
       "god/halia": [
-        3,
-        5
+        1,
+        7
       ],
       "god/halia_p2": [
-        4,
-        5
+        2,
+        7
       ],
       "god/halia_p3": [
-        5,
-        5
+        3,
+        7
       ],
       "god/hebe": [
-        6,
-        5
+        4,
+        7
       ],
       "god/hebe_p2": [
-        7,
-        5
+        5,
+        7
       ],
       "god/hebe_p3": [
-        8,
-        5
+        6,
+        7
       ],
       "god/hecate": [
-        0,
-        6
+        7,
+        7
       ],
       "god/hecate_p2": [
-        1,
-        6
+        8,
+        7
       ],
       "god/hecate_p3": [
-        2,
-        6
+        0,
+        8
       ],
       "god/hermes": [
-        3,
-        6
+        1,
+        8
       ],
       "god/hermes_p2": [
-        4,
-        6
+        2,
+        8
       ],
       "god/hermes_p3": [
-        5,
-        6
+        3,
+        8
       ],
       "god/hygeia": [
-        6,
-        6
+        4,
+        8
       ],
       "god/hygeia_p2": [
-        7,
-        6
+        5,
+        8
       ],
       "god/hygeia_p3": [
-        8,
-        6
+        6,
+        8
       ],
       "god/hypnos": [
-        0,
-        7
+        7,
+        8
       ],
       "god/hypnos_p2": [
-        1,
-        7
+        8,
+        8
       ],
       "god/hypnos_p3": [
-        2,
-        7
+        0,
+        9
       ],
       "god/iris": [
-        3,
-        7
+        1,
+        9
       ],
       "god/iris_p2": [
-        4,
-        7
+        2,
+        9
       ],
       "god/iris_p3": [
-        5,
-        7
+        3,
+        9
       ],
       "god/keres": [
-        6,
-        7
+        4,
+        9
       ],
       "god/keres_p2": [
-        7,
-        7
+        5,
+        9
       ],
       "god/keres_p3": [
-        8,
-        7
+        6,
+        9
       ],
       "god/macaria": [
-        0,
-        8
+        7,
+        9
       ],
       "god/macaria_p2": [
-        1,
-        8
+        8,
+        9
       ],
       "god/macaria_p3": [
-        2,
-        8
+        0,
+        10
       ],
       "god/melinoe": [
-        3,
-        8
+        1,
+        10
       ],
       "god/melinoe_p2": [
-        4,
-        8
+        2,
+        10
       ],
       "god/melinoe_p3": [
-        5,
-        8
+        3,
+        10
       ],
       "god/moirai": [
-        6,
-        8
+        4,
+        10
       ],
       "god/moirai_p2": [
-        7,
-        8
+        5,
+        10
       ],
       "god/moirai_p3": [
-        8,
-        8
+        6,
+        10
       ],
       "god/morpheus": [
-        0,
-        9
+        7,
+        10
       ],
       "god/morpheus_p2": [
-        1,
-        9
+        8,
+        10
       ],
       "god/morpheus_p3": [
-        2,
-        9
+        0,
+        11
       ],
       "god/nereus": [
-        3,
-        9
+        1,
+        11
       ],
       "god/nereus_p2": [
-        4,
-        9
+        2,
+        11
       ],
       "god/nereus_p3": [
-        5,
-        9
+        3,
+        11
       ],
       "god/nike": [
-        6,
-        9
+        4,
+        11
       ],
       "god/nike_p2": [
-        7,
-        9
+        5,
+        11
       ],
       "god/nike_p3": [
-        8,
-        9
+        6,
+        11
       ],
       "god/nyx": [
-        0,
-        10
+        7,
+        11
       ],
       "god/nyx_p2": [
-        1,
-        10
+        8,
+        11
       ],
       "god/nyx_p3": [
-        2,
-        10
+        0,
+        12
       ],
       "god/oneiroi": [
-        3,
-        10
+        1,
+        12
       ],
       "god/oneiroi_p2": [
-        4,
-        10
+        2,
+        12
       ],
       "god/oneiroi_p3": [
-        5,
-        10
+        3,
+        12
       ],
       "god/palaemon": [
-        6,
-        10
+        4,
+        12
       ],
       "god/palaemon_p2": [
-        7,
-        10
+        5,
+        12
       ],
       "god/palaemon_p3": [
-        8,
-        10
+        6,
+        12
       ],
       "god/pan": [
-        0,
-        11
+        7,
+        12
       ],
       "god/pan_p2": [
-        1,
-        11
+        8,
+        12
       ],
       "god/pan_p3": [
-        2,
-        11
+        0,
+        13
       ],
       "god/pegasus": [
-        3,
-        11
+        1,
+        13
       ],
       "god/pegasus_p2": [
-        4,
-        11
+        2,
+        13
       ],
       "god/pegasus_p3": [
-        5,
-        11
+        3,
+        13
       ],
       "god/persephone": [
-        6,
-        11
+        4,
+        13
       ],
       "god/persephone_p2": [
-        7,
-        11
+        5,
+        13
       ],
       "god/persephone_p3": [
-        8,
-        11
+        6,
+        13
       ],
       "god/phobos": [
-        0,
-        12
+        7,
+        13
       ],
       "god/phobos_p2": [
-        1,
-        12
+        8,
+        13
       ],
       "god/phobos_p3": [
-        2,
-        12
+        0,
+        14
       ],
       "god/poseidon": [
-        3,
-        12
+        1,
+        14
       ],
       "god/poseidon_p2": [
-        4,
-        12
+        2,
+        14
       ],
       "god/poseidon_p3": [
-        5,
-        12
+        3,
+        14
       ],
       "god/proteus": [
-        6,
-        12
+        4,
+        14
       ],
       "god/proteus_p2": [
-        7,
-        12
+        5,
+        14
       ],
       "god/proteus_p3": [
-        8,
-        12
+        6,
+        14
       ],
       "god/rhode": [
-        0,
-        13
+        7,
+        14
       ],
       "god/rhode_p2": [
-        1,
-        13
+        8,
+        14
       ],
       "god/rhode_p3": [
-        2,
-        13
+        0,
+        15
       ],
       "god/thanatos": [
-        3,
-        13
+        1,
+        15
       ],
       "god/thanatos_p2": [
-        4,
-        13
+        2,
+        15
       ],
       "god/thanatos_p3": [
-        5,
-        13
+        3,
+        15
       ],
       "god/thetis": [
-        6,
-        13
+        4,
+        15
       ],
       "god/thetis_p2": [
-        7,
-        13
+        5,
+        15
       ],
       "god/thetis_p3": [
-        8,
-        13
+        6,
+        15
       ],
       "god/triton": [
-        0,
-        14
+        7,
+        15
       ],
       "god/triton_p2": [
-        1,
-        14
+        8,
+        15
       ],
       "god/triton_p3": [
-        2,
-        14
+        0,
+        16
       ],
       "god/zagreus": [
-        3,
-        14
+        1,
+        16
       ],
       "god/zagreus_p2": [
-        4,
-        14
+        2,
+        16
       ],
       "god/zagreus_p3": [
-        5,
-        14
+        3,
+        16
       ],
       "god/zeus": [
-        6,
-        14
+        4,
+        16
       ],
       "god/zeus_p2": [
-        7,
-        14
+        5,
+        16
       ],
       "god/zeus_p3": [
-        8,
-        14
+        6,
+        16
       ],
       "sentinel/aegis_bearer": [
-        0,
-        15
+        7,
+        16
       ],
       "sentinel/bolt_hurler": [
-        1,
-        15
+        8,
+        16
       ],
       "sentinel/bone_lancer": [
-        2,
-        15
+        0,
+        17
       ],
       "sentinel/brine_layer": [
-        3,
-        15
+        1,
+        17
       ],
       "sentinel/bull_charger": [
-        4,
-        15
+        2,
+        17
       ],
       "sentinel/chain_thrower": [
-        5,
-        15
+        3,
+        17
       ],
       "sentinel/chariot_shade": [
-        6,
-        15
+        4,
+        17
       ],
       "sentinel/conch_blower": [
-        7,
-        15
+        5,
+        17
       ],
       "sentinel/current_slider": [
-        8,
-        15
+        6,
+        17
       ],
       "sentinel/death_knell": [
-        0,
-        16
+        7,
+        17
       ],
       "sentinel/eagle_standard": [
-        1,
-        16
+        8,
+        17
       ],
       "sentinel/ember_wretch": [
-        2,
-        16
+        0,
+        18
       ],
       "sentinel/fury": [
-        3,
-        16
+        1,
+        18
       ],
       "sentinel/gate_warden": [
-        4,
-        16
+        2,
+        18
       ],
       "sentinel/grave_robber": [
-        5,
-        16
+        3,
+        18
       ],
       "sentinel/gust_thief": [
-        6,
-        16
+        4,
+        18
       ],
       "sentinel/harpooner": [
-        7,
-        16
+        5,
+        18
       ],
       "sentinel/harpy": [
-        8,
-        16
+        6,
+        18
       ],
       "sentinel/keeper_shades": [
-        0,
-        17
+        7,
+        18
       ],
       "sentinel/keeper_sky": [
-        1,
-        17
+        8,
+        18
       ],
       "sentinel/keeper_tides": [
-        2,
-        17
+        0,
+        19
       ],
       "sentinel/lampad": [
-        3,
-        17
+        1,
+        19
       ],
       "sentinel/lethe_drinker": [
-        4,
-        17
+        2,
+        19
       ],
       "sentinel/lull_singer": [
-        5,
-        17
+        3,
+        19
       ],
       "sentinel/maenad": [
-        6,
-        17
+        4,
+        19
       ],
       "sentinel/miasma_sower": [
-        7,
-        17
+        5,
+        19
       ],
       "sentinel/mirage": [
-        8,
-        17
+        6,
+        19
       ],
       "sentinel/mist_dancer": [
-        0,
-        18
+        7,
+        19
       ],
       "sentinel/necromancer": [
-        1,
-        18
+        8,
+        19
       ],
       "sentinel/net_caster": [
-        2,
-        18
+        0,
+        20
       ],
       "sentinel/oathkeeper": [
-        3,
-        18
+        1,
+        20
       ],
       "sentinel/oracle_breaker": [
-        4,
-        18
+        2,
+        20
       ],
       "sentinel/paean_singer": [
-        5,
-        18
+        3,
+        20
       ],
       "sentinel/pearl_mender": [
-        6,
-        18
+        4,
+        20
       ],
       "sentinel/phantasm": [
-        7,
-        18
+        5,
+        20
       ],
       "sentinel/psychopomp": [
-        8,
-        18
+        6,
+        20
       ],
       "sentinel/pufferling": [
-        0,
-        19
+        7,
+        20
       ],
       "sentinel/reef_brute": [
-        1,
-        19
+        8,
+        20
       ],
       "sentinel/revenant": [
-        2,
-        19
+        0,
+        21
       ],
       "sentinel/sea_raider": [
-        3,
-        19
+        1,
+        21
       ],
       "sentinel/shackler": [
-        4,
-        19
+        2,
+        21
       ],
       "sentinel/shade": [
-        5,
-        19
+        3,
+        21
       ],
       "sentinel/shadow_stepper": [
-        6,
-        19
+        4,
+        21
       ],
       "sentinel/shell_guard": [
-        7,
-        19
+        5,
+        21
       ],
       "sentinel/siren": [
-        8,
-        19
+        6,
+        21
       ],
       "sentinel/sky_archer": [
-        0,
-        20
+        7,
+        21
       ],
       "sentinel/soul_warden": [
-        1,
-        20
+        8,
+        21
       ],
       "sentinel/spark_runner": [
-        2,
-        20
+        0,
+        22
       ],
       "sentinel/storm_augur": [
-        3,
-        20
+        1,
+        22
       ],
       "sentinel/storm_hoplite": [
-        4,
-        20
+        2,
+        22
       ],
       "sentinel/storm_sower": [
-        5,
-        20
+        3,
+        22
       ],
       "sentinel/styx_herald": [
-        6,
-        20
+        4,
+        22
       ],
       "sentinel/tartarus_brute": [
-        7,
-        20
+        5,
+        22
       ],
       "sentinel/telchine": [
-        8,
-        20
+        6,
+        22
       ],
       "sentinel/thunder_brute": [
-        0,
-        21
+        7,
+        22
       ],
       "sentinel/thunder_herald": [
-        1,
-        21
+        8,
+        22
       ],
       "sentinel/tide_herald": [
-        2,
-        21
+        0,
+        23
       ],
       "sentinel/tide_hoplite": [
-        3,
-        21
+        1,
+        23
       ],
       "sentinel/tide_priest": [
-        4,
-        21
+        2,
+        23
       ],
       "sentinel/tide_warden": [
-        5,
-        21
+        3,
+        23
       ],
       "sentinel/wave_rider": [
-        6,
-        21
+        4,
+        23
       ],
       "sentinel/wind_dancer": [
-        7,
-        21
+        5,
+        23
       ],
       "sentinel/wrecker": [
-        8,
-        21
+        6,
+        23
       ]
     }
   },

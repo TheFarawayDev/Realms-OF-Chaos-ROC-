@@ -98,6 +98,19 @@ public final class RocCommands {
                                                                         com.mojang.brigadier.arguments.IntegerArgumentType.getInteger(ctx, "y"),
                                                                         com.mojang.brigadier.arguments.IntegerArgumentType.getInteger(ctx, "z")),
                                                                         com.mojang.brigadier.arguments.StringArgumentType.getString(ctx, "what")))))))))
+                        .then(Commands.literal("commission")
+                                .executes(ctx -> ui(ctx.getSource().getPlayerOrException(), p -> Screens.show(p, Screens.commission(p))))
+                                .then(Commands.literal("claim").executes(ctx -> ui(ctx.getSource().getPlayerOrException(), p -> {
+                                    com.thefarawaydev.realmsofchaos.world.Commissions.claim(p);
+                                    Screens.show(p, Screens.commission(p));
+                                })))
+                                .then(Commands.literal("list").then(Commands.argument("shelf", com.mojang.brigadier.arguments.StringArgumentType.word()).executes(ctx ->
+                                        ui(ctx.getSource().getPlayerOrException(), p -> Screens.show(p, Screens.commissionList(p, com.mojang.brigadier.arguments.StringArgumentType.getString(ctx, "shelf")))))))
+                                .then(Commands.literal("order").then(Commands.argument("id", com.mojang.brigadier.arguments.StringArgumentType.word()).executes(ctx ->
+                                        ui(ctx.getSource().getPlayerOrException(), p -> {
+                                            com.thefarawaydev.realmsofchaos.world.Commissions.place(p, com.mojang.brigadier.arguments.StringArgumentType.getString(ctx, "id"));
+                                            Screens.show(p, Screens.commission(p));
+                                        })))))
                         .then(Commands.literal("sidebar").executes(ctx -> ui(ctx.getSource().getPlayerOrException(), p -> {
                             com.thefarawaydev.realmsofchaos.ui.Sidebar.toggle(p);
                             Screens.show(p, Screens.home(p));

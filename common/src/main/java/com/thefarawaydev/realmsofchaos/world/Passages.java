@@ -1536,6 +1536,8 @@ public final class Passages {
             mob.setPersistenceRequired();
             mob.addTag(GUARDIAN_TAG);
             mob.addTag(GUARDIAN_TAG + "/" + c.x + "/" + c.z);
+            // an arena's champion is no nameless sentinel: one of the lesser gods holds it
+            if (post.elite() && plan.kind(c) == Kind.ARENA) Lesser.crown(mob, plan);
             level.addFreshEntity(mob);
             level.sendParticles(Signature.spark(plan.line), at.getX() + 0.5, at.getY() + 1.0, at.getZ() + 0.5, 20, 0.3, 0.6, 0.3, 0.05);
             woken++;

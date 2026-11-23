@@ -1,0 +1,14 @@
+{
+  "layers": {
+    "humanoid": [
+      {
+        "texture": "realms_of_chaos:nemean_pelt"
+      }
+    ],
+    "humanoid_leggings": [
+      {
+        "texture": "realms_of_chaos:nemean_pelt"
+      }
+    ]
+  }
+}

@@ -3398,7 +3398,8 @@ public final class SelfTest {
                 for (int stage = 0; stage < Passages.stages(level, Line.ZEUS, index) && chamber == null; stage++) {
                     Passages.Plan candidate = Passages.plan(level, Line.ZEUS, index, stage);
                     for (Passages.Cell c : candidate.cells()) {
-                        if (candidate.kind(c) == Passages.Kind.TRAP && chamber == null) {
+                        if (candidate.kind(c) == Passages.Kind.TRAP && chamber == null
+                                && com.thefarawaydev.realmsofchaos.world.Traps.peril(candidate, c) == com.thefarawaydev.realmsofchaos.world.Traps.Peril.FLOOD) {
                             found = candidate;
                             chamber = c;
                         }
@@ -5643,6 +5644,185 @@ public final class SelfTest {
             } finally {
                 com.thefarawaydev.realmsofchaos.world.Onslaughts.clear();
                 hero.remove(net.minecraft.world.entity.Entity.RemovalReason.DISCARDED);
+            }
+        });
+
+        step("rune chambers of three kinds; eight pieces of armour that each do one thing; the forge's slow commissions; twelve lesser gods in the arenas", () -> {
+            ServerPlayer hero = fakePlayer(server, level, "RocHoplite");
+            Realm.testAlias(Level.OVERWORLD, Realm.ofLine(Line.HADES));
+            com.thefarawaydev.realmsofchaos.world.Traps.forget();
+            data.unmarkPrefix("trapdone/");
+            com.thefarawaydev.realmsofchaos.ui.Cards.clear(hero);
+            level.addNewPlayer(hero);
+            try {
+                // ---- chambers: a furnace that shows its order once, a gloom that wants it backwards
+                java.util.Map<com.thefarawaydev.realmsofchaos.world.Traps.Peril, Object[]> chambers = new java.util.EnumMap<>(com.thefarawaydev.realmsofchaos.world.Traps.Peril.class);
+                for (Line line : Line.values()) {
+                    for (int index = 1; index <= Passages.COUNT; index++) {
+                        for (int stage = 0; stage < Passages.stages(level, line, index); stage++) {
+                            Passages.Plan plan = Passages.plan(level, line, index, stage);
+                            for (Passages.Cell c : plan.cells()) {
+                                if (plan.kind(c) == Passages.Kind.TRAP && line == Line.HADES) chambers.putIfAbsent(com.thefarawaydev.realmsofchaos.world.Traps.peril(plan, c), new Object[]{plan, c});
+                            }
+                        }
+                    }
+                }
+                check(chambers.size() == 3, "rune chambers flood, burn and darken: " + chambers.keySet());
+                for (com.thefarawaydev.realmsofchaos.world.Traps.Peril peril : new com.thefarawaydev.realmsofchaos.world.Traps.Peril[]{com.thefarawaydev.realmsofchaos.world.Traps.Peril.EMBERS, com.thefarawaydev.realmsofchaos.world.Traps.Peril.GLOOM}) {
+                    Passages.Plan plan = (Passages.Plan) chambers.get(peril)[0];
+                    Passages.Cell cell = (Passages.Cell) chambers.get(peril)[1];
+                    Passages.build(level, plan);
+                    BlockPos m = plan.centre(cell);
+                    hero.setPos(m.getX() + 0.5, m.getY() + 1, m.getZ() + 0.5);
+                    hero.setHealth(hero.getMaxHealth());
+                    hero.removeAllEffects();
+                    hero.clearFire();
+                    settle(level);
+                    com.thefarawaydev.realmsofchaos.world.Traps.Trap trap = com.thefarawaydev.realmsofchaos.world.Traps.spring(level, plan, cell);
+                    int[] shown = trap.shown(), order = trap.order();
+                    check(trap.peril() == peril && order.length == com.thefarawaydev.realmsofchaos.world.Traps.length(plan), peril + ": the chamber springs as what it is");
+                    if (peril == com.thefarawaydev.realmsofchaos.world.Traps.Peril.EMBERS) {
+                        check(java.util.Arrays.equals(shown, order), "a furnace is pressed in the order it showed");
+                        int once = com.thefarawaydev.realmsofchaos.world.Traps.SHOW_DELAY, later = com.thefarawaydev.realmsofchaos.world.Traps.SHOW_DELAY + Math.max(com.thefarawaydev.realmsofchaos.world.Traps.SHOW_EVERY, shown.length * (com.thefarawaydev.realmsofchaos.world.Traps.GLOW + com.thefarawaydev.realmsofchaos.world.Traps.GAP) + 40);
+                        check(com.thefarawaydev.realmsofchaos.world.Traps.shownOnce(shown, once) == shown[0] && com.thefarawaydev.realmsofchaos.world.Traps.shownOnce(shown, later) == -1 && com.thefarawaydev.realmsofchaos.world.Traps.shown(shown, later) == shown[0], "but it shows that order once, where a flood shows it over and over");
+                    } else {
+                        boolean backwards = true;
+                        for (int i = 0; i < order.length; i++) backwards &= order[i] == shown[shown.length - 1 - i];
+                        check(backwards, "the gloom wants its order pressed backwards");
+                    }
+                    for (int i = 0; i < com.thefarawaydev.realmsofchaos.world.Traps.fillEvery(plan) + 41; i++) {
+                        hero.damageCooldownTime = 0;
+                        com.thefarawaydev.realmsofchaos.world.Traps.step(trap);
+                    }
+                    check(trap.water() >= 1 && level.getBlockState(m.above()).isAir() && level.getBlockState(m.offset(2, 1, 2)).isAir(), peril + " builds without a drop of water");
+                    if (peril == com.thefarawaydev.realmsofchaos.world.Traps.Peril.EMBERS) check(hero.getHealth() < hero.getMaxHealth() && hero.getRemainingFireTicks() > 0, "a furnace burns whoever it holds, harder as it builds");
+                    else check(hero.hasEffect(net.minecraft.world.effect.MobEffects.DARKNESS), "the gloom takes their sight");
+                    // (a wrong rune makes it worse and starts again; the right order ends it)
+                    int wrong = (order[0] + 1) % 4, before = trap.water();
+                    check(!com.thefarawaydev.realmsofchaos.world.Traps.press(level, com.thefarawaydev.realmsofchaos.world.Traps.rune(plan, cell, wrong), hero) && trap.water() == before + 1 && trap.pressed() == 0, "a wrong rune makes it worse");
+                    for (int n : order) com.thefarawaydev.realmsofchaos.world.Traps.press(level, com.thefarawaydev.realmsofchaos.world.Traps.rune(plan, cell, n), hero);
+                    check(com.thefarawaydev.realmsofchaos.world.Traps.active(plan, cell) == null && com.thefarawaydev.realmsofchaos.world.Traps.solvedBy(plan, cell, hero), peril + ": pressed right, the chamber lets go");
+                    hero.removeAllEffects();
+                    hero.clearFire();
+                }
+
+                // ---- the panoply: two for each part of the body, each with one power
+                java.util.Map<net.minecraft.world.entity.EquipmentSlot, Integer> perSlot = new java.util.HashMap<>();
+                for (com.thefarawaydev.realmsofchaos.item.Panoply.Piece piece : com.thefarawaydev.realmsofchaos.item.Panoply.Piece.values()) {
+                    perSlot.merge(piece.slot, 1, Integer::sum);
+                    ItemStack stack = piece.stack();
+                    check(!stack.isEmpty() && stack.has(net.minecraft.core.component.DataComponents.EQUIPPABLE) && stack.has(net.minecraft.core.component.DataComponents.LORE), piece + " is armour, and says what it does");
+                    check(!com.thefarawaydev.realmsofchaos.ui.Words.of(stack.getHoverName()).startsWith("item.") && !com.thefarawaydev.realmsofchaos.ui.Words.of(piece.lore()).startsWith("item."), piece + " has a name and a line");
+                    hero.removeAllEffects();
+                    for (net.minecraft.world.entity.EquipmentSlot slot : new net.minecraft.world.entity.EquipmentSlot[]{net.minecraft.world.entity.EquipmentSlot.HEAD,
+                            net.minecraft.world.entity.EquipmentSlot.CHEST, net.minecraft.world.entity.EquipmentSlot.LEGS, net.minecraft.world.entity.EquipmentSlot.FEET}) hero.setItemSlot(slot, ItemStack.EMPTY);
+                    check(com.thefarawaydev.realmsofchaos.item.Panoply.tend(hero) == 0 && hero.getActiveEffects().isEmpty(), "bare, nothing is at work");
+                    hero.setItemSlot(piece.slot, stack);
+                    hero.setShiftKeyDown(piece == com.thefarawaydev.realmsofchaos.item.Panoply.Piece.HELM_OF_HADES);
+                    check(com.thefarawaydev.realmsofchaos.item.Panoply.tend(hero) == 1, piece + " is at work when worn");
+                    boolean power = switch (piece) {
+                        case HELM_OF_HADES -> hero.hasEffect(net.minecraft.world.effect.MobEffects.INVISIBILITY);
+                        case HELM_OF_ATHENA -> hero.hasEffect(net.minecraft.world.effect.MobEffects.NIGHT_VISION);
+                        case AEGIS_CUIRASS -> hero.hasEffect(net.minecraft.world.effect.MobEffects.RESISTANCE);
+                        case NEMEAN_PELT -> piece.knockback >= 0.5F && piece.toughness >= 6.0F;
+                        case GIRDLE_OF_HIPPOLYTA -> hero.hasEffect(net.minecraft.world.effect.MobEffects.STRENGTH);
+                        case GREAVES_OF_ACHILLES -> hero.hasEffect(net.minecraft.world.effect.MobEffects.SPEED);
+                        case TALARIA -> hero.hasEffect(net.minecraft.world.effect.MobEffects.JUMP_BOOST);
+                        case STYX_TREADS -> hero.hasEffect(net.minecraft.world.effect.MobEffects.FIRE_RESISTANCE) && hero.hasEffect(net.minecraft.world.effect.MobEffects.WATER_BREATHING);
+                    };
+                    check(power, piece + " does the one thing it is for");
+                    hero.setShiftKeyDown(false);
+                }
+                check(perSlot.size() == 4 && perSlot.values().stream().allMatch(n -> n == 2), "two helms, two for the body, two for the legs, two for the feet: " + perSlot);
+                // (the Helm of Hades hides only someone who is sneaking; the Aegis gives a second wind, once a minute)
+                hero.removeAllEffects();
+                hero.setItemSlot(net.minecraft.world.entity.EquipmentSlot.FEET, ItemStack.EMPTY);
+                hero.setItemSlot(net.minecraft.world.entity.EquipmentSlot.HEAD, com.thefarawaydev.realmsofchaos.item.Panoply.Piece.HELM_OF_HADES.stack());
+                com.thefarawaydev.realmsofchaos.item.Panoply.tend(hero);
+                check(!hero.hasEffect(net.minecraft.world.effect.MobEffects.INVISIBILITY), "standing up, the Helm of Hades hides nobody");
+                hero.setItemSlot(net.minecraft.world.entity.EquipmentSlot.HEAD, ItemStack.EMPTY);
+                hero.setItemSlot(net.minecraft.world.entity.EquipmentSlot.CHEST, com.thefarawaydev.realmsofchaos.item.Panoply.Piece.AEGIS_CUIRASS.stack());
+                hero.getCooldowns().removeCooldown(hero.getCooldowns().getCooldownGroup(com.thefarawaydev.realmsofchaos.item.Panoply.Piece.AEGIS_CUIRASS.stack()));
+                hero.setHealth(hero.getMaxHealth() * 0.2F);
+                com.thefarawaydev.realmsofchaos.item.Panoply.tend(hero);
+                check(hero.hasEffect(net.minecraft.world.effect.MobEffects.ABSORPTION) && hero.getCooldowns().isOnCooldown(com.thefarawaydev.realmsofchaos.item.Panoply.Piece.AEGIS_CUIRASS.stack()), "hurt badly, the Aegis gives a second wind");
+                hero.removeEffect(net.minecraft.world.effect.MobEffects.ABSORPTION);
+                com.thefarawaydev.realmsofchaos.item.Panoply.tend(hero);
+                check(!hero.hasEffect(net.minecraft.world.effect.MobEffects.ABSORPTION), "and not again for a minute");
+                hero.setItemSlot(net.minecraft.world.entity.EquipmentSlot.CHEST, ItemStack.EMPTY);
+                hero.setHealth(hero.getMaxHealth());
+                hero.removeAllEffects();
+
+                // ---- commissions: a great deal of material, and a long wait
+                List<com.thefarawaydev.realmsofchaos.world.Commissions.Order> orders = com.thefarawaydev.realmsofchaos.world.Commissions.orders();
+                check(orders.size() == com.thefarawaydev.realmsofchaos.item.Panoply.Piece.values().length + Line.RANKS * Line.values().length && com.thefarawaydev.realmsofchaos.world.Commissions.shelf(com.thefarawaydev.realmsofchaos.world.Commissions.ARMOUR).size() == 8 && com.thefarawaydev.realmsofchaos.world.Commissions.shelf("zeus").size() == Line.RANKS, "the forge will make any piece of armour and any god's relic: " + orders.size());
+                com.thefarawaydev.realmsofchaos.world.Commissions.Order least = com.thefarawaydev.realmsofchaos.world.Commissions.byId(Tower.god(Line.HADES, 1).id()), king = com.thefarawaydev.realmsofchaos.world.Commissions.byId(Tower.god(Line.HADES, Tower.FLOORS).id()), helm = com.thefarawaydev.realmsofchaos.world.Commissions.byId(com.thefarawaydev.realmsofchaos.item.Panoply.Piece.HELM_OF_HADES.id());
+                int needs = 0;
+                for (com.thefarawaydev.realmsofchaos.world.Commissions.Order order : orders) {
+                    check(order.minutes() >= 30 && !order.cost().isEmpty() && !order.make().isEmpty(), order.id() + " costs something and takes half an hour or more");
+                    for (int n : order.cost().values()) needs = Math.max(needs, n);
+                }
+                check(king.minutes() > least.minutes() + 60 && needs >= 30, "a king's relic takes far longer than the least: " + least.minutes() + " and " + king.minutes() + " minutes");
+                check(com.thefarawaydev.realmsofchaos.world.Commissions.unlocked(hero, least) && !com.thefarawaydev.realmsofchaos.world.Commissions.unlocked(hero, king) && com.thefarawaydev.realmsofchaos.world.Commissions.unlocked(hero, helm), "a god's relic only for someone who has stood on its floor; armour for anyone");
+                hero.getInventory().clearContent();
+                check(!com.thefarawaydev.realmsofchaos.world.Commissions.place(hero, helm.id()) && com.thefarawaydev.realmsofchaos.world.Commissions.current(hero) == null, "nothing for nothing");
+                for (var part : helm.cost().entrySet()) hero.getInventory().add(new ItemStack(part.getKey(), part.getValue()));
+                check(com.thefarawaydev.realmsofchaos.world.Commissions.place(hero, helm.id()) && com.thefarawaydev.realmsofchaos.world.Commissions.current(hero) == helm && !com.thefarawaydev.realmsofchaos.world.Commissions.ready(hero) && com.thefarawaydev.realmsofchaos.world.Commissions.minutesLeft(hero) == helm.minutes(), "paid for, the forge sets to work");
+                for (var part : helm.cost().entrySet()) check(count(hero, part.getKey()) == 0, "and the materials are gone");
+                for (var part : least.cost().entrySet()) hero.getInventory().add(new ItemStack(part.getKey(), part.getValue()));
+                check(!com.thefarawaydev.realmsofchaos.world.Commissions.place(hero, least.id()) && com.thefarawaydev.realmsofchaos.world.Commissions.current(hero) == helm, "one thing at a time");
+                com.thefarawaydev.realmsofchaos.world.Commissions.work(hero, helm.minutes() * 1200 - 20);
+                check(!com.thefarawaydev.realmsofchaos.world.Commissions.ready(hero) && com.thefarawaydev.realmsofchaos.world.Commissions.claim(hero).isEmpty() && com.thefarawaydev.realmsofchaos.world.Commissions.minutesLeft(hero) == 1, "it is not to be had early");
+                com.thefarawaydev.realmsofchaos.world.Commissions.work(hero, 20);
+                check(com.thefarawaydev.realmsofchaos.world.Commissions.ready(hero) && com.thefarawaydev.realmsofchaos.ui.Cards.showing(hero) != null, "when the time is up it is finished, and says so");
+                ItemStack made = com.thefarawaydev.realmsofchaos.world.Commissions.claim(hero);
+                check(made.is(com.thefarawaydev.realmsofchaos.item.Panoply.Piece.HELM_OF_HADES.item()) && count(hero, com.thefarawaydev.realmsofchaos.item.Panoply.Piece.HELM_OF_HADES.item()) == 1 && com.thefarawaydev.realmsofchaos.world.Commissions.current(hero) == null, "and it is fetched from the forge");
+                net.minecraft.server.dialog.Dialog desk = Screens.commission(hero);
+                check(Screens.theme(desk) == Screens.Theme.FORGE && Screens.commands(desk).contains("/roc ui commission list armour") && Screens.commands(Screens.commissionList(hero, com.thefarawaydev.realmsofchaos.world.Commissions.ARMOUR)).size() == 9,
+                        "the commission desk lists its shelves, and a shelf what is on it");
+                hero.getInventory().clearContent();
+
+                // ---- lesser gods: four to a tower, each keeping a piece of the panoply
+                java.util.Set<com.thefarawaydev.realmsofchaos.item.Panoply.Piece> kept = new java.util.HashSet<>();
+                for (Line line : Line.values()) {
+                    java.util.Set<com.thefarawaydev.realmsofchaos.world.Lesser.God> turn = new java.util.HashSet<>();
+                    for (int passage = 1; passage <= Passages.COUNT; passage++) {
+                        com.thefarawaydev.realmsofchaos.world.Lesser.God god = com.thefarawaydev.realmsofchaos.world.Lesser.of(line, passage);
+                        check(god.line == line, "a tower's arenas are held by its own lesser gods");
+                        turn.add(god);
+                    }
+                    check(turn.size() == 4 && com.thefarawaydev.realmsofchaos.world.Lesser.of(line, 1) == com.thefarawaydev.realmsofchaos.world.Lesser.of(line, 5), line + ": four lesser gods, met in turn as the passages are climbed");
+                }
+                for (com.thefarawaydev.realmsofchaos.world.Lesser.God god : com.thefarawaydev.realmsofchaos.world.Lesser.God.values()) {
+                    kept.add(god.keeps);
+                    check(!com.thefarawaydev.realmsofchaos.ui.Words.of(god.displayName()).startsWith("lesser."), god + " has a name");
+                }
+                check(com.thefarawaydev.realmsofchaos.world.Lesser.God.values().length == 12 && kept.size() == com.thefarawaydev.realmsofchaos.item.Panoply.Piece.values().length, "twelve of them, and every piece of the panoply is kept by one");
+                Object[] found = room(level, Line.HADES, Passages.Kind.ARENA);
+                Passages.Plan plan = (Passages.Plan) found[0];
+                Passages.Cell pit = (Passages.Cell) found[1];
+                Passages.build(level, plan);
+                Passages.rearm(level, plan);
+                BlockPos m = plan.centre(pit);
+                hero.setPos(m.getX() + 0.5, m.getY() + 1, m.getZ() + 0.5);
+                settle(level);
+                check(Passages.wake(level, plan, pit) >= 1, "test setup: the arena's garrison wakes");
+                settle(level);
+                List<Sentinel> crowned = level.getEntitiesOfClass(Sentinel.class, plan.cellBox(pit).inflate(2), mob -> com.thefarawaydev.realmsofchaos.world.Lesser.of(mob) != null);
+                check(crowned.size() == 1 && com.thefarawaydev.realmsofchaos.world.Lesser.of(crowned.get(0)) == com.thefarawaydev.realmsofchaos.world.Lesser.of(Line.HADES, plan.index) && crowned.get(0).hasCustomName() && crowned.get(0).isElite(),
+                        "an arena's champion is the lesser god of its passage, and named: " + crowned.size());
+                com.thefarawaydev.realmsofchaos.world.Lesser.God god = com.thefarawaydev.realmsofchaos.world.Lesser.of(crowned.get(0));
+                check(!com.thefarawaydev.realmsofchaos.world.Lesser.felled(hero, god), "test setup: a lesser god this climber has not felled");
+                ItemStack gift = com.thefarawaydev.realmsofchaos.world.Lesser.fallen(crowned.get(0), hero);
+                check(gift.is(god.keeps.item()) && com.thefarawaydev.realmsofchaos.world.Lesser.felled(hero, god), "the first time it falls to somebody it lets fall the piece it keeps");
+                Passages.rearm(level, plan);
+                for (net.minecraft.world.entity.item.ItemEntity dropped : level.getEntitiesOfClass(net.minecraft.world.entity.item.ItemEntity.class, plan.cellBox(pit).inflate(4), e -> true)) dropped.discard();
+            } finally {
+                com.thefarawaydev.realmsofchaos.world.Traps.forget();
+                com.thefarawaydev.realmsofchaos.ui.Cards.clear(hero);
+                hero.getInventory().clearContent();
+                hero.remove(net.minecraft.world.entity.Entity.RemovalReason.DISCARDED);
+                Realm.testAlias(Level.OVERWORLD, Realm.ABYSS);
             }
         });
 
