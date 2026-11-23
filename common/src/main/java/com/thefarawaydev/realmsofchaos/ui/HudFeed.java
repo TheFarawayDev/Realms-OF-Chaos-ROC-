@@ -24,6 +24,9 @@ public final class HudFeed {
     public static final String OBJECTIVE = "roc_hud";
     /** The lines: the floor or passage plaque, the card showing, the combat meter, and what the player has switched on. */
     public static final String FLOOR = "floor", CARD = "card", METER = "meter", OPTIONS = "opts";
+    /** What weighs on the level a player is on: which affliction, and 16 more while a shrine holds it off. */
+    public static final String ILL = "ill";
+    public static final int ILL_HELD = 16;
     /** Bits of the options line. */
     public static final int OPT_CASTS = 1, OPT_COMBAT = 2;
 

@@ -257,29 +257,146 @@ public final class Rooms {
         return true;
     }
 
-    // ---- the beam room: two mirrors --------------------------------------------------------------------------------
+    // ---- the beam room: a path of mirrors, and mirrors that are on no path ---------------------------------------
 
-    /** Where the pieces of a beam room stand. The beam leaves the emitter eastwards. */
-    public record Beam(BlockPos emitter, BlockPos first, BlockPos second, BlockPos receiver, boolean firstTurned, boolean secondTurned) {}
+    /**
+     * Where the pieces of a beam room stand. The beam leaves the emitter the way {@code dx}, {@code dz} say, and is
+     * turned by each mirror in turn - {@code turned} is how each has to stand - until it reaches the receiver. The
+     * decoys are mirrors the right path never touches: they are only there to be wrong about.
+     */
+    public record Beam(BlockPos emitter, int dx, int dz, List<BlockPos> mirrors, List<Boolean> turned, List<BlockPos> decoys, BlockPos receiver) {
+        /** A beam room forgives this many turns of its mirrors; one more and they are thrown about again. */
+        public int turns() {
+            return mirrors.size() * 2 + 2;
+        }
+    }
 
     public record Trace(List<BlockPos> path, boolean reached) {}
 
+    /** The beam's pieces stand within this many blocks of the room's middle; the room itself is a step wider. */
+    public static final int BEAM_REACH = 4;
+    private static final Map<String, Beam> BEAMS = new HashMap<>();
+    private static final Map<String, Integer> TURNS = new HashMap<>();
+
     public static Beam beam(Passages.Plan plan, Passages.Cell cell) {
+        return BEAMS.computeIfAbsent(plan.line.id() + "/" + plan.seed + "/" + cell.x() + "/" + cell.z(), k -> layBeam(plan, cell));
+    }
+
+    private static long spot(int x, int z) {
+        return (x + 64L) * 256L + (z + 64L);
+    }
+
+    /**
+     * Lays a beam room out: from a wall the room chooses, a run, a mirror, a run, a mirror ... and the receiver.
+     * Three mirrors on an easy level, up to five on the deepest, the path never crossing itself or the cache in the
+     * middle, and two or three decoys set down where the path does not go. No two rooms are laid out alike.
+     */
+    private static Beam layBeam(Passages.Plan plan, Passages.Cell cell) {
         Random random = new Random(plan.seed ^ (cell.x() * 911L + cell.z() * 359L) ^ 0xBEA3L);
-        int a = (random.nextBoolean() ? 1 : -1) * (2 + random.nextInt(2));
         BlockPos m = plan.centre(cell);
-        // the beam runs east to the first mirror, along the room to the second, and back west to the receiver
-        return new Beam(m.offset(-3, 1, a), m.offset(2, 1, a), m.offset(2, 1, -a), m.offset(-3, 1, -a), a > 0, a < 0);
+        int wanted = 3 + (plan.threat >= 4.0 ? 1 : 0) + (plan.threat >= 9.0 ? 1 : 0);
+        int[][] ways = {{1, 0}, {0, 1}, {-1, 0}, {0, -1}};
+        for (int attempt = 0; attempt < 200; attempt++) {
+            int[] way = ways[random.nextInt(4)];
+            int dx = way[0], dz = way[1], side = (random.nextBoolean() ? 1 : -1) * (2 + random.nextInt(BEAM_REACH - 1));
+            int x = dx != 0 ? -dx * BEAM_REACH : side, z = dz != 0 ? -dz * BEAM_REACH : side;
+            int[] start = {x, z};
+            java.util.Set<Long> used = new java.util.HashSet<>();
+            used.add(spot(x, z));
+            List<int[]> mirrors = new ArrayList<>();
+            List<Boolean> turned = new ArrayList<>();
+            int[] end = null;
+            boolean crowded = false;
+            for (int n = 0; n <= wanted; n++) {
+                int room = 0;
+                while (true) {
+                    int nx = x + dx * (room + 1), nz = z + dz * (room + 1);
+                    if (Math.abs(nx) > BEAM_REACH || Math.abs(nz) > BEAM_REACH || (nx == 0 && nz == 0) || used.contains(spot(nx, nz))) break;
+                    room++;
+                }
+                if (room < 2) break;
+                int run = 2 + random.nextInt(room - 1);
+                for (int i = 1; i <= run; i++) used.add(spot(x + dx * i, z + dz * i));
+                x += dx * run;
+                z += dz * run;
+                // (nothing stands right beside the cache: it has to be walked up to)
+                if (Math.abs(x) + Math.abs(z) == 1) crowded = true;
+                if (n == wanted) {
+                    end = new int[]{x, z};
+                    break;
+                }
+                boolean lit = random.nextBoolean();
+                int ox = dx;
+                if (lit) {
+                    dx = -dz;
+                    dz = -ox;
+                } else {
+                    dx = dz;
+                    dz = ox;
+                }
+                mirrors.add(new int[]{x, z});
+                turned.add(lit);
+            }
+            if (end == null || crowded) continue;
+            List<BlockPos> decoys = new ArrayList<>();
+            for (int tries = 0; tries < 40 && decoys.size() < 2 + (wanted > 3 ? 1 : 0); tries++) {
+                int qx = random.nextInt(BEAM_REACH * 2 + 1) - BEAM_REACH, qz = random.nextInt(BEAM_REACH * 2 + 1) - BEAM_REACH;
+                // (not on the path, not on the cache, not in a doorway's own lane)
+                if ((qx == 0 && qz == 0) || used.contains(spot(qx, qz)) || Math.abs(qx) <= 1 || Math.abs(qz) <= 1) continue;
+                used.add(spot(qx, qz));
+                decoys.add(m.offset(qx, 1, qz));
+            }
+            List<BlockPos> stands = new ArrayList<>();
+            for (int[] at : mirrors) stands.add(m.offset(at[0], 1, at[1]));
+            return new Beam(m.offset(start[0], 1, start[1]), way[0], way[1], stands, turned, decoys, m.offset(end[0], 1, end[1]));
+        }
+        // (never yet needed: the two-mirror room of old)
+        return new Beam(m.offset(-3, 1, 3), 1, 0, List.of(m.offset(2, 1, 3), m.offset(2, 1, -3)), List.of(true, false), List.of(), m.offset(-3, 1, -3));
+    }
+
+    /**
+     * Whether a beam laid out like this reaches its receiver when its mirrors stand as they should - whichever way
+     * the decoys stand. Worked out from the layout alone, with nothing built: for the self-test.
+     */
+    public static boolean solves(Beam beam, boolean decoysTurned) {
+        Map<BlockPos, Boolean> stands = new HashMap<>();
+        for (BlockPos decoy : beam.decoys) stands.put(decoy, decoysTurned);
+        for (int i = 0; i < beam.mirrors.size(); i++) stands.put(beam.mirrors.get(i), beam.turned.get(i));
+        BlockPos at = beam.emitter;
+        int dx = beam.dx, dz = beam.dz;
+        for (int step = 0; step < 96; step++) {
+            at = at.offset(dx, 0, dz);
+            if (at.equals(beam.receiver)) return true;
+            if (Math.abs(at.getX() - beam.emitter.getX()) > BEAM_REACH * 2 || Math.abs(at.getZ() - beam.emitter.getZ()) > BEAM_REACH * 2) return false;
+            Boolean lit = stands.get(at);
+            if (lit == null) continue;
+            int ox = dx;
+            if (lit) {
+                dx = -dz;
+                dz = -ox;
+            } else {
+                dx = dz;
+                dz = ox;
+            }
+        }
+        return false;
     }
 
     private static void buildBeam(ServerLevel level, Passages.Plan plan, Passages.Cell cell, Random random) {
         Beam beam = beam(plan, cell);
         level.setBlock(beam.emitter, ModContent.BEAM_EMITTER.get().defaultBlockState(), 2);
         level.setBlock(beam.receiver, ModContent.BEAM_RECEIVER.get().defaultBlockState(), 2);
+        scramble(level, beam, random);
+        TURNS.remove(flag(plan, cell));
+    }
+
+    /** Throws every mirror about. The first is always left wrong, so the room is never solved by chance. */
+    private static void scramble(ServerLevel level, Beam beam, Random random) {
         BlockState mirror = ModContent.BEAM_MIRROR.get().defaultBlockState();
-        // the first mirror always starts wrong, the second as chance has it: never solved to begin with
-        level.setBlock(beam.first, mirror.setValue(RoomBlock.LIT, !beam.firstTurned), 2);
-        level.setBlock(beam.second, mirror.setValue(RoomBlock.LIT, random.nextBoolean()), 2);
+        for (int i = 0; i < beam.mirrors.size(); i++) {
+            level.setBlock(beam.mirrors.get(i), mirror.setValue(RoomBlock.LIT, i == 0 ? !beam.turned.get(0) : random.nextBoolean()), 2);
+        }
+        for (BlockPos decoy : beam.decoys) level.setBlock(decoy, mirror.setValue(RoomBlock.LIT, random.nextBoolean()), 2);
     }
 
     /** Follows the beam from the emitter: straight through air, turned by mirrors, stopped by anything else. */
@@ -288,10 +405,10 @@ public final class Rooms {
         BlockPos m = plan.centre(cell);
         List<BlockPos> path = new ArrayList<>();
         BlockPos at = beam.emitter;
-        int dx = 1, dz = 0;
-        for (int step = 0; step < 48; step++) {
+        int dx = beam.dx, dz = beam.dz;
+        for (int step = 0; step < 96; step++) {
             at = at.offset(dx, 0, dz);
-            if (Math.abs(at.getX() - m.getX()) > 4 || Math.abs(at.getZ() - m.getZ()) > 4) break;
+            if (Math.abs(at.getX() - m.getX()) > BEAM_REACH + 1 || Math.abs(at.getZ() - m.getZ()) > BEAM_REACH + 1) break;
             BlockState state = level.getBlockState(at);
             if (state.is(ModContent.BEAM_RECEIVER.get())) return new Trace(path, true);
             if (state.is(ModContent.BEAM_MIRROR.get())) {
@@ -313,6 +430,11 @@ public final class Rooms {
         return new Trace(path, false);
     }
 
+    /** How many times this room's mirrors have been turned since they were last thrown about. */
+    public static int turnsUsed(Passages.Plan plan, Passages.Cell cell) {
+        return TURNS.getOrDefault(flag(plan, cell), 0);
+    }
+
     /** Turns a mirror. @return true if the beam now reaches the receiver for the first time. */
     public static boolean turnMirror(ServerLevel level, BlockPos pos, ServerPlayer player) {
         Place at = place(level, pos, Passages.Kind.BEAM);
@@ -321,14 +443,29 @@ public final class Rooms {
             hint(player, "already", 0xAAAAAA);
             return false;
         }
+        Beam beam = beam(at.plan, at.cell);
         light(level, pos, !lit(level, pos));
         level.playSound(null, pos, SoundEvents.GRINDSTONE_USE, SoundSource.BLOCKS, 0.8F, 1.4F);
         Trace trace = trace(level, at.plan, at.cell);
         draw(level, trace);
-        if (!trace.reached) return false;
-        light(level, beam(at.plan, at.cell).receiver, true);
-        solve(level, at.plan, at.cell);
-        return true;
+        if (trace.reached) {
+            light(level, beam.receiver, true);
+            TURNS.remove(flag(at.plan, at.cell));
+            solve(level, at.plan, at.cell);
+            return true;
+        }
+        int used = TURNS.merge(flag(at.plan, at.cell), 1, Integer::sum);
+        if (used > beam.turns()) {
+            // too many turns: the room throws its mirrors about, and stings whoever was fumbling with them
+            TURNS.remove(flag(at.plan, at.cell));
+            scramble(level, beam, new Random(at.plan.seed ^ level.getGameTime()));
+            player.hurtServer(level, level.damageSources().magic(), 2.0F);
+            level.playSound(null, pos, SoundEvents.BEACON_DEACTIVATE, SoundSource.BLOCKS, 1.0F, 0.7F);
+            hint(player, "beam.scrambled", 0xFF5555);
+        } else if (used == beam.turns() - 1) {
+            hint(player, "beam.last", 0xFFAA00);
+        }
+        return false;
     }
 
     private static void draw(ServerLevel level, Trace trace) {

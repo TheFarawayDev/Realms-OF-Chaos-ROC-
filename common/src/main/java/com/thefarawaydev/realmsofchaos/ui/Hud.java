@@ -45,7 +45,31 @@ public final class Hud {
         player.connection.send(new ClientboundSetTitleTextPacket(title));
     }
 
+    /** The same words are not written above a player's hotbar again within this many ticks. */
+    public static final int REPEAT_TICKS = 20;
+    private static final java.util.Map<java.util.UUID, String> LAST_WORDS = new java.util.HashMap<>();
+    private static final java.util.Map<java.util.UUID, Long> LAST_AT = new java.util.HashMap<>();
+    private static int said, hushed;
+
+    /** How many lines have been written above hotbars, and how many were left out as repeats: for the self-test. */
+    public static int[] counts() {
+        return new int[]{said, hushed};
+    }
+
     public static void actionBar(ServerPlayer player, Component text) {
+        // (a room, a trap or a god that says the same thing every second is not saying anything)
+        if (player.level().getServer() != null) {
+            long now = player.level().getServer().getTickCount();
+            String words = text.toString();
+            Long at = LAST_AT.get(player.getUUID());
+            if (at != null && now >= at && now - at < REPEAT_TICKS && words.equals(LAST_WORDS.get(player.getUUID()))) {
+                hushed++;
+                return;
+            }
+            LAST_AT.put(player.getUUID(), now);
+            LAST_WORDS.put(player.getUUID(), words);
+        }
+        said++;
         if (player.connection == null) return;
         player.connection.send(new ClientboundSetActionBarTextPacket(text));
     }

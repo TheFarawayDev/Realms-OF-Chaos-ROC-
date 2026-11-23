@@ -76,6 +76,16 @@ public final class RocHud {
             castingId = -1;
             if (feed != null && board.getPlayerScoreInfo(ScoreHolder.forNameOnly(HudFeed.FLOOR), feed) != null) {
                 top = plaque(g, font, middle, top, number(board, feed, HudFeed.FLOOR, 0), text(board, feed, HudFeed.FLOOR));
+                if (board.getPlayerScoreInfo(ScoreHolder.forNameOnly(HudFeed.ILL), feed) != null) {
+                    // what weighs on this level: in its own colour, or greyed while a shrine holds it off
+                    boolean held = (number(board, feed, HudFeed.ILL, 0) & HudFeed.ILL_HELD) != 0;
+                    Component ill = text(board, feed, HudFeed.ILL);
+                    int w = font.width(ill);
+                    g.fill(middle - w / 2 - 4, top, middle + w / 2 + 4, top + 11, 0xC0170B22);
+                    g.fill(middle - w / 2 - 4, top + 10, middle + w / 2 + 4, top + 11, held ? 0xFF6E6A78 : 0xFFB45CFF);
+                    g.centeredText(font, ill, middle, top + 1, held ? 0xFF9A96A6 : 0xFFD9A8FF);
+                    top += 12;
+                }
             }
         }
         if (feed != null && board.getPlayerScoreInfo(ScoreHolder.forNameOnly(HudFeed.CARD), feed) != null) {

@@ -21,6 +21,15 @@ The current build is an **Alpha**.
 * **Corridors.** Rooms stand further apart: seven blocks of lit corridor between two of them, with an arch at each
   end, instead of a doorway through a wall. Some corridors - more of them the deeper the level, and never beside
   the room you arrive in - have **jets** across the middle that smoke, then burn, then rest.
+* **Laid out like a stronghold.** No doorway joins two rooms of the same kind - corridors included - and a kind
+  already used on a level is less likely to be used again, so a level is a run of different rooms rather than
+  the same hall three times. Two new kinds: **cells**, four barred cells in the corners with a way into each
+  and whatever was left behind in them, and **storerooms**, stacked with crates and bales, higher against the
+  walls, with something to find among them.
+* **Afflicted levels.** The first three levels of a passage are clean. Past them most levels carry an
+  affliction, laid on everyone there for as long as they stay: **Gloom** (the dark closes in, on and off),
+  **Weight** (slowness), **Frailty** (weakness), **Hunger**, or **Fatigue**. A card says which on the way in,
+  and the level's plaque keeps saying it. **A shrine holds it off** for a minute and a half.
 * **Two more trap halls.** An **arc hall**, where a line of lightning turns about a pillar in the middle, and a
   **gas hall**, where each half of the room fills in turn and the other is the place to stand.
 * **Puzzle blocks cut from one stone.** Glyph tiles, memory plates, beam emitters and receivers, chime crystals,
@@ -70,13 +79,21 @@ The current build is an **Alpha**.
   * **The cast bar is opt-in.** A god's move is no longer named for everyone above the hotbar. Turn the cast bar on
     (Codex > Settings, or `/roc casts`) and each move is named on a bar that fills as the god winds up.
   * **Settings and insight menus**, each with its own panel: `/roc settings`, `/roc insight`, or from the Codex.
-  * All of it is fonts whose letters are pictures (`tools/hud_art.py`), composed on the server, so it needs nothing
-    on the client but the mod and is the same on Fabric and Forge.
-  * **Words behind every picture.** Everything drawn is sent with plain words to fall back on, so a game that has
-    not got this build's artwork - a client running an older copy of the mod than its server, for one - shows the
-    words instead of a row of empty boxes. And the whole drawn interface can be turned off: Codex > Settings >
-    *Drawn interface*, or `/roc art`. Menus, boss bars, the cast bar and cards are then plain text on the game's
-    own screens. **Client and server must run the same build** to see the artwork.
+  * **Drawn by the game itself.** The HUD is a real overlay drawn by the mod on your own game (`RocHud`), from
+    the textures in `textures/gui/hud/`: the god's panel, the plaque of the floor or passage you are on, the
+    cards, the cast bar and the combat meter. It is no longer letters of a font sent down the chat line, so there
+    is nothing for an out-of-date resource cache to turn into boxes.
+  * **One bar for a god.** A trial shows one panel: the god's. The floor's plaque steps aside while a trial is on,
+    and the game's own boss bar is not used for a god at all unless the drawn interface is switched off.
+  * **A plaque for every floor and passage level.** Which tower, how far up, a meter of the climb - or, in a
+    passage, the level's name, a notch for every seal and how many are broken. A level with an affliction says so
+    on a strip under the plaque, greyed while a shrine holds it off.
+  * **Less said twice.** The same card is not put up again within half a minute, nor queued twice; the same line
+    above the hotbar is not rewritten within a second; a room says what it is the first time you walk in, not
+    every time; a god tells you what it remembers of you only when that has changed; and a god changing its
+    stance mid-trial is a card, not a line of chat for everyone.
+  * **A switch.** Codex > Settings > *Drawn interface*, or `/roc art`, turns the overlay off: boss bars, the cast
+    bar and cards are then plain text on the game's own screens. **Client and server must run the same build.**
 * **Gods that remember.** Every trial is watched, player by player: how much harm was done from afar or hand to
   hand, blows taken on a shield, wounds mended mid-fight, time spent out of reach. A habit shown in trial after
   trial is learnt, through three levels, and the next god already has an answer: shots count for less and it
@@ -126,10 +143,10 @@ The current build is an **Alpha**.
 * **The mod's own menu artwork.** The Codex's tower plans, the forge, the passage map, the seal, the deck, the
   party, the chronicle and the Field Tower Bag no longer look like chests. Each has its own panel - a dark field
   with a header in the menu's colour and its emblem, and a parchment half for your inventory - unused slots are
-  blank tiles of the panel and meters are gems instead of glass panes. It is done with the mod's own resources (a
-  font whose letters are whole panels, and item models for the tiles and gems), so nothing extra is needed on the
-  client and it is the same on Fabric and Forge. Every slot is a hole in the artwork, so an icon can never be
-  hidden by it. `art/renders/ui-panels.png` shows three of them.
+  blank tiles of the panel and meters are gems instead of glass panes. Each is a **real screen of its own**, like
+  an inventory: a menu type registered with the game for every panel, and a screen on the client (`PanelScreen`)
+  that draws that panel's background from `textures/gui/screen_<name>.png`, with the slots where the game puts
+  them. Settings, insight, boons and the bestiary have panels of their own too.
 * **Passages of one to ten levels.** How many levels lie between two boss floors is decided by the world's seed:
   one to four low in a tower, two to seven in the middle, four to ten near the top (about 190 levels across the
   three towers in a typical world). Every level has a name - **7-B2** is passage 7, wing B, level 2 - shown on its
@@ -146,7 +163,10 @@ The current build is an **Alpha**.
   scramble again when a passage re-seals):
   * **Vault** - nine glyph tiles; pressing one turns it and its neighbours; light all nine.
   * **Chime room** - ring four crystals before the first falls silent (eleven seconds low in a tower, seven high).
-  * **Beam room** - turn two mirrors until the beam reaches the receiver.
+  * **Beam room** - a wide, tall room laid out differently every time: the emitter on any wall, and three to
+    five mirrors (more the deeper the level) that each have to stand the right way for the beam to reach the
+    receiver. Two or three more mirrors are decoys the right path never touches. Every turn of a mirror is
+    counted: one past the limit and the room throws every mirror about again and stings whoever was fumbling.
   * **Trembling floor** - a ring of plates of which one path holds. It glimmers every six seconds and has to be
     walked in order from its first plate; a wrong plate throws you off.
 * **Two more trap halls.** A **crusher hall** marks a row and a second later brings the ceiling down on it, row
@@ -539,7 +559,7 @@ on a real server: data loading, the hub, building and walking every floor of eve
 towers through the altar menu (with rematches) and all 42 passages, the Ruined Gate and its keystones, the story's
 chapters, the hub's residents, all sixty-three sentinels and their traits, craters, the custom screens and their buttons, the tutorial, impacts, the
 floor's eruptions and the gods' last stands, the three phases of a trial (health gates, pylons, stances, the collapsing floor and its restoration, strikes), gear and difficulty scaling,
-the compass scanner, relays and jammers, waygates, the Field Tower Bag, hub tiers and bounties, the rune chambers, the sidebar, level counts and names, building ahead, the four puzzle rooms, crusher and dart halls, urns and tablets, the Passage Chart, the mastery tree, the menu artwork, cards and tips, the drawn boss bar and the opt-in cast bar, settings, the gods' memory of each player, room shapes and stairwells, the spike, flame and blade halls, parries, ripostes, momentum and plunges, heavy blows, boons, the gate's facing, the shrine's chart, the bestiary, the frames of each phase, shut gates, corridors and their jets, the arc and gas halls, the chart's memory, plain-word fallbacks, every menu's words against the language file, parties, group scaling and per-player loot, the wall protection (built, checked room by room for reachability,
+the compass scanner, relays and jammers, waygates, the Field Tower Bag, hub tiers and bounties, the rune chambers, the sidebar, level counts and names, building ahead, the four puzzle rooms (beam rooms laid out at random, with decoys and a limit of turns), no two rooms of a kind joined, cells and storerooms, afflictions, cards and lines not said twice, crusher and dart halls, urns and tablets, the Passage Chart, the mastery tree, the menu artwork, cards and tips, the drawn boss bar and the opt-in cast bar, settings, the gods' memory of each player, room shapes and stairwells, the spike, flame and blade halls, parries, ripostes, momentum and plunges, heavy blows, boons, the gate's facing, the shrine's chart, the bestiary, the frames of each phase, shut gates, corridors and their jets, the arc and gas halls, the chart's memory, plain-word fallbacks, every menu's words against the language file, parties, group scaling and per-player loot, the wall protection (built, checked room by room for reachability,
 seals struck, guardians, shrine, map), every god's signature move, the relic moves, the forging quick-time rounds,
 tier materials, each tarot card, the Codex, leaving the realms, the welcome and the anti-stuck safeguards.
 

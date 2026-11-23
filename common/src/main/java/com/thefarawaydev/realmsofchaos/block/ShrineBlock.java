@@ -74,6 +74,8 @@ public class ShrineBlock extends Block {
         // and it shows the whole of its level on the chart of whoever it blesses
         if (player instanceof net.minecraft.server.level.ServerPlayer seer && seer.level() instanceof net.minecraft.server.level.ServerLevel here) {
             com.thefarawaydev.realmsofchaos.world.Charts.reveal(seer, here, pos);
+            // and holds off whatever weighs on the level
+            com.thefarawaydev.realmsofchaos.world.Passages.shelter(seer);
         }
         Hud.actionBar(player, Hud.colored(Component.translatable(hud + "blessed." + line.id()), line.color()));
         return true;

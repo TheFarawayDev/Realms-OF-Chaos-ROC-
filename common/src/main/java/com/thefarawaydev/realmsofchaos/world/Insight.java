@@ -132,6 +132,13 @@ public final class Insight {
     public static boolean announce(ServerPlayer player, God god) {
         List<Habit> known = known(player);
         if (known.isEmpty() || !Options.on(player, Options.Option.INSIGHT)) return false;
+        // said when there is something new to say: not at the start of every trial
+        int told = 0;
+        for (Habit habit : Habit.values()) told = told * 4 + level(player, habit);
+        ProgressData data = ProgressData.get(player.level().getServer());
+        String key = "insightsaid/" + player.getUUID();
+        if (data.counter(key) == told + 1) return false;
+        data.setCounter(key, told + 1);
         StringBuilder text = new StringBuilder();
         for (int i = 0; i < Math.min(2, known.size()); i++) {
             Habit habit = known.get(i);
@@ -146,6 +153,9 @@ public final class Insight {
 
     public static void forget(ServerPlayer player) {
         MinecraftServer server = player.level().getServer();
-        if (server != null) ProgressData.get(server).clearCounters("insight/" + player.getUUID() + "/");
+        if (server != null) {
+            ProgressData.get(server).clearCounters("insight/" + player.getUUID() + "/");
+            ProgressData.get(server).setCounter("insightsaid/" + player.getUUID(), 0);
+        }
     }
 }

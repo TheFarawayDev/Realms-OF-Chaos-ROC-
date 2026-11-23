@@ -291,7 +291,7 @@ public final class Snares {
                 }
             }
         }
-        if (Math.floorMod(now, 40L) == 0) level.playSound(null, m, SoundEvents.BEACON_AMBIENT, SoundSource.BLOCKS, 1.2F, 1.8F);
+        if (Math.floorMod(now, (long) ARC_PERIOD) == 0) level.playSound(null, m, SoundEvents.BEACON_AMBIENT, SoundSource.BLOCKS, 0.5F, 1.8F);
         for (Player p : inside(level, plan, cell)) {
             if (arcDistance(now, p.getX() - cx, p.getZ() - cz) > ARC_WIDTH || p.getY() > m.getY() + 2.6) continue;
             Long cut = CUT.get(p.getUUID());

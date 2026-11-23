@@ -61,6 +61,7 @@ public final class RealmSafety {
                 STUCK_SECONDS.remove(player.getUUID());
                 hideBar(player.getUUID());
                 com.thefarawaydev.realmsofchaos.ui.HudFeed.clear(player, com.thefarawaydev.realmsofchaos.ui.HudFeed.FLOOR);
+                com.thefarawaydev.realmsofchaos.ui.HudFeed.clear(player, com.thefarawaydev.realmsofchaos.ui.HudFeed.ILL);
                 continue;
             }
             Line line = realm.line();
@@ -110,6 +111,8 @@ public final class RealmSafety {
 
     /** The always-visible tower HUD: "Tower of Zeus - Floor 3 of 15 - Foothills of Olympus" with a climb meter. */
     public static void updateBar(ServerPlayer player, Line line, int floor) {
+        // (a tower floor has no affliction: the strip under a passage plaque goes)
+        com.thefarawaydev.realmsofchaos.ui.HudFeed.clear(player, com.thefarawaydev.realmsofchaos.ui.HudFeed.ILL);
         if (line == null) {
             hideBar(player.getUUID());
             com.thefarawaydev.realmsofchaos.ui.HudFeed.clear(player, com.thefarawaydev.realmsofchaos.ui.HudFeed.FLOOR);
@@ -137,12 +140,21 @@ public final class RealmSafety {
     public static void updatePassageBar(ServerPlayer player, Passages.Plan plan, int broken) {
         int total = plan.seals.size();
         Component words = Component.translatable("hud." + RealmsOfChaos.MOD_ID + ".passage.bar", Tower.towerName(plan.line), plan.label(), plan.stage + 1, plan.stages, broken, total);
+        Passages.Affliction ill = plan.affliction();
+        boolean held = Passages.sheltered(player);
+        Component weighs = ill == Passages.Affliction.NONE ? null
+                : Component.translatable("hud." + RealmsOfChaos.MOD_ID + ".passage." + (held ? "ill.held" : "ill"), ill.displayName());
         if (com.thefarawaydev.realmsofchaos.ui.Options.on(player, com.thefarawaydev.realmsofchaos.ui.Options.Option.ART)) {
             hideBar(player.getUUID());
             com.thefarawaydev.realmsofchaos.ui.HudFeed.set(player, com.thefarawaydev.realmsofchaos.ui.HudFeed.FLOOR, plan.line.ordinal() | 4 | (broken << 4) | (total << 12), words);
+            // (what weighs on the level has a strip of its own under the plaque)
+            if (weighs == null) com.thefarawaydev.realmsofchaos.ui.HudFeed.clear(player, com.thefarawaydev.realmsofchaos.ui.HudFeed.ILL);
+            else com.thefarawaydev.realmsofchaos.ui.HudFeed.set(player, com.thefarawaydev.realmsofchaos.ui.HudFeed.ILL, ill.ordinal() | (held ? com.thefarawaydev.realmsofchaos.ui.HudFeed.ILL_HELD : 0), weighs);
             return;
         }
         com.thefarawaydev.realmsofchaos.ui.HudFeed.clear(player, com.thefarawaydev.realmsofchaos.ui.HudFeed.FLOOR);
+        com.thefarawaydev.realmsofchaos.ui.HudFeed.clear(player, com.thefarawaydev.realmsofchaos.ui.HudFeed.ILL);
+        if (weighs != null) words = Component.empty().append(words).append(" - ").append(weighs);
         ServerBossEvent bar = BARS.computeIfAbsent(player.getUUID(), id -> new ServerBossEvent(
                 UUID.randomUUID(), Component.empty(), BossEvent.BossBarColor.WHITE, BossEvent.BossBarOverlay.NOTCHED_20));
         bar.setName(words);

@@ -1033,7 +1033,10 @@ public class GodBoss extends Monster implements RangedAttackMob {
             Component told = Hud.colored(Component.translatable("hud." + RealmsOfChaos.MOD_ID + ".adapt." + stance.name().toLowerCase(java.util.Locale.ROOT),
                     god().displayName()), 0xFFAA00);
             for (Player p : nearbyPlayers(level, 48)) {
-                if (p instanceof ServerPlayer sp) sp.sendSystemMessage(told);
+                // (on a card, once - not a line of chat for every challenger every phase)
+                if (p instanceof ServerPlayer sp && Options.on(sp, Options.Option.INSIGHT)) {
+                    com.thefarawaydev.realmsofchaos.ui.Cards.insight(sp, com.thefarawaydev.realmsofchaos.ui.Words.of(god().displayName()), com.thefarawaydev.realmsofchaos.ui.Words.of(told));
+                }
             }
         }
     }

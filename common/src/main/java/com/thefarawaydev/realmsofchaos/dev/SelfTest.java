@@ -264,6 +264,18 @@ public final class SelfTest {
                 Passages.Cell way = plan.approach();
                 beside = plan.gateTurned() ? plan.centre(c).offset(way.x() > c.x() ? 2 : -2, 1, 0) : plan.centre(c).offset(0, 1, way.z() > c.z() ? 2 : -2);
             }
+            // (a beam room's mirrors stand where its layout puts them, but never right beside its cache)
+            if (plan.kind(c) == Passages.Kind.BEAM) {
+                beside = plan.centre(c).offset(1, 1, 0);
+                var beam = com.thefarawaydev.realmsofchaos.world.Rooms.beam(plan, c);
+                java.util.List<BlockPos> turnable = new java.util.ArrayList<>(beam.mirrors());
+                turnable.addAll(beam.decoys());
+                for (BlockPos mirror : turnable) {
+                    boolean reach = false;
+                    for (net.minecraft.core.Direction d : net.minecraft.core.Direction.Plane.HORIZONTAL) reach |= seen.contains(mirror.relative(d));
+                    check(reach, at + "a mirror nobody can walk up to at " + mirror);
+                }
+            }
             check(seen.contains(beside), at + "room " + c + " (" + plan.kind(c) + ") cannot be walked into");
         }
         Passages.Cell wayIn = plan.approach();
@@ -4000,22 +4012,26 @@ public final class SelfTest {
                 check(com.thefarawaydev.realmsofchaos.world.Rooms.pressChime(level, crystal[2], hero) && com.thefarawaydev.realmsofchaos.world.Rooms.solved(level, chimes, cc), "all four inside the time: solved");
                 check(Passages.loot(level, com.thefarawaydev.realmsofchaos.world.Rooms.cache(chimes, cc), hero), "and the cache opens");
 
-                // ---- the beam room: two mirrors
+                // ---- the beam room: a path of mirrors
                 found = room(level, Line.ZEUS, Passages.Kind.BEAM);
                 Passages.Plan beams = (Passages.Plan) found[0];
                 Passages.Cell bc = (Passages.Cell) found[1];
                 Passages.build(level, beams);
                 data.unmarkPrefix("puzzle/");
                 var beam = com.thefarawaydev.realmsofchaos.world.Rooms.beam(beams, bc);
-                check(level.getBlockState(beam.emitter()).is(ModContent.BEAM_EMITTER.get()) && level.getBlockState(beam.receiver()).is(ModContent.BEAM_RECEIVER.get())
-                        && level.getBlockState(beam.first()).is(ModContent.BEAM_MIRROR.get()) && level.getBlockState(beam.second()).is(ModContent.BEAM_MIRROR.get()), "an emitter, two mirrors and a receiver");
+                check(level.getBlockState(beam.emitter()).is(ModContent.BEAM_EMITTER.get()) && level.getBlockState(beam.receiver()).is(ModContent.BEAM_RECEIVER.get()), "an emitter and a receiver");
+                for (BlockPos mirror : beam.mirrors()) check(level.getBlockState(mirror).is(ModContent.BEAM_MIRROR.get()), "a mirror at every turn of the path");
                 check(!com.thefarawaydev.realmsofchaos.world.Rooms.trace(level, beams, bc).reached() && !com.thefarawaydev.realmsofchaos.world.Rooms.trace(level, beams, bc).path().isEmpty(), "to begin with the beam goes astray");
                 boolean reached = false;
-                BlockPos[] turns = {beam.first(), beam.second(), beam.first()};
-                for (int i = 0; i < 3 && !reached; i++) reached = com.thefarawaydev.realmsofchaos.world.Rooms.turnMirror(level, turns[i], hero);
+                int turned = 0;
+                for (int i = 0; i < beam.mirrors().size(); i++) {
+                    if (level.getBlockState(beam.mirrors().get(i)).getValue(com.thefarawaydev.realmsofchaos.block.RoomBlock.LIT) == beam.turned().get(i)) continue;
+                    check(!reached, "not before the last mirror stands right");
+                    reached = com.thefarawaydev.realmsofchaos.world.Rooms.turnMirror(level, beam.mirrors().get(i), hero);
+                    turned++;
+                }
+                check(turned >= 1 && turned <= beam.turns(), "the room can be solved inside the turns it allows: " + turned + " of " + beam.turns());
                 check(reached && com.thefarawaydev.realmsofchaos.world.Rooms.solved(level, beams, bc) && com.thefarawaydev.realmsofchaos.world.Rooms.trace(level, beams, bc).reached(), "turned the right way, the beam reaches the receiver");
-                check(level.getBlockState(beam.first()).getValue(com.thefarawaydev.realmsofchaos.block.RoomBlock.LIT) == beam.firstTurned()
-                        && level.getBlockState(beam.second()).getValue(com.thefarawaydev.realmsofchaos.block.RoomBlock.LIT) == beam.secondTurned(), "by the one setting that does it");
                 check(Passages.loot(level, com.thefarawaydev.realmsofchaos.world.Rooms.cache(beams, bc), hero), "and the cache opens");
 
                 // ---- the trembling floor: one path holds
@@ -4234,7 +4250,9 @@ public final class SelfTest {
                             Passages.Kind kind = plan.kind(c);
                             int h = plan.height(c);
                             check(h >= Passages.HEADROOM && h <= Passages.TALL && plan.half(c) == (plan.wide(c) ? 5 : 4), plan.label() + ": a room's size is one the level can hold");
-                            if (com.thefarawaydev.realmsofchaos.world.Rooms.isPuzzle(kind) || com.thefarawaydev.realmsofchaos.world.Snares.is(kind) || kind == Passages.Kind.TRAP || kind == Passages.Kind.CRUSHER
+                            if (kind == Passages.Kind.BEAM) {
+                                check(plan.wide(c) && h == 7 && plan.form(c) == Passages.FORM_PLAIN, plan.label() + ": a beam room is wide, for its mirrors");
+                            } else if (com.thefarawaydev.realmsofchaos.world.Rooms.isPuzzle(kind) || com.thefarawaydev.realmsofchaos.world.Snares.is(kind) || kind == Passages.Kind.TRAP || kind == Passages.Kind.CRUSHER
                                     || kind == Passages.Kind.DARTS || kind == Passages.Kind.HALL) {
                                 check(h == Passages.HEADROOM && !plan.wide(c) && plan.form(c) == Passages.FORM_PLAIN, plan.label() + ": a " + kind + " keeps the plain shape its workings need");
                             }
@@ -4923,6 +4941,224 @@ public final class SelfTest {
                 advance(server, Tutorial.DELAY + 2);
                 Scheduler.tick(server);
                 com.thefarawaydev.realmsofchaos.ui.Cards.clear(hero);
+            }
+        });
+
+        step("mirror rooms laid out at random, with decoys and a limit of turns; no two rooms of a kind joined; cells and storerooms; afflictions; less said twice", () -> {
+            ServerPlayer hero = fakePlayer(server, level, "RocWarden");
+            com.thefarawaydev.realmsofchaos.ui.Cards.clear(hero);
+            level.addNewPlayer(hero);
+            try {
+                // ---- the plans: what is laid out, before anything is built
+                java.util.Set<String> layouts = new java.util.HashSet<>();
+                java.util.Set<Passages.Affliction> afflictions = new java.util.HashSet<>();
+                java.util.Set<Passages.Kind> kindsSeen = new java.util.HashSet<>();
+                java.util.Map<Passages.Affliction, Passages.Plan> afflicted = new java.util.HashMap<>();
+                int beamRooms = 0, fewest = 99, most = 0, deep = 0, ill = 0, decoys = 0;
+                for (Line line : Line.values()) {
+                    for (int index = 1; index <= Passages.COUNT; index++) {
+                        for (int stage = 0; stage < Passages.stages(level, line, index); stage++) {
+                            Passages.Plan plan = Passages.plan(level, line, index, stage);
+                            java.util.Map<Passages.Kind, Integer> times = new java.util.HashMap<>();
+                            for (Passages.Cell c : plan.cells()) {
+                                Passages.Kind kind = plan.kind(c);
+                                kindsSeen.add(kind);
+                                times.merge(kind, 1, Integer::sum);
+                                for (Passages.Cell n : new Passages.Cell[]{new Passages.Cell(c.x() + 1, c.z()), new Passages.Cell(c.x(), c.z() + 1)}) {
+                                    if (n.x() >= plan.size || n.z() >= plan.size || !plan.connected(c, n)) continue;
+                                    check(plan.kind(n) != kind, plan.label() + " level " + (stage + 1) + ": a doorway joins two rooms of one kind: " + kind);
+                                }
+                                if (kind != Passages.Kind.BEAM) continue;
+                                var beam = com.thefarawaydev.realmsofchaos.world.Rooms.beam(plan, c);
+                                BlockPos m = plan.centre(c);
+                                beamRooms++;
+                                fewest = Math.min(fewest, beam.mirrors().size());
+                                most = Math.max(most, beam.mirrors().size());
+                                decoys += beam.decoys().size();
+                                check(beam.mirrors().size() >= 3 && beam.mirrors().size() <= 5 && beam.turned().size() == beam.mirrors().size(), plan.label() + ": three to five mirrors on the path: " + beam.mirrors().size());
+                                check(beam.mirrors().size() == 3 + (plan.threat >= 4.0 ? 1 : 0) + (plan.threat >= 9.0 ? 1 : 0), plan.label() + ": more of them the deeper the level");
+                                check(com.thefarawaydev.realmsofchaos.world.Rooms.solves(beam, true) && com.thefarawaydev.realmsofchaos.world.Rooms.solves(beam, false),
+                                        plan.label() + ": the mirrors set right, the beam arrives - whatever the decoys do");
+                                java.util.List<BlockPos> pieces = new java.util.ArrayList<>(beam.mirrors());
+                                pieces.addAll(beam.decoys());
+                                pieces.add(beam.emitter());
+                                pieces.add(beam.receiver());
+                                StringBuilder shape = new StringBuilder();
+                                for (BlockPos piece : pieces) {
+                                    int dx = piece.getX() - m.getX(), dz = piece.getZ() - m.getZ();
+                                    check(Math.abs(dx) <= com.thefarawaydev.realmsofchaos.world.Rooms.BEAM_REACH && Math.abs(dz) <= com.thefarawaydev.realmsofchaos.world.Rooms.BEAM_REACH && piece.getY() == m.getY() + 1
+                                            && !(dx == 0 && dz == 0), plan.label() + ": every piece stands inside the room and off the cache");
+                                    shape.append(dx).append(',').append(dz).append(';');
+                                }
+                                check(new java.util.HashSet<>(pieces).size() == pieces.size(), plan.label() + ": no two pieces on one spot");
+                                layouts.add(shape.toString());
+                            }
+                            for (var e : times.entrySet()) {
+                                if (e.getKey() == Passages.Kind.SEAL || e.getKey() == Passages.Kind.TREASURE || e.getKey() == Passages.Kind.ARENA) continue;
+                                check(e.getValue() * 3 <= plan.size * plan.size + 2, plan.label() + ": no one kind of room makes up a level: " + e.getValue() + " of " + e.getKey());
+                            }
+                            Passages.Affliction a = plan.affliction();
+                            if (stage < 3) check(a == Passages.Affliction.NONE, plan.label() + ": the first three levels of a passage are clean");
+                            else {
+                                deep++;
+                                if (a != Passages.Affliction.NONE) {
+                                    ill++;
+                                    afflictions.add(a);
+                                    afflicted.putIfAbsent(a, plan);
+                                }
+                            }
+                        }
+                    }
+                }
+                check(beamRooms >= 10 && layouts.size() * 10 >= beamRooms * 9, "beam rooms are not laid out alike: " + layouts.size() + " layouts in " + beamRooms + " rooms");
+                check(fewest == 3 && most == 5 && decoys >= beamRooms * 2, "three mirrors where it is easy, five where it is not, and decoys in all: " + fewest + ".." + most + ", " + decoys + " decoys");
+                check(kindsSeen.contains(Passages.Kind.CELLS) && kindsSeen.contains(Passages.Kind.STORE), "cells and storerooms are among the rooms");
+                check(ill * 2 > deep && ill < deep && afflictions.size() == Passages.Affliction.values().length - 1, "most deep levels are afflicted, in every way there is: " + ill + " of " + deep + ", " + afflictions);
+
+                // ---- a beam room built: decoys, a limit of turns, a scramble
+                Realm.testAlias(Level.OVERWORLD, Realm.ofLine(Line.HADES));
+                Object[] found = room(level, Line.HADES, Passages.Kind.BEAM);
+                Passages.Plan plan = (Passages.Plan) found[0];
+                Passages.Cell bc = (Passages.Cell) found[1];
+                Passages.build(level, plan);
+                ProgressData.get(server).unmarkPrefix("puzzle/");
+                checkPassage(level, plan, "beam level " + plan.label() + ": ");
+                var beam = com.thefarawaydev.realmsofchaos.world.Rooms.beam(plan, bc);
+                check(!beam.decoys().isEmpty(), "test setup: a beam room with decoys");
+                for (BlockPos decoy : beam.decoys()) check(level.getBlockState(decoy).is(ModContent.BEAM_MIRROR.get()), "a decoy is a mirror like any other");
+                check(level.getBlockState(beam.mirrors().get(0)).getValue(com.thefarawaydev.realmsofchaos.block.RoomBlock.LIT) != beam.turned().get(0), "the first mirror starts wrong");
+                hero.setHealth(hero.getMaxHealth());
+                BlockPos decoy = beam.decoys().get(0);
+                for (int i = 0; i < beam.turns(); i++) {
+                    check(!com.thefarawaydev.realmsofchaos.world.Rooms.turnMirror(level, decoy, hero), "a decoy solves nothing");
+                    check(com.thefarawaydev.realmsofchaos.world.Rooms.turnsUsed(plan, bc) == i + 1, "each turn is counted");
+                }
+                check(hero.getHealth() == hero.getMaxHealth(), "inside the limit nothing bites");
+                com.thefarawaydev.realmsofchaos.world.Rooms.turnMirror(level, decoy, hero);
+                check(com.thefarawaydev.realmsofchaos.world.Rooms.turnsUsed(plan, bc) == 0 && hero.getHealth() < hero.getMaxHealth(), "one turn too many: the room stings and starts the count again");
+                check(level.getBlockState(beam.mirrors().get(0)).getValue(com.thefarawaydev.realmsofchaos.block.RoomBlock.LIT) != beam.turned().get(0)
+                        && !com.thefarawaydev.realmsofchaos.world.Rooms.trace(level, plan, bc).reached(), "and its mirrors are thrown about again, the first one wrong");
+                boolean reached = false;
+                for (int i = 0; i < beam.mirrors().size(); i++) {
+                    if (level.getBlockState(beam.mirrors().get(i)).getValue(com.thefarawaydev.realmsofchaos.block.RoomBlock.LIT) == beam.turned().get(i)) continue;
+                    reached = com.thefarawaydev.realmsofchaos.world.Rooms.turnMirror(level, beam.mirrors().get(i), hero);
+                }
+                check(reached && com.thefarawaydev.realmsofchaos.world.Rooms.solved(level, plan, bc), "set right, it is solved - decoys and all");
+
+                // ---- cells: bars that join up, a way into each
+                found = room(level, Line.HADES, Passages.Kind.CELLS);
+                plan = (Passages.Plan) found[0];
+                Passages.build(level, plan);
+                checkPassage(level, plan, "cells level " + plan.label() + ": ");
+                BlockPos m = plan.centre((Passages.Cell) found[1]);
+                for (int sx = -1; sx <= 1; sx += 2) {
+                    for (int sz = -1; sz <= 1; sz += 2) {
+                        var bar = level.getBlockState(m.offset(sx * 2, 1, sz * 2));
+                        check(bar.is(Blocks.IRON_BARS) && level.getBlockState(m.offset(sx * 4, 3, sz * 2)).is(Blocks.IRON_BARS), "a cell in every corner, behind bars");
+                        check(bar.getValue(net.minecraft.world.level.block.IronBarsBlock.EAST) || bar.getValue(net.minecraft.world.level.block.IronBarsBlock.WEST), "bars that join their neighbours");
+                        var top = level.getBlockState(m.offset(sx * 2, 3, sz * 3));
+                        check(top.getValue(net.minecraft.world.level.block.IronBarsBlock.NORTH) && top.getValue(net.minecraft.world.level.block.IronBarsBlock.SOUTH), "and run unbroken over the door");
+                        check(level.getBlockState(m.offset(sx * 2, 1, sz * 3)).isAir() && level.getBlockState(m.offset(sx * 2, 2, sz * 3)).isAir() && level.getBlockState(m.offset(sx * 2, 3, sz * 3)).is(Blocks.IRON_BARS),
+                                "and a door into it, two high");
+                        check(level.getBlockState(m.offset(sx * 3, 1, sz * 3)).isAir() && !level.getBlockState(m.offset(sx * 4, 1, sz * 4)).isAir(), "with room to stand, and something left behind");
+                    }
+                }
+
+                // ---- a storeroom: stacks, and the way through kept clear
+                found = room(level, Line.HADES, Passages.Kind.STORE);
+                plan = (Passages.Plan) found[0];
+                Passages.build(level, plan);
+                checkPassage(level, plan, "store level " + plan.label() + ": ");
+                m = plan.centre((Passages.Cell) found[1]);
+                int stacked = 0, high = 0;
+                for (int dx = -4; dx <= 4; dx++) {
+                    for (int dz = -4; dz <= 4; dz++) {
+                        if (!level.getBlockState(m.offset(dx, 1, dz)).isAir()) stacked++;
+                        if (!level.getBlockState(m.offset(dx, 2, dz)).isAir() && Math.max(Math.abs(dx), Math.abs(dz)) == 4) high++;
+                        if (dx == 0 || dz == 0) check(level.getBlockState(m.offset(dx, 1, dz)).isAir() || (dx == 0 && dz == 0), "nothing stacked in the way through");
+                    }
+                }
+                check(stacked >= 12 && high >= 2, "goods stacked about the room, higher against the walls: " + stacked + ", " + high);
+
+                // ---- afflictions: laid on, held off by a shrine, named in the mod's own words
+                for (Passages.Affliction a : Passages.Affliction.values()) {
+                    check(!com.thefarawaydev.realmsofchaos.ui.Words.of(a.displayName()).startsWith("affliction.") && !com.thefarawaydev.realmsofchaos.ui.Words.of(a.lore()).startsWith("affliction."), a + " has a name and a line");
+                    if (a == Passages.Affliction.NONE) continue;
+                    Passages.Plan on = afflicted.get(a);
+                    var effect = switch (a) {
+                        case GLOOM -> net.minecraft.world.effect.MobEffects.DARKNESS;
+                        case WEIGHT -> net.minecraft.world.effect.MobEffects.SLOWNESS;
+                        case FRAILTY -> net.minecraft.world.effect.MobEffects.WEAKNESS;
+                        case HUNGER -> net.minecraft.world.effect.MobEffects.HUNGER;
+                        default -> net.minecraft.world.effect.MobEffects.MINING_FATIGUE;
+                    };
+                    hero.removeAllEffects();
+                    Passages.unshelter(hero);
+                    boolean laid = false;
+                    // (gloom comes and goes: four seconds in twelve)
+                    for (int second = 0; second < 13 && !laid; second++) {
+                        laid = Passages.afflict(hero, on);
+                        if (!laid) advance(server, 20);
+                    }
+                    check(laid && hero.hasEffect(effect), a + " is laid on whoever stands on its level");
+                    hero.removeAllEffects();
+                    Passages.shelter(hero);
+                    check(Passages.sheltered(hero) && !Passages.afflict(hero, on) && !hero.hasEffect(effect), "a shrine's blessing holds " + a + " off");
+                }
+                // (and the plaque says so, on a strip of its own)
+                Passages.Plan weighed = afflicted.values().iterator().next();
+                Passages.unshelter(hero);
+                com.thefarawaydev.realmsofchaos.world.RealmSafety.updatePassageBar(hero, weighed, 0);
+                check(Integer.valueOf(weighed.affliction().ordinal()).equals(com.thefarawaydev.realmsofchaos.ui.HudFeed.value(hero, com.thefarawaydev.realmsofchaos.ui.HudFeed.ILL)), "the HUD is told what weighs on the level");
+                Passages.shelter(hero);
+                com.thefarawaydev.realmsofchaos.world.RealmSafety.updatePassageBar(hero, weighed, 0);
+                check(Integer.valueOf(weighed.affliction().ordinal() | com.thefarawaydev.realmsofchaos.ui.HudFeed.ILL_HELD).equals(com.thefarawaydev.realmsofchaos.ui.HudFeed.value(hero, com.thefarawaydev.realmsofchaos.ui.HudFeed.ILL)),
+                        "and that a shrine is holding it off");
+                com.thefarawaydev.realmsofchaos.world.RealmSafety.updatePassageBar(hero, Passages.plan(level, Line.HADES, 1, 0), 0);
+                check(com.thefarawaydev.realmsofchaos.ui.HudFeed.value(hero, com.thefarawaydev.realmsofchaos.ui.HudFeed.ILL) == null, "on a clean level the strip is gone");
+                com.thefarawaydev.realmsofchaos.world.RealmSafety.updateBar(hero, null, 0);
+                Passages.unshelter(hero);
+                hero.removeAllEffects();
+                Passages.Plan clean = Passages.plan(level, Line.HADES, 1, 0);
+                check(clean.affliction() == Passages.Affliction.NONE && !Passages.afflict(hero, clean) && hero.getActiveEffects().isEmpty(), "and a clean level lays nothing on anyone");
+
+                // ---- less said twice: the hotbar line, and cards
+                int[] before = com.thefarawaydev.realmsofchaos.ui.Hud.counts();
+                net.minecraft.network.chat.Component line = net.minecraft.network.chat.Component.literal("said once " + server.getTickCount());
+                for (int i = 0; i < 5; i++) com.thefarawaydev.realmsofchaos.ui.Hud.actionBar(hero, line);
+                int[] after = com.thefarawaydev.realmsofchaos.ui.Hud.counts();
+                check(after[0] - before[0] == 1 && after[1] - before[1] == 4, "the same line five times in a row is written once");
+                com.thefarawaydev.realmsofchaos.ui.Hud.actionBar(hero, net.minecraft.network.chat.Component.literal("something else"));
+                check(com.thefarawaydev.realmsofchaos.ui.Hud.counts()[0] - before[0] == 2, "a different line is written at once");
+                advance(server, com.thefarawaydev.realmsofchaos.ui.Hud.REPEAT_TICKS + 1);
+                com.thefarawaydev.realmsofchaos.ui.Hud.actionBar(hero, net.minecraft.network.chat.Component.literal("something else"));
+                check(com.thefarawaydev.realmsofchaos.ui.Hud.counts()[0] - before[0] == 3, "and the same one again once a second has gone by");
+
+                com.thefarawaydev.realmsofchaos.ui.Cards.clear(hero);
+                for (int i = 0; i < 4; i++) com.thefarawaydev.realmsofchaos.ui.Cards.notice(hero, "Heading", "the same card, four times");
+                check(com.thefarawaydev.realmsofchaos.ui.Cards.showing(hero) != null && com.thefarawaydev.realmsofchaos.ui.Cards.waiting(hero) == 0, "the same card asked for four times is shown once, with none waiting");
+                com.thefarawaydev.realmsofchaos.ui.Cards.notice(hero, "Heading", "another card");
+                com.thefarawaydev.realmsofchaos.ui.Cards.notice(hero, "Heading", "another card");
+                check(com.thefarawaydev.realmsofchaos.ui.Cards.waiting(hero) == 1, "a different one waits its turn - once");
+                advance(server, com.thefarawaydev.realmsofchaos.ui.Cards.STAY + 1);
+                com.thefarawaydev.realmsofchaos.ui.Cards.tick(server);
+                advance(server, com.thefarawaydev.realmsofchaos.ui.Cards.GAP + 1);
+                com.thefarawaydev.realmsofchaos.ui.Cards.tick(server);
+                check(com.thefarawaydev.realmsofchaos.ui.Cards.showing(hero) != null && com.thefarawaydev.realmsofchaos.ui.Cards.waiting(hero) == 0, "and is shown when the first has gone");
+                advance(server, com.thefarawaydev.realmsofchaos.ui.Cards.STAY + 1);
+                com.thefarawaydev.realmsofchaos.ui.Cards.tick(server);
+                check(com.thefarawaydev.realmsofchaos.ui.Cards.showing(hero) == null, "test setup: the cards have come and gone");
+                com.thefarawaydev.realmsofchaos.ui.Cards.notice(hero, "Heading", "the same card, four times");
+                check(com.thefarawaydev.realmsofchaos.ui.Cards.showing(hero) == null && com.thefarawaydev.realmsofchaos.ui.Cards.waiting(hero) == 0, "a card just seen is not put up again a few seconds later");
+                advance(server, com.thefarawaydev.realmsofchaos.ui.Cards.REPEAT_TICKS);
+                com.thefarawaydev.realmsofchaos.ui.Cards.tick(server);
+                com.thefarawaydev.realmsofchaos.ui.Cards.notice(hero, "Heading", "the same card, four times");
+                check(com.thefarawaydev.realmsofchaos.ui.Cards.showing(hero) != null, "half a minute on, it can be said again");
+            } finally {
+                com.thefarawaydev.realmsofchaos.ui.Cards.clear(hero);
+                Passages.unshelter(hero);
+                hero.remove(net.minecraft.world.entity.Entity.RemovalReason.DISCARDED);
+                Realm.testAlias(Level.OVERWORLD, Realm.ABYSS);
             }
         });
 

@@ -70,12 +70,69 @@ public final class Passages {
     public static final int TALL = 8;
     public static final int MAX_SIZE = 6;
     public static final int X0 = 600, PITCH = 160;
-    public static final int LAYOUT_VERSION = 7;
+    public static final int LAYOUT_VERSION = 8;
     public static final String GUARDIAN_TAG = "realms_of_chaos_guardian";
     private static final String HUD = "hud." + RealmsOfChaos.MOD_ID + ".passage.";
 
     public enum Kind { START, EXIT, SEAL, TREASURE, SHRINE, HALL, ROOM, TRAP, GARDEN, LIBRARY, POOL, ARENA, VAULT, CHIMES, BEAM, PLATES, CRUSHER, DARTS,
-        SPIKES, FLAMES, BLADES, STAIRWELL, ARC, GAS }
+        SPIKES, FLAMES, BLADES, STAIRWELL, ARC, GAS, CELLS, STORE }
+
+    /**
+     * What weighs on a level. The first three levels of a passage are clean; further in, most carry one: a status
+     * effect laid on everyone there for as long as they stay. A shrine's blessing holds it off for a while.
+     */
+    public enum Affliction {
+        NONE, GLOOM, WEIGHT, FRAILTY, HUNGER, FATIGUE;
+
+        public String id() {
+            return name().toLowerCase(java.util.Locale.ROOT);
+        }
+
+        public Component displayName() {
+            return Component.translatable("affliction." + RealmsOfChaos.MOD_ID + "." + id());
+        }
+
+        public Component lore() {
+            return Component.translatable("affliction." + RealmsOfChaos.MOD_ID + "." + id() + ".lore");
+        }
+    }
+
+    /** How long a shrine's blessing holds a level's affliction off. */
+    public static final int SHELTER_TICKS = 20 * 90;
+    private static final Map<UUID, Long> SHELTERED = new HashMap<>();
+
+    /** A shrine has blessed this player: the level's affliction leaves them be for a minute and a half. */
+    public static void shelter(ServerPlayer player) {
+        if (player.level().getServer() != null) SHELTERED.put(player.getUUID(), (long) player.level().getServer().getTickCount() + SHELTER_TICKS);
+    }
+
+    /** The blessing is gone: for tests. */
+    public static void unshelter(ServerPlayer player) {
+        SHELTERED.remove(player.getUUID());
+    }
+
+    public static boolean sheltered(ServerPlayer player) {
+        Long until = SHELTERED.get(player.getUUID());
+        return until != null && player.level().getServer() != null && player.level().getServer().getTickCount() < until;
+    }
+
+    /** Lays a level's affliction on a player: called once a second while they are on it. @return true if it was laid on */
+    public static boolean afflict(ServerPlayer player, Plan plan) {
+        Affliction a = plan.affliction();
+        if (a == Affliction.NONE || player.isCreative() || player.isSpectator() || sheltered(player)) return false;
+        long second = player.level().getServer().getTickCount() / 20L;
+        var effect = switch (a) {
+            case GLOOM -> second % 12 < 4 ? net.minecraft.world.effect.MobEffects.DARKNESS : null;         // (on and off: four seconds in twelve)
+            case WEIGHT -> net.minecraft.world.effect.MobEffects.SLOWNESS;
+            case FRAILTY -> net.minecraft.world.effect.MobEffects.WEAKNESS;
+            case HUNGER -> net.minecraft.world.effect.MobEffects.HUNGER;
+            case FATIGUE -> net.minecraft.world.effect.MobEffects.MINING_FATIGUE;
+            default -> null;
+        };
+        if (effect == null) return false;
+        player.addEffect(new net.minecraft.world.effect.MobEffectInstance(effect, 50, 0, true, false, true));
+        return true;
+    }
 
     /** How a room is shaped, for the kinds that are not all alike. */
     public static final int FORM_PLAIN = 0, FORM_CUT_CORNERS = 1, FORM_COLONNADE = 2, FORM_SUNKEN = 3;
@@ -128,6 +185,7 @@ public final class Passages {
         /** east[x][z]: a doorway between (x, z) and (x + 1, z). south[x][z]: between (x, z) and (x, z + 1). */
         private final boolean[][] east, south;
         private final int[][] heights, forms;
+        private Affliction affliction = Affliction.NONE;
         private final boolean[][] wides;
         public Cell start, exit;
         /** True if the exit room is entered from the east or west: its gate stands across that way, facing whoever comes in. */
@@ -158,6 +216,9 @@ public final class Passages {
             this.wides = new boolean[size][size];
             generate(new Random(seed));
             shape(new Random(seed ^ 0x5DEECE66DL));
+            Random ill = new Random(seed ^ 0xAFF11C7EDL);
+            float chance = this.stage < 3 ? 0.0F : this.stage < 6 ? 0.6F : 0.85F;
+            if (ill.nextFloat() < chance) affliction = Affliction.values()[1 + ill.nextInt(Affliction.values().length - 1)];
         }
 
         /**
@@ -177,6 +238,12 @@ public final class Passages {
                         h = TALL;
                         wide = true;
                     }
+                    case BEAM -> {
+                        // a beam room needs the room: mirrors stand all about it
+                        h = 7;
+                        wide = true;
+                    }
+                    case CELLS, STORE -> h = random.nextBoolean() ? HEADROOM : 7;
                     case ROOM, GARDEN, LIBRARY, POOL -> {
                         float roll = random.nextFloat();
                         h = roll < 0.4F ? HEADROOM : roll < 0.75F ? 7 : TALL;
@@ -189,6 +256,11 @@ public final class Passages {
                 forms[c.x][c.z] = form;
                 wides[c.x][c.z] = wide;
             }
+        }
+
+        /** What weighs on this level, if anything. */
+        public Affliction affliction() {
+            return affliction;
         }
 
         /** How much air a room has above its floor: 5 for an ordinary room, up to {@link #TALL}. */
@@ -292,6 +364,17 @@ public final class Passages {
             return stage >= 1 ? 1 : 0;
         }
 
+        /** Takes the first room still free that no doorway joins to a room of this kind (or, there being none, the first). */
+        private Cell take(List<Cell> free, Kind kind) {
+            for (int i = 0; i < free.size(); i++) {
+                Cell c = free.get(i);
+                boolean meets = false;
+                for (Cell n : neighbours(c)) if (connected(c, n) && kinds[n.x][n.z] == kind) meets = true;
+                if (!meets) return free.remove(i);
+            }
+            return free.remove(0);
+        }
+
         private void generate(Random random) {
             // a maze: a random spanning tree, so every room can be reached, plus a few extra doors so there are loops
             start = new Cell(random.nextInt(size), random.nextInt(size));
@@ -336,7 +419,7 @@ public final class Passages {
             free.sort(Comparator.comparingInt((Cell c) -> doors(c) == 1 ? 0 : 1).thenComparingInt(c -> -dist.get(c)));
             int sealCount = tier + 1;
             for (int i = 0; i < sealCount; i++) {
-                Cell c = free.remove(0);
+                Cell c = take(free, Kind.SEAL);
                 seals.add(c);
                 kinds[c.x][c.z] = Kind.SEAL;
             }
@@ -344,11 +427,11 @@ public final class Passages {
             Cell shrine = free.remove(0);
             kinds[shrine.x][shrine.z] = Kind.SHRINE;
             for (int i = 0; i < treasures(); i++) {
-                Cell c = free.remove(0);
+                Cell c = take(free, Kind.TREASURE);
                 kinds[c.x][c.z] = Kind.TREASURE;
             }
             for (int i = 0; i < arenas(); i++) {
-                Cell c = free.remove(0);
+                Cell c = take(free, Kind.ARENA);
                 kinds[c.x][c.z] = Kind.ARENA;
             }
             // puzzle rooms: one on a small level, up to three on the largest, never the same kind twice
@@ -363,12 +446,30 @@ public final class Passages {
                 Cell c = free.remove(0);
                 kinds[c.x][c.z] = Kind.STAIRWELL;
             }
+            // the rest, as a stronghold is laid out: corridors and crossings between rooms, no two rooms of a kind
+            // joined by a doorway, and a kind already used on the level less likely to be used again
+            Kind[] common = {Kind.HALL, Kind.ROOM, Kind.TRAP, Kind.CRUSHER, Kind.DARTS, Kind.SPIKES, Kind.FLAMES, Kind.BLADES, Kind.ARC, Kind.GAS,
+                    Kind.GARDEN, Kind.LIBRARY, Kind.POOL, Kind.CELLS, Kind.STORE};
+            float[] weight = {2.4F, 1.5F, 0.6F, 0.5F, 0.5F, 0.6F, 0.6F, 0.5F, 0.45F, 0.45F, 0.9F, 0.8F, 0.7F, 0.8F, 0.8F};
+            int[] times = new int[common.length];
             for (Cell c : free) {
-                float roll = random.nextFloat();
-                kinds[c.x][c.z] = roll < 0.24F ? Kind.HALL : roll < 0.43F ? Kind.ROOM : roll < 0.49F ? Kind.TRAP : roll < 0.54F ? Kind.CRUSHER
-                        : roll < 0.58F ? Kind.DARTS : roll < 0.63F ? Kind.SPIKES : roll < 0.68F ? Kind.FLAMES : roll < 0.72F ? Kind.BLADES
-                        : roll < 0.76F ? Kind.ARC : roll < 0.80F ? Kind.GAS
-                        : roll < 0.87F ? Kind.GARDEN : roll < 0.94F ? Kind.LIBRARY : Kind.POOL;
+                int best = -1;
+                float bestScore = -1.0F;
+                for (int k = 0; k < common.length; k++) {
+                    float roll = random.nextFloat();
+                    int same = 0;
+                    for (Cell n : neighbours(c)) if (connected(c, n) && kinds[n.x][n.z] == common[k]) same++;
+                    // (no kind meets itself across a doorway - not even a corridor)
+                    if (same > 0) continue;
+                    float score = weight[k] * roll / (1.0F + 1.5F * times[k] * (common[k] == Kind.HALL ? 0.25F : 1.0F));
+                    if (score > bestScore) {
+                        bestScore = score;
+                        best = k;
+                    }
+                }
+                if (best < 0) best = 0;
+                kinds[c.x][c.z] = common[best];
+                times[best]++;
             }
             // a third of the ordinary rooms have a patrol in them, and more on the levels further in
             float chance = Math.min(0.75F, 0.35F + 0.06F * stage);
@@ -412,6 +513,8 @@ public final class Passages {
                         case STAIRWELL -> 'Z';
                         case ARC -> '@';
                         case GAS -> '"';
+                        case CELLS -> 'H';
+                        case STORE -> 'B';
                     });
                     if (x + 1 < size) rooms.append(east[x][z] ? "--" : "  ");
                     below.append(z + 1 < size && south[x][z] ? "|  " : "   ");
@@ -906,6 +1009,48 @@ public final class Passages {
             }
             case VAULT, CHIMES, BEAM, PLATES, DARTS -> Rooms.build(level, plan, c, random);
             case SPIKES, FLAMES, BLADES, ARC, GAS -> Snares.build(level, plan, c, p);
+            case CELLS -> {
+                // four cells behind iron bars, one in each corner, each with a way in; what was kept in them is mostly gone
+                List<BlockPos> bars = new ArrayList<>();
+                for (int sx = -1; sx <= 1; sx += 2) {
+                    for (int sz = -1; sz <= 1; sz += 2) {
+                        for (int d = 2; d <= 4; d++) {
+                            for (int y = 1; y <= 3; y++) {
+                                // (the gap at 3 on the side that faces east or west is the cell's door, two high)
+                                if (!(d == 3 && y <= 2)) bars.add(m.offset(sx * 2, y, sz * d));
+                                bars.add(m.offset(sx * d, y, sz * 2));
+                            }
+                        }
+                        set(level, m.offset(sx * 4, 1, sz * 4), random.nextFloat() < 0.5F ? ModContent.ANCIENT_URN.get() : Blocks.SKELETON_SKULL);
+                        set(level, m.offset(sx * 3, 0, sz * 3), p.light());
+                    }
+                }
+                // (bars join the bars beside them, and the wall they run into)
+                java.util.Set<BlockPos> barred = new java.util.HashSet<>(bars);
+                for (BlockPos bar : bars) {
+                    BlockState state = Blocks.IRON_BARS.defaultBlockState();
+                    for (net.minecraft.core.Direction d : net.minecraft.core.Direction.Plane.HORIZONTAL) {
+                        BlockPos next = bar.relative(d);
+                        boolean joins = barred.contains(next) || level.getBlockState(next).isSolidRender();
+                        state = state.setValue(net.minecraft.world.level.block.CrossCollisionBlock.PROPERTY_BY_DIRECTION.get(d), joins);
+                    }
+                    level.setBlock(bar, state, 2);
+                }
+                for (int d = -1; d <= 1; d++) set(level, m.offset(d, 0, 0), p.inlay());
+            }
+            case STORE -> {
+                // a storeroom: stacks in the corners, higher against the walls, and something worth finding among them
+                Block[] goods = {Blocks.HAY_BLOCK, Blocks.STRIPPED_SPRUCE_LOG, Blocks.SPRUCE_PLANKS, Blocks.COMPOSTER, Blocks.BARREL};
+                for (int dx = -4; dx <= 4; dx++) {
+                    for (int dz = -4; dz <= 4; dz++) {
+                        if (lane(dx, dz) || random.nextFloat() > 0.5F) continue;
+                        int high = Math.max(Math.abs(dx), Math.abs(dz)) == 4 ? 1 + random.nextInt(3) : 1;
+                        for (int y = 1; y <= high; y++) set(level, m.offset(dx, y, dz), goods[random.nextInt(goods.length - (y > 1 ? 2 : 0))]);
+                    }
+                }
+                set(level, m.offset(3, 0, 3), p.light());
+                set(level, m.offset(-3, 0, -3), p.light());
+            }
             case STAIRWELL -> {
                 // a loft across the north end, a flight of steps up to it at either side, and a cache up there
                 for (int dx = -5; dx <= 5; dx++) {
@@ -1056,7 +1201,7 @@ public final class Passages {
     /** The small things that make a room a place: the tower's braziers, urns to smash, a tablet to read. */
     private static void extras(ServerLevel level, Plan plan, Cell c, Random random) {
         Kind kind = plan.kind(c);
-        if (kind != Kind.ROOM && kind != Kind.GARDEN && kind != Kind.LIBRARY && kind != Kind.POOL && kind != Kind.ARENA && kind != Kind.SHRINE) return;
+        if (kind != Kind.ROOM && kind != Kind.GARDEN && kind != Kind.LIBRARY && kind != Kind.POOL && kind != Kind.ARENA && kind != Kind.SHRINE && kind != Kind.STORE) return;
         BlockPos m = plan.centre(c);
         // against the walls, clear of the lanes that run door to door
         int w = plan.half(c);
@@ -1405,6 +1550,11 @@ public final class Passages {
         if (!plan.last()) prepare(level, plan.line, plan.index, plan.stage + 1);
         if (Charts.give(player)) Hud.actionBar(player, Hud.colored(Component.translatable(HUD + "chart"), 0xF5B82E));
         int left = sealsLeft(level, plan);
+        if (plan.affliction() != Affliction.NONE) {
+            // said once, on the way in: what weighs on this level, and that a shrine holds it off
+            com.thefarawaydev.realmsofchaos.ui.Cards.notice(player, com.thefarawaydev.realmsofchaos.ui.Words.of(HUD + "afflicted", plan.affliction().displayName()),
+                    com.thefarawaydev.realmsofchaos.ui.Words.of(plan.affliction().lore()));
+        }
         Hud.title(player, Hud.colored(Component.translatable(HUD + "title", plan.label(), plan.index + 1), plan.line.color()),
                 Hud.colored(Component.translatable(HUD + (left > 0 ? "level" : "level.open"), plan.stage + 1, plan.stages, left), 0xCCCCCC));
     }
@@ -1489,8 +1639,9 @@ public final class Passages {
         ensure(level, spot.line(), spot.index(), spot.stage());
         Plan plan = plan(level, spot);
         Cell cell = plan.cellAt(player.blockPosition());
+        afflict(player, plan);
         if (cell != null) {
-            see(player, plan, cell);
+            boolean fresh = see(player, plan, cell);
             Kind kind = plan.kind(cell);
             boolean sealed = kind == Kind.SEAL && level.getBlockState(plan.sealPos(cell)).is(ModContent.PASSAGE_SEAL.get());
             boolean wakes = sealed || kind == Kind.ARENA || plan.patrols.contains(cell);
@@ -1520,10 +1671,13 @@ public final class Passages {
                     case STAIRWELL -> "stairwell";
                     case ARC -> "arc";
                     case GAS -> "gas";
+                    case CELLS -> "cells";
+                    case STORE -> "store";
                     case EXIT -> sealsLeft(level, plan) > 0 ? "exit.sealed" : plan.last() ? "exit.open" : "exit.deeper";
                     default -> null;
                 };
-                if (hint != null) Hud.actionBar(player, Hud.colored(Component.translatable(HUD + "room." + hint), 0xFFFF55));
+                // (a room says what it is the first time it is walked into; after that only a way out, or a puzzle still unsolved)
+                if (hint != null && (fresh || kind == Kind.EXIT || (Rooms.isPuzzle(kind) && !Rooms.solved(level, plan, cell)))) Hud.actionBar(player, Hud.colored(Component.translatable(HUD + "room." + hint), 0xFFFF55));
                 if (kind == Kind.SEAL && sealed) com.thefarawaydev.realmsofchaos.ui.Tutorial.tip(player, com.thefarawaydev.realmsofchaos.ui.Tutorial.Tip.SEAL);
             }
         }

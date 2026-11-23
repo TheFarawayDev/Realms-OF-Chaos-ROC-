@@ -32,6 +32,15 @@ public final class Cards {
         /** The tick the card showing is taken away at; or, with none showing, the tick the next may be put up. */
         long until;
         final Deque<Shown> waiting = new ArrayDeque<>();
+        /** What has been put up lately, and when: the same card is not put up twice in half a minute. */
+        final Map<String, Long> recent = new HashMap<>();
+    }
+
+    /** The same card is not shown to a player again within this many ticks. */
+    public static final int REPEAT_TICKS = 20 * 30;
+
+    private static String words(Shown card) {
+        return card.kind() + "/" + String.join("/", card.lines());
     }
 
     private static final Map<UUID, Slot> SLOTS = new HashMap<>();
@@ -66,6 +75,10 @@ public final class Cards {
             put(server, player, slot, card);
             return;
         }
+        // said already, and not long ago - or about to be said: once is enough
+        Long last = slot.recent.get(words(card));
+        if (last != null && server.getTickCount() >= last && server.getTickCount() - last < REPEAT_TICKS) return;
+        for (Shown held : slot.waiting) if (words(held).equals(words(card))) return;
         if (slot.shown != null || server.getTickCount() < slot.until) {
             while (slot.waiting.size() >= MAX_WAITING) slot.waiting.pollFirst();
             slot.waiting.addLast(card);
@@ -76,6 +89,8 @@ public final class Cards {
 
     private static void put(MinecraftServer server, ServerPlayer player, Slot slot, Shown card) {
         slot.shown = card;
+        slot.recent.values().removeIf(at -> server.getTickCount() - at >= REPEAT_TICKS);
+        slot.recent.put(words(card), (long) server.getTickCount());
         slot.until = server.getTickCount() + STAY;
         slot.count++;
         if (Options.on(player, Options.Option.ART)) {
@@ -124,8 +139,11 @@ public final class Cards {
                 if (!slot.waiting.isEmpty() && player != null) continue;
             }
             Shown next = player == null ? null : slot.waiting.pollFirst();
-            if (next == null) it.remove();
-            else put(server, player, slot, next);
+            if (next == null) {
+                // (kept a while longer with nothing on it: it still knows what was said lately)
+                slot.recent.values().removeIf(at -> now - at >= REPEAT_TICKS);
+                if (slot.recent.isEmpty() || player == null) it.remove();
+            } else put(server, player, slot, next);
         }
     }
 
