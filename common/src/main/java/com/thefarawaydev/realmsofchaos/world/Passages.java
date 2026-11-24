@@ -70,7 +70,7 @@ public final class Passages {
     public static final int TALL = 8;
     public static final int MAX_SIZE = 6;
     public static final int X0 = 600, PITCH = 160;
-    public static final int LAYOUT_VERSION = 16;
+    public static final int LAYOUT_VERSION = 18;
     public static final String GUARDIAN_TAG = "realms_of_chaos_guardian";
     private static final String HUD = "hud." + RealmsOfChaos.MOD_ID + ".passage.";
 
@@ -1003,6 +1003,23 @@ public final class Passages {
         return block.defaultBlockState().setValue(net.minecraft.world.level.block.StairBlock.FACING, rising);
     }
 
+    /** Patches where the floor's other stone shows through: blotches two or three blocks across, the same each build. */
+    static boolean wear(int x, int z) {
+        double v = 0;
+        for (int k = 0; k < 2; k++) {
+            int s = k == 0 ? 3 : 2, gx = Math.floorDiv(x, s), gz = Math.floorDiv(z, s);
+            long h = gx * 3129871L ^ gz * 116129781L ^ (k + 7) * 42317861L;
+            h = h * h * 42317861L + h * 11L;
+            v += (Math.floorMod(h >> 16, 1000L) / 1000.0) * (k == 0 ? 0.65 : 0.35);
+        }
+        return v > 0.58;
+    }
+
+    /** True where a room with cut corners keeps its wall: for the furnishers. */
+    static boolean cutAt(Plan plan, Cell c, int dx, int dz) {
+        return cut(plan, c, dx, dz);
+    }
+
     /** True where a room with cut corners keeps its wall. */
     private static boolean cut(Plan plan, Cell c, int dx, int dz) {
         return plan.form(c) == FORM_CUT_CORNERS && Math.abs(dx) + Math.abs(dz) > 2 * plan.half(c) - 2;
@@ -1017,7 +1034,8 @@ public final class Passages {
                 if (hall && !inHall(plan, c, dx, dz)) continue;
                 if (cut(plan, c, dx, dz)) continue;
                 boolean edge = Math.abs(dx) == r || Math.abs(dz) == r;
-                set(level, m.offset(dx, 0, dz), hall || edge || ((dx + dz) & 1) == 0 ? p.top() : p.topAlt());
+                // a border band round the room, and within it worn patches of the other stone, never a plain chequer
+                set(level, m.offset(dx, 0, dz), hall ? p.top() : edge ? p.inlay() : wear(m.getX() + dx, m.getZ() + dz) ? p.topAlt() : p.top());
                 for (int y = 1; y <= h; y++) set(level, m.offset(dx, y, dz), Blocks.AIR);
             }
         }
@@ -1496,36 +1514,17 @@ public final class Passages {
                     set(level, m.below(), p.light());
                     variant = -1;
                 }
-                switch (variant) {
-                    case -1 -> { }
-                    case 0 -> {
-                        for (int[] k : CORNERS) {
-                            for (int y = 1; y <= tall; y++) set(level, m.offset(k[0], y, k[1]), column(plan.line));
-                        }
-                    }
-                    case 1 -> {
-                        // a medallion in the floor
-                        for (int dx = -2; dx <= 2; dx++) {
-                            for (int dz = -2; dz <= 2; dz++) {
-                                int ring = Math.max(Math.abs(dx), Math.abs(dz));
-                                set(level, m.offset(dx, 0, dz), ring == 2 ? p.inlay() : ring == 0 ? p.light() : p.trim());
-                            }
-                        }
-                    }
-                    case 2 -> {
-                        for (int dx = -4; dx <= 4; dx++) {
-                            for (int dz = -4; dz <= 4; dz++) {
-                                if (!lane(dx, dz) && random.nextFloat() < 0.12F) set(level, m.offset(dx, 1, dz), p.trim());
-                            }
-                        }
-                    }
-                    default -> {
-                        for (int[] k : new int[][]{{-2, -2}, {2, -2}, {-2, 2}, {2, 2}}) {
-                            set(level, m.offset(k[0], 1, k[1]), p.trim());
-                            set(level, m.offset(k[0], 2, k[1]), p.light());
+                if (variant >= 0) {
+                    // a medallion in the floor where the ways through cross
+                    for (int dx = -2; dx <= 2; dx++) {
+                        for (int dz = -2; dz <= 2; dz++) {
+                            int ring = Math.max(Math.abs(dx), Math.abs(dz));
+                            set(level, m.offset(dx, 0, dz), ring == 2 ? p.inlay() : ring == 0 ? p.light() : p.trim());
                         }
                     }
                 }
+                // and, unless columns stand there, every quarter furnished as a whole
+                Furnish.room(level, plan, c, p, random);
             }
             case HALL -> { }
         }

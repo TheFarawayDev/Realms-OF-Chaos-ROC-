@@ -1,7 +1,26 @@
 {
   "variants": {
-    "": {
-      "model": "realms_of_chaos:block/throne_tile"
-    }
+    "": [
+      {
+        "model": "realms_of_chaos:block/throne_tile",
+        "weight": 8
+      },
+      {
+        "model": "realms_of_chaos:block/throne_tile_v1",
+        "weight": 3
+      },
+      {
+        "model": "realms_of_chaos:block/throne_tile_v2",
+        "weight": 2
+      },
+      {
+        "model": "realms_of_chaos:block/throne_tile_v3",
+        "weight": 2
+      },
+      {
+        "model": "realms_of_chaos:block/throne_tile_v4",
+        "weight": 1
+      }
+    ]
   }
 }

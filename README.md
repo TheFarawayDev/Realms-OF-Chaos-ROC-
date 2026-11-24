@@ -58,6 +58,20 @@ The current build is an **Alpha**.
   between the windows, and its walkway paved in its floor panels with one frame round the whole ring; every
   passage room of the tower has its columns in the tower's column and, in the tall rooms, its brick above the
   band. All craftable and dug with a pickaxe. (`art/renders/tower-stone*.png`)
+* **Rooms furnished as a whole.** An ordinary room's four quarters - the floor between the lanes that run door to
+  door - each hold a set piece built of several blocks, the opposite quarter the same, so a room reads as laid out
+  rather than strewn with single blocks: a kerbed planter of the tower's hedge, a column of the tower on a stepped
+  plinth with a relief beside it, a table with candles and benches along it, a fallen column with its drums and
+  chips, a lit basin of water, a dais with the tower's brazier on it, a store of barrels, jars and sacks, or a
+  reading nook of scroll shelves and a lectern. Sunken rooms keep them on the corners of the ledge round the pit,
+  colonnades between their columns; the lanes are never touched. Floors have a border band round each room and
+  worn patches of the other stone instead of a plain chequer. (`art/renders/rooms-furnished.png`)
+* **Floor blocks polished, with breaks.** Every tile floor - Olympian, Cloud, Nacre, Throne, Abyssal and Bath Tile -
+  is bevelled now, each tile lit on its top and left and shadowed on its bottom and right, and comes in five or six
+  looks the game mixes block by block: whole, cracked, a corner chipped off to the bed, a tile settled lower,
+  cracked and chipped together, and (for the older floors) moss in the joints. The connecting floors - the Sunstone,
+  Pearl and Ember Panels and the three Mosaics - crack and settle too, without breaking their frames; the Cloud,
+  Trench and Tartarus Stone and the three towers' bricks crack. (`art/renders/floor-variants.png`)
 * **A real weapon rack.** The Weapon Rack is a rack on the wall now, not a painted cube: a board of dark oak, two
   rails, and on them a spear, a sword, a shield or two crossed axes, modelled in the round - which, the game
   chooses block by block. It faces the way it is placed, and racks side by side or one over another join: end

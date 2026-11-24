@@ -3,14 +3,26 @@
     "": [
       {
         "model": "realms_of_chaos:block/bath_tile",
-        "weight": 5
+        "weight": 8
       },
       {
         "model": "realms_of_chaos:block/bath_tile_v1",
-        "weight": 2
+        "weight": 3
       },
       {
         "model": "realms_of_chaos:block/bath_tile_v2",
+        "weight": 2
+      },
+      {
+        "model": "realms_of_chaos:block/bath_tile_v3",
+        "weight": 2
+      },
+      {
+        "model": "realms_of_chaos:block/bath_tile_v4",
+        "weight": 1
+      },
+      {
+        "model": "realms_of_chaos:block/bath_tile_v5",
         "weight": 2
       }
     ]

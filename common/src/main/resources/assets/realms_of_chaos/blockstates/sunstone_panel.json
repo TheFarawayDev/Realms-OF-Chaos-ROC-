@@ -1,196 +1,900 @@
 {
   "variants": {
-    "down=false,east=false,north=false,south=false,up=false,west=false": {
-      "model": "realms_of_chaos:block/sunstone_panel_______"
-    },
-    "down=true,east=false,north=false,south=false,up=false,west=false": {
-      "model": "realms_of_chaos:block/sunstone_panel_d_____"
-    },
-    "down=false,east=true,north=false,south=false,up=false,west=false": {
-      "model": "realms_of_chaos:block/sunstone_panel__e____"
-    },
-    "down=true,east=true,north=false,south=false,up=false,west=false": {
-      "model": "realms_of_chaos:block/sunstone_panel_de____"
-    },
-    "down=false,east=false,north=true,south=false,up=false,west=false": {
-      "model": "realms_of_chaos:block/sunstone_panel___n___"
-    },
-    "down=true,east=false,north=true,south=false,up=false,west=false": {
-      "model": "realms_of_chaos:block/sunstone_panel_d_n___"
-    },
-    "down=false,east=true,north=true,south=false,up=false,west=false": {
-      "model": "realms_of_chaos:block/sunstone_panel__en___"
-    },
-    "down=true,east=true,north=true,south=false,up=false,west=false": {
-      "model": "realms_of_chaos:block/sunstone_panel_den___"
-    },
-    "down=false,east=false,north=false,south=true,up=false,west=false": {
-      "model": "realms_of_chaos:block/sunstone_panel____s__"
-    },
-    "down=true,east=false,north=false,south=true,up=false,west=false": {
-      "model": "realms_of_chaos:block/sunstone_panel_d__s__"
-    },
-    "down=false,east=true,north=false,south=true,up=false,west=false": {
-      "model": "realms_of_chaos:block/sunstone_panel__e_s__"
-    },
-    "down=true,east=true,north=false,south=true,up=false,west=false": {
-      "model": "realms_of_chaos:block/sunstone_panel_de_s__"
-    },
-    "down=false,east=false,north=true,south=true,up=false,west=false": {
-      "model": "realms_of_chaos:block/sunstone_panel___ns__"
-    },
-    "down=true,east=false,north=true,south=true,up=false,west=false": {
-      "model": "realms_of_chaos:block/sunstone_panel_d_ns__"
-    },
-    "down=false,east=true,north=true,south=true,up=false,west=false": {
-      "model": "realms_of_chaos:block/sunstone_panel__ens__"
-    },
-    "down=true,east=true,north=true,south=true,up=false,west=false": {
-      "model": "realms_of_chaos:block/sunstone_panel_dens__"
-    },
-    "down=false,east=false,north=false,south=false,up=true,west=false": {
-      "model": "realms_of_chaos:block/sunstone_panel_____u_"
-    },
-    "down=true,east=false,north=false,south=false,up=true,west=false": {
-      "model": "realms_of_chaos:block/sunstone_panel_d___u_"
-    },
-    "down=false,east=true,north=false,south=false,up=true,west=false": {
-      "model": "realms_of_chaos:block/sunstone_panel__e__u_"
-    },
-    "down=true,east=true,north=false,south=false,up=true,west=false": {
-      "model": "realms_of_chaos:block/sunstone_panel_de__u_"
-    },
-    "down=false,east=false,north=true,south=false,up=true,west=false": {
-      "model": "realms_of_chaos:block/sunstone_panel___n_u_"
-    },
-    "down=true,east=false,north=true,south=false,up=true,west=false": {
-      "model": "realms_of_chaos:block/sunstone_panel_d_n_u_"
-    },
-    "down=false,east=true,north=true,south=false,up=true,west=false": {
-      "model": "realms_of_chaos:block/sunstone_panel__en_u_"
-    },
-    "down=true,east=true,north=true,south=false,up=true,west=false": {
-      "model": "realms_of_chaos:block/sunstone_panel_den_u_"
-    },
-    "down=false,east=false,north=false,south=true,up=true,west=false": {
-      "model": "realms_of_chaos:block/sunstone_panel____su_"
-    },
-    "down=true,east=false,north=false,south=true,up=true,west=false": {
-      "model": "realms_of_chaos:block/sunstone_panel_d__su_"
-    },
-    "down=false,east=true,north=false,south=true,up=true,west=false": {
-      "model": "realms_of_chaos:block/sunstone_panel__e_su_"
-    },
-    "down=true,east=true,north=false,south=true,up=true,west=false": {
-      "model": "realms_of_chaos:block/sunstone_panel_de_su_"
-    },
-    "down=false,east=false,north=true,south=true,up=true,west=false": {
-      "model": "realms_of_chaos:block/sunstone_panel___nsu_"
-    },
-    "down=true,east=false,north=true,south=true,up=true,west=false": {
-      "model": "realms_of_chaos:block/sunstone_panel_d_nsu_"
-    },
-    "down=false,east=true,north=true,south=true,up=true,west=false": {
-      "model": "realms_of_chaos:block/sunstone_panel__ensu_"
-    },
-    "down=true,east=true,north=true,south=true,up=true,west=false": {
-      "model": "realms_of_chaos:block/sunstone_panel_densu_"
-    },
-    "down=false,east=false,north=false,south=false,up=false,west=true": {
-      "model": "realms_of_chaos:block/sunstone_panel______w"
-    },
-    "down=true,east=false,north=false,south=false,up=false,west=true": {
-      "model": "realms_of_chaos:block/sunstone_panel_d____w"
-    },
-    "down=false,east=true,north=false,south=false,up=false,west=true": {
-      "model": "realms_of_chaos:block/sunstone_panel__e___w"
-    },
-    "down=true,east=true,north=false,south=false,up=false,west=true": {
-      "model": "realms_of_chaos:block/sunstone_panel_de___w"
-    },
-    "down=false,east=false,north=true,south=false,up=false,west=true": {
-      "model": "realms_of_chaos:block/sunstone_panel___n__w"
-    },
-    "down=true,east=false,north=true,south=false,up=false,west=true": {
-      "model": "realms_of_chaos:block/sunstone_panel_d_n__w"
-    },
-    "down=false,east=true,north=true,south=false,up=false,west=true": {
-      "model": "realms_of_chaos:block/sunstone_panel__en__w"
-    },
-    "down=true,east=true,north=true,south=false,up=false,west=true": {
-      "model": "realms_of_chaos:block/sunstone_panel_den__w"
-    },
-    "down=false,east=false,north=false,south=true,up=false,west=true": {
-      "model": "realms_of_chaos:block/sunstone_panel____s_w"
-    },
-    "down=true,east=false,north=false,south=true,up=false,west=true": {
-      "model": "realms_of_chaos:block/sunstone_panel_d__s_w"
-    },
-    "down=false,east=true,north=false,south=true,up=false,west=true": {
-      "model": "realms_of_chaos:block/sunstone_panel__e_s_w"
-    },
-    "down=true,east=true,north=false,south=true,up=false,west=true": {
-      "model": "realms_of_chaos:block/sunstone_panel_de_s_w"
-    },
-    "down=false,east=false,north=true,south=true,up=false,west=true": {
-      "model": "realms_of_chaos:block/sunstone_panel___ns_w"
-    },
-    "down=true,east=false,north=true,south=true,up=false,west=true": {
-      "model": "realms_of_chaos:block/sunstone_panel_d_ns_w"
-    },
-    "down=false,east=true,north=true,south=true,up=false,west=true": {
-      "model": "realms_of_chaos:block/sunstone_panel__ens_w"
-    },
-    "down=true,east=true,north=true,south=true,up=false,west=true": {
-      "model": "realms_of_chaos:block/sunstone_panel_dens_w"
-    },
-    "down=false,east=false,north=false,south=false,up=true,west=true": {
-      "model": "realms_of_chaos:block/sunstone_panel_____uw"
-    },
-    "down=true,east=false,north=false,south=false,up=true,west=true": {
-      "model": "realms_of_chaos:block/sunstone_panel_d___uw"
-    },
-    "down=false,east=true,north=false,south=false,up=true,west=true": {
-      "model": "realms_of_chaos:block/sunstone_panel__e__uw"
-    },
-    "down=true,east=true,north=false,south=false,up=true,west=true": {
-      "model": "realms_of_chaos:block/sunstone_panel_de__uw"
-    },
-    "down=false,east=false,north=true,south=false,up=true,west=true": {
-      "model": "realms_of_chaos:block/sunstone_panel___n_uw"
-    },
-    "down=true,east=false,north=true,south=false,up=true,west=true": {
-      "model": "realms_of_chaos:block/sunstone_panel_d_n_uw"
-    },
-    "down=false,east=true,north=true,south=false,up=true,west=true": {
-      "model": "realms_of_chaos:block/sunstone_panel__en_uw"
-    },
-    "down=true,east=true,north=true,south=false,up=true,west=true": {
-      "model": "realms_of_chaos:block/sunstone_panel_den_uw"
-    },
-    "down=false,east=false,north=false,south=true,up=true,west=true": {
-      "model": "realms_of_chaos:block/sunstone_panel____suw"
-    },
-    "down=true,east=false,north=false,south=true,up=true,west=true": {
-      "model": "realms_of_chaos:block/sunstone_panel_d__suw"
-    },
-    "down=false,east=true,north=false,south=true,up=true,west=true": {
-      "model": "realms_of_chaos:block/sunstone_panel__e_suw"
-    },
-    "down=true,east=true,north=false,south=true,up=true,west=true": {
-      "model": "realms_of_chaos:block/sunstone_panel_de_suw"
-    },
-    "down=false,east=false,north=true,south=true,up=true,west=true": {
-      "model": "realms_of_chaos:block/sunstone_panel___nsuw"
-    },
-    "down=true,east=false,north=true,south=true,up=true,west=true": {
-      "model": "realms_of_chaos:block/sunstone_panel_d_nsuw"
-    },
-    "down=false,east=true,north=true,south=true,up=true,west=true": {
-      "model": "realms_of_chaos:block/sunstone_panel__ensuw"
-    },
-    "down=true,east=true,north=true,south=true,up=true,west=true": {
-      "model": "realms_of_chaos:block/sunstone_panel_densuw"
-    }
+    "down=false,east=false,north=false,south=false,up=false,west=false": [
+      {
+        "model": "realms_of_chaos:block/sunstone_panel_______",
+        "weight": 6
+      },
+      {
+        "model": "realms_of_chaos:block/sunstone_panel________v1",
+        "weight": 2
+      },
+      {
+        "model": "realms_of_chaos:block/sunstone_panel________v2",
+        "weight": 2
+      }
+    ],
+    "down=true,east=false,north=false,south=false,up=false,west=false": [
+      {
+        "model": "realms_of_chaos:block/sunstone_panel_d_____",
+        "weight": 6
+      },
+      {
+        "model": "realms_of_chaos:block/sunstone_panel_d______v1",
+        "weight": 2
+      },
+      {
+        "model": "realms_of_chaos:block/sunstone_panel_d______v2",
+        "weight": 2
+      }
+    ],
+    "down=false,east=true,north=false,south=false,up=false,west=false": [
+      {
+        "model": "realms_of_chaos:block/sunstone_panel__e____",
+        "weight": 6
+      },
+      {
+        "model": "realms_of_chaos:block/sunstone_panel__e_____v1",
+        "weight": 2
+      },
+      {
+        "model": "realms_of_chaos:block/sunstone_panel__e_____v2",
+        "weight": 2
+      }
+    ],
+    "down=true,east=true,north=false,south=false,up=false,west=false": [
+      {
+        "model": "realms_of_chaos:block/sunstone_panel_de____",
+        "weight": 6
+      },
+      {
+        "model": "realms_of_chaos:block/sunstone_panel_de_____v1",
+        "weight": 2
+      },
+      {
+        "model": "realms_of_chaos:block/sunstone_panel_de_____v2",
+        "weight": 2
+      }
+    ],
+    "down=false,east=false,north=true,south=false,up=false,west=false": [
+      {
+        "model": "realms_of_chaos:block/sunstone_panel___n___",
+        "weight": 6
+      },
+      {
+        "model": "realms_of_chaos:block/sunstone_panel___n____v1",
+        "weight": 2
+      },
+      {
+        "model": "realms_of_chaos:block/sunstone_panel___n____v2",
+        "weight": 2
+      }
+    ],
+    "down=true,east=false,north=true,south=false,up=false,west=false": [
+      {
+        "model": "realms_of_chaos:block/sunstone_panel_d_n___",
+        "weight": 6
+      },
+      {
+        "model": "realms_of_chaos:block/sunstone_panel_d_n____v1",
+        "weight": 2
+      },
+      {
+        "model": "realms_of_chaos:block/sunstone_panel_d_n____v2",
+        "weight": 2
+      }
+    ],
+    "down=false,east=true,north=true,south=false,up=false,west=false": [
+      {
+        "model": "realms_of_chaos:block/sunstone_panel__en___",
+        "weight": 6
+      },
+      {
+        "model": "realms_of_chaos:block/sunstone_panel__en____v1",
+        "weight": 2
+      },
+      {
+        "model": "realms_of_chaos:block/sunstone_panel__en____v2",
+        "weight": 2
+      }
+    ],
+    "down=true,east=true,north=true,south=false,up=false,west=false": [
+      {
+        "model": "realms_of_chaos:block/sunstone_panel_den___",
+        "weight": 6
+      },
+      {
+        "model": "realms_of_chaos:block/sunstone_panel_den____v1",
+        "weight": 2
+      },
+      {
+        "model": "realms_of_chaos:block/sunstone_panel_den____v2",
+        "weight": 2
+      }
+    ],
+    "down=false,east=false,north=false,south=true,up=false,west=false": [
+      {
+        "model": "realms_of_chaos:block/sunstone_panel____s__",
+        "weight": 6
+      },
+      {
+        "model": "realms_of_chaos:block/sunstone_panel____s___v1",
+        "weight": 2
+      },
+      {
+        "model": "realms_of_chaos:block/sunstone_panel____s___v2",
+        "weight": 2
+      }
+    ],
+    "down=true,east=false,north=false,south=true,up=false,west=false": [
+      {
+        "model": "realms_of_chaos:block/sunstone_panel_d__s__",
+        "weight": 6
+      },
+      {
+        "model": "realms_of_chaos:block/sunstone_panel_d__s___v1",
+        "weight": 2
+      },
+      {
+        "model": "realms_of_chaos:block/sunstone_panel_d__s___v2",
+        "weight": 2
+      }
+    ],
+    "down=false,east=true,north=false,south=true,up=false,west=false": [
+      {
+        "model": "realms_of_chaos:block/sunstone_panel__e_s__",
+        "weight": 6
+      },
+      {
+        "model": "realms_of_chaos:block/sunstone_panel__e_s___v1",
+        "weight": 2
+      },
+      {
+        "model": "realms_of_chaos:block/sunstone_panel__e_s___v2",
+        "weight": 2
+      }
+    ],
+    "down=true,east=true,north=false,south=true,up=false,west=false": [
+      {
+        "model": "realms_of_chaos:block/sunstone_panel_de_s__",
+        "weight": 6
+      },
+      {
+        "model": "realms_of_chaos:block/sunstone_panel_de_s___v1",
+        "weight": 2
+      },
+      {
+        "model": "realms_of_chaos:block/sunstone_panel_de_s___v2",
+        "weight": 2
+      }
+    ],
+    "down=false,east=false,north=true,south=true,up=false,west=false": [
+      {
+        "model": "realms_of_chaos:block/sunstone_panel___ns__",
+        "weight": 6
+      },
+      {
+        "model": "realms_of_chaos:block/sunstone_panel___ns___v1",
+        "weight": 2
+      },
+      {
+        "model": "realms_of_chaos:block/sunstone_panel___ns___v2",
+        "weight": 2
+      }
+    ],
+    "down=true,east=false,north=true,south=true,up=false,west=false": [
+      {
+        "model": "realms_of_chaos:block/sunstone_panel_d_ns__",
+        "weight": 6
+      },
+      {
+        "model": "realms_of_chaos:block/sunstone_panel_d_ns___v1",
+        "weight": 2
+      },
+      {
+        "model": "realms_of_chaos:block/sunstone_panel_d_ns___v2",
+        "weight": 2
+      }
+    ],
+    "down=false,east=true,north=true,south=true,up=false,west=false": [
+      {
+        "model": "realms_of_chaos:block/sunstone_panel__ens__",
+        "weight": 6
+      },
+      {
+        "model": "realms_of_chaos:block/sunstone_panel__ens___v1",
+        "weight": 2
+      },
+      {
+        "model": "realms_of_chaos:block/sunstone_panel__ens___v2",
+        "weight": 2
+      }
+    ],
+    "down=true,east=true,north=true,south=true,up=false,west=false": [
+      {
+        "model": "realms_of_chaos:block/sunstone_panel_dens__",
+        "weight": 6
+      },
+      {
+        "model": "realms_of_chaos:block/sunstone_panel_dens___v1",
+        "weight": 2
+      },
+      {
+        "model": "realms_of_chaos:block/sunstone_panel_dens___v2",
+        "weight": 2
+      }
+    ],
+    "down=false,east=false,north=false,south=false,up=true,west=false": [
+      {
+        "model": "realms_of_chaos:block/sunstone_panel_____u_",
+        "weight": 6
+      },
+      {
+        "model": "realms_of_chaos:block/sunstone_panel_____u__v1",
+        "weight": 2
+      },
+      {
+        "model": "realms_of_chaos:block/sunstone_panel_____u__v2",
+        "weight": 2
+      }
+    ],
+    "down=true,east=false,north=false,south=false,up=true,west=false": [
+      {
+        "model": "realms_of_chaos:block/sunstone_panel_d___u_",
+        "weight": 6
+      },
+      {
+        "model": "realms_of_chaos:block/sunstone_panel_d___u__v1",
+        "weight": 2
+      },
+      {
+        "model": "realms_of_chaos:block/sunstone_panel_d___u__v2",
+        "weight": 2
+      }
+    ],
+    "down=false,east=true,north=false,south=false,up=true,west=false": [
+      {
+        "model": "realms_of_chaos:block/sunstone_panel__e__u_",
+        "weight": 6
+      },
+      {
+        "model": "realms_of_chaos:block/sunstone_panel__e__u__v1",
+        "weight": 2
+      },
+      {
+        "model": "realms_of_chaos:block/sunstone_panel__e__u__v2",
+        "weight": 2
+      }
+    ],
+    "down=true,east=true,north=false,south=false,up=true,west=false": [
+      {
+        "model": "realms_of_chaos:block/sunstone_panel_de__u_",
+        "weight": 6
+      },
+      {
+        "model": "realms_of_chaos:block/sunstone_panel_de__u__v1",
+        "weight": 2
+      },
+      {
+        "model": "realms_of_chaos:block/sunstone_panel_de__u__v2",
+        "weight": 2
+      }
+    ],
+    "down=false,east=false,north=true,south=false,up=true,west=false": [
+      {
+        "model": "realms_of_chaos:block/sunstone_panel___n_u_",
+        "weight": 6
+      },
+      {
+        "model": "realms_of_chaos:block/sunstone_panel___n_u__v1",
+        "weight": 2
+      },
+      {
+        "model": "realms_of_chaos:block/sunstone_panel___n_u__v2",
+        "weight": 2
+      }
+    ],
+    "down=true,east=false,north=true,south=false,up=true,west=false": [
+      {
+        "model": "realms_of_chaos:block/sunstone_panel_d_n_u_",
+        "weight": 6
+      },
+      {
+        "model": "realms_of_chaos:block/sunstone_panel_d_n_u__v1",
+        "weight": 2
+      },
+      {
+        "model": "realms_of_chaos:block/sunstone_panel_d_n_u__v2",
+        "weight": 2
+      }
+    ],
+    "down=false,east=true,north=true,south=false,up=true,west=false": [
+      {
+        "model": "realms_of_chaos:block/sunstone_panel__en_u_",
+        "weight": 6
+      },
+      {
+        "model": "realms_of_chaos:block/sunstone_panel__en_u__v1",
+        "weight": 2
+      },
+      {
+        "model": "realms_of_chaos:block/sunstone_panel__en_u__v2",
+        "weight": 2
+      }
+    ],
+    "down=true,east=true,north=true,south=false,up=true,west=false": [
+      {
+        "model": "realms_of_chaos:block/sunstone_panel_den_u_",
+        "weight": 6
+      },
+      {
+        "model": "realms_of_chaos:block/sunstone_panel_den_u__v1",
+        "weight": 2
+      },
+      {
+        "model": "realms_of_chaos:block/sunstone_panel_den_u__v2",
+        "weight": 2
+      }
+    ],
+    "down=false,east=false,north=false,south=true,up=true,west=false": [
+      {
+        "model": "realms_of_chaos:block/sunstone_panel____su_",
+        "weight": 6
+      },
+      {
+        "model": "realms_of_chaos:block/sunstone_panel____su__v1",
+        "weight": 2
+      },
+      {
+        "model": "realms_of_chaos:block/sunstone_panel____su__v2",
+        "weight": 2
+      }
+    ],
+    "down=true,east=false,north=false,south=true,up=true,west=false": [
+      {
+        "model": "realms_of_chaos:block/sunstone_panel_d__su_",
+        "weight": 6
+      },
+      {
+        "model": "realms_of_chaos:block/sunstone_panel_d__su__v1",
+        "weight": 2
+      },
+      {
+        "model": "realms_of_chaos:block/sunstone_panel_d__su__v2",
+        "weight": 2
+      }
+    ],
+    "down=false,east=true,north=false,south=true,up=true,west=false": [
+      {
+        "model": "realms_of_chaos:block/sunstone_panel__e_su_",
+        "weight": 6
+      },
+      {
+        "model": "realms_of_chaos:block/sunstone_panel__e_su__v1",
+        "weight": 2
+      },
+      {
+        "model": "realms_of_chaos:block/sunstone_panel__e_su__v2",
+        "weight": 2
+      }
+    ],
+    "down=true,east=true,north=false,south=true,up=true,west=false": [
+      {
+        "model": "realms_of_chaos:block/sunstone_panel_de_su_",
+        "weight": 6
+      },
+      {
+        "model": "realms_of_chaos:block/sunstone_panel_de_su__v1",
+        "weight": 2
+      },
+      {
+        "model": "realms_of_chaos:block/sunstone_panel_de_su__v2",
+        "weight": 2
+      }
+    ],
+    "down=false,east=false,north=true,south=true,up=true,west=false": [
+      {
+        "model": "realms_of_chaos:block/sunstone_panel___nsu_",
+        "weight": 6
+      },
+      {
+        "model": "realms_of_chaos:block/sunstone_panel___nsu__v1",
+        "weight": 2
+      },
+      {
+        "model": "realms_of_chaos:block/sunstone_panel___nsu__v2",
+        "weight": 2
+      }
+    ],
+    "down=true,east=false,north=true,south=true,up=true,west=false": [
+      {
+        "model": "realms_of_chaos:block/sunstone_panel_d_nsu_",
+        "weight": 6
+      },
+      {
+        "model": "realms_of_chaos:block/sunstone_panel_d_nsu__v1",
+        "weight": 2
+      },
+      {
+        "model": "realms_of_chaos:block/sunstone_panel_d_nsu__v2",
+        "weight": 2
+      }
+    ],
+    "down=false,east=true,north=true,south=true,up=true,west=false": [
+      {
+        "model": "realms_of_chaos:block/sunstone_panel__ensu_",
+        "weight": 6
+      },
+      {
+        "model": "realms_of_chaos:block/sunstone_panel__ensu__v1",
+        "weight": 2
+      },
+      {
+        "model": "realms_of_chaos:block/sunstone_panel__ensu__v2",
+        "weight": 2
+      }
+    ],
+    "down=true,east=true,north=true,south=true,up=true,west=false": [
+      {
+        "model": "realms_of_chaos:block/sunstone_panel_densu_",
+        "weight": 6
+      },
+      {
+        "model": "realms_of_chaos:block/sunstone_panel_densu__v1",
+        "weight": 2
+      },
+      {
+        "model": "realms_of_chaos:block/sunstone_panel_densu__v2",
+        "weight": 2
+      }
+    ],
+    "down=false,east=false,north=false,south=false,up=false,west=true": [
+      {
+        "model": "realms_of_chaos:block/sunstone_panel______w",
+        "weight": 6
+      },
+      {
+        "model": "realms_of_chaos:block/sunstone_panel______w_v1",
+        "weight": 2
+      },
+      {
+        "model": "realms_of_chaos:block/sunstone_panel______w_v2",
+        "weight": 2
+      }
+    ],
+    "down=true,east=false,north=false,south=false,up=false,west=true": [
+      {
+        "model": "realms_of_chaos:block/sunstone_panel_d____w",
+        "weight": 6
+      },
+      {
+        "model": "realms_of_chaos:block/sunstone_panel_d____w_v1",
+        "weight": 2
+      },
+      {
+        "model": "realms_of_chaos:block/sunstone_panel_d____w_v2",
+        "weight": 2
+      }
+    ],
+    "down=false,east=true,north=false,south=false,up=false,west=true": [
+      {
+        "model": "realms_of_chaos:block/sunstone_panel__e___w",
+        "weight": 6
+      },
+      {
+        "model": "realms_of_chaos:block/sunstone_panel__e___w_v1",
+        "weight": 2
+      },
+      {
+        "model": "realms_of_chaos:block/sunstone_panel__e___w_v2",
+        "weight": 2
+      }
+    ],
+    "down=true,east=true,north=false,south=false,up=false,west=true": [
+      {
+        "model": "realms_of_chaos:block/sunstone_panel_de___w",
+        "weight": 6
+      },
+      {
+        "model": "realms_of_chaos:block/sunstone_panel_de___w_v1",
+        "weight": 2
+      },
+      {
+        "model": "realms_of_chaos:block/sunstone_panel_de___w_v2",
+        "weight": 2
+      }
+    ],
+    "down=false,east=false,north=true,south=false,up=false,west=true": [
+      {
+        "model": "realms_of_chaos:block/sunstone_panel___n__w",
+        "weight": 6
+      },
+      {
+        "model": "realms_of_chaos:block/sunstone_panel___n__w_v1",
+        "weight": 2
+      },
+      {
+        "model": "realms_of_chaos:block/sunstone_panel___n__w_v2",
+        "weight": 2
+      }
+    ],
+    "down=true,east=false,north=true,south=false,up=false,west=true": [
+      {
+        "model": "realms_of_chaos:block/sunstone_panel_d_n__w",
+        "weight": 6
+      },
+      {
+        "model": "realms_of_chaos:block/sunstone_panel_d_n__w_v1",
+        "weight": 2
+      },
+      {
+        "model": "realms_of_chaos:block/sunstone_panel_d_n__w_v2",
+        "weight": 2
+      }
+    ],
+    "down=false,east=true,north=true,south=false,up=false,west=true": [
+      {
+        "model": "realms_of_chaos:block/sunstone_panel__en__w",
+        "weight": 6
+      },
+      {
+        "model": "realms_of_chaos:block/sunstone_panel__en__w_v1",
+        "weight": 2
+      },
+      {
+        "model": "realms_of_chaos:block/sunstone_panel__en__w_v2",
+        "weight": 2
+      }
+    ],
+    "down=true,east=true,north=true,south=false,up=false,west=true": [
+      {
+        "model": "realms_of_chaos:block/sunstone_panel_den__w",
+        "weight": 6
+      },
+      {
+        "model": "realms_of_chaos:block/sunstone_panel_den__w_v1",
+        "weight": 2
+      },
+      {
+        "model": "realms_of_chaos:block/sunstone_panel_den__w_v2",
+        "weight": 2
+      }
+    ],
+    "down=false,east=false,north=false,south=true,up=false,west=true": [
+      {
+        "model": "realms_of_chaos:block/sunstone_panel____s_w",
+        "weight": 6
+      },
+      {
+        "model": "realms_of_chaos:block/sunstone_panel____s_w_v1",
+        "weight": 2
+      },
+      {
+        "model": "realms_of_chaos:block/sunstone_panel____s_w_v2",
+        "weight": 2
+      }
+    ],
+    "down=true,east=false,north=false,south=true,up=false,west=true": [
+      {
+        "model": "realms_of_chaos:block/sunstone_panel_d__s_w",
+        "weight": 6
+      },
+      {
+        "model": "realms_of_chaos:block/sunstone_panel_d__s_w_v1",
+        "weight": 2
+      },
+      {
+        "model": "realms_of_chaos:block/sunstone_panel_d__s_w_v2",
+        "weight": 2
+      }
+    ],
+    "down=false,east=true,north=false,south=true,up=false,west=true": [
+      {
+        "model": "realms_of_chaos:block/sunstone_panel__e_s_w",
+        "weight": 6
+      },
+      {
+        "model": "realms_of_chaos:block/sunstone_panel__e_s_w_v1",
+        "weight": 2
+      },
+      {
+        "model": "realms_of_chaos:block/sunstone_panel__e_s_w_v2",
+        "weight": 2
+      }
+    ],
+    "down=true,east=true,north=false,south=true,up=false,west=true": [
+      {
+        "model": "realms_of_chaos:block/sunstone_panel_de_s_w",
+        "weight": 6
+      },
+      {
+        "model": "realms_of_chaos:block/sunstone_panel_de_s_w_v1",
+        "weight": 2
+      },
+      {
+        "model": "realms_of_chaos:block/sunstone_panel_de_s_w_v2",
+        "weight": 2
+      }
+    ],
+    "down=false,east=false,north=true,south=true,up=false,west=true": [
+      {
+        "model": "realms_of_chaos:block/sunstone_panel___ns_w",
+        "weight": 6
+      },
+      {
+        "model": "realms_of_chaos:block/sunstone_panel___ns_w_v1",
+        "weight": 2
+      },
+      {
+        "model": "realms_of_chaos:block/sunstone_panel___ns_w_v2",
+        "weight": 2
+      }
+    ],
+    "down=true,east=false,north=true,south=true,up=false,west=true": [
+      {
+        "model": "realms_of_chaos:block/sunstone_panel_d_ns_w",
+        "weight": 6
+      },
+      {
+        "model": "realms_of_chaos:block/sunstone_panel_d_ns_w_v1",
+        "weight": 2
+      },
+      {
+        "model": "realms_of_chaos:block/sunstone_panel_d_ns_w_v2",
+        "weight": 2
+      }
+    ],
+    "down=false,east=true,north=true,south=true,up=false,west=true": [
+      {
+        "model": "realms_of_chaos:block/sunstone_panel__ens_w",
+        "weight": 6
+      },
+      {
+        "model": "realms_of_chaos:block/sunstone_panel__ens_w_v1",
+        "weight": 2
+      },
+      {
+        "model": "realms_of_chaos:block/sunstone_panel__ens_w_v2",
+        "weight": 2
+      }
+    ],
+    "down=true,east=true,north=true,south=true,up=false,west=true": [
+      {
+        "model": "realms_of_chaos:block/sunstone_panel_dens_w",
+        "weight": 6
+      },
+      {
+        "model": "realms_of_chaos:block/sunstone_panel_dens_w_v1",
+        "weight": 2
+      },
+      {
+        "model": "realms_of_chaos:block/sunstone_panel_dens_w_v2",
+        "weight": 2
+      }
+    ],
+    "down=false,east=false,north=false,south=false,up=true,west=true": [
+      {
+        "model": "realms_of_chaos:block/sunstone_panel_____uw",
+        "weight": 6
+      },
+      {
+        "model": "realms_of_chaos:block/sunstone_panel_____uw_v1",
+        "weight": 2
+      },
+      {
+        "model": "realms_of_chaos:block/sunstone_panel_____uw_v2",
+        "weight": 2
+      }
+    ],
+    "down=true,east=false,north=false,south=false,up=true,west=true": [
+      {
+        "model": "realms_of_chaos:block/sunstone_panel_d___uw",
+        "weight": 6
+      },
+      {
+        "model": "realms_of_chaos:block/sunstone_panel_d___uw_v1",
+        "weight": 2
+      },
+      {
+        "model": "realms_of_chaos:block/sunstone_panel_d___uw_v2",
+        "weight": 2
+      }
+    ],
+    "down=false,east=true,north=false,south=false,up=true,west=true": [
+      {
+        "model": "realms_of_chaos:block/sunstone_panel__e__uw",
+        "weight": 6
+      },
+      {
+        "model": "realms_of_chaos:block/sunstone_panel__e__uw_v1",
+        "weight": 2
+      },
+      {
+        "model": "realms_of_chaos:block/sunstone_panel__e__uw_v2",
+        "weight": 2
+      }
+    ],
+    "down=true,east=true,north=false,south=false,up=true,west=true": [
+      {
+        "model": "realms_of_chaos:block/sunstone_panel_de__uw",
+        "weight": 6
+      },
+      {
+        "model": "realms_of_chaos:block/sunstone_panel_de__uw_v1",
+        "weight": 2
+      },
+      {
+        "model": "realms_of_chaos:block/sunstone_panel_de__uw_v2",
+        "weight": 2
+      }
+    ],
+    "down=false,east=false,north=true,south=false,up=true,west=true": [
+      {
+        "model": "realms_of_chaos:block/sunstone_panel___n_uw",
+        "weight": 6
+      },
+      {
+        "model": "realms_of_chaos:block/sunstone_panel___n_uw_v1",
+        "weight": 2
+      },
+      {
+        "model": "realms_of_chaos:block/sunstone_panel___n_uw_v2",
+        "weight": 2
+      }
+    ],
+    "down=true,east=false,north=true,south=false,up=true,west=true": [
+      {
+        "model": "realms_of_chaos:block/sunstone_panel_d_n_uw",
+        "weight": 6
+      },
+      {
+        "model": "realms_of_chaos:block/sunstone_panel_d_n_uw_v1",
+        "weight": 2
+      },
+      {
+        "model": "realms_of_chaos:block/sunstone_panel_d_n_uw_v2",
+        "weight": 2
+      }
+    ],
+    "down=false,east=true,north=true,south=false,up=true,west=true": [
+      {
+        "model": "realms_of_chaos:block/sunstone_panel__en_uw",
+        "weight": 6
+      },
+      {
+        "model": "realms_of_chaos:block/sunstone_panel__en_uw_v1",
+        "weight": 2
+      },
+      {
+        "model": "realms_of_chaos:block/sunstone_panel__en_uw_v2",
+        "weight": 2
+      }
+    ],
+    "down=true,east=true,north=true,south=false,up=true,west=true": [
+      {
+        "model": "realms_of_chaos:block/sunstone_panel_den_uw",
+        "weight": 6
+      },
+      {
+        "model": "realms_of_chaos:block/sunstone_panel_den_uw_v1",
+        "weight": 2
+      },
+      {
+        "model": "realms_of_chaos:block/sunstone_panel_den_uw_v2",
+        "weight": 2
+      }
+    ],
+    "down=false,east=false,north=false,south=true,up=true,west=true": [
+      {
+        "model": "realms_of_chaos:block/sunstone_panel____suw",
+        "weight": 6
+      },
+      {
+        "model": "realms_of_chaos:block/sunstone_panel____suw_v1",
+        "weight": 2
+      },
+      {
+        "model": "realms_of_chaos:block/sunstone_panel____suw_v2",
+        "weight": 2
+      }
+    ],
+    "down=true,east=false,north=false,south=true,up=true,west=true": [
+      {
+        "model": "realms_of_chaos:block/sunstone_panel_d__suw",
+        "weight": 6
+      },
+      {
+        "model": "realms_of_chaos:block/sunstone_panel_d__suw_v1",
+        "weight": 2
+      },
+      {
+        "model": "realms_of_chaos:block/sunstone_panel_d__suw_v2",
+        "weight": 2
+      }
+    ],
+    "down=false,east=true,north=false,south=true,up=true,west=true": [
+      {
+        "model": "realms_of_chaos:block/sunstone_panel__e_suw",
+        "weight": 6
+      },
+      {
+        "model": "realms_of_chaos:block/sunstone_panel__e_suw_v1",
+        "weight": 2
+      },
+      {
+        "model": "realms_of_chaos:block/sunstone_panel__e_suw_v2",
+        "weight": 2
+      }
+    ],
+    "down=true,east=true,north=false,south=true,up=true,west=true": [
+      {
+        "model": "realms_of_chaos:block/sunstone_panel_de_suw",
+        "weight": 6
+      },
+      {
+        "model": "realms_of_chaos:block/sunstone_panel_de_suw_v1",
+        "weight": 2
+      },
+      {
+        "model": "realms_of_chaos:block/sunstone_panel_de_suw_v2",
+        "weight": 2
+      }
+    ],
+    "down=false,east=false,north=true,south=true,up=true,west=true": [
+      {
+        "model": "realms_of_chaos:block/sunstone_panel___nsuw",
+        "weight": 6
+      },
+      {
+        "model": "realms_of_chaos:block/sunstone_panel___nsuw_v1",
+        "weight": 2
+      },
+      {
+        "model": "realms_of_chaos:block/sunstone_panel___nsuw_v2",
+        "weight": 2
+      }
+    ],
+    "down=true,east=false,north=true,south=true,up=true,west=true": [
+      {
+        "model": "realms_of_chaos:block/sunstone_panel_d_nsuw",
+        "weight": 6
+      },
+      {
+        "model": "realms_of_chaos:block/sunstone_panel_d_nsuw_v1",
+        "weight": 2
+      },
+      {
+        "model": "realms_of_chaos:block/sunstone_panel_d_nsuw_v2",
+        "weight": 2
+      }
+    ],
+    "down=false,east=true,north=true,south=true,up=true,west=true": [
+      {
+        "model": "realms_of_chaos:block/sunstone_panel__ensuw",
+        "weight": 6
+      },
+      {
+        "model": "realms_of_chaos:block/sunstone_panel__ensuw_v1",
+        "weight": 2
+      },
+      {
+        "model": "realms_of_chaos:block/sunstone_panel__ensuw_v2",
+        "weight": 2
+      }
+    ],
+    "down=true,east=true,north=true,south=true,up=true,west=true": [
+      {
+        "model": "realms_of_chaos:block/sunstone_panel_densuw",
+        "weight": 6
+      },
+      {
+        "model": "realms_of_chaos:block/sunstone_panel_densuw_v1",
+        "weight": 2
+      },
+      {
+        "model": "realms_of_chaos:block/sunstone_panel_densuw_v2",
+        "weight": 2
+      }
+    ]
   }
 }

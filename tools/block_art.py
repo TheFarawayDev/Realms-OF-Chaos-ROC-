@@ -599,6 +599,9 @@ def run(assets, data=None):
         gen_variety(assets)
         gen_weapon_rack(assets)
         gen_upper(assets, data)
+        gen_floor_polish(assets)
+        for floor in ("sunstone_panel", "pearl_panel", "ember_panel", "sky_mosaic", "sea_mosaic", "shade_mosaic"):
+            connected_breaks(assets, floor)
 
 
 # ---- high-resolution building stone: 64x64, with connecting panels ---------------------------------------------------
@@ -1594,3 +1597,132 @@ def gen_upper(assets, data):
     for b in UPPER_BLOCKS:
         wj(os.path.join(data, f"loot_table/blocks/{b}.json"), {"type": "minecraft:block", "pools": [{"rolls": 1, "entries": [{"type": "minecraft:item", "name": f"{MOD}:{b}"}],
                                                                                                   "conditions": [{"condition": "minecraft:survives_explosion"}]}]})
+
+
+# ---- floors: bevelled tiles, and the breaks a floor gets with use ---------------------------------------------------------
+
+def _px(img, x, y, c):
+    if 0 <= x < 16 and 0 <= y < 16:
+        img.putpixel((x, y), tuple(c[:3]) + (255,))
+
+
+def bevel(img, cell, grout_dark=0.55):
+    """Each tile of a floor lit on its top and left edges and shadowed on its bottom and right, so it reads as a
+    laid stone rather than a painted square."""
+    out = img.copy()
+    for y in range(16):
+        for x in range(16):
+            tx, ty = x % cell, y % cell
+            c = img.getpixel((x, y))[:3]
+            if tx == 0 or ty == 0:
+                continue                                   # (the grout)
+            if tx == 1 or ty == 1: c = shade(c, 1.1)
+            elif tx == cell - 1 or ty == cell - 1: c = shade(c, 0.84)
+            out.putpixel((x, y), c + (255,))
+    return out
+
+
+def crack(img, seed, lo=2, hi=13):
+    """A jagged crack across the stone: a dark line with its lower lip catching the light."""
+    rnd = random.Random(seed)
+    out = img.copy()
+    x, y = rnd.randrange(lo, hi), lo
+    for _ in range(hi - lo + rnd.randrange(3)):
+        c = out.getpixel((x, y))[:3]
+        _px(out, x, y, shade(c, 0.45))
+        _px(out, x + 1, y, shade(c, 1.12))
+        if rnd.random() < 0.25:                            # a hair-crack off to the side
+            _px(out, x - 1, y + 1, shade(c, 0.65))
+        x = max(lo, min(hi, x + rnd.choice((-1, 0, 0, 1))))
+        y += 1
+        if y > hi: break
+    return out
+
+
+def chip(img, seed, cell, under=(40, 34, 40)):
+    """A corner broken off one tile: the bed beneath shows, its broken edge lit."""
+    rnd = random.Random(seed)
+    out = img.copy()
+    tx0, ty0 = rnd.randrange(16 // cell) * cell, rnd.randrange(16 // cell) * cell
+    corner = rnd.randrange(4)
+    size = max(2, cell // 2)
+    for k in range(size):
+        for j in range(size - k):
+            x = tx0 + 1 + (k if corner in (0, 2) else cell - 2 - k)
+            y = ty0 + 1 + (j if corner in (0, 1) else cell - 2 - j)
+            _px(out, x, y, shade(under, 0.9 + 0.1 * ((x + y) % 2)))
+            if j == size - k - 1:
+                _px(out, x, y, shade(out.getpixel((min(15, x + 1), y))[:3], 1.15))
+    return out
+
+
+def sunk(img, seed, cell):
+    """One tile settled a little lower than the rest: darker, its top edge in shadow."""
+    rnd = random.Random(seed)
+    out = img.copy()
+    tx0, ty0 = rnd.randrange(16 // cell) * cell, rnd.randrange(16 // cell) * cell
+    for y in range(ty0 + 1, ty0 + cell):
+        for x in range(tx0 + 1, tx0 + cell):
+            c = out.getpixel((x, y))[:3]
+            out.putpixel((x, y), shade(c, 0.62 if (y == ty0 + 1 or x == tx0 + 1) else 0.86) + (255,))
+    return out
+
+
+def moss(img, seed, color=(86, 120, 60), n=14):
+    rnd = random.Random(seed)
+    out = img.copy()
+    cx, cy = rnd.randrange(16), rnd.randrange(16)
+    for _ in range(n):
+        x, y = cx + rnd.randrange(-3, 4), cy + rnd.randrange(-3, 4)
+        if 0 <= x < 16 and 0 <= y < 16:
+            out.putpixel((x, y), mix(out.getpixel((x, y))[:3], color, 0.7) + (255,))
+    return out
+
+
+FLOORS = {
+    # block: (tile size, the bed under a chipped tile, whether moss grows on it)
+    "olympian_tiles": (8, (150, 140, 130), True), "cloud_tile": (8, (170, 184, 208), False), "nacre_tile": (8, (120, 150, 166), False),
+    "throne_tile": (8, (60, 40, 20), False), "abyssal_tile": (8, (14, 40, 46), True), "bath_tile": (4, (150, 166, 176), True),
+}
+STONES = ["cloudstone", "trench_stone", "tartarus_stone", "storm_brick", "tide_brick", "ash_brick"]
+
+
+def gen_floor_polish(assets):
+    T = os.path.join(assets, "textures/block")
+    for name, (cell, under, mossy) in FLOORS.items():
+        base = bevel(_load(T, name), cell)
+        imgs = [base, crack(base, 1), chip(base, 2, cell, under), sunk(base, 3, cell), crack(chip(base, 4, cell, under), 5)]
+        weights = [8, 3, 2, 2, 1]
+        if mossy:
+            imgs.append(moss(base, 6))
+            weights.append(2)
+        variants(assets, name, imgs, weights)
+    for name in STONES:
+        base = _load(T, name)
+        variants(assets, name, [base, crack(base, 11), crack(crack(base, 12), 13), _patch(base.copy(), 14, (40, 40, 40), 0.2)], [6, 2, 1, 2])
+
+
+def connected_breaks(assets, name):
+    """A connecting floor's every look given a cracked and a worn twin, chosen block by block like any variant."""
+    import json as _json
+    T = os.path.join(assets, "textures/block")
+    for mask in range(16):
+        base = _load(T, f"{name}_{mask}")
+        crack(base, mask * 7 + 1, 4, 11).save(os.path.join(T, f"{name}_{mask}_v1.png"))
+        sunk(base, mask * 7 + 2, 8).save(os.path.join(T, f"{name}_{mask}_v2.png"))
+    path = os.path.join(assets, f"blockstates/{name}.json")
+    with open(path) as f:
+        state = _json.load(f)
+    for key, entry in state["variants"].items():
+        model_id = entry["model"] if isinstance(entry, dict) else entry[0]["model"]
+        model_name = model_id.split("/")[-1]
+        with open(os.path.join(assets, f"models/block/{model_name}.json")) as f:
+            model = _json.load(f)
+        out = [{"model": model_id, "weight": 6}]
+        for v in (1, 2):
+            twin = dict(model)
+            twin["textures"] = {k: (t + f"_v{v}" if k != "particle" and t.split("/")[-1].startswith(name + "_") else t) for k, t in model["textures"].items()}
+            wj(os.path.join(assets, f"models/block/{model_name}_v{v}.json"), twin)
+            out.append({"model": f"{MOD}:block/{model_name}_v{v}", "weight": 2})
+        state["variants"][key] = out
+    wj(path, state)

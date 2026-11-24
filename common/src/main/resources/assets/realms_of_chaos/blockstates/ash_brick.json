@@ -11,7 +11,7 @@
       },
       {
         "model": "realms_of_chaos:block/ash_brick_v2",
-        "weight": 2
+        "weight": 1
       },
       {
         "model": "realms_of_chaos:block/ash_brick_v3",

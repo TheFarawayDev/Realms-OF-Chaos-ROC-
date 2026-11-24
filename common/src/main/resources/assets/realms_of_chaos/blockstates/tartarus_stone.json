@@ -1,7 +1,22 @@
 {
   "variants": {
-    "": {
-      "model": "realms_of_chaos:block/tartarus_stone"
-    }
+    "": [
+      {
+        "model": "realms_of_chaos:block/tartarus_stone",
+        "weight": 6
+      },
+      {
+        "model": "realms_of_chaos:block/tartarus_stone_v1",
+        "weight": 2
+      },
+      {
+        "model": "realms_of_chaos:block/tartarus_stone_v2",
+        "weight": 1
+      },
+      {
+        "model": "realms_of_chaos:block/tartarus_stone_v3",
+        "weight": 2
+      }
+    ]
   }
 }
