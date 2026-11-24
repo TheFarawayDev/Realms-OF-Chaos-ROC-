@@ -1,7 +1,30 @@
 {
   "variants": {
-    "": {
-      "model": "realms_of_chaos:block/bounty_board"
-    }
+    "": [
+      {
+        "model": "realms_of_chaos:block/bounty_board_0",
+        "weight": 3
+      },
+      {
+        "model": "realms_of_chaos:block/bounty_board_1",
+        "weight": 3
+      },
+      {
+        "model": "realms_of_chaos:block/bounty_board_2",
+        "weight": 3
+      },
+      {
+        "model": "realms_of_chaos:block/bounty_board_3",
+        "weight": 4
+      },
+      {
+        "model": "realms_of_chaos:block/bounty_board_4",
+        "weight": 2
+      },
+      {
+        "model": "realms_of_chaos:block/bounty_board_5",
+        "weight": 3
+      }
+    ]
   }
 }

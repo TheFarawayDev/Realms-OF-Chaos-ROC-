@@ -16,15 +16,17 @@ import net.minecraft.world.level.block.state.BlockState;
 public final class RealmBuilder {
     public static final int LAYOUT_VERSION = TowerBuilder.LAYOUT_VERSION;
     public static final int Y = 64;
-    private static final int HUB_RADIUS = 26;
+    public static final int HUB_RADIUS = 40;
+    /** How far out from the middle the four gates stand, and the half-width of the paved ways to them. */
+    public static final int GATE_OUT = 28, WAY = 3;
     /** The hub has its own design number, so it can be rebuilt without rebuilding the towers. */
-    public static final int HUB_VERSION = 9;
+    public static final int HUB_VERSION = 13;
     /** The Oracle's Flame: just north of where arrivals appear, on the way to the gate of Zeus. */
-    public static final BlockPos ORACLE = new BlockPos(0, Y + 1, -5);
+    public static final BlockPos ORACLE = new BlockPos(0, Y + 1, -4);
     /** The Heart of the Hub stands south of the middle, facing the Oracle; the Bounty Board north-east of it. */
-    public static final BlockPos HEART = new BlockPos(0, Y + 1, 5), BOUNTIES = new BlockPos(6, Y + 1, -6);
+    public static final BlockPos HEART = new BlockPos(0, Y + 1, 4), BOUNTIES = new BlockPos(10, Y + 1, -10);
     /** The canal that rings the plaza, bridged where the four paths cross it. */
-    public static final double CANAL_INNER = 11.0, CANAL_OUTER = 13.0;
+    public static final double CANAL_INNER = 16.5, CANAL_OUTER = 19.5;
 
     private RealmBuilder() {}
 
@@ -150,22 +152,26 @@ public final class RealmBuilder {
     // --- hub -------------------------------------------------------------------------------------
 
     public static void buildHub(ServerLevel level) {
-        clear(level, HUB_RADIUS + 4, Y - 3, Y + 34);
+        // (what earlier designs stood outside the plaza goes first: the plaza is then laid over whatever it overlapped)
+        HubVista.clearEarlier(level);
+        clear(level, HUB_RADIUS + 4, Y - 3, Y + 40);
         // three-block-thick plaza; the floor is a compass rose pointing at the three gates
         annulus(0, HUB_RADIUS + 1.5, (x, z, d) -> {
             set(level, x, Y - 2, z, Blocks.STONE_BRICKS);
             set(level, x, Y - 1, z, Blocks.STONE_BRICKS);
             Block top;
-            boolean north = z < 0 && Math.abs(x) <= 2, east = x > 0 && Math.abs(z) <= 2, west = x < 0 && Math.abs(z) <= 2;
-            boolean south = z > 0 && Math.abs(x) <= 2;
+            boolean north = z < 0 && Math.abs(x) <= WAY, east = x > 0 && Math.abs(z) <= WAY, west = x < 0 && Math.abs(z) <= WAY;
+            boolean south = z > 0 && Math.abs(x) <= WAY;
+            int way = GATE_OUT + 1;
             if (d < 2.5) top = Blocks.CHISELED_STONE_BRICKS;
             else if (d < 4.5) top = Blocks.GILDED_BLACKSTONE;
-            else if (d >= 9.5 && d < 10.5) top = Blocks.POLISHED_BLACKSTONE;
-            else if (d >= 21.5 && d < 22.5) top = Blocks.POLISHED_BLACKSTONE;
-            else if (north && d < 20) top = Math.abs(x) == 2 ? Blocks.GOLD_BLOCK : Blocks.SMOOTH_QUARTZ;
-            else if (east && d < 20) top = Math.abs(z) == 2 ? Blocks.SEA_LANTERN : Blocks.PRISMARINE_BRICKS;
-            else if (west && d < 20) top = Math.abs(z) == 2 ? Blocks.CRYING_OBSIDIAN : Blocks.POLISHED_BLACKSTONE_BRICKS;
-            else if (south && d < 20) top = Math.abs(x) == 2 ? Blocks.VERDANT_FROGLIGHT : Blocks.MOSSY_STONE_BRICKS;
+            else if (d < 8.6) top = ((x + z) & 1) == 0 ? ModContent.OLYMPIAN_MARBLE.get() : Blocks.CALCITE;          // the rotunda's floor
+            else if (d >= 14.5 && d < 15.5) top = Blocks.POLISHED_BLACKSTONE;
+            else if (d >= 33.5 && d < 34.5) top = Blocks.POLISHED_BLACKSTONE;
+            else if (north && d < way) top = Math.abs(x) == WAY ? Blocks.GOLD_BLOCK : Math.abs(x) == WAY - 1 ? Blocks.QUARTZ_BRICKS : Blocks.SMOOTH_QUARTZ;
+            else if (east && d < way) top = Math.abs(z) == WAY ? Blocks.SEA_LANTERN : Math.abs(z) == WAY - 1 ? Blocks.DARK_PRISMARINE : Blocks.PRISMARINE_BRICKS;
+            else if (west && d < way) top = Math.abs(z) == WAY ? Blocks.CRYING_OBSIDIAN : Math.abs(z) == WAY - 1 ? Blocks.POLISHED_BLACKSTONE : Blocks.POLISHED_BLACKSTONE_BRICKS;
+            else if (south && d < way) top = Math.abs(x) == WAY ? Blocks.VERDANT_FROGLIGHT : Math.abs(x) == WAY - 1 ? Blocks.MOSSY_COBBLESTONE : Blocks.MOSSY_STONE_BRICKS;
             else top = ((x + z) & 1) == 0 ? Blocks.POLISHED_ANDESITE : Blocks.SMOOTH_STONE;
             set(level, x, Y, z, top);
         });
@@ -178,39 +184,41 @@ public final class RealmBuilder {
         });
         // the inner face of the parapet is finished with a plinth of stairs, the rail joined into a balustrade
         annulus(HUB_RADIUS - 1.5, HUB_RADIUS - 0.5, (x, z, d) -> {
-            if (Math.abs(x) <= 2 || Math.abs(z) <= 2) return;
+            if (Math.abs(x) <= WAY || Math.abs(z) <= WAY) return;
             set(level, x, Y + 1, z, Mason.stair(Blocks.POLISHED_ANDESITE_STAIRS, Mason.outward(x, z), false));
         });
         Mason.join(level, rail);
         barrierWall(level, HUB_RADIUS - 0.5, HUB_RADIUS + 1.5, Y + 3, Y + 30);
-        for (int i = 0; i < 12; i++) {
-            double a = Math.PI * 2 * (i + 0.5) / 12;
+        for (int i = 0; i < 16; i++) {
+            double a = Math.PI * 2 * (i + 0.5) / 16;
             int px = (int) Math.round(Math.cos(a) * (HUB_RADIUS - 2)), pz = (int) Math.round(Math.sin(a) * (HUB_RADIUS - 2));
             set(level, px, Y + 1, pz, Blocks.CHISELED_STONE_BRICKS);
             column(level, px, pz, Y + 2, 2, Blocks.STONE_BRICK_WALL);
             set(level, px, Y + 4, pz, Blocks.LANTERN);
         }
         // Zeus (north), Poseidon (east), Hades (west): each gate is a small monument in its god's materials
-        gate(level, 0, -18, true, Blocks.QUARTZ_PILLAR, Blocks.GOLD_BLOCK, Blocks.CHISELED_QUARTZ_BLOCK, ModContent.GATE_ZEUS.get(), Blocks.QUARTZ_BRICKS);
-        gate(level, 18, 0, false, Blocks.PRISMARINE_BRICKS, Blocks.DARK_PRISMARINE, Blocks.SEA_LANTERN, ModContent.GATE_POSEIDON.get(), Blocks.PRISMARINE_BRICKS);
-        gate(level, -18, 0, false, Blocks.POLISHED_BLACKSTONE_BRICKS, Blocks.CRYING_OBSIDIAN, Blocks.SHROOMLIGHT, ModContent.GATE_HADES.get(), Blocks.POLISHED_BLACKSTONE_BRICKS);
+        gate(level, 0, -GATE_OUT, true, Blocks.QUARTZ_PILLAR, Blocks.GOLD_BLOCK, Blocks.CHISELED_QUARTZ_BLOCK, ModContent.GATE_ZEUS.get(), Blocks.QUARTZ_BRICKS);
+        gate(level, GATE_OUT, 0, false, Blocks.PRISMARINE_BRICKS, Blocks.DARK_PRISMARINE, Blocks.SEA_LANTERN, ModContent.GATE_POSEIDON.get(), Blocks.PRISMARINE_BRICKS);
+        gate(level, -GATE_OUT, 0, false, Blocks.POLISHED_BLACKSTONE_BRICKS, Blocks.CRYING_OBSIDIAN, Blocks.SHROOMLIGHT, ModContent.GATE_HADES.get(), Blocks.POLISHED_BLACKSTONE_BRICKS);
         // south: the way out, back to the world you came from
-        gate(level, 0, 18, true, Blocks.MOSSY_STONE_BRICKS, Blocks.EMERALD_BLOCK, Blocks.VERDANT_FROGLIGHT, ModContent.GATE_LEAVE.get(), Blocks.MOSSY_STONE_BRICKS);
+        gate(level, 0, GATE_OUT, true, Blocks.MOSSY_STONE_BRICKS, Blocks.EMERALD_BLOCK, Blocks.VERDANT_FROGLIGHT, ModContent.GATE_LEAVE.get(), Blocks.MOSSY_STONE_BRICKS);
         // flanking beacons in front of each gate
         for (int side = -1; side <= 1; side += 2) {
-            beacon(level, 5 * side, -15, Blocks.QUARTZ_PILLAR, Blocks.QUARTZ_BRICKS, Blocks.GLOWSTONE);
-            beacon(level, 15, 5 * side, Blocks.PRISMARINE_BRICKS, Blocks.PRISMARINE_BRICKS, Blocks.SEA_LANTERN);
-            beacon(level, -15, 5 * side, Blocks.POLISHED_BLACKSTONE, Blocks.POLISHED_BLACKSTONE_BRICKS, Blocks.SOUL_SOIL);
-            set(level, -15, Y + 6, 5 * side, Blocks.SOUL_FIRE);
-            beacon(level, 5 * side, 15, Blocks.MOSSY_STONE_BRICKS, Blocks.MOSSY_STONE_BRICKS, Blocks.VERDANT_FROGLIGHT);
+            int b = GATE_OUT - 4, o = WAY + 3;
+            for (int k = 0; k < 2; k++) {
+                // two pairs of beacons along each way, one by the gate and one halfway in
+                int at = k == 0 ? b : b - 12;
+                beacon(level, o * side, -at, ModContent.OLYMPIAN_MARBLE_PILLAR.get(), Blocks.QUARTZ_BRICKS, ModContent.CHAOS_LAMP.get());
+                beacon(level, at, o * side, ModContent.ABYSSAL_TILE.get(), Blocks.PRISMARINE_BRICKS, Blocks.SEA_LANTERN);
+                beacon(level, -at, o * side, ModContent.UNDERWORLD_BRICK.get(), Blocks.POLISHED_BLACKSTONE_BRICKS, Blocks.SOUL_SOIL);
+                set(level, -at, Y + 6, o * side, Blocks.SOUL_FIRE);
+                beacon(level, o * side, at, Blocks.MOSSY_STONE_BRICKS, Blocks.MOSSY_STONE_BRICKS, Blocks.VERDANT_FROGLIGHT);
+            }
         }
-        // two Forges of Chaos beside the central medallion
-        set(level, 6, Y + 1, 6, ModContent.CHAOS_FORGE.get().defaultBlockState());
-        set(level, -6, Y + 1, 6, ModContent.CHAOS_FORGE.get().defaultBlockState());
 
         // a canal rings the plaza: clear water over prismarine, lit from below, with lily pads, bridged by the four paths
         annulus(CANAL_INNER, CANAL_OUTER, (x, z, d) -> {
-            if (Math.abs(x) <= 3 || Math.abs(z) <= 3) return;
+            if (Math.abs(x) <= WAY + 1 || Math.abs(z) <= WAY + 1) return;
             set(level, x, Y - 1, z, ((x * 7 + z * 13) & 3) == 0 ? Blocks.SEA_LANTERN : Blocks.PRISMARINE_BRICKS);
             set(level, x, Y, z, Blocks.WATER);
             if (Math.floorMod(x * 31 + z * 17, 7) == 0) set(level, x, Y + 1, z, Blocks.LILY_PAD);
@@ -235,6 +243,19 @@ public final class RealmBuilder {
                 for (int[] f : new int[][]{{-1, -1}, {1, -1}, {-1, 1}, {1, 1}, {0, -1}, {1, 0}}) set(level, gx + f[0], Y + 1, gz + f[1], flowers[n++ % flowers.length]);
                 tree(level, gx, gz);
             }
+        }
+        // flowering beds round the outer plaza, between the ways and the gardens, each with a bench facing in
+        for (int i = 0; i < 24; i++) {
+            if (i % 3 == 0) continue;                                                    // (the ways and the gardens)
+            double a = Math.PI * 2 * i / 24;
+            int bx = (int) Math.round(Math.cos(a) * 30), bz = (int) Math.round(Math.sin(a) * 30);
+            set(level, bx, Y, bz, Blocks.MOSS_BLOCK);
+            set(level, bx, Y + 1, bz, Blocks.MOSS_BLOCK);
+            set(level, bx, Y + 2, bz, (i & 1) == 0 ? Blocks.FLOWERING_AZALEA : Blocks.AZALEA);
+            for (Direction d : Direction.Plane.HORIZONTAL) set(level, bx + d.getStepX(), Y + 1, bz + d.getStepZ(), Mason.slab(Blocks.MOSSY_STONE_BRICK_SLAB, false));
+            Direction in = Mason.outward(-bx, -bz);
+            BlockPos bench = new BlockPos(bx, Y + 1, bz).relative(in, 3);
+            set(level, bench.getX(), bench.getY(), bench.getZ(), Mason.stair(Blocks.DARK_OAK_STAIRS, in.getOpposite(), false));
         }
         // the Oracle's Flame, on gilded stone
         for (int dx = -1; dx <= 1; dx++) for (int dz = -1; dz <= 1; dz++) set(level, ORACLE.getX() + dx, Y, ORACLE.getZ() + dz, Blocks.GILDED_BLACKSTONE);

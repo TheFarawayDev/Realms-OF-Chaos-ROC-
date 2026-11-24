@@ -388,11 +388,11 @@ public final class SelfTest {
 
         step("hub builds: three tower gates, the exit gate, safe spawn and arrivals", () -> {
             RealmBuilder.buildHub(level);
-            check(level.getBlockState(new BlockPos(0, 66, -18)).is(ModContent.GATE_ZEUS.get()), "zeus gate");
-            check(level.getBlockState(new BlockPos(18, 66, 0)).is(ModContent.GATE_POSEIDON.get()), "poseidon gate");
-            check(level.getBlockState(new BlockPos(-18, 66, 0)).is(ModContent.GATE_HADES.get()), "hades gate");
-            check(level.getBlockState(new BlockPos(0, 66, 18)).is(ModContent.GATE_LEAVE.get()), "exit gate");
-            check(level.getBlockState(new BlockPos(6, 65, 6)).is(ModContent.CHAOS_FORGE.get()), "forge of chaos");
+            check(level.getBlockState(new BlockPos(0, 66, -RealmBuilder.GATE_OUT)).is(ModContent.GATE_ZEUS.get()), "zeus gate");
+            check(level.getBlockState(new BlockPos(RealmBuilder.GATE_OUT, 66, 0)).is(ModContent.GATE_POSEIDON.get()), "poseidon gate");
+            check(level.getBlockState(new BlockPos(-RealmBuilder.GATE_OUT, 66, 0)).is(ModContent.GATE_HADES.get()), "hades gate");
+            check(level.getBlockState(new BlockPos(0, 66, RealmBuilder.GATE_OUT)).is(ModContent.GATE_LEAVE.get()), "exit gate");
+            check(level.getBlockState(com.thefarawaydev.realmsofchaos.world.HubCentre.mouths(1).get(0)).is(ModContent.CHAOS_FORGE.get()), "forge of chaos");
             check(level.getBlockState(new BlockPos(0, 65, 0)).isAir() && level.getBlockState(new BlockPos(0, 66, 0)).isAir(), "hub spawn is free");
             check(solid(level, new BlockPos(0, 64, 0)), "hub floor");
             for (Realm r : Realm.values()) {
@@ -401,13 +401,13 @@ public final class SelfTest {
             }
             // the livelier hub: the Oracle's Flame, a canal bridged by the four paths, gardens, and residents
             check(level.getBlockState(RealmBuilder.ORACLE).is(ModContent.ORACLE.get()), "the Oracle's Flame");
-            check(level.getBlockState(new BlockPos(9, 64, 8)).is(Blocks.WATER) && level.getBlockState(new BlockPos(-9, 64, -8)).is(Blocks.WATER), "the canal holds water");
-            for (BlockPos bridge : new BlockPos[]{new BlockPos(12, 64, 0), new BlockPos(-12, 64, 2), new BlockPos(0, 64, 12), new BlockPos(-3, 64, -12)}) {
+            check(level.getBlockState(new BlockPos(17, 64, 6)).is(Blocks.WATER) && level.getBlockState(new BlockPos(-17, 64, -6)).is(Blocks.WATER), "the canal holds water");
+            for (BlockPos bridge : new BlockPos[]{new BlockPos(18, 64, 0), new BlockPos(-18, 64, 2), new BlockPos(0, 64, 18), new BlockPos(-3, 64, -18)}) {
                 check(solid(level, bridge) && level.getBlockState(bridge.above()).isAir(), "the paths bridge the canal at " + bridge);
             }
             // nothing spills: every canal block has floor or canal on all four sides and stone beneath
-            for (int x = -14; x <= 14; x++) {
-                for (int z = -14; z <= 14; z++) {
+            for (int x = -24; x <= 24; x++) {
+                for (int z = -24; z <= 24; z++) {
                     BlockPos w = new BlockPos(x, 64, z);
                     if (!level.getBlockState(w).is(Blocks.WATER)) continue;
                     check(solid(level, w.below()), "canal has a bed at " + w);
@@ -432,10 +432,12 @@ public final class SelfTest {
             check(boards == 9, "the bounty board is nine boards in a frame, each of them the board: " + boards);
             for (int sx = -1; sx <= 1; sx += 2) {
                 for (BlockPos m : com.thefarawaydev.realmsofchaos.world.HubCentre.mouths(sx)) check(level.getBlockState(m).is(ModContent.CHAOS_FORGE.get()), "a forge's bank of mouths: " + m);
-                check(solid(level, new BlockPos(sx * 7, 64 + 18, 6)), "and its chimney stands tall");
+                check(solid(level, new BlockPos(sx * 12, 64 + 18, 11)), "and its chimney stands tall");
             }
             for (BlockPos col : com.thefarawaydev.realmsofchaos.world.HubCentre.columns()) check(solid(level, col.above(3)), "a column of the rotunda at " + col);
-            check(solid(level, new BlockPos(0, 64 + 9, 0)) && level.getBlockState(new BlockPos(0, 67, 0)).isAir(), "a dome over the spawn, and room under it");
+            check(level.getBlockState(com.thefarawaydev.realmsofchaos.world.HubCentre.POOL.offset(1, 0, 1)).is(Blocks.WATER) && solid(level, com.thefarawaydev.realmsofchaos.world.HubCentre.POOL.above(8)),
+                    "a still pool in the fourth quarter, an obelisk standing in it");
+            check(solid(level, new BlockPos(0, 64 + 11, 0)) && level.getBlockState(new BlockPos(0, 67, 0)).isAir(), "a dome over the spawn, and room under it");
             check(level.getBlockState(new BlockPos(HubLife.GARDEN, 65, HubLife.GARDEN)).is(Blocks.CHERRY_LOG)
                     && level.getBlockState(new BlockPos(-HubLife.GARDEN, 69, -HubLife.GARDEN)).is(Blocks.CHERRY_LEAVES), "garden trees");
             // the Heart of the Hub and the Bounty Board stand in the plaza, can be walked up to, and open their screens

@@ -468,8 +468,31 @@ public final class Rooms {
         return false;
     }
 
+    /** The beam's two colours: a hot core and a softer halo about it. */
+    private static final net.minecraft.core.particles.DustParticleOptions BEAM_CORE = new net.minecraft.core.particles.DustParticleOptions(0xFFF6C8, 0.9F),
+            BEAM_HALO = new net.minecraft.core.particles.DustParticleOptions(0xFFB040, 1.6F);
+
+    /**
+     * The beam as a straight, solid line of light from block to block - four points to a block, no scatter - with a
+     * halo about it and a flash where it strikes each mirror.
+     */
     private static void draw(ServerLevel level, Trace trace) {
-        for (BlockPos p : trace.path) level.sendParticles(ParticleTypes.END_ROD, p.getX() + 0.5, p.getY() + 0.5, p.getZ() + 0.5, 2, 0.15, 0.05, 0.15, 0.0);
+        List<BlockPos> path = trace.path;
+        for (int i = 0; i < path.size(); i++) {
+            BlockPos a = path.get(i), b = i + 1 < path.size() ? path.get(i + 1) : null;
+            double ax = a.getX() + 0.5, ay = a.getY() + 0.62, az = a.getZ() + 0.5;
+            if (b != null && a.distManhattan(b) == 1) {
+                for (int k = 0; k < 4; k++) {
+                    double t = k / 4.0;
+                    double x = ax + (b.getX() - a.getX()) * t, z = az + (b.getZ() - a.getZ()) * t;
+                    level.sendParticles(BEAM_CORE, x, ay, z, 1, 0, 0, 0, 0);
+                    if (k % 2 == 0) level.sendParticles(BEAM_HALO, x, ay, z, 1, 0.02, 0.02, 0.02, 0);
+                }
+            } else {
+                level.sendParticles(BEAM_CORE, ax, ay, az, 1, 0, 0, 0, 0);
+            }
+            if (level.getBlockState(a).is(ModContent.BEAM_MIRROR.get())) level.sendParticles(ParticleTypes.END_ROD, ax, ay + 0.2, az, 1, 0.05, 0.05, 0.05, 0.01);
+        }
     }
 
     // ---- the trembling floor: one path holds ---------------------------------------------------------------------

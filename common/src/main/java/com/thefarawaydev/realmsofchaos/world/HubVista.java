@@ -22,9 +22,9 @@ import net.minecraft.world.level.block.state.BlockState;
 public final class HubVista {
     private static final int Y = RealmBuilder.Y;
     /** How far out from the middle of the plaza a statue stands, and a tower. */
-    public static final int STATUE_OUT = 44, TOWER_OUT = 105, TOWER_ASIDE = 30;
+    public static final int STATUE_OUT = 60, TOWER_OUT = 125, TOWER_ASIDE = 36;
     /** A statue stands on a pedestal whose top is this far above the plaza. */
-    public static final int STATUE_FOOT = 16;
+    public static final int STATUE_FOOT = 18;
     /** Blocks to a unit of the figure. */
     private static final double SCALE = 1.8;
     /** How tall the model of a tower is (fifteen floors of ten), and its radius at the foot. */
@@ -60,6 +60,30 @@ public final class HubVista {
         for (Line line : Line.values()) {
             statue(level, line);
             tower(level, line);
+        }
+    }
+
+    /**
+     * The hub's earlier designs put the statues and towers nearer in; a hub rebuilt from one of those would keep
+     * them hanging in the sky beside the new ones. Whatever stands where they stood goes first.
+     */
+    public static void clearEarlier(ServerLevel level) {
+        for (Line line : Line.values()) {
+            Direction out = outward(line);
+            BlockPos statue = BlockPos.ZERO.relative(out, 44).atY(Y);
+            BlockPos tower = BlockPos.ZERO.relative(out, 105).relative(out.getClockWise(), 30).atY(Y - 6);
+            clearBox(level, statue, 14, -40, 72);
+            clearBox(level, tower, 22, -40, TOWER_HEIGHT + 22);
+        }
+    }
+
+    private static void clearBox(ServerLevel level, BlockPos centre, int half, int below, int above) {
+        BlockPos.MutableBlockPos at = new BlockPos.MutableBlockPos();
+        for (int a = -half; a <= half; a++) for (int b = -half; b <= half; b++) {
+            for (int y = below; y <= above; y++) {
+                at.set(centre.getX() + a, centre.getY() + y, centre.getZ() + b);
+                if (!level.getBlockState(at).isAir()) level.setBlock(at, Blocks.AIR.defaultBlockState(), 2);
+            }
         }
     }
 
@@ -105,16 +129,17 @@ public final class HubVista {
 
     /** The plaza is not a slab hung in the sky but the top of an island of rock, its rim carried out on corbels. */
     private static void underside(ServerLevel level) {
-        int R = 28;
+        int R = RealmBuilder.HUB_RADIUS + 2;
+        double rim = RealmBuilder.HUB_RADIUS + 1.5;
         for (int dx = -R; dx <= R; dx++) {
             for (int dz = -R; dz <= R; dz++) {
                 double d = Math.sqrt(dx * dx + dz * dz);
-                if (d >= 27.5) {
-                    if (d < 28.5) set(level, new BlockPos(dx, Y - 3, dz), Mason.stair(Blocks.STONE_BRICK_STAIRS, Mason.outward(dx, dz).getOpposite(), true));
+                if (d >= rim) {
+                    if (d < rim + 1) set(level, new BlockPos(dx, Y - 3, dz), Mason.stair(Blocks.STONE_BRICK_STAIRS, Mason.outward(dx, dz).getOpposite(), true));
                     continue;
                 }
-                double t = d / 27.5;
-                int down = (int) Math.round((1.0 - Math.pow(t, 1.3)) * 30 * (0.8 + 0.4 * noise(dx, 3, dz))) + 1;
+                double t = d / rim;
+                int down = (int) Math.round((1.0 - Math.pow(t, 1.3)) * 40 * (0.8 + 0.4 * noise(dx, 3, dz))) + 1;
                 for (int k = 3; k <= 3 + down; k++) {
                     BlockPos at = new BlockPos(dx, Y - k, dz);
                     Block b = k == 3 ? Blocks.STONE_BRICKS : k < 7 ? Blocks.STONE : k < 18 ? (noise(dx, k, dz) < 0.3 ? Blocks.ANDESITE : Blocks.STONE)
@@ -126,7 +151,7 @@ public final class HubVista {
         // a few lights hung beneath, so the island is seen from the plaza's edge
         for (int i = 0; i < 8; i++) {
             double a = Math.PI * 2 * (i + 0.5) / 8;
-            BlockPos under = new BlockPos((int) Math.round(Math.cos(a) * 24), Y - 4, (int) Math.round(Math.sin(a) * 24));
+            BlockPos under = new BlockPos((int) Math.round(Math.cos(a) * (rim - 3)), Y - 4, (int) Math.round(Math.sin(a) * (rim - 3)));
             for (int k = 0; k < 6 && !level.getBlockState(under.below(k)).isAir(); k++) {
                 if (level.getBlockState(under.below(k + 1)).isAir()) {
                     Mason.chandelier(level, under.below(k), 3, Blocks.LANTERN);

@@ -1,0 +1,12 @@
+{
+  "parent": "minecraft:block/cube",
+  "textures": {
+    "particle": "realms_of_chaos:block/bounty_board_side_4",
+    "north": "realms_of_chaos:block/bounty_board_side_4",
+    "south": "realms_of_chaos:block/bounty_board_side_4",
+    "east": "realms_of_chaos:block/bounty_board_side_0",
+    "west": "realms_of_chaos:block/bounty_board_side_2",
+    "up": "realms_of_chaos:block/bounty_board_top",
+    "down": "realms_of_chaos:block/bounty_board_top"
+  }
+}

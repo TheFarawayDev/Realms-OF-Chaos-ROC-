@@ -78,7 +78,7 @@ public class Validate {
         @SuppressWarnings("unchecked") EntityType<com.thefarawaydev.realmsofchaos.entity.GodBoss> bt = (EntityType<com.thefarawaydev.realmsofchaos.entity.GodBoss>) boss;
         ModContent.GOD_BOSS.bind(() -> bt);
         check(boss != null, "boss type");
-        check(ModContent.tabItems().size() == 3 + 45 + 12 + 6 + 1 + 22 + 4 + 32 + 8, "tab item count " + ModContent.tabItems().size());
+        check(ModContent.tabItems().size() == 3 + 45 + 12 + 6 + 1 + 22 + 4 + 38 + 8, "tab item count " + ModContent.tabItems().size());
 
         // 3. dimension types + dimensions parse with vanilla codecs
         HolderLookup.Provider lookup = VanillaRegistries.createWorldLookup();
@@ -178,7 +178,15 @@ public class Validate {
             } catch (RuntimeException e) {
                 check(false, "block model " + d.id() + ": " + e);
             }
-            var textures = JsonParser.parseString(Files.readString(model)).getAsJsonObject().getAsJsonObject("textures");
+            var json = JsonParser.parseString(Files.readString(model)).getAsJsonObject();
+            // (a model that only names its parent - a forge on its own, one board of the bounty board - takes that one's textures)
+            while (!json.has("textures") && json.has("parent") && json.get("parent").getAsString().startsWith("realms_of_chaos:")) {
+                Path parent = res.resolve("assets/realms_of_chaos/models/" + json.get("parent").getAsString().substring("realms_of_chaos:".length()) + ".json");
+                check(Files.exists(parent), "block model " + d.id() + " names a missing parent " + json.get("parent").getAsString());
+                if (!Files.exists(parent)) break;
+                json = JsonParser.parseString(Files.readString(parent)).getAsJsonObject();
+            }
+            var textures = json.has("textures") ? json.getAsJsonObject("textures") : new com.google.gson.JsonObject();
             for (var entry : textures.entrySet()) {
                 String ref = entry.getValue().getAsString();
                 if (!ref.startsWith("realms_of_chaos:")) continue;

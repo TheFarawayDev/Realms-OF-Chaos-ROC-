@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "key": {
+    "N": "minecraft:nether_bricks",
+    "M": "minecraft:magma_block"
+  },
+  "pattern": [
+    "NN",
+    "NM"
+  ],
+  "result": {
+    "id": "realms_of_chaos:underworld_brick",
+    "count": 4
+  }
+}

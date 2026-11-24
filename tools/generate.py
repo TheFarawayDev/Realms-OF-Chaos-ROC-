@@ -781,6 +781,12 @@ def gen_lang():
         "block.realms_of_chaos.glyph_tile": "Glyph Tile",
         "block.realms_of_chaos.chime_crystal": "Chime Crystal",
         "block.realms_of_chaos.memory_plate": "Trembling Plate",
+        "block.realms_of_chaos.olympian_marble": "Olympian Marble",
+        "block.realms_of_chaos.olympian_marble_pillar": "Olympian Marble Pillar",
+        "block.realms_of_chaos.gilded_frieze": "Gilded Frieze",
+        "block.realms_of_chaos.abyssal_tile": "Abyssal Tile",
+        "block.realms_of_chaos.underworld_brick": "Underworld Brick",
+        "block.realms_of_chaos.chaos_lamp": "Chaos Lamp",
         "block.realms_of_chaos.beam_mirror": "Beam Mirror",
         "block.realms_of_chaos.beam_emitter": "Beam Emitter",
         "block.realms_of_chaos.beam_receiver": "Beam Receiver",
@@ -1843,6 +1849,9 @@ FIELD_MODELS = {
 }
 # Field blocks a player can break: they drop themselves
 FIELD_DROPS = ["relay_core", "signal_jammer", "waygate_obelisk"]
+# the realms' own building stone: dug by pickaxe, drops itself
+DECOR = ["olympian_marble", "olympian_marble_pillar", "gilded_frieze", "abyssal_tile", "underworld_brick", "chaos_lamp"]
+FIELD_DROPS = FIELD_DROPS + DECOR
 
 # The 22 Major Arcana: (id, numeral, name, what the card does, 8x8 symbol (# ink, + colour), colour)
 TAROT = [
@@ -4836,6 +4845,11 @@ if __name__ == "__main__":
     gen_materials()
     gen_concepts()
     gen_forge_textures()
+    # every item's art, redrawn at 64x64 over the older 16x16 art above
+    import item_art
+    item_art.run(ASSETS)
+    import block_art
+    block_art.run(ASSETS, DATA)
     gen_recipes()
     gen_field_data()
     gen_tags()

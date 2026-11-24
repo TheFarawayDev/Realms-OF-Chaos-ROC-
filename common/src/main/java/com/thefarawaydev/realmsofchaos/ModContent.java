@@ -90,6 +90,8 @@ public final class ModContent {
     public static final Ref<Block> DART_TILE = new Ref<>();
     public static final Ref<Block> ANCIENT_URN = new Ref<>();
     public static final Ref<Block> LORE_TABLET = new Ref<>();
+    public static final Ref<Block> OLYMPIAN_MARBLE = new Ref<>(), OLYMPIAN_MARBLE_PILLAR = new Ref<>(), GILDED_FRIEZE = new Ref<>(),
+            ABYSSAL_TILE = new Ref<>(), UNDERWORLD_BRICK = new Ref<>(), CHAOS_LAMP = new Ref<>();
     public static final Ref<Block> TOWER_BRAZIER = new Ref<>();
 
     public static final List<Def<Block>> BLOCK_DEFS = new ArrayList<>();
@@ -209,13 +211,21 @@ public final class ModContent {
         room("chime_crystal", CHIME_CRYSTAL, com.thefarawaydev.realmsofchaos.block.RoomBlock.Kind.CHIME, 14, true);
         room("memory_plate", MEMORY_PLATE, com.thefarawaydev.realmsofchaos.block.RoomBlock.Kind.PLATE, 10, false);
         room("beam_mirror", BEAM_MIRROR, com.thefarawaydev.realmsofchaos.block.RoomBlock.Kind.MIRROR, 0, true);
-        room("beam_emitter", BEAM_EMITTER, com.thefarawaydev.realmsofchaos.block.RoomBlock.Kind.EMITTER, 0, false);
-        room("beam_receiver", BEAM_RECEIVER, com.thefarawaydev.realmsofchaos.block.RoomBlock.Kind.RECEIVER, 15, false);
+        room("beam_emitter", BEAM_EMITTER, com.thefarawaydev.realmsofchaos.block.RoomBlock.Kind.EMITTER, 0, true);
+        room("beam_receiver", BEAM_RECEIVER, com.thefarawaydev.realmsofchaos.block.RoomBlock.Kind.RECEIVER, 15, true);
         room("dart_tile", DART_TILE, com.thefarawaydev.realmsofchaos.block.RoomBlock.Kind.DART, 0, false);
         room("ancient_urn", ANCIENT_URN, com.thefarawaydev.realmsofchaos.block.RoomBlock.Kind.URN, 0, true);
         room("lore_tablet", LORE_TABLET, com.thefarawaydev.realmsofchaos.block.RoomBlock.Kind.TABLET, 0, true);
         block("tower_brazier", TOWER_BRAZIER, key -> new com.thefarawaydev.realmsofchaos.block.BrazierBlock(
                 unbreakable(key).mapColor(MapColor.METAL).lightLevel(s -> 14).noOcclusion().sound(SoundType.METAL)));
+
+        // the realms' own building stone, which the hub and its smithies are built of; dug with a pickaxe
+        block("olympian_marble", OLYMPIAN_MARBLE, key -> new Block(decor(key).mapColor(MapColor.QUARTZ)));
+        block("olympian_marble_pillar", OLYMPIAN_MARBLE_PILLAR, key -> new Block(decor(key).mapColor(MapColor.QUARTZ)));
+        block("gilded_frieze", GILDED_FRIEZE, key -> new Block(decor(key).mapColor(MapColor.GOLD)));
+        block("abyssal_tile", ABYSSAL_TILE, key -> new Block(decor(key).mapColor(MapColor.WARPED_WART_BLOCK)));
+        block("underworld_brick", UNDERWORLD_BRICK, key -> new Block(decor(key).mapColor(MapColor.NETHER).lightLevel(s -> 3)));
+        block("chaos_lamp", CHAOS_LAMP, key -> new Block(decor(key).mapColor(MapColor.COLOR_PURPLE).lightLevel(s -> 15).sound(SoundType.GLASS).strength(0.6F)));
 
         // items: codex, compass, 45 god weapons (ordered by line, rank 1 -> 15), then the block items
         item("chaos_codex", CHAOS_CODEX, key -> new CodexItem(new Item.Properties().setId(key).stacksTo(1)));
@@ -294,6 +304,11 @@ public final class ModContent {
 
     private static BlockBehaviour.Properties unbreakable(ResourceKey<Block> key) {
         return BlockBehaviour.Properties.of().setId(key).strength(-1.0F, 3600000.0F).noLootTable();
+    }
+
+    /** Building stone: as hard as stone, dug with a pickaxe. */
+    private static BlockBehaviour.Properties decor(ResourceKey<Block> key) {
+        return BlockBehaviour.Properties.of().setId(key).strength(1.5F, 6.0F).requiresCorrectToolForDrops().sound(SoundType.STONE);
     }
 
     /** A block of the field network: it can be broken by hand, drops itself, and shrugs off explosions. */

@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "key": {
+    "M": "realms_of_chaos:olympian_marble",
+    "G": "minecraft:gold_nugget"
+  },
+  "pattern": [
+    "GGG",
+    "MMM"
+  ],
+  "result": {
+    "id": "realms_of_chaos:gilded_frieze",
+    "count": 3
+  }
+}

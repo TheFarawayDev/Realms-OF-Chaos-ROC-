@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "key": {
+    "G": "minecraft:glowstone",
+    "A": "minecraft:amethyst_shard",
+    "O": "minecraft:gold_ingot"
+  },
+  "pattern": [
+    " O ",
+    "AGA",
+    " O "
+  ],
+  "result": {
+    "id": "realms_of_chaos:chaos_lamp",
+    "count": 2
+  }
+}

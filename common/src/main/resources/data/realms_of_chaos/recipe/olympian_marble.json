@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "key": {
+    "C": "minecraft:calcite",
+    "Q": "minecraft:quartz_block"
+  },
+  "pattern": [
+    "CQ",
+    "QC"
+  ],
+  "result": {
+    "id": "realms_of_chaos:olympian_marble",
+    "count": 4
+  }
+}

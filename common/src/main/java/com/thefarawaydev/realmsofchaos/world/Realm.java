@@ -44,9 +44,9 @@ public enum Realm {
     /** Where a player appears in the hub when coming back from {@code from}: in front of that god's gate. */
     public static Vec3 hubArrival(Realm from) {
         return switch (from.line == null ? Line.ZEUS : from.line) {
-            case ZEUS -> new Vec3(0.5, 65, -13.5);
-            case POSEIDON -> new Vec3(14.5, 65, 0.5);
-            case HADES -> new Vec3(-13.5, 65, 0.5);
+            case ZEUS -> new Vec3(0.5, 65, -22.5);
+            case POSEIDON -> new Vec3(23.5, 65, 0.5);
+            case HADES -> new Vec3(-22.5, 65, 0.5);
         };
     }
 

@@ -3,6 +3,12 @@
   "values": [
     "realms_of_chaos:relay_core",
     "realms_of_chaos:signal_jammer",
-    "realms_of_chaos:waygate_obelisk"
+    "realms_of_chaos:waygate_obelisk",
+    "realms_of_chaos:olympian_marble",
+    "realms_of_chaos:olympian_marble_pillar",
+    "realms_of_chaos:gilded_frieze",
+    "realms_of_chaos:abyssal_tile",
+    "realms_of_chaos:underworld_brick",
+    "realms_of_chaos:chaos_lamp"
   ]
 }

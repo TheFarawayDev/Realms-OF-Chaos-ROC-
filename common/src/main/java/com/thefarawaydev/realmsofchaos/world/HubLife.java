@@ -32,13 +32,13 @@ public final class HubLife {
     public static final String TAG = "realms_of_chaos_hub";
     public static final int PILGRIMS = 4, CATS = 3, ALLAYS = 2;
     /** The corners of the plaza where the gardens are. */
-    public static final int GARDEN = 14;
+    public static final int GARDEN = 23;
     private static final int Y = RealmBuilder.Y;
 
     private HubLife() {}
 
     private static AABB bounds() {
-        return new AABB(-40, Y - 8, -40, 40, Y + 40, 40);
+        return new AABB(-60, Y - 8, -60, 60, Y + 50, 60);
     }
 
     public static List<Entity> residents(ServerLevel level) {
@@ -52,9 +52,9 @@ public final class HubLife {
     /** Where the two echoes of a tower stand: on the plinths either side of its gate, facing the plaza. */
     public static BlockPos[] plinths(Line line) {
         return switch (line) {
-            case ZEUS -> new BlockPos[]{new BlockPos(-6, Y + 1, -16), new BlockPos(6, Y + 1, -16)};
-            case POSEIDON -> new BlockPos[]{new BlockPos(16, Y + 1, -6), new BlockPos(16, Y + 1, 6)};
-            case HADES -> new BlockPos[]{new BlockPos(-16, Y + 1, 6), new BlockPos(-16, Y + 1, -6)};
+            case ZEUS -> new BlockPos[]{new BlockPos(-9, Y + 1, -25), new BlockPos(9, Y + 1, -25)};
+            case POSEIDON -> new BlockPos[]{new BlockPos(25, Y + 1, -9), new BlockPos(25, Y + 1, 9)};
+            case HADES -> new BlockPos[]{new BlockPos(-25, Y + 1, 9), new BlockPos(-25, Y + 1, -9)};
         };
     }
 
@@ -99,11 +99,11 @@ public final class HubLife {
             echo(level, Gods.get(line, Line.RANKS), plinths[0], facing(line));      // the first god of the tower
             echo(level, Gods.get(line, 1), plinths[1], facing(line));               // and its king
         }
-        double[][] pilgrims = {{6.5, -4.5}, {-6.5, -6.5}, {3.5, 8.5}, {-3.5, 8.5}};      // (the first reads the bounty board)
+        double[][] pilgrims = {{10.5, -7.5}, {-3.5, -12.5}, {7.5, 5.5}, {-7.5, 5.5}};      // (the first reads the bounty board)
         for (int i = 0; i < PILGRIMS; i++) resident(level, EntityTypes.VILLAGER, pilgrims[i][0], Y + 1, pilgrims[i][1], "pilgrim");
-        double[][] cats = {{4.5, -9.5}, {-4.5, -9.5}, {9.5, 3.5}};
+        double[][] cats = {{6.5, -14.5}, {-6.5, -14.5}, {14.5, 6.5}};
         for (int i = 0; i < CATS; i++) resident(level, EntityTypes.CAT, cats[i][0], Y + 1, cats[i][1], null);
-        double[][] allays = {{0.5, 6.5}, {3.5, -3.5}};
+        double[][] allays = {{0.5, 6.5}, {12.5, 0.5}};
         for (int i = 0; i < ALLAYS; i++) resident(level, EntityTypes.ALLAY, allays[i][0], Y + 4, allays[i][1], null);
     }
 
@@ -124,7 +124,7 @@ public final class HubLife {
         // the canal: a bubble here and there along its ring
         for (int i = 0; i < 3; i++) {
             double a = random.nextDouble() * Math.PI * 2;
-            level.sendParticles(ParticleTypes.BUBBLE_POP, Math.cos(a) * 12.0, Y + 1.05, Math.sin(a) * 12.0, 1, 0.3, 0.0, 0.3, 0.0);
+            level.sendParticles(ParticleTypes.BUBBLE_POP, Math.cos(a) * 18.0, Y + 1.05, Math.sin(a) * 18.0, 1, 0.3, 0.0, 0.3, 0.0);
         }
         // the Oracle's flame breathes
         BlockPos oracle = RealmBuilder.ORACLE;

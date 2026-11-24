@@ -16,6 +16,31 @@ The current build is an **Alpha**.
 
 ## What's in 1.2.0
 
+* **Every item redrawn at 64x64.** All 45 relic weapons, the codex, the compass, the seekers, the keystones, the
+  essences, the field bag, the Deck of Fate and its 22 cards, the voodoo dolls, the eight pieces of the panoply, the
+  forge materials and the bolts the staffs fire. Each is drawn as smooth solids cut into crisp pixels - no blur -
+  shaded from the top left in five tones with cool shadows and warm lights, outlined, and the weapons keep their
+  glint sweeping along the metal. (`art/renders/items-64-*.png`; the generator is `tools/item_art.py`)
+* **The hub, bigger and better spaced.** The plaza's radius goes from 26 to 40 blocks: the gates stand at 28, the
+  ways to them are seven wide, the canal, the gardens and the echoes' plinths move out with them, two pairs of
+  beacons line each way, flowering beds with benches ring the outer plaza, and the empty quarter has a still pool
+  with an obelisk in it. The rotunda is larger and the Oracle and the Heart now stand inside it, under the dome.
+  The statues and the model towers stand further out to match, and whatever an earlier hub left in the sky is
+  cleared away when it is rebuilt. (`art/renders/hub-larger.png`)
+* **Forges join up.** Forges of Chaos set side by side become one furnace: each block knows which of its
+  neighbours are forges and drops its frame along those edges, so a bank of them shows one long grated mouth of
+  fire. Any block of the bank opens the forge. (`art/renders/hub-forge-bank.png`)
+* **A bounty board that varies.** Each of the board's blocks shows one of six faces - a wanted poster, a map with a
+  cross on it, a sealed scroll, notes, a torn notice, bare boards - on planks that run on from block to block.
+  (`art/renders/hub-bounty-board.png`)
+* **Pedestals and puzzle pieces redone.** The altars are tiered pedestals - plinth, fluted shaft, gilded band,
+  carved capital and the glowing top - in each tower's stone, and the Ruined Gate's pedestal is the same in old,
+  mossy stone. The beam room's mirror is now a real pane of glass in a gold frame on a stand, set at the angle it
+  reflects at; the emitter and the receiver are lenses on pedestals; and the beam is drawn as a straight, solid line
+  of light with a halo, flashing at each mirror, instead of a scatter of sparks. (`art/renders/blocks-new.png`,
+  `beam-mirrors-above.png`)
+* **Six new building blocks**, used in the hub and craftable: Olympian Marble, Olympian Marble Pillar, Gilded Frieze
+  (a gold Greek key), Abyssal Tile, Underworld Brick (embers in its mortar) and the Chaos Lamp.
 * **The middle of the hub is built as a place.**
   * A **rotunda** stands over the spawn: eight marble columns with bases and capitals, a gilded entablature, and a
     dome of verdigris copper with a gold lantern at its crown and chandeliers hung under it. The Oracle's Flame

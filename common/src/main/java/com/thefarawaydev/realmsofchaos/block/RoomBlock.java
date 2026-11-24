@@ -32,6 +32,8 @@ public class RoomBlock extends Block {
 
     /** Lit, pressed down or - for a mirror - turned the other way: the one thing about the block that can change. */
     public static final BooleanProperty LIT = BooleanProperty.create("lit");
+    /** A lens on its pedestal. */
+    private static final VoxelShape LENS = Block.box(1, 0, 1, 15, 15, 15);
     private static final VoxelShape URN = Block.box(3, 0, 3, 13, 14, 13), CRYSTAL = Block.box(4, 0, 4, 12, 15, 12), SLAB = Block.box(2, 0, 2, 14, 16, 14);
 
     private final Kind kind;
@@ -57,6 +59,7 @@ public class RoomBlock extends Block {
             case URN -> URN;
             case CHIME -> CRYSTAL;
             case TABLET, MIRROR -> SLAB;
+            case EMITTER, RECEIVER -> LENS;
             default -> super.getShape(state, level, pos, context);
         };
     }

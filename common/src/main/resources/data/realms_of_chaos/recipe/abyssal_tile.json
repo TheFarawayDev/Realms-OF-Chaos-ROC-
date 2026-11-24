@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "key": {
+    "P": "minecraft:prismarine_bricks",
+    "D": "minecraft:dark_prismarine"
+  },
+  "pattern": [
+    "PD",
+    "DP"
+  ],
+  "result": {
+    "id": "realms_of_chaos:abyssal_tile",
+    "count": 4
+  }
+}
