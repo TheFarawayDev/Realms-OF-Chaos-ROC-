@@ -17,7 +17,7 @@ import net.minecraft.world.level.block.state.BlockState;
  * solid stands inside the fight ring, the entrance and exit corridors are flat, and the whole floor is enclosed.
  */
 public final class TowerBuilder {
-    public static final int LAYOUT_VERSION = 10;
+    public static final int LAYOUT_VERSION = 11;
 
     public enum Layout { FLAT, MOUNDS, PILLARS, PIT, DAIS, WAVES, MOAT, TERRACES, SPLIT, ZIGGURAT, SUMMIT }
 
@@ -209,7 +209,7 @@ public final class TowerBuilder {
                             // a window set deep in the wall under a round head: glass at the back, the reveal open
                             boolean head = h == 11 && off >= 0.12;
                             if (face) b = head ? Mason.stair(wallStone.stairs(), out, true) : Blocks.AIR.defaultBlockState();
-                            else if (!head) b = windowGlass(line, out);
+                            else if (!head) b = windowGlass(line, windowFacing(sector));
                         }
                         // the face of the wall: a dado of the tower's panels, its brick between the windows
                         if (!summit && face && h >= 2 && h <= 4) b = Passages.wallPanel(line).defaultBlockState();
@@ -308,6 +308,15 @@ public final class TowerBuilder {
      * The glass in a tower's windows: Zeus's is reinforced, framed in bronze; Poseidon's frosted like sea-mist; Hades's
      * one-way - a dark mirror to anyone outside, clear to anyone within.
      */
+    /**
+     * The way a whole window faces out: the middle of its sector, not each block's own bearing, so that every block of
+     * one window faces the same way and joins up with the rest.
+     */
+    public static Direction windowFacing(double sector) {
+        double a = (Math.floor(sector) + 0.5) / 16.0 * Math.PI * 2 - Math.PI;
+        return Direction.getApproximateNearest(Math.cos(a), 0.0, Math.sin(a));
+    }
+
     public static BlockState windowGlass(Line line, Direction out) {
         return switch (line) {
             case ZEUS -> ModContent.REINFORCED_GLASS.get().defaultBlockState();

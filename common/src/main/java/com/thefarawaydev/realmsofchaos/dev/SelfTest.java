@@ -6378,8 +6378,7 @@ public final class SelfTest {
                 Passages.rearm(level, over);
                 BlockPos om = over.centre(oc);
                 int of = over.half(oc);
-                check(over.height(oc) == Passages.TALL && level.getBlockState(om.offset(of, Passages.GALLERY_Y, 0)).getBlock() instanceof net.minecraft.world.level.block.SlabBlock
-                        && level.getBlockState(om.offset(of, Passages.GALLERY_Y, 2)).is(ModContent.BRITTLE_GLASS.get())
+                check(over.height(oc) == Passages.TALL && level.getBlockState(om.offset(of, Passages.GALLERY_Y, 2)).getBlock() instanceof net.minecraft.world.level.block.SlabBlock
                         && level.getBlockState(om.offset(of, 1, 2)).isAir() && level.getBlockState(om.offset(of, 1, of - 2)).is(Blocks.LADDER),
                         "an overlook is tall, with a gallery round its walls over a clear floor, and a ladder up");
                 check(level.getBlockState(Passages.overlookCache(over, oc)).is(ModContent.PASSAGE_CACHE.get()), "its cache is up on the gallery");
@@ -6390,15 +6389,7 @@ public final class SelfTest {
                 check(up >= 2 && guard.stream().filter(g -> g.getY() >= om.getY() + Passages.GALLERY_Y).allMatch(g -> ((Sentinel) g).kind().role == Sentinel.Role.CASTER),
                         "its bowmen and slingers stand on the gallery: " + up + " of " + guard.size());
                 for (net.minecraft.world.entity.Mob g : guard) check(level.noCollision(g), "each stands free: " + g.blockPosition().subtract(om));
-                net.minecraft.world.entity.Mob bowman = guard.stream().filter(g -> g.getY() >= om.getY() + Passages.GALLERY_Y + 1 - 0.01).findFirst().orElseThrow();
-                BlockPos under = bowman.blockPosition().below();
-                check(level.getBlockState(under).is(ModContent.BRITTLE_GLASS.get()), "a bowman stands on a pane of brittle glass");
-                ((com.thefarawaydev.realmsofchaos.block.Glass.Brittle) ModContent.BRITTLE_GLASS.get()).collapse(level, under);
-                check(level.getBlockState(under).isAir(), "shot out, it falls - and nothing is left under the bowman");
                 for (net.minecraft.world.entity.Mob g : guard) g.discard();
-                for (var e : level.getEntitiesOfClass(net.minecraft.world.entity.item.FallingBlockEntity.class, over.cellBox(oc).inflate(2), e -> true)) e.discard();
-                Passages.rearm(level, over);
-                check(level.getBlockState(under).is(ModContent.BRITTLE_GLASS.get()), "the passage sealing itself again lays the glass again");
 
                 // ---- the quiet hall
                 found = room(level, Line.ZEUS, Passages.Kind.AMBUSH);
@@ -6411,7 +6402,9 @@ public final class SelfTest {
                 int qf = quiet.half(qc);
                 check(Passages.ambushStage(level, quiet, qc) == 0 && Passages.guardians(level, quiet, qc).isEmpty(), "a quiet hall is quiet");
                 BlockPos skylight = qm.offset(3, quiet.height(qc) + 1, 3);
-                check(level.getBlockState(skylight).is(ModContent.BRITTLE_GLASS.get()), "its holes are glazed with brittle glass");
+                check(level.getBlockState(skylight).is(ModContent.ONE_WAY_GLASS.get())
+                        && level.getBlockState(skylight).getValue(com.thefarawaydev.realmsofchaos.block.Glass.OneWay.FACING) == Direction.DOWN,
+                        "its holes are glazed with one-way glass, a panel of ceiling seen from below");
                 Passages.Cell door = null;
                 for (Passages.Cell n : quiet.neighbours(qc)) if (door == null && quiet.connected(qc, n)) door = n;
                 BlockPos doorway = qm.offset((door.x() - qc.x()) * (qf + 1), 1, (door.z() - qc.z()) * (qf + 1));
@@ -6425,7 +6418,7 @@ public final class SelfTest {
                 check(Passages.ambushStage(level, quiet, qc) == 1 && drop.size() >= 3 && level.getBlockState(doorway).is(Blocks.IRON_BARS),
                         "close to the cache, it springs: the doors are barred and the guard drops in");
                 check(drop.stream().allMatch(g -> g.getY() > qm.getY() + 3), "they come down from the ceiling");
-                check(!level.getBlockState(skylight).is(ModContent.BRITTLE_GLASS.get()), "and the skylights give way under them");
+                check(level.getBlockState(skylight).isAir(), "and the skylights give way under them");
                 check(!Passages.loot(level, quiet.featurePos(qc), hero), "the cache stays shut while they stand");
                 for (net.minecraft.world.entity.Mob g : drop) g.discard();
                 Passages.ambushTick(level, quiet, qc, hero);
@@ -6526,25 +6519,50 @@ public final class SelfTest {
 
                 // ---- glass
                 BlockPos w = o.offset(0, 0, 10);
+                var CLEAR = com.thefarawaydev.realmsofchaos.block.Glass.Switching.CLEAR;
+                java.util.function.IntConsumer settleRipple = ticks -> {
+                    for (int t = 0; t < ticks; t++) {
+                        try {
+                            advance(server, 1);
+                        } catch (Exception e) {
+                            throw new IllegalStateException(e);
+                        }
+                        Scheduler.tick(server);
+                    }
+                };
                 var smart = (com.thefarawaydev.realmsofchaos.block.Glass.Smart) ModContent.SMART_GLASS.get();
-                for (int x = 0; x < 3; x++) level.setBlock(w.offset(x, 1, 0), smart.joined(level, w.offset(x, 1, 0), smart.defaultBlockState()), 3);
-                com.thefarawaydev.realmsofchaos.block.ConnectedBlock.settle(level, w.offset(0, 1, 0), w.offset(2, 1, 0));
-                check(level.getBlockState(w.offset(1, 1, 0)).getValue(com.thefarawaydev.realmsofchaos.block.ConnectedBlock.EAST) && level.getBlockState(w.offset(1, 1, 0)).getValue(com.thefarawaydev.realmsofchaos.block.ConnectedBlock.WEST)
-                        && !level.getBlockState(w.offset(0, 1, 0)).getValue(com.thefarawaydev.realmsofchaos.block.Glass.Smart.CLEAR), "smart glass connects, and starts shaded");
+                for (int x = 0; x < 6; x++) level.setBlock(w.offset(x, 1, 0), smart.joined(level, w.offset(x, 1, 0), smart.defaultBlockState()), 3);
+                com.thefarawaydev.realmsofchaos.block.ConnectedBlock.settle(level, w.offset(0, 1, 0), w.offset(5, 1, 0));
+                check(level.getBlockState(w.offset(1, 1, 0)).getValue(com.thefarawaydev.realmsofchaos.block.ConnectedBlock.EAST)
+                        && level.getBlockState(w.offset(1, 1, 0)).getValue(com.thefarawaydev.realmsofchaos.block.ConnectedBlock.WEST)
+                        && !level.getBlockState(w.offset(0, 1, 0)).getValue(CLEAR), "smart glass connects, and starts shaded");
                 level.setBlock(w.offset(-1, 1, 0), Blocks.REDSTONE_BLOCK.defaultBlockState(), 3);
+                check(level.getBlockState(w.offset(0, 1, 0)).getValue(CLEAR) && !level.getBlockState(w.offset(5, 1, 0)).getValue(CLEAR),
+                        "a signal at one end clears the nearest block at once, and not yet the far end");
+                settleRipple.accept(com.thefarawaydev.realmsofchaos.block.Glass.RIPPLE_TICKS * 3);
+                check(level.getBlockState(w.offset(2, 1, 0)).getValue(CLEAR) && !level.getBlockState(w.offset(5, 1, 0)).getValue(CLEAR), "the clearing runs along the window");
+                settleRipple.accept(com.thefarawaydev.realmsofchaos.block.Glass.RIPPLE_TICKS * 4);
                 boolean allClear = true;
-                for (int x = 0; x < 3; x++) allClear &= level.getBlockState(w.offset(x, 1, 0)).getValue(com.thefarawaydev.realmsofchaos.block.Glass.Smart.CLEAR);
-                check(allClear, "a signal at one end clears the whole window");
+                for (int x = 0; x < 6; x++) allClear &= level.getBlockState(w.offset(x, 1, 0)).getValue(CLEAR);
+                check(allClear, "until the whole window is clear");
                 level.setBlock(w.offset(-1, 1, 0), Blocks.AIR.defaultBlockState(), 3);
-                check(!level.getBlockState(w.offset(2, 1, 0)).getValue(com.thefarawaydev.realmsofchaos.block.Glass.Smart.CLEAR), "and it shades again when the signal goes");
-                var brittle = (com.thefarawaydev.realmsofchaos.block.Glass.Brittle) ModContent.BRITTLE_GLASS.get();
-                BlockPos hang = w.offset(5, 3, 0);
-                for (int x = 0; x < 2; x++) for (int y = 0; y < 2; y++) level.setBlock(hang.offset(x, y, 0), brittle.defaultBlockState(), 3);
+                settleRipple.accept(com.thefarawaydev.realmsofchaos.block.Glass.RIPPLE_TICKS * 7);
+                check(!level.getBlockState(w.offset(5, 1, 0)).getValue(CLEAR), "and it shades again, end to end, when the signal goes");
+                // veil glass: solid to look at, until a shot strikes it - then clear, and struck again, solid again
+                var veil = (com.thefarawaydev.realmsofchaos.block.Glass.Veil) ModContent.VEIL_GLASS.get();
+                BlockPos hang = w.offset(8, 1, 0);
+                for (int x = 0; x < 2; x++) for (int y = 0; y < 2; y++) level.setBlock(hang.offset(x, y, 0), veil.defaultBlockState(), 3);
+                check(!level.getBlockState(hang).getValue(CLEAR), "veil glass starts solid to look at");
                 net.minecraft.world.entity.projectile.arrow.Arrow arrow = new net.minecraft.world.entity.projectile.arrow.Arrow(level, hero, new net.minecraft.world.item.ItemStack(net.minecraft.world.item.Items.ARROW), null);
                 level.getBlockState(hang).onProjectileHit(level, level.getBlockState(hang), new BlockHitResult(Vec3.atCenterOf(hang), Direction.SOUTH, hang, false), arrow);
-                int falling = level.getEntitiesOfClass(net.minecraft.world.entity.item.FallingBlockEntity.class, new AABB(hang).inflate(3), e -> e.getBlockState().is(brittle)).size();
-                check(falling == 4 && level.getBlockState(hang.above()).isAir(), "brittle glass struck by an arrow: the whole window comes down like sand: " + falling);
-                for (var e : level.getEntitiesOfClass(net.minecraft.world.entity.item.FallingBlockEntity.class, new AABB(hang).inflate(6), e -> true)) e.discard();
+                settleRipple.accept(com.thefarawaydev.realmsofchaos.block.Glass.RIPPLE_TICKS * 3);
+                boolean veilClear = true;
+                for (int x = 0; x < 2; x++) for (int y = 0; y < 2; y++) veilClear &= level.getBlockState(hang.offset(x, y, 0)).getValue(CLEAR);
+                check(veilClear && level.getEntitiesOfClass(net.minecraft.world.entity.item.FallingBlockEntity.class, new AABB(hang).inflate(4), e -> true).isEmpty(),
+                        "an arrow turns the whole veil clear - and nothing falls");
+                level.getBlockState(hang).onProjectileHit(level, level.getBlockState(hang), new BlockHitResult(Vec3.atCenterOf(hang), Direction.SOUTH, hang, false), arrow);
+                settleRipple.accept(com.thefarawaydev.realmsofchaos.block.Glass.RIPPLE_TICKS * 3);
+                check(!level.getBlockState(hang.offset(1, 1, 0)).getValue(CLEAR), "and another turns it solid again");
                 var oneWay = (com.thefarawaydev.realmsofchaos.block.Glass.OneWay) ModContent.ONE_WAY_GLASS.get();
                 BlockPos ow = w.offset(0, 1, 3);
                 net.minecraft.world.level.block.state.BlockState north = oneWay.defaultBlockState().setValue(com.thefarawaydev.realmsofchaos.block.Glass.OneWay.FACING, Direction.NORTH);
@@ -6555,6 +6573,7 @@ public final class SelfTest {
                         "one-way glass joins only to its own kind facing the same way");
                 check(level.getBlockState(ow).getVisualShape(level, ow, net.minecraft.world.phys.shapes.CollisionContext.empty()).isEmpty()
                         && !level.getBlockState(ow).canOcclude(), "and hides nothing behind it");
+                check(level.getBlockState(ow).skipRendering(level.getBlockState(ow.west()), Direction.WEST), "no face is drawn between two blocks of it, whichever way each faces");
                 // ---- three more doors
                 for (net.minecraft.world.level.block.Block door : List.of(ModContent.GARRISON_DOOR.get(), ModContent.VERDIGRIS_DOOR.get(), ModContent.IVORY_DOOR.get())) {
                     check(door instanceof net.minecraft.world.level.block.DoorBlock d && d.type().canOpenByHand(), door + ": a door, opened by hand");

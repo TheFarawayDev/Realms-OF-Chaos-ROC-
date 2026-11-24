@@ -87,28 +87,28 @@ The current build is an **Alpha**.
   (`art/renders/barracks-mess.png`, `barracks-bunks.png`, `barracks-drill.png`)
 * **Three more doors** with their trapdoors: the **Garrison Door** (dark oak, iron bands, a shield), the **Verdigris
   Door** (green copper, a laurel) and the **Ivory Door** (bone white and gold, a star). (`art/renders/doors-new.png`)
-* **Five kinds of glass, all connecting** - a run of any of them is one window with a single frame round its
-  outside - and all craftable. (`art/renders/glass-kinds.png`)
-  * **Reinforced Glass** - clear, framed in bronze, as hard to break as stone.
-  * **Frosted Glass** - milky: light comes through, faces do not.
-  * **Smart Glass** - shaded dark until it has a redstone signal, then clear; one signal anywhere on a window clears
-    the whole window at once. (`art/renders/smart-glass-clear.png`)
-  * **One-Way Glass** - a silvered mirror from the side it faces, nothing at all from behind: you see out, nobody
-    sees in. Set it down and the mirror faces away from you. (`art/renders/one-way-glass-behind.png`)
-  * **Brittle Glass** - struck by an arrow, a snowball, a trident, anything shot or thrown, the whole window it
-    belongs to lets go and comes down like sand, landing as glass again. (`art/renders/brittle-glass-falling.png`)
+* **Five kinds of glass, all connecting** - a run of any of them is one window, with one frame round its outside
+  and nothing between its blocks - and all craftable. All 16x16.
+  * **Reinforced Glass** - clear, framed in two pixels of bronze with rivets at the corners, as hard as stone.
+  * **Frosted Glass** - milky white with crystals of frost in it: light comes through, nothing else.
+  * **One-Way Glass** - a solid pane of untinted, silvered glass from the side it faces; from behind, nothing at all.
+    Set it down and its face is turned towards you, so a floor laid from above looks solid from above and is open
+    sky from below. Where a run of it steps - round a curved wall - the sides of the steps are drawn as well, so no
+    gap shows from the front. (`art/renders/one-way-floor-both-sides.png`, `one-way-window-both-sides.png`,
+    `one-way-window-curve.png`, `art/videos/one-way-floor.mp4`)
+  * **Smart Glass** - a smoked, shaded pane until it has a redstone signal; then clear.
+  * **Veil Glass** - a solid-looking pane of pale glass, untinted, that turns clear - on a redstone signal, or when
+    anything shot or thrown strikes it, which turns it whichever way it is not. (`art/videos/veil-glass-arrows.mp4`)
+  * Smart and veil glass do not change all at once: the change runs through the window block by block from where it
+    started, two ticks a block. (`art/renders/glass-veil-smart.png`, `art/videos/smart-glass-ripple.mp4` - an arrow in
+    a target block beside it)
 * **The glass in use.**
-  * **Tower windows** are glazed in their tower's glass now: Zeus's in Reinforced Glass, Poseidon's in Frosted, and
-    Hades's in One-Way Glass - from inside, the realm beyond; from outside, a ring of dark mirrors that shows nothing
-    of who is within. (`art/renders/one-way-window-both-sides.png`, `zeus-window-*.png`, `poseidon-window-*.png`)
-  * **Quiet halls**: the four holes in the ceiling are skylights of Brittle Glass. When the ambush springs, they give
-    way and the guard comes down with the glass. (`art/videos/brittle-glass-ambush-skylights.mp4`,
-    `art/renders/ambush-skylights.png`)
-  * **Overlooks**: where each bowman stands, the gallery is a pane of Brittle Glass - shoot it out from below and
-    the bowman comes down with it. Both are laid again when the passage seals itself.
-    (`art/videos/brittle-glass-gallery-archer.mp4`)
-  * Videos of the trigger: `art/videos/brittle-glass-arrow.mp4` (an arrow brings a whole window down, and it lands as
-    glass), and the two above.
+  * **Tower windows** are glazed in their tower's glass: Zeus's in Reinforced, Poseidon's in Frosted, Hades's in
+    One-Way - from inside, the realm beyond; from outside, a ring of silvered panes that shows nothing of who is
+    within. Every block of a window faces the same way, so each window joins up as one.
+  * **Quiet halls**: the four holes over the room are glazed with one-way glass facing down - from the floor they are
+    silver panels in the ceiling. When the ambush springs, they give way and the guard comes through.
+    (`art/renders/ambush-skylights.png`)
 * **Twelve new sentinels with attacks of their own** - four to a tower, seventy-five kinds in all. Every one of
   these attacks is telegraphed and can be parried or dodged. (`art/renders/new-sentinels.png`)
   * **Duelists** (Storm Duelist, Coral Duelist, Grave Fencer): a guard glints on the blade when it is up, and the

@@ -71,7 +71,7 @@ public final class Passages {
     public static final int TALL = 8;
     public static final int MAX_SIZE = 6;
     public static final int X0 = 600, PITCH = 160;
-    public static final int LAYOUT_VERSION = 22;
+    public static final int LAYOUT_VERSION = 23;
     public static final String GUARDIAN_TAG = "realms_of_chaos_guardian";
     private static final String HUD = "hud." + RealmsOfChaos.MOD_ID + ".passage.";
 
@@ -1905,8 +1905,6 @@ public final class Passages {
         for (int dx = -2; dx <= 2; dx++) for (int dz = -2; dz <= 2; dz++) if (Math.max(Math.abs(dx), Math.abs(dz)) == 2) set(level, m.offset(dx, 0, dz), p.inlay());
         set(level, m, p.light());
         set(level, overlookCache(plan, c), ModContent.PASSAGE_CACHE.get());
-        // where the bowmen stand, the gallery is brittle glass: a good shot brings glass and bowman down together
-        glaze(level, plan, c);
         level.setBlock(m.offset(far, GALLERY_Y + 1, far), ModContent.WAR_STANDARD.get().defaultBlockState()
                 .setValue(com.thefarawaydev.realmsofchaos.block.WarStandardBlock.FACING, net.minecraft.core.Direction.WEST), 2);
     }
@@ -1945,36 +1943,24 @@ public final class Passages {
         }
     }
 
-    /**
-     * Where the mod's brittle glass is laid in a room, so that it can be laid again when the passage seals itself: the
-     * skylights over a quiet hall's holes, and the panels of an overlook's gallery its bowmen stand on.
-     */
-    static List<BlockPos> brittle(Plan plan, Cell c) {
+    /** The skylights of a quiet hall: one-way glass over each of its holes. */
+    static List<BlockPos> skylights(Plan plan, Cell c) {
         List<BlockPos> out = new ArrayList<>();
+        if (plan.kind(c) != Kind.AMBUSH) return out;
         BlockPos m = plan.centre(c);
-        if (plan.kind(c) == Kind.AMBUSH) {
-            for (int[] k : ambushHoles()) out.add(m.offset(k[0], plan.height(c) + 1, k[1]));
-        } else if (plan.kind(c) == Kind.OVERLOOK) {
-            // (one block under each bowman's place: clear of the ladders and of the cache's corner)
-            for (int n = 0; n < 8; n++) {
-                int[] g = gallerySpot(plan, c, n);
-                out.add(m.offset(g[0], GALLERY_Y, g[1]));
-            }
-        }
+        for (int[] k : ambushHoles()) out.add(m.offset(k[0], plan.height(c) + 1, k[1]));
         return out;
     }
 
-    /** Lays a room's brittle glass, sweeping away any that has come down. */
+    /**
+     * Glazes a quiet hall's holes with one-way glass facing down: from the floor they are four more panels of the
+     * ceiling; from above, the whole hall can be watched.
+     */
     static void glaze(ServerLevel level, Plan plan, Cell c) {
-        List<BlockPos> panes = brittle(plan, c);
-        if (panes.isEmpty()) return;
-        BlockPos m = plan.centre(c);
-        int r = plan.half(c);
-        for (BlockPos at : BlockPos.betweenClosed(m.offset(-r, 1, -r), m.offset(r, plan.height(c) - 1, r))) {
-            if (level.getBlockState(at).is(ModContent.BRITTLE_GLASS.get()) && !panes.contains(at)) level.setBlock(at, Blocks.AIR.defaultBlockState(), 2);
+        for (BlockPos at : skylights(plan, c)) {
+            level.setBlock(at, ModContent.ONE_WAY_GLASS.get().defaultBlockState()
+                    .setValue(com.thefarawaydev.realmsofchaos.block.Glass.OneWay.FACING, net.minecraft.core.Direction.DOWN), 2);
         }
-        for (BlockPos at : panes) level.setBlock(at, ModContent.BRITTLE_GLASS.get().defaultBlockState(), 2);
-        ConnectedBlock.settle(level, m.offset(-r - 1, 0, -r - 1), m.offset(r + 1, plan.height(c) + 2, r + 1));
     }
 
     /** The holes an ambush drops from: over the middle of each quarter. */
@@ -2037,11 +2023,8 @@ public final class Passages {
         List<ServerPlayer> here = within(level, plan, c);
         int n = 0, h = plan.height(c);
         int[][] holes = ambushHoles();
-        // the skylights give way, and the guard waiting above them comes down with the glass
-        for (int[] k : holes) {
-            BlockPos pane = m.offset(k[0], h + 1, k[1]);
-            if (level.getBlockState(pane).getBlock() instanceof com.thefarawaydev.realmsofchaos.block.Glass.Brittle glass) glass.collapse(level, pane);
-        }
+        // what looked like ceiling was glass, and the guard watching from above it comes through
+        for (BlockPos pane : skylights(plan, c)) if (level.getBlockState(pane).is(ModContent.ONE_WAY_GLASS.get())) level.destroyBlock(pane, false);
         for (Post post : ambushers(plan, c, Math.max(1, here.size()))) {
             int[] k = holes[n % holes.length];
             Sentinel mob = raise(level, plan, c, post, m.offset(k[0], n < holes.length ? h + 2 : h - 1, k[1]), n * 90.0F);
@@ -2481,7 +2464,7 @@ public final class Passages {
         ProgressData.get(level.getServer()).clearCounters("proving/" + builtKey(plan) + "/");
         ProgressData.get(level.getServer()).clearCounters("ambush/" + builtKey(plan) + "/");
         for (Cell c : plan.cells()) if (plan.kind(c) == Kind.AMBUSH) bar(level, plan, c, false);
-        for (Cell c : plan.cells()) if (plan.kind(c) == Kind.AMBUSH || plan.kind(c) == Kind.OVERLOOK) glaze(level, plan, c);
+        for (Cell c : plan.cells()) if (plan.kind(c) == Kind.AMBUSH) glaze(level, plan, c);
         for (Cell c : plan.cells()) if (plan.kind(c) == Kind.PROVING) provingGates(level, plan, c, false);
         for (Cell c : plan.cells()) if (plan.kind(c) == Kind.SPIKES) Snares.lower(level, plan, c);
         shutGate(level, plan);

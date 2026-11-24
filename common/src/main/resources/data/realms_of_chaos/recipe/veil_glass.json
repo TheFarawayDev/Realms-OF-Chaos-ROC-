@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "key": {
+    "G": "minecraft:glass",
+    "Q": "minecraft:quartz",
+    "A": "minecraft:amethyst_shard"
+  },
+  "pattern": [
+    "GQG",
+    "QAQ",
+    "GQG"
+  ],
+  "result": {
+    "id": "realms_of_chaos:veil_glass",
+    "count": 4
+  }
+}

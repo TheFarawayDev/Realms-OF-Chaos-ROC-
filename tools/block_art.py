@@ -2193,7 +2193,7 @@ def gen_combat(assets, data):
 # ---- dummies of every height, sparring dummies, the barracks' furniture, and the mod's glass -------------------------
 
 FURNISH2 = ["moving_dummy", "chair", "table", "bench", "dresser", "bunk_bed"]
-GLASS = ["reinforced_glass", "frosted_glass", "smart_glass", "brittle_glass", "one_way_glass"]
+GLASS = ["reinforced_glass", "frosted_glass", "smart_glass", "veil_glass", "one_way_glass"]
 
 
 def _mp_variants(assets, name, base_states, entries):
@@ -2376,18 +2376,19 @@ def gen_furnish2(assets, data):
     wj(os.path.join(M, "bunk_bed.json"), {"parent": f"{MOD}:block/bunk_bed_lower_foot"})
     wj(os.path.join(assets, "items/bunk_bed.json"), {"model": {"type": "minecraft:model", "model": f"{MOD}:block/bunk_bed_lower_head"}})
 
-    # ---- glass that connects: thin frames round the outside of a whole window, see-through within
+    # ---- glass that connects: a frame round the outside of a whole window, none between its blocks
     def glass_face(inner, frame, width, mask):
         up, down, left, right = mask & 1, mask & 2, mask & 4, mask & 8
 
         def fn(x, y):
             d = []
-            if not up: d.append(y)
-            if not down: d.append(15 - y)
-            if not left: d.append(x)
-            if not right: d.append(15 - x)
-            near = min(d) if d else 99
-            if near < width: return frame(x, y, near)
+            if not up: d.append(("t", y))
+            if not down: d.append(("b", 15 - y))
+            if not left: d.append(("l", x))
+            if not right: d.append(("r", 15 - x))
+            if d:
+                side, near = min(d, key=lambda k: k[1])
+                if near < width: return frame(x, y, near, side)
             return inner(x, y)
         return fn
 
@@ -2395,18 +2396,26 @@ def gen_furnish2(assets, data):
         for mask in range(16):
             paint_hi(glass_face(inner, frame, width, mask)).save(os.path.join(T, f"{name}_{mask}.png"))
 
-    def glass_models(name, tex_prefix, model_prefix):
-        dirs = ["down", "east", "north", "south", "up", "west"]
+    dirs = ["down", "east", "north", "south", "up", "west"]
+
+    def masks(j):
+        """The frame mask of each face of a block joined as {j} says."""
+        out = {}
+        for face, (u, dn, l, r) in SIDE_EDGES_C.items():
+            out[face] = (1 if j[u] else 0) | (2 if j[dn] else 0) | (4 if j[l] else 0) | (8 if j[r] else 0)
+        out["up"] = (1 if j["north"] else 0) | (2 if j["south"] else 0) | (4 if j["west"] else 0) | (8 if j["east"] else 0)
+        out["down"] = (1 if j["south"] else 0) | (2 if j["north"] else 0) | (4 if j["west"] else 0) | (8 if j["east"] else 0)
+        return out
+
+    def glass_models(tex_prefix, model_prefix):
         out = {}
         for bits in range(64):
             j = {d: bool(bits >> i & 1) for i, d in enumerate(dirs)}
-            tex, faces = {"particle": {"sprite": t(f"{tex_prefix}_0"), "force_translucent": True}}, {}
-            for face, (u, dn, l, r) in SIDE_EDGES_C.items():
-                m = (1 if j[u] else 0) | (2 if j[dn] else 0) | (4 if j[l] else 0) | (8 if j[r] else 0)
-                tex[face] = {"sprite": t(f"{tex_prefix}_{m}"), "force_translucent": True}
-            tex["up"] = {"sprite": t(f"{tex_prefix}_{(1 if j['north'] else 0) | (2 if j['south'] else 0) | (4 if j['west'] else 0) | (8 if j['east'] else 0)}"), "force_translucent": True}
-            tex["down"] = {"sprite": t(f"{tex_prefix}_{(1 if j['south'] else 0) | (2 if j['north'] else 0) | (4 if j['west'] else 0) | (8 if j['east'] else 0)}"), "force_translucent": True}
+            m = masks(j)
+            tex = {"particle": {"sprite": t(f"{tex_prefix}_0"), "force_translucent": True}}
+            faces = {}
             for face in ("north", "south", "east", "west", "up", "down"):
+                tex[face] = {"sprite": t(f"{tex_prefix}_{m[face]}"), "force_translucent": True}
                 faces[face] = {"uv": [0, 0, 16, 16], "texture": f"#{face}", "cullface": face}
             model = model_prefix + "_" + "".join(d[0] if j[d] else "_" for d in dirs)
             wj(os.path.join(M, f"{model}.json"), {"parent": "minecraft:block/block", "ambientocclusion": False, "textures": tex,
@@ -2418,70 +2427,125 @@ def gen_furnish2(assets, data):
         wj(os.path.join(M, f"{name}.json"), {"parent": f"{MOD}:block/{model}_" + "______"})
         wj(os.path.join(assets, f"items/{name}.json"), {"model": {"type": "minecraft:model", "model": f"{MOD}:block/{name}"}})
 
-    clear = (0, 0, 0, 0)
+    def switching(name, looks):
+        """A glass of two looks (clear or not), each look connecting; its powered state changes nothing to see."""
+        states = {}
+        for clr, prefix in looks:
+            for k, v in glass_models(prefix, prefix).items():
+                for pw in ("false", "true"):
+                    states[f"clear={'true' if clr else 'false'},powered={pw}," + k] = v
+        wj(os.path.join(assets, f"blockstates/{name}.json"), {"variants": states})
 
-    def glint(x, y):
-        # a few streaks of light across clear glass
-        if (x - y) in (3, 4) and 4 <= x <= 9: return (255, 255, 255, 110)
-        if (x - y) == -6 and 9 <= x <= 12: return (255, 255, 255, 80)
-        return clear
+    CLEAR = (0, 0, 0, 0)
 
-    bronze_frame = lambda x, y, d: (shade((176, 110, 50), 0.6) + (255,)) if d == 0 else ((226, 160, 86, 255) if (x + y) % 5 else GOLD_HI + (255,))
-    glass_set("reinforced_glass", glint, bronze_frame, 2)
-    wj(os.path.join(assets, "blockstates/reinforced_glass.json"), {"variants": glass_models("reinforced_glass", "reinforced_glass", "reinforced_glass")})
+    def sheen(x, y, strength=1.0):
+        """Two soft diagonal streaks of light, running on from block to block."""
+        k = (x + y) % 16
+        if k in (3, 4): return int(70 * strength)
+        if k == 5: return int(35 * strength)
+        if k in (10,): return int(40 * strength)
+        return 0
+
+    def clear_glass(x, y, strength=1.0):
+        a = sheen(x, y, strength)
+        return (255, 255, 255, a) if a else CLEAR
+
+    def bevel(dark, mid, light, width):
+        """A frame lit on its top and left, shadowed on its bottom and right."""
+        def f(x, y, near, side):
+            if near == 0: return tuple(dark) + (255,)
+            lit = side in ("t", "l")
+            return tuple(light if lit else mid) + (255,)
+        return f
+
+    # reinforced: clear, framed in two pixels of bronze, a rivet where frame meets frame
+    def bronze_frame(x, y, near, side):
+        if near == 0: return (96, 56, 24, 255)
+        if (x in (1, 14)) and (y in (1, 14)): return GOLD_HI + (255,)
+        return ((226, 160, 86) if side in ("t", "l") else (176, 110, 50)) + (255,)
+    glass_set("reinforced_glass", lambda x, y: clear_glass(x, y, 1.2), bronze_frame, 2)
+    wj(os.path.join(assets, "blockstates/reinforced_glass.json"), {"variants": glass_models("reinforced_glass", "reinforced_glass")})
     glass_item("reinforced_glass", "reinforced_glass")
 
+    # frosted: milky white, crystals of frost brighter in it, a pale frame
     frost = random.Random(161)
-    flakes = {(frost.randrange(16), frost.randrange(16)) for _ in range(22)}
-    glass_set("frosted_glass", lambda x, y: (255, 255, 255, 230) if (x, y) in flakes else (236, 244, 250, 150 + (10 if (x * 3 + y) % 5 == 0 else 0)),
-              lambda x, y, d: (200, 210, 220, 255), 1)
-    wj(os.path.join(assets, "blockstates/frosted_glass.json"), {"variants": glass_models("frosted_glass", "frosted_glass", "frosted_glass")})
+    flakes = {(frost.randrange(16), frost.randrange(16)) for _ in range(18)}
+    fn_ = fbm(171)
+
+    def frosted(x, y):
+        v = fn_(x, y)
+        a = int(196 + 40 * v)
+        if (x, y) in flakes: return (255, 255, 255, 245)
+        return (232 + int(10 * v), 240 + int(8 * v), 246, min(240, a + sheen(x, y, 0.5)))
+    glass_set("frosted_glass", frosted, bevel((176, 186, 196), (214, 222, 230), (246, 250, 252), 1), 1)
+    wj(os.path.join(assets, "blockstates/frosted_glass.json"), {"variants": glass_models("frosted_glass", "frosted_glass")})
     glass_item("frosted_glass", "frosted_glass")
 
-    graphite = lambda x, y, d: (52, 56, 66, 255) if d == 0 else (96, 102, 116, 255)
-    glass_set("smart_glass_clear", lambda x, y: (120, 220, 255, 255) if (x, y) == (13, 2) else glint(x, y), graphite, 1)
-    glass_set("smart_glass", lambda x, y: (255, 170, 60, 255) if (x, y) == (13, 2) else shade((40, 46, 60), 0.9 + 0.1 * math.sin((x + y) * 0.5)) + (235,), graphite, 1)
-    states = {}
-    for clr, prefix in ((False, "smart_glass"), (True, "smart_glass_clear")):
-        for k, v in glass_models("smart_glass", prefix, prefix).items():
-            states[f"clear={'true' if clr else 'false'}," + k] = v
-    wj(os.path.join(assets, "blockstates/smart_glass.json"), {"variants": states})
+    # smart glass: graphite frame; shaded, a smoked pane with fine lines across it; clear, nothing but the light on it
+    graphite = bevel((40, 44, 54), (78, 84, 98), (120, 128, 144), 1)
+
+    def shaded(x, y):
+        c = mix((44, 52, 68), (70, 80, 100), 0.5 + 0.5 * math.sin((x + y) * math.pi / 8))
+        if y % 2 == 0: c = shade(c, 0.92)
+        a = sheen(x, y, 0.6)
+        if a: c = mix(c, (180, 190, 210), a / 255)
+        return tuple(c) + (240,)
+    glass_set("smart_glass", shaded, graphite, 1)
+    glass_set("smart_glass_clear", lambda x, y: (200, 230, 255, 40) if y % 4 == 0 and not sheen(x, y) else clear_glass(x, y), graphite, 1)
+    switching("smart_glass", ((False, "smart_glass"), (True, "smart_glass_clear")))
     glass_item("smart_glass", "smart_glass")
 
-    def cracks(x, y):
-        if (x * 2 + y) % 13 == 0 and 2 < x < 14 and 2 < y < 14: return (255, 250, 230, 170)
-        if (x + 2 * y) % 17 == 0 and x > 6: return (255, 250, 230, 130)
-        return glint(x, y)
-    glass_set("brittle_glass", cracks, lambda x, y, d: shade((214, 190, 130), 1.1 if (x * y) % 3 else 0.9) + (255,), 1)
-    wj(os.path.join(assets, "blockstates/brittle_glass.json"), {"variants": glass_models("brittle_glass", "brittle_glass", "brittle_glass")})
-    glass_item("brittle_glass", "brittle_glass")
+    # veil glass: untinted - a pane of pale glass that cannot be seen through, its surface catching the light; clear,
+    # the same pane with nothing behind it. Pewter frame.
+    pewter = bevel((96, 100, 106), (150, 154, 160), (206, 210, 214), 1)
+    vn = fbm(181)
 
-    # one-way glass: a silvered mirror on the side it faces, nothing at all on any other
-    def mirror(x, y):
-        c = mix((150, 166, 184), (226, 236, 246), (x + 15 - y) / 30)
-        if (x + y) % 11 in (0, 1): c = mix(c, (255, 255, 255), 0.45)
-        return c
-    for mask in range(16):
-        paint_hi(framed(mirror, mask, (70, 60, 50), (120, 104, 80), (50, 40, 32), (150, 120, 80), width=1)).save(os.path.join(T, f"one_way_glass_{mask}.png"))
-    face_box = {"north": ((0, 0, 0), (16, 16, 0)), "south": ((0, 0, 16), (16, 16, 16)), "west": ((0, 0, 0), (0, 16, 16)), "east": ((16, 0, 0), (16, 16, 16)),
-                "up": ((0, 16, 0), (16, 16, 16)), "down": ((0, 0, 0), (16, 0, 16))}
-    dirs = ["down", "east", "north", "south", "up", "west"]
+    def veiled(x, y):
+        v = vn(x, y)
+        c = (226 + int(14 * v), 232 + int(12 * v), 236 + int(10 * v))
+        a = sheen(x, y, 1.0)
+        if a: c = mix(c, (255, 255, 255), a / 140)
+        if (x * 5 + y * 3) % 17 == 0: c = shade(c, 0.96)
+        return tuple(c) + (255,)
+    glass_set("veil_glass", veiled, pewter, 1)
+    glass_set("veil_glass_clear", lambda x, y: clear_glass(x, y), pewter, 1)
+    switching("veil_glass", ((False, "veil_glass"), (True, "veil_glass_clear")))
+    glass_item("veil_glass", "veil_glass")
+
+    # one-way glass: from the front a solid pane of silvered glass, untinted; from behind, nothing. Where a run of it
+    # steps, the sides of the steps are drawn plain, so the front reads whole.
+    sn = fbm(191)
+
+    def silvered(x, y):
+        # (noise and streaks that tile, so a run of it reads as one sheet)
+        v = sn(x, y)
+        c = (200 + int(22 * v), 206 + int(22 * v), 214 + int(20 * v))
+        a = sheen(x, y, 1.0)
+        if a: c = mix(c, (255, 255, 255), a / 110)
+        return tuple(c) + (255,)
+    glass_set("one_way_glass", silvered, pewter, 1)
+    face_box = {"north": ((0, 0, 0), (16, 16, 0)), "south": ((0, 0, 16), (16, 16, 16)), "west": ((0, 0, 0), (0, 16, 16)),
+                "east": ((16, 0, 0), (16, 16, 16)), "up": ((0, 16, 0), (16, 16, 16)), "down": ((0, 0, 0), (16, 0, 16))}
+    opposite = {"north": "south", "south": "north", "east": "west", "west": "east", "up": "down", "down": "up"}
+    import glob as _glob
+    for old in _glob.glob(os.path.join(M, "one_way_glass_*.json")):
+        os.remove(old)
     one_way = {}
-    for facing, (a, b) in face_box.items():
+    for facing in face_box:
         for bits in range(64):
             j = {d: bool(bits >> i & 1) for i, d in enumerate(dirs)}
-            if facing in SIDE_EDGES_C:
-                u, dn, l, r = SIDE_EDGES_C[facing]
-                m = (1 if j[u] else 0) | (2 if j[dn] else 0) | (4 if j[l] else 0) | (8 if j[r] else 0)
-            elif facing == "up":
-                m = (1 if j["north"] else 0) | (2 if j["south"] else 0) | (4 if j["west"] else 0) | (8 if j["east"] else 0)
-            else:
-                m = (1 if j["south"] else 0) | (2 if j["north"] else 0) | (4 if j["west"] else 0) | (8 if j["east"] else 0)
+            m = masks(j)[facing]
             model = f"one_way_glass_{facing}_{m}"
-            if bits == 0 or not os.path.exists(os.path.join(M, f"{model}.json")):
-                wj(os.path.join(M, f"{model}.json"), {"parent": "minecraft:block/block", "ambientocclusion": False,
-                                                      "textures": {"particle": t(f"one_way_glass_{m}"), "f": t(f"one_way_glass_{m}")},
-                                                      "elements": [{"from": list(a), "to": list(b), "faces": {facing: {"uv": [0, 0, 16, 16], "texture": "#f", "cullface": facing}}}]})
+            path = os.path.join(M, f"{model}.json")
+            if not os.path.exists(path):
+                elements = [{"from": list(face_box[facing][0]), "to": list(face_box[facing][1]),
+                             "faces": {facing: {"uv": [0, 0, 16, 16], "texture": "#f", "cullface": facing}}}]
+                for side in face_box:
+                    if side in (facing, opposite[facing]): continue
+                    elements.append({"from": list(face_box[side][0]), "to": list(face_box[side][1]),
+                                     "faces": {side: {"uv": [0, 0, 16, 16], "texture": "#s", "cullface": side}}})
+                wj(path, {"parent": "minecraft:block/block", "ambientocclusion": False,
+                          "textures": {"particle": t(f"one_way_glass_{m}"), "f": t(f"one_way_glass_{m}"), "s": t("one_way_glass_15")}, "elements": elements})
             one_way[f"facing={facing}," + ",".join(f"{d}={'true' if j[d] else 'false'}" for d in dirs)] = {"model": f"{MOD}:block/{model}"}
     wj(os.path.join(assets, "blockstates/one_way_glass.json"), {"variants": one_way})
     wj(os.path.join(M, "one_way_glass.json"), {"parent": "minecraft:block/cube_all", "textures": {"all": t("one_way_glass_0")}})
@@ -2498,7 +2562,7 @@ def gen_furnish2(assets, data):
         "reinforced_glass": ({"G": "minecraft:glass", "C": "minecraft:copper_ingot"}, ["CGC", "GCG", "CGC"], 4),
         "frosted_glass": ({"G": "minecraft:glass", "W": "minecraft:white_dye"}, ["GGG", "GWG", "GGG"], 8),
         "smart_glass": ({"G": "minecraft:glass", "Q": "minecraft:quartz", "R": "minecraft:redstone"}, ["GQG", "QRQ", "GQG"], 4),
-        "brittle_glass": ({"G": "minecraft:glass", "S": "#minecraft:sand"}, ["SG", "GS"], 2),
+        "veil_glass": ({"G": "minecraft:glass", "Q": "minecraft:quartz", "A": "minecraft:amethyst_shard"}, ["GQG", "QAQ", "GQG"], 4),
         "one_way_glass": ({"G": "minecraft:glass", "N": "minecraft:iron_nugget"}, ["GGG", "NNN"], 3),
     }
     for rid, (key_, pattern_, count) in recipes.items():

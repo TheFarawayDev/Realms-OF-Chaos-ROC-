@@ -1,387 +1,771 @@
 {
   "variants": {
-    "clear=false,down=false,east=false,north=false,south=false,up=false,west=false": {
+    "clear=false,powered=false,down=false,east=false,north=false,south=false,up=false,west=false": {
       "model": "realms_of_chaos:block/smart_glass_______"
     },
-    "clear=false,down=true,east=false,north=false,south=false,up=false,west=false": {
+    "clear=false,powered=true,down=false,east=false,north=false,south=false,up=false,west=false": {
+      "model": "realms_of_chaos:block/smart_glass_______"
+    },
+    "clear=false,powered=false,down=true,east=false,north=false,south=false,up=false,west=false": {
       "model": "realms_of_chaos:block/smart_glass_d_____"
     },
-    "clear=false,down=false,east=true,north=false,south=false,up=false,west=false": {
+    "clear=false,powered=true,down=true,east=false,north=false,south=false,up=false,west=false": {
+      "model": "realms_of_chaos:block/smart_glass_d_____"
+    },
+    "clear=false,powered=false,down=false,east=true,north=false,south=false,up=false,west=false": {
       "model": "realms_of_chaos:block/smart_glass__e____"
     },
-    "clear=false,down=true,east=true,north=false,south=false,up=false,west=false": {
+    "clear=false,powered=true,down=false,east=true,north=false,south=false,up=false,west=false": {
+      "model": "realms_of_chaos:block/smart_glass__e____"
+    },
+    "clear=false,powered=false,down=true,east=true,north=false,south=false,up=false,west=false": {
       "model": "realms_of_chaos:block/smart_glass_de____"
     },
-    "clear=false,down=false,east=false,north=true,south=false,up=false,west=false": {
+    "clear=false,powered=true,down=true,east=true,north=false,south=false,up=false,west=false": {
+      "model": "realms_of_chaos:block/smart_glass_de____"
+    },
+    "clear=false,powered=false,down=false,east=false,north=true,south=false,up=false,west=false": {
       "model": "realms_of_chaos:block/smart_glass___n___"
     },
-    "clear=false,down=true,east=false,north=true,south=false,up=false,west=false": {
+    "clear=false,powered=true,down=false,east=false,north=true,south=false,up=false,west=false": {
+      "model": "realms_of_chaos:block/smart_glass___n___"
+    },
+    "clear=false,powered=false,down=true,east=false,north=true,south=false,up=false,west=false": {
       "model": "realms_of_chaos:block/smart_glass_d_n___"
     },
-    "clear=false,down=false,east=true,north=true,south=false,up=false,west=false": {
+    "clear=false,powered=true,down=true,east=false,north=true,south=false,up=false,west=false": {
+      "model": "realms_of_chaos:block/smart_glass_d_n___"
+    },
+    "clear=false,powered=false,down=false,east=true,north=true,south=false,up=false,west=false": {
       "model": "realms_of_chaos:block/smart_glass__en___"
     },
-    "clear=false,down=true,east=true,north=true,south=false,up=false,west=false": {
+    "clear=false,powered=true,down=false,east=true,north=true,south=false,up=false,west=false": {
+      "model": "realms_of_chaos:block/smart_glass__en___"
+    },
+    "clear=false,powered=false,down=true,east=true,north=true,south=false,up=false,west=false": {
       "model": "realms_of_chaos:block/smart_glass_den___"
     },
-    "clear=false,down=false,east=false,north=false,south=true,up=false,west=false": {
+    "clear=false,powered=true,down=true,east=true,north=true,south=false,up=false,west=false": {
+      "model": "realms_of_chaos:block/smart_glass_den___"
+    },
+    "clear=false,powered=false,down=false,east=false,north=false,south=true,up=false,west=false": {
       "model": "realms_of_chaos:block/smart_glass____s__"
     },
-    "clear=false,down=true,east=false,north=false,south=true,up=false,west=false": {
+    "clear=false,powered=true,down=false,east=false,north=false,south=true,up=false,west=false": {
+      "model": "realms_of_chaos:block/smart_glass____s__"
+    },
+    "clear=false,powered=false,down=true,east=false,north=false,south=true,up=false,west=false": {
       "model": "realms_of_chaos:block/smart_glass_d__s__"
     },
-    "clear=false,down=false,east=true,north=false,south=true,up=false,west=false": {
+    "clear=false,powered=true,down=true,east=false,north=false,south=true,up=false,west=false": {
+      "model": "realms_of_chaos:block/smart_glass_d__s__"
+    },
+    "clear=false,powered=false,down=false,east=true,north=false,south=true,up=false,west=false": {
       "model": "realms_of_chaos:block/smart_glass__e_s__"
     },
-    "clear=false,down=true,east=true,north=false,south=true,up=false,west=false": {
+    "clear=false,powered=true,down=false,east=true,north=false,south=true,up=false,west=false": {
+      "model": "realms_of_chaos:block/smart_glass__e_s__"
+    },
+    "clear=false,powered=false,down=true,east=true,north=false,south=true,up=false,west=false": {
       "model": "realms_of_chaos:block/smart_glass_de_s__"
     },
-    "clear=false,down=false,east=false,north=true,south=true,up=false,west=false": {
+    "clear=false,powered=true,down=true,east=true,north=false,south=true,up=false,west=false": {
+      "model": "realms_of_chaos:block/smart_glass_de_s__"
+    },
+    "clear=false,powered=false,down=false,east=false,north=true,south=true,up=false,west=false": {
       "model": "realms_of_chaos:block/smart_glass___ns__"
     },
-    "clear=false,down=true,east=false,north=true,south=true,up=false,west=false": {
+    "clear=false,powered=true,down=false,east=false,north=true,south=true,up=false,west=false": {
+      "model": "realms_of_chaos:block/smart_glass___ns__"
+    },
+    "clear=false,powered=false,down=true,east=false,north=true,south=true,up=false,west=false": {
       "model": "realms_of_chaos:block/smart_glass_d_ns__"
     },
-    "clear=false,down=false,east=true,north=true,south=true,up=false,west=false": {
+    "clear=false,powered=true,down=true,east=false,north=true,south=true,up=false,west=false": {
+      "model": "realms_of_chaos:block/smart_glass_d_ns__"
+    },
+    "clear=false,powered=false,down=false,east=true,north=true,south=true,up=false,west=false": {
       "model": "realms_of_chaos:block/smart_glass__ens__"
     },
-    "clear=false,down=true,east=true,north=true,south=true,up=false,west=false": {
+    "clear=false,powered=true,down=false,east=true,north=true,south=true,up=false,west=false": {
+      "model": "realms_of_chaos:block/smart_glass__ens__"
+    },
+    "clear=false,powered=false,down=true,east=true,north=true,south=true,up=false,west=false": {
       "model": "realms_of_chaos:block/smart_glass_dens__"
     },
-    "clear=false,down=false,east=false,north=false,south=false,up=true,west=false": {
+    "clear=false,powered=true,down=true,east=true,north=true,south=true,up=false,west=false": {
+      "model": "realms_of_chaos:block/smart_glass_dens__"
+    },
+    "clear=false,powered=false,down=false,east=false,north=false,south=false,up=true,west=false": {
       "model": "realms_of_chaos:block/smart_glass_____u_"
     },
-    "clear=false,down=true,east=false,north=false,south=false,up=true,west=false": {
+    "clear=false,powered=true,down=false,east=false,north=false,south=false,up=true,west=false": {
+      "model": "realms_of_chaos:block/smart_glass_____u_"
+    },
+    "clear=false,powered=false,down=true,east=false,north=false,south=false,up=true,west=false": {
       "model": "realms_of_chaos:block/smart_glass_d___u_"
     },
-    "clear=false,down=false,east=true,north=false,south=false,up=true,west=false": {
+    "clear=false,powered=true,down=true,east=false,north=false,south=false,up=true,west=false": {
+      "model": "realms_of_chaos:block/smart_glass_d___u_"
+    },
+    "clear=false,powered=false,down=false,east=true,north=false,south=false,up=true,west=false": {
       "model": "realms_of_chaos:block/smart_glass__e__u_"
     },
-    "clear=false,down=true,east=true,north=false,south=false,up=true,west=false": {
+    "clear=false,powered=true,down=false,east=true,north=false,south=false,up=true,west=false": {
+      "model": "realms_of_chaos:block/smart_glass__e__u_"
+    },
+    "clear=false,powered=false,down=true,east=true,north=false,south=false,up=true,west=false": {
       "model": "realms_of_chaos:block/smart_glass_de__u_"
     },
-    "clear=false,down=false,east=false,north=true,south=false,up=true,west=false": {
+    "clear=false,powered=true,down=true,east=true,north=false,south=false,up=true,west=false": {
+      "model": "realms_of_chaos:block/smart_glass_de__u_"
+    },
+    "clear=false,powered=false,down=false,east=false,north=true,south=false,up=true,west=false": {
       "model": "realms_of_chaos:block/smart_glass___n_u_"
     },
-    "clear=false,down=true,east=false,north=true,south=false,up=true,west=false": {
+    "clear=false,powered=true,down=false,east=false,north=true,south=false,up=true,west=false": {
+      "model": "realms_of_chaos:block/smart_glass___n_u_"
+    },
+    "clear=false,powered=false,down=true,east=false,north=true,south=false,up=true,west=false": {
       "model": "realms_of_chaos:block/smart_glass_d_n_u_"
     },
-    "clear=false,down=false,east=true,north=true,south=false,up=true,west=false": {
+    "clear=false,powered=true,down=true,east=false,north=true,south=false,up=true,west=false": {
+      "model": "realms_of_chaos:block/smart_glass_d_n_u_"
+    },
+    "clear=false,powered=false,down=false,east=true,north=true,south=false,up=true,west=false": {
       "model": "realms_of_chaos:block/smart_glass__en_u_"
     },
-    "clear=false,down=true,east=true,north=true,south=false,up=true,west=false": {
+    "clear=false,powered=true,down=false,east=true,north=true,south=false,up=true,west=false": {
+      "model": "realms_of_chaos:block/smart_glass__en_u_"
+    },
+    "clear=false,powered=false,down=true,east=true,north=true,south=false,up=true,west=false": {
       "model": "realms_of_chaos:block/smart_glass_den_u_"
     },
-    "clear=false,down=false,east=false,north=false,south=true,up=true,west=false": {
+    "clear=false,powered=true,down=true,east=true,north=true,south=false,up=true,west=false": {
+      "model": "realms_of_chaos:block/smart_glass_den_u_"
+    },
+    "clear=false,powered=false,down=false,east=false,north=false,south=true,up=true,west=false": {
       "model": "realms_of_chaos:block/smart_glass____su_"
     },
-    "clear=false,down=true,east=false,north=false,south=true,up=true,west=false": {
+    "clear=false,powered=true,down=false,east=false,north=false,south=true,up=true,west=false": {
+      "model": "realms_of_chaos:block/smart_glass____su_"
+    },
+    "clear=false,powered=false,down=true,east=false,north=false,south=true,up=true,west=false": {
       "model": "realms_of_chaos:block/smart_glass_d__su_"
     },
-    "clear=false,down=false,east=true,north=false,south=true,up=true,west=false": {
+    "clear=false,powered=true,down=true,east=false,north=false,south=true,up=true,west=false": {
+      "model": "realms_of_chaos:block/smart_glass_d__su_"
+    },
+    "clear=false,powered=false,down=false,east=true,north=false,south=true,up=true,west=false": {
       "model": "realms_of_chaos:block/smart_glass__e_su_"
     },
-    "clear=false,down=true,east=true,north=false,south=true,up=true,west=false": {
+    "clear=false,powered=true,down=false,east=true,north=false,south=true,up=true,west=false": {
+      "model": "realms_of_chaos:block/smart_glass__e_su_"
+    },
+    "clear=false,powered=false,down=true,east=true,north=false,south=true,up=true,west=false": {
       "model": "realms_of_chaos:block/smart_glass_de_su_"
     },
-    "clear=false,down=false,east=false,north=true,south=true,up=true,west=false": {
+    "clear=false,powered=true,down=true,east=true,north=false,south=true,up=true,west=false": {
+      "model": "realms_of_chaos:block/smart_glass_de_su_"
+    },
+    "clear=false,powered=false,down=false,east=false,north=true,south=true,up=true,west=false": {
       "model": "realms_of_chaos:block/smart_glass___nsu_"
     },
-    "clear=false,down=true,east=false,north=true,south=true,up=true,west=false": {
+    "clear=false,powered=true,down=false,east=false,north=true,south=true,up=true,west=false": {
+      "model": "realms_of_chaos:block/smart_glass___nsu_"
+    },
+    "clear=false,powered=false,down=true,east=false,north=true,south=true,up=true,west=false": {
       "model": "realms_of_chaos:block/smart_glass_d_nsu_"
     },
-    "clear=false,down=false,east=true,north=true,south=true,up=true,west=false": {
+    "clear=false,powered=true,down=true,east=false,north=true,south=true,up=true,west=false": {
+      "model": "realms_of_chaos:block/smart_glass_d_nsu_"
+    },
+    "clear=false,powered=false,down=false,east=true,north=true,south=true,up=true,west=false": {
       "model": "realms_of_chaos:block/smart_glass__ensu_"
     },
-    "clear=false,down=true,east=true,north=true,south=true,up=true,west=false": {
+    "clear=false,powered=true,down=false,east=true,north=true,south=true,up=true,west=false": {
+      "model": "realms_of_chaos:block/smart_glass__ensu_"
+    },
+    "clear=false,powered=false,down=true,east=true,north=true,south=true,up=true,west=false": {
       "model": "realms_of_chaos:block/smart_glass_densu_"
     },
-    "clear=false,down=false,east=false,north=false,south=false,up=false,west=true": {
+    "clear=false,powered=true,down=true,east=true,north=true,south=true,up=true,west=false": {
+      "model": "realms_of_chaos:block/smart_glass_densu_"
+    },
+    "clear=false,powered=false,down=false,east=false,north=false,south=false,up=false,west=true": {
       "model": "realms_of_chaos:block/smart_glass______w"
     },
-    "clear=false,down=true,east=false,north=false,south=false,up=false,west=true": {
+    "clear=false,powered=true,down=false,east=false,north=false,south=false,up=false,west=true": {
+      "model": "realms_of_chaos:block/smart_glass______w"
+    },
+    "clear=false,powered=false,down=true,east=false,north=false,south=false,up=false,west=true": {
       "model": "realms_of_chaos:block/smart_glass_d____w"
     },
-    "clear=false,down=false,east=true,north=false,south=false,up=false,west=true": {
+    "clear=false,powered=true,down=true,east=false,north=false,south=false,up=false,west=true": {
+      "model": "realms_of_chaos:block/smart_glass_d____w"
+    },
+    "clear=false,powered=false,down=false,east=true,north=false,south=false,up=false,west=true": {
       "model": "realms_of_chaos:block/smart_glass__e___w"
     },
-    "clear=false,down=true,east=true,north=false,south=false,up=false,west=true": {
+    "clear=false,powered=true,down=false,east=true,north=false,south=false,up=false,west=true": {
+      "model": "realms_of_chaos:block/smart_glass__e___w"
+    },
+    "clear=false,powered=false,down=true,east=true,north=false,south=false,up=false,west=true": {
       "model": "realms_of_chaos:block/smart_glass_de___w"
     },
-    "clear=false,down=false,east=false,north=true,south=false,up=false,west=true": {
+    "clear=false,powered=true,down=true,east=true,north=false,south=false,up=false,west=true": {
+      "model": "realms_of_chaos:block/smart_glass_de___w"
+    },
+    "clear=false,powered=false,down=false,east=false,north=true,south=false,up=false,west=true": {
       "model": "realms_of_chaos:block/smart_glass___n__w"
     },
-    "clear=false,down=true,east=false,north=true,south=false,up=false,west=true": {
+    "clear=false,powered=true,down=false,east=false,north=true,south=false,up=false,west=true": {
+      "model": "realms_of_chaos:block/smart_glass___n__w"
+    },
+    "clear=false,powered=false,down=true,east=false,north=true,south=false,up=false,west=true": {
       "model": "realms_of_chaos:block/smart_glass_d_n__w"
     },
-    "clear=false,down=false,east=true,north=true,south=false,up=false,west=true": {
+    "clear=false,powered=true,down=true,east=false,north=true,south=false,up=false,west=true": {
+      "model": "realms_of_chaos:block/smart_glass_d_n__w"
+    },
+    "clear=false,powered=false,down=false,east=true,north=true,south=false,up=false,west=true": {
       "model": "realms_of_chaos:block/smart_glass__en__w"
     },
-    "clear=false,down=true,east=true,north=true,south=false,up=false,west=true": {
+    "clear=false,powered=true,down=false,east=true,north=true,south=false,up=false,west=true": {
+      "model": "realms_of_chaos:block/smart_glass__en__w"
+    },
+    "clear=false,powered=false,down=true,east=true,north=true,south=false,up=false,west=true": {
       "model": "realms_of_chaos:block/smart_glass_den__w"
     },
-    "clear=false,down=false,east=false,north=false,south=true,up=false,west=true": {
+    "clear=false,powered=true,down=true,east=true,north=true,south=false,up=false,west=true": {
+      "model": "realms_of_chaos:block/smart_glass_den__w"
+    },
+    "clear=false,powered=false,down=false,east=false,north=false,south=true,up=false,west=true": {
       "model": "realms_of_chaos:block/smart_glass____s_w"
     },
-    "clear=false,down=true,east=false,north=false,south=true,up=false,west=true": {
+    "clear=false,powered=true,down=false,east=false,north=false,south=true,up=false,west=true": {
+      "model": "realms_of_chaos:block/smart_glass____s_w"
+    },
+    "clear=false,powered=false,down=true,east=false,north=false,south=true,up=false,west=true": {
       "model": "realms_of_chaos:block/smart_glass_d__s_w"
     },
-    "clear=false,down=false,east=true,north=false,south=true,up=false,west=true": {
+    "clear=false,powered=true,down=true,east=false,north=false,south=true,up=false,west=true": {
+      "model": "realms_of_chaos:block/smart_glass_d__s_w"
+    },
+    "clear=false,powered=false,down=false,east=true,north=false,south=true,up=false,west=true": {
       "model": "realms_of_chaos:block/smart_glass__e_s_w"
     },
-    "clear=false,down=true,east=true,north=false,south=true,up=false,west=true": {
+    "clear=false,powered=true,down=false,east=true,north=false,south=true,up=false,west=true": {
+      "model": "realms_of_chaos:block/smart_glass__e_s_w"
+    },
+    "clear=false,powered=false,down=true,east=true,north=false,south=true,up=false,west=true": {
       "model": "realms_of_chaos:block/smart_glass_de_s_w"
     },
-    "clear=false,down=false,east=false,north=true,south=true,up=false,west=true": {
+    "clear=false,powered=true,down=true,east=true,north=false,south=true,up=false,west=true": {
+      "model": "realms_of_chaos:block/smart_glass_de_s_w"
+    },
+    "clear=false,powered=false,down=false,east=false,north=true,south=true,up=false,west=true": {
       "model": "realms_of_chaos:block/smart_glass___ns_w"
     },
-    "clear=false,down=true,east=false,north=true,south=true,up=false,west=true": {
+    "clear=false,powered=true,down=false,east=false,north=true,south=true,up=false,west=true": {
+      "model": "realms_of_chaos:block/smart_glass___ns_w"
+    },
+    "clear=false,powered=false,down=true,east=false,north=true,south=true,up=false,west=true": {
       "model": "realms_of_chaos:block/smart_glass_d_ns_w"
     },
-    "clear=false,down=false,east=true,north=true,south=true,up=false,west=true": {
+    "clear=false,powered=true,down=true,east=false,north=true,south=true,up=false,west=true": {
+      "model": "realms_of_chaos:block/smart_glass_d_ns_w"
+    },
+    "clear=false,powered=false,down=false,east=true,north=true,south=true,up=false,west=true": {
       "model": "realms_of_chaos:block/smart_glass__ens_w"
     },
-    "clear=false,down=true,east=true,north=true,south=true,up=false,west=true": {
+    "clear=false,powered=true,down=false,east=true,north=true,south=true,up=false,west=true": {
+      "model": "realms_of_chaos:block/smart_glass__ens_w"
+    },
+    "clear=false,powered=false,down=true,east=true,north=true,south=true,up=false,west=true": {
       "model": "realms_of_chaos:block/smart_glass_dens_w"
     },
-    "clear=false,down=false,east=false,north=false,south=false,up=true,west=true": {
+    "clear=false,powered=true,down=true,east=true,north=true,south=true,up=false,west=true": {
+      "model": "realms_of_chaos:block/smart_glass_dens_w"
+    },
+    "clear=false,powered=false,down=false,east=false,north=false,south=false,up=true,west=true": {
       "model": "realms_of_chaos:block/smart_glass_____uw"
     },
-    "clear=false,down=true,east=false,north=false,south=false,up=true,west=true": {
+    "clear=false,powered=true,down=false,east=false,north=false,south=false,up=true,west=true": {
+      "model": "realms_of_chaos:block/smart_glass_____uw"
+    },
+    "clear=false,powered=false,down=true,east=false,north=false,south=false,up=true,west=true": {
       "model": "realms_of_chaos:block/smart_glass_d___uw"
     },
-    "clear=false,down=false,east=true,north=false,south=false,up=true,west=true": {
+    "clear=false,powered=true,down=true,east=false,north=false,south=false,up=true,west=true": {
+      "model": "realms_of_chaos:block/smart_glass_d___uw"
+    },
+    "clear=false,powered=false,down=false,east=true,north=false,south=false,up=true,west=true": {
       "model": "realms_of_chaos:block/smart_glass__e__uw"
     },
-    "clear=false,down=true,east=true,north=false,south=false,up=true,west=true": {
+    "clear=false,powered=true,down=false,east=true,north=false,south=false,up=true,west=true": {
+      "model": "realms_of_chaos:block/smart_glass__e__uw"
+    },
+    "clear=false,powered=false,down=true,east=true,north=false,south=false,up=true,west=true": {
       "model": "realms_of_chaos:block/smart_glass_de__uw"
     },
-    "clear=false,down=false,east=false,north=true,south=false,up=true,west=true": {
+    "clear=false,powered=true,down=true,east=true,north=false,south=false,up=true,west=true": {
+      "model": "realms_of_chaos:block/smart_glass_de__uw"
+    },
+    "clear=false,powered=false,down=false,east=false,north=true,south=false,up=true,west=true": {
       "model": "realms_of_chaos:block/smart_glass___n_uw"
     },
-    "clear=false,down=true,east=false,north=true,south=false,up=true,west=true": {
+    "clear=false,powered=true,down=false,east=false,north=true,south=false,up=true,west=true": {
+      "model": "realms_of_chaos:block/smart_glass___n_uw"
+    },
+    "clear=false,powered=false,down=true,east=false,north=true,south=false,up=true,west=true": {
       "model": "realms_of_chaos:block/smart_glass_d_n_uw"
     },
-    "clear=false,down=false,east=true,north=true,south=false,up=true,west=true": {
+    "clear=false,powered=true,down=true,east=false,north=true,south=false,up=true,west=true": {
+      "model": "realms_of_chaos:block/smart_glass_d_n_uw"
+    },
+    "clear=false,powered=false,down=false,east=true,north=true,south=false,up=true,west=true": {
       "model": "realms_of_chaos:block/smart_glass__en_uw"
     },
-    "clear=false,down=true,east=true,north=true,south=false,up=true,west=true": {
+    "clear=false,powered=true,down=false,east=true,north=true,south=false,up=true,west=true": {
+      "model": "realms_of_chaos:block/smart_glass__en_uw"
+    },
+    "clear=false,powered=false,down=true,east=true,north=true,south=false,up=true,west=true": {
       "model": "realms_of_chaos:block/smart_glass_den_uw"
     },
-    "clear=false,down=false,east=false,north=false,south=true,up=true,west=true": {
+    "clear=false,powered=true,down=true,east=true,north=true,south=false,up=true,west=true": {
+      "model": "realms_of_chaos:block/smart_glass_den_uw"
+    },
+    "clear=false,powered=false,down=false,east=false,north=false,south=true,up=true,west=true": {
       "model": "realms_of_chaos:block/smart_glass____suw"
     },
-    "clear=false,down=true,east=false,north=false,south=true,up=true,west=true": {
+    "clear=false,powered=true,down=false,east=false,north=false,south=true,up=true,west=true": {
+      "model": "realms_of_chaos:block/smart_glass____suw"
+    },
+    "clear=false,powered=false,down=true,east=false,north=false,south=true,up=true,west=true": {
       "model": "realms_of_chaos:block/smart_glass_d__suw"
     },
-    "clear=false,down=false,east=true,north=false,south=true,up=true,west=true": {
+    "clear=false,powered=true,down=true,east=false,north=false,south=true,up=true,west=true": {
+      "model": "realms_of_chaos:block/smart_glass_d__suw"
+    },
+    "clear=false,powered=false,down=false,east=true,north=false,south=true,up=true,west=true": {
       "model": "realms_of_chaos:block/smart_glass__e_suw"
     },
-    "clear=false,down=true,east=true,north=false,south=true,up=true,west=true": {
+    "clear=false,powered=true,down=false,east=true,north=false,south=true,up=true,west=true": {
+      "model": "realms_of_chaos:block/smart_glass__e_suw"
+    },
+    "clear=false,powered=false,down=true,east=true,north=false,south=true,up=true,west=true": {
       "model": "realms_of_chaos:block/smart_glass_de_suw"
     },
-    "clear=false,down=false,east=false,north=true,south=true,up=true,west=true": {
+    "clear=false,powered=true,down=true,east=true,north=false,south=true,up=true,west=true": {
+      "model": "realms_of_chaos:block/smart_glass_de_suw"
+    },
+    "clear=false,powered=false,down=false,east=false,north=true,south=true,up=true,west=true": {
       "model": "realms_of_chaos:block/smart_glass___nsuw"
     },
-    "clear=false,down=true,east=false,north=true,south=true,up=true,west=true": {
+    "clear=false,powered=true,down=false,east=false,north=true,south=true,up=true,west=true": {
+      "model": "realms_of_chaos:block/smart_glass___nsuw"
+    },
+    "clear=false,powered=false,down=true,east=false,north=true,south=true,up=true,west=true": {
       "model": "realms_of_chaos:block/smart_glass_d_nsuw"
     },
-    "clear=false,down=false,east=true,north=true,south=true,up=true,west=true": {
+    "clear=false,powered=true,down=true,east=false,north=true,south=true,up=true,west=true": {
+      "model": "realms_of_chaos:block/smart_glass_d_nsuw"
+    },
+    "clear=false,powered=false,down=false,east=true,north=true,south=true,up=true,west=true": {
       "model": "realms_of_chaos:block/smart_glass__ensuw"
     },
-    "clear=false,down=true,east=true,north=true,south=true,up=true,west=true": {
+    "clear=false,powered=true,down=false,east=true,north=true,south=true,up=true,west=true": {
+      "model": "realms_of_chaos:block/smart_glass__ensuw"
+    },
+    "clear=false,powered=false,down=true,east=true,north=true,south=true,up=true,west=true": {
       "model": "realms_of_chaos:block/smart_glass_densuw"
     },
-    "clear=true,down=false,east=false,north=false,south=false,up=false,west=false": {
+    "clear=false,powered=true,down=true,east=true,north=true,south=true,up=true,west=true": {
+      "model": "realms_of_chaos:block/smart_glass_densuw"
+    },
+    "clear=true,powered=false,down=false,east=false,north=false,south=false,up=false,west=false": {
       "model": "realms_of_chaos:block/smart_glass_clear_______"
     },
-    "clear=true,down=true,east=false,north=false,south=false,up=false,west=false": {
+    "clear=true,powered=true,down=false,east=false,north=false,south=false,up=false,west=false": {
+      "model": "realms_of_chaos:block/smart_glass_clear_______"
+    },
+    "clear=true,powered=false,down=true,east=false,north=false,south=false,up=false,west=false": {
       "model": "realms_of_chaos:block/smart_glass_clear_d_____"
     },
-    "clear=true,down=false,east=true,north=false,south=false,up=false,west=false": {
+    "clear=true,powered=true,down=true,east=false,north=false,south=false,up=false,west=false": {
+      "model": "realms_of_chaos:block/smart_glass_clear_d_____"
+    },
+    "clear=true,powered=false,down=false,east=true,north=false,south=false,up=false,west=false": {
       "model": "realms_of_chaos:block/smart_glass_clear__e____"
     },
-    "clear=true,down=true,east=true,north=false,south=false,up=false,west=false": {
+    "clear=true,powered=true,down=false,east=true,north=false,south=false,up=false,west=false": {
+      "model": "realms_of_chaos:block/smart_glass_clear__e____"
+    },
+    "clear=true,powered=false,down=true,east=true,north=false,south=false,up=false,west=false": {
       "model": "realms_of_chaos:block/smart_glass_clear_de____"
     },
-    "clear=true,down=false,east=false,north=true,south=false,up=false,west=false": {
+    "clear=true,powered=true,down=true,east=true,north=false,south=false,up=false,west=false": {
+      "model": "realms_of_chaos:block/smart_glass_clear_de____"
+    },
+    "clear=true,powered=false,down=false,east=false,north=true,south=false,up=false,west=false": {
       "model": "realms_of_chaos:block/smart_glass_clear___n___"
     },
-    "clear=true,down=true,east=false,north=true,south=false,up=false,west=false": {
+    "clear=true,powered=true,down=false,east=false,north=true,south=false,up=false,west=false": {
+      "model": "realms_of_chaos:block/smart_glass_clear___n___"
+    },
+    "clear=true,powered=false,down=true,east=false,north=true,south=false,up=false,west=false": {
       "model": "realms_of_chaos:block/smart_glass_clear_d_n___"
     },
-    "clear=true,down=false,east=true,north=true,south=false,up=false,west=false": {
+    "clear=true,powered=true,down=true,east=false,north=true,south=false,up=false,west=false": {
+      "model": "realms_of_chaos:block/smart_glass_clear_d_n___"
+    },
+    "clear=true,powered=false,down=false,east=true,north=true,south=false,up=false,west=false": {
       "model": "realms_of_chaos:block/smart_glass_clear__en___"
     },
-    "clear=true,down=true,east=true,north=true,south=false,up=false,west=false": {
+    "clear=true,powered=true,down=false,east=true,north=true,south=false,up=false,west=false": {
+      "model": "realms_of_chaos:block/smart_glass_clear__en___"
+    },
+    "clear=true,powered=false,down=true,east=true,north=true,south=false,up=false,west=false": {
       "model": "realms_of_chaos:block/smart_glass_clear_den___"
     },
-    "clear=true,down=false,east=false,north=false,south=true,up=false,west=false": {
+    "clear=true,powered=true,down=true,east=true,north=true,south=false,up=false,west=false": {
+      "model": "realms_of_chaos:block/smart_glass_clear_den___"
+    },
+    "clear=true,powered=false,down=false,east=false,north=false,south=true,up=false,west=false": {
       "model": "realms_of_chaos:block/smart_glass_clear____s__"
     },
-    "clear=true,down=true,east=false,north=false,south=true,up=false,west=false": {
+    "clear=true,powered=true,down=false,east=false,north=false,south=true,up=false,west=false": {
+      "model": "realms_of_chaos:block/smart_glass_clear____s__"
+    },
+    "clear=true,powered=false,down=true,east=false,north=false,south=true,up=false,west=false": {
       "model": "realms_of_chaos:block/smart_glass_clear_d__s__"
     },
-    "clear=true,down=false,east=true,north=false,south=true,up=false,west=false": {
+    "clear=true,powered=true,down=true,east=false,north=false,south=true,up=false,west=false": {
+      "model": "realms_of_chaos:block/smart_glass_clear_d__s__"
+    },
+    "clear=true,powered=false,down=false,east=true,north=false,south=true,up=false,west=false": {
       "model": "realms_of_chaos:block/smart_glass_clear__e_s__"
     },
-    "clear=true,down=true,east=true,north=false,south=true,up=false,west=false": {
+    "clear=true,powered=true,down=false,east=true,north=false,south=true,up=false,west=false": {
+      "model": "realms_of_chaos:block/smart_glass_clear__e_s__"
+    },
+    "clear=true,powered=false,down=true,east=true,north=false,south=true,up=false,west=false": {
       "model": "realms_of_chaos:block/smart_glass_clear_de_s__"
     },
-    "clear=true,down=false,east=false,north=true,south=true,up=false,west=false": {
+    "clear=true,powered=true,down=true,east=true,north=false,south=true,up=false,west=false": {
+      "model": "realms_of_chaos:block/smart_glass_clear_de_s__"
+    },
+    "clear=true,powered=false,down=false,east=false,north=true,south=true,up=false,west=false": {
       "model": "realms_of_chaos:block/smart_glass_clear___ns__"
     },
-    "clear=true,down=true,east=false,north=true,south=true,up=false,west=false": {
+    "clear=true,powered=true,down=false,east=false,north=true,south=true,up=false,west=false": {
+      "model": "realms_of_chaos:block/smart_glass_clear___ns__"
+    },
+    "clear=true,powered=false,down=true,east=false,north=true,south=true,up=false,west=false": {
       "model": "realms_of_chaos:block/smart_glass_clear_d_ns__"
     },
-    "clear=true,down=false,east=true,north=true,south=true,up=false,west=false": {
+    "clear=true,powered=true,down=true,east=false,north=true,south=true,up=false,west=false": {
+      "model": "realms_of_chaos:block/smart_glass_clear_d_ns__"
+    },
+    "clear=true,powered=false,down=false,east=true,north=true,south=true,up=false,west=false": {
       "model": "realms_of_chaos:block/smart_glass_clear__ens__"
     },
-    "clear=true,down=true,east=true,north=true,south=true,up=false,west=false": {
+    "clear=true,powered=true,down=false,east=true,north=true,south=true,up=false,west=false": {
+      "model": "realms_of_chaos:block/smart_glass_clear__ens__"
+    },
+    "clear=true,powered=false,down=true,east=true,north=true,south=true,up=false,west=false": {
       "model": "realms_of_chaos:block/smart_glass_clear_dens__"
     },
-    "clear=true,down=false,east=false,north=false,south=false,up=true,west=false": {
+    "clear=true,powered=true,down=true,east=true,north=true,south=true,up=false,west=false": {
+      "model": "realms_of_chaos:block/smart_glass_clear_dens__"
+    },
+    "clear=true,powered=false,down=false,east=false,north=false,south=false,up=true,west=false": {
       "model": "realms_of_chaos:block/smart_glass_clear_____u_"
     },
-    "clear=true,down=true,east=false,north=false,south=false,up=true,west=false": {
+    "clear=true,powered=true,down=false,east=false,north=false,south=false,up=true,west=false": {
+      "model": "realms_of_chaos:block/smart_glass_clear_____u_"
+    },
+    "clear=true,powered=false,down=true,east=false,north=false,south=false,up=true,west=false": {
       "model": "realms_of_chaos:block/smart_glass_clear_d___u_"
     },
-    "clear=true,down=false,east=true,north=false,south=false,up=true,west=false": {
+    "clear=true,powered=true,down=true,east=false,north=false,south=false,up=true,west=false": {
+      "model": "realms_of_chaos:block/smart_glass_clear_d___u_"
+    },
+    "clear=true,powered=false,down=false,east=true,north=false,south=false,up=true,west=false": {
       "model": "realms_of_chaos:block/smart_glass_clear__e__u_"
     },
-    "clear=true,down=true,east=true,north=false,south=false,up=true,west=false": {
+    "clear=true,powered=true,down=false,east=true,north=false,south=false,up=true,west=false": {
+      "model": "realms_of_chaos:block/smart_glass_clear__e__u_"
+    },
+    "clear=true,powered=false,down=true,east=true,north=false,south=false,up=true,west=false": {
       "model": "realms_of_chaos:block/smart_glass_clear_de__u_"
     },
-    "clear=true,down=false,east=false,north=true,south=false,up=true,west=false": {
+    "clear=true,powered=true,down=true,east=true,north=false,south=false,up=true,west=false": {
+      "model": "realms_of_chaos:block/smart_glass_clear_de__u_"
+    },
+    "clear=true,powered=false,down=false,east=false,north=true,south=false,up=true,west=false": {
       "model": "realms_of_chaos:block/smart_glass_clear___n_u_"
     },
-    "clear=true,down=true,east=false,north=true,south=false,up=true,west=false": {
+    "clear=true,powered=true,down=false,east=false,north=true,south=false,up=true,west=false": {
+      "model": "realms_of_chaos:block/smart_glass_clear___n_u_"
+    },
+    "clear=true,powered=false,down=true,east=false,north=true,south=false,up=true,west=false": {
       "model": "realms_of_chaos:block/smart_glass_clear_d_n_u_"
     },
-    "clear=true,down=false,east=true,north=true,south=false,up=true,west=false": {
+    "clear=true,powered=true,down=true,east=false,north=true,south=false,up=true,west=false": {
+      "model": "realms_of_chaos:block/smart_glass_clear_d_n_u_"
+    },
+    "clear=true,powered=false,down=false,east=true,north=true,south=false,up=true,west=false": {
       "model": "realms_of_chaos:block/smart_glass_clear__en_u_"
     },
-    "clear=true,down=true,east=true,north=true,south=false,up=true,west=false": {
+    "clear=true,powered=true,down=false,east=true,north=true,south=false,up=true,west=false": {
+      "model": "realms_of_chaos:block/smart_glass_clear__en_u_"
+    },
+    "clear=true,powered=false,down=true,east=true,north=true,south=false,up=true,west=false": {
       "model": "realms_of_chaos:block/smart_glass_clear_den_u_"
     },
-    "clear=true,down=false,east=false,north=false,south=true,up=true,west=false": {
+    "clear=true,powered=true,down=true,east=true,north=true,south=false,up=true,west=false": {
+      "model": "realms_of_chaos:block/smart_glass_clear_den_u_"
+    },
+    "clear=true,powered=false,down=false,east=false,north=false,south=true,up=true,west=false": {
       "model": "realms_of_chaos:block/smart_glass_clear____su_"
     },
-    "clear=true,down=true,east=false,north=false,south=true,up=true,west=false": {
+    "clear=true,powered=true,down=false,east=false,north=false,south=true,up=true,west=false": {
+      "model": "realms_of_chaos:block/smart_glass_clear____su_"
+    },
+    "clear=true,powered=false,down=true,east=false,north=false,south=true,up=true,west=false": {
       "model": "realms_of_chaos:block/smart_glass_clear_d__su_"
     },
-    "clear=true,down=false,east=true,north=false,south=true,up=true,west=false": {
+    "clear=true,powered=true,down=true,east=false,north=false,south=true,up=true,west=false": {
+      "model": "realms_of_chaos:block/smart_glass_clear_d__su_"
+    },
+    "clear=true,powered=false,down=false,east=true,north=false,south=true,up=true,west=false": {
       "model": "realms_of_chaos:block/smart_glass_clear__e_su_"
     },
-    "clear=true,down=true,east=true,north=false,south=true,up=true,west=false": {
+    "clear=true,powered=true,down=false,east=true,north=false,south=true,up=true,west=false": {
+      "model": "realms_of_chaos:block/smart_glass_clear__e_su_"
+    },
+    "clear=true,powered=false,down=true,east=true,north=false,south=true,up=true,west=false": {
       "model": "realms_of_chaos:block/smart_glass_clear_de_su_"
     },
-    "clear=true,down=false,east=false,north=true,south=true,up=true,west=false": {
+    "clear=true,powered=true,down=true,east=true,north=false,south=true,up=true,west=false": {
+      "model": "realms_of_chaos:block/smart_glass_clear_de_su_"
+    },
+    "clear=true,powered=false,down=false,east=false,north=true,south=true,up=true,west=false": {
       "model": "realms_of_chaos:block/smart_glass_clear___nsu_"
     },
-    "clear=true,down=true,east=false,north=true,south=true,up=true,west=false": {
+    "clear=true,powered=true,down=false,east=false,north=true,south=true,up=true,west=false": {
+      "model": "realms_of_chaos:block/smart_glass_clear___nsu_"
+    },
+    "clear=true,powered=false,down=true,east=false,north=true,south=true,up=true,west=false": {
       "model": "realms_of_chaos:block/smart_glass_clear_d_nsu_"
     },
-    "clear=true,down=false,east=true,north=true,south=true,up=true,west=false": {
+    "clear=true,powered=true,down=true,east=false,north=true,south=true,up=true,west=false": {
+      "model": "realms_of_chaos:block/smart_glass_clear_d_nsu_"
+    },
+    "clear=true,powered=false,down=false,east=true,north=true,south=true,up=true,west=false": {
       "model": "realms_of_chaos:block/smart_glass_clear__ensu_"
     },
-    "clear=true,down=true,east=true,north=true,south=true,up=true,west=false": {
+    "clear=true,powered=true,down=false,east=true,north=true,south=true,up=true,west=false": {
+      "model": "realms_of_chaos:block/smart_glass_clear__ensu_"
+    },
+    "clear=true,powered=false,down=true,east=true,north=true,south=true,up=true,west=false": {
       "model": "realms_of_chaos:block/smart_glass_clear_densu_"
     },
-    "clear=true,down=false,east=false,north=false,south=false,up=false,west=true": {
+    "clear=true,powered=true,down=true,east=true,north=true,south=true,up=true,west=false": {
+      "model": "realms_of_chaos:block/smart_glass_clear_densu_"
+    },
+    "clear=true,powered=false,down=false,east=false,north=false,south=false,up=false,west=true": {
       "model": "realms_of_chaos:block/smart_glass_clear______w"
     },
-    "clear=true,down=true,east=false,north=false,south=false,up=false,west=true": {
+    "clear=true,powered=true,down=false,east=false,north=false,south=false,up=false,west=true": {
+      "model": "realms_of_chaos:block/smart_glass_clear______w"
+    },
+    "clear=true,powered=false,down=true,east=false,north=false,south=false,up=false,west=true": {
       "model": "realms_of_chaos:block/smart_glass_clear_d____w"
     },
-    "clear=true,down=false,east=true,north=false,south=false,up=false,west=true": {
+    "clear=true,powered=true,down=true,east=false,north=false,south=false,up=false,west=true": {
+      "model": "realms_of_chaos:block/smart_glass_clear_d____w"
+    },
+    "clear=true,powered=false,down=false,east=true,north=false,south=false,up=false,west=true": {
       "model": "realms_of_chaos:block/smart_glass_clear__e___w"
     },
-    "clear=true,down=true,east=true,north=false,south=false,up=false,west=true": {
+    "clear=true,powered=true,down=false,east=true,north=false,south=false,up=false,west=true": {
+      "model": "realms_of_chaos:block/smart_glass_clear__e___w"
+    },
+    "clear=true,powered=false,down=true,east=true,north=false,south=false,up=false,west=true": {
       "model": "realms_of_chaos:block/smart_glass_clear_de___w"
     },
-    "clear=true,down=false,east=false,north=true,south=false,up=false,west=true": {
+    "clear=true,powered=true,down=true,east=true,north=false,south=false,up=false,west=true": {
+      "model": "realms_of_chaos:block/smart_glass_clear_de___w"
+    },
+    "clear=true,powered=false,down=false,east=false,north=true,south=false,up=false,west=true": {
       "model": "realms_of_chaos:block/smart_glass_clear___n__w"
     },
-    "clear=true,down=true,east=false,north=true,south=false,up=false,west=true": {
+    "clear=true,powered=true,down=false,east=false,north=true,south=false,up=false,west=true": {
+      "model": "realms_of_chaos:block/smart_glass_clear___n__w"
+    },
+    "clear=true,powered=false,down=true,east=false,north=true,south=false,up=false,west=true": {
       "model": "realms_of_chaos:block/smart_glass_clear_d_n__w"
     },
-    "clear=true,down=false,east=true,north=true,south=false,up=false,west=true": {
+    "clear=true,powered=true,down=true,east=false,north=true,south=false,up=false,west=true": {
+      "model": "realms_of_chaos:block/smart_glass_clear_d_n__w"
+    },
+    "clear=true,powered=false,down=false,east=true,north=true,south=false,up=false,west=true": {
       "model": "realms_of_chaos:block/smart_glass_clear__en__w"
     },
-    "clear=true,down=true,east=true,north=true,south=false,up=false,west=true": {
+    "clear=true,powered=true,down=false,east=true,north=true,south=false,up=false,west=true": {
+      "model": "realms_of_chaos:block/smart_glass_clear__en__w"
+    },
+    "clear=true,powered=false,down=true,east=true,north=true,south=false,up=false,west=true": {
       "model": "realms_of_chaos:block/smart_glass_clear_den__w"
     },
-    "clear=true,down=false,east=false,north=false,south=true,up=false,west=true": {
+    "clear=true,powered=true,down=true,east=true,north=true,south=false,up=false,west=true": {
+      "model": "realms_of_chaos:block/smart_glass_clear_den__w"
+    },
+    "clear=true,powered=false,down=false,east=false,north=false,south=true,up=false,west=true": {
       "model": "realms_of_chaos:block/smart_glass_clear____s_w"
     },
-    "clear=true,down=true,east=false,north=false,south=true,up=false,west=true": {
+    "clear=true,powered=true,down=false,east=false,north=false,south=true,up=false,west=true": {
+      "model": "realms_of_chaos:block/smart_glass_clear____s_w"
+    },
+    "clear=true,powered=false,down=true,east=false,north=false,south=true,up=false,west=true": {
       "model": "realms_of_chaos:block/smart_glass_clear_d__s_w"
     },
-    "clear=true,down=false,east=true,north=false,south=true,up=false,west=true": {
+    "clear=true,powered=true,down=true,east=false,north=false,south=true,up=false,west=true": {
+      "model": "realms_of_chaos:block/smart_glass_clear_d__s_w"
+    },
+    "clear=true,powered=false,down=false,east=true,north=false,south=true,up=false,west=true": {
       "model": "realms_of_chaos:block/smart_glass_clear__e_s_w"
     },
-    "clear=true,down=true,east=true,north=false,south=true,up=false,west=true": {
+    "clear=true,powered=true,down=false,east=true,north=false,south=true,up=false,west=true": {
+      "model": "realms_of_chaos:block/smart_glass_clear__e_s_w"
+    },
+    "clear=true,powered=false,down=true,east=true,north=false,south=true,up=false,west=true": {
       "model": "realms_of_chaos:block/smart_glass_clear_de_s_w"
     },
-    "clear=true,down=false,east=false,north=true,south=true,up=false,west=true": {
+    "clear=true,powered=true,down=true,east=true,north=false,south=true,up=false,west=true": {
+      "model": "realms_of_chaos:block/smart_glass_clear_de_s_w"
+    },
+    "clear=true,powered=false,down=false,east=false,north=true,south=true,up=false,west=true": {
       "model": "realms_of_chaos:block/smart_glass_clear___ns_w"
     },
-    "clear=true,down=true,east=false,north=true,south=true,up=false,west=true": {
+    "clear=true,powered=true,down=false,east=false,north=true,south=true,up=false,west=true": {
+      "model": "realms_of_chaos:block/smart_glass_clear___ns_w"
+    },
+    "clear=true,powered=false,down=true,east=false,north=true,south=true,up=false,west=true": {
       "model": "realms_of_chaos:block/smart_glass_clear_d_ns_w"
     },
-    "clear=true,down=false,east=true,north=true,south=true,up=false,west=true": {
+    "clear=true,powered=true,down=true,east=false,north=true,south=true,up=false,west=true": {
+      "model": "realms_of_chaos:block/smart_glass_clear_d_ns_w"
+    },
+    "clear=true,powered=false,down=false,east=true,north=true,south=true,up=false,west=true": {
       "model": "realms_of_chaos:block/smart_glass_clear__ens_w"
     },
-    "clear=true,down=true,east=true,north=true,south=true,up=false,west=true": {
+    "clear=true,powered=true,down=false,east=true,north=true,south=true,up=false,west=true": {
+      "model": "realms_of_chaos:block/smart_glass_clear__ens_w"
+    },
+    "clear=true,powered=false,down=true,east=true,north=true,south=true,up=false,west=true": {
       "model": "realms_of_chaos:block/smart_glass_clear_dens_w"
     },
-    "clear=true,down=false,east=false,north=false,south=false,up=true,west=true": {
+    "clear=true,powered=true,down=true,east=true,north=true,south=true,up=false,west=true": {
+      "model": "realms_of_chaos:block/smart_glass_clear_dens_w"
+    },
+    "clear=true,powered=false,down=false,east=false,north=false,south=false,up=true,west=true": {
       "model": "realms_of_chaos:block/smart_glass_clear_____uw"
     },
-    "clear=true,down=true,east=false,north=false,south=false,up=true,west=true": {
+    "clear=true,powered=true,down=false,east=false,north=false,south=false,up=true,west=true": {
+      "model": "realms_of_chaos:block/smart_glass_clear_____uw"
+    },
+    "clear=true,powered=false,down=true,east=false,north=false,south=false,up=true,west=true": {
       "model": "realms_of_chaos:block/smart_glass_clear_d___uw"
     },
-    "clear=true,down=false,east=true,north=false,south=false,up=true,west=true": {
+    "clear=true,powered=true,down=true,east=false,north=false,south=false,up=true,west=true": {
+      "model": "realms_of_chaos:block/smart_glass_clear_d___uw"
+    },
+    "clear=true,powered=false,down=false,east=true,north=false,south=false,up=true,west=true": {
       "model": "realms_of_chaos:block/smart_glass_clear__e__uw"
     },
-    "clear=true,down=true,east=true,north=false,south=false,up=true,west=true": {
+    "clear=true,powered=true,down=false,east=true,north=false,south=false,up=true,west=true": {
+      "model": "realms_of_chaos:block/smart_glass_clear__e__uw"
+    },
+    "clear=true,powered=false,down=true,east=true,north=false,south=false,up=true,west=true": {
       "model": "realms_of_chaos:block/smart_glass_clear_de__uw"
     },
-    "clear=true,down=false,east=false,north=true,south=false,up=true,west=true": {
+    "clear=true,powered=true,down=true,east=true,north=false,south=false,up=true,west=true": {
+      "model": "realms_of_chaos:block/smart_glass_clear_de__uw"
+    },
+    "clear=true,powered=false,down=false,east=false,north=true,south=false,up=true,west=true": {
       "model": "realms_of_chaos:block/smart_glass_clear___n_uw"
     },
-    "clear=true,down=true,east=false,north=true,south=false,up=true,west=true": {
+    "clear=true,powered=true,down=false,east=false,north=true,south=false,up=true,west=true": {
+      "model": "realms_of_chaos:block/smart_glass_clear___n_uw"
+    },
+    "clear=true,powered=false,down=true,east=false,north=true,south=false,up=true,west=true": {
       "model": "realms_of_chaos:block/smart_glass_clear_d_n_uw"
     },
-    "clear=true,down=false,east=true,north=true,south=false,up=true,west=true": {
+    "clear=true,powered=true,down=true,east=false,north=true,south=false,up=true,west=true": {
+      "model": "realms_of_chaos:block/smart_glass_clear_d_n_uw"
+    },
+    "clear=true,powered=false,down=false,east=true,north=true,south=false,up=true,west=true": {
       "model": "realms_of_chaos:block/smart_glass_clear__en_uw"
     },
-    "clear=true,down=true,east=true,north=true,south=false,up=true,west=true": {
+    "clear=true,powered=true,down=false,east=true,north=true,south=false,up=true,west=true": {
+      "model": "realms_of_chaos:block/smart_glass_clear__en_uw"
+    },
+    "clear=true,powered=false,down=true,east=true,north=true,south=false,up=true,west=true": {
       "model": "realms_of_chaos:block/smart_glass_clear_den_uw"
     },
-    "clear=true,down=false,east=false,north=false,south=true,up=true,west=true": {
+    "clear=true,powered=true,down=true,east=true,north=true,south=false,up=true,west=true": {
+      "model": "realms_of_chaos:block/smart_glass_clear_den_uw"
+    },
+    "clear=true,powered=false,down=false,east=false,north=false,south=true,up=true,west=true": {
       "model": "realms_of_chaos:block/smart_glass_clear____suw"
     },
-    "clear=true,down=true,east=false,north=false,south=true,up=true,west=true": {
+    "clear=true,powered=true,down=false,east=false,north=false,south=true,up=true,west=true": {
+      "model": "realms_of_chaos:block/smart_glass_clear____suw"
+    },
+    "clear=true,powered=false,down=true,east=false,north=false,south=true,up=true,west=true": {
       "model": "realms_of_chaos:block/smart_glass_clear_d__suw"
     },
-    "clear=true,down=false,east=true,north=false,south=true,up=true,west=true": {
+    "clear=true,powered=true,down=true,east=false,north=false,south=true,up=true,west=true": {
+      "model": "realms_of_chaos:block/smart_glass_clear_d__suw"
+    },
+    "clear=true,powered=false,down=false,east=true,north=false,south=true,up=true,west=true": {
       "model": "realms_of_chaos:block/smart_glass_clear__e_suw"
     },
-    "clear=true,down=true,east=true,north=false,south=true,up=true,west=true": {
+    "clear=true,powered=true,down=false,east=true,north=false,south=true,up=true,west=true": {
+      "model": "realms_of_chaos:block/smart_glass_clear__e_suw"
+    },
+    "clear=true,powered=false,down=true,east=true,north=false,south=true,up=true,west=true": {
       "model": "realms_of_chaos:block/smart_glass_clear_de_suw"
     },
-    "clear=true,down=false,east=false,north=true,south=true,up=true,west=true": {
+    "clear=true,powered=true,down=true,east=true,north=false,south=true,up=true,west=true": {
+      "model": "realms_of_chaos:block/smart_glass_clear_de_suw"
+    },
+    "clear=true,powered=false,down=false,east=false,north=true,south=true,up=true,west=true": {
       "model": "realms_of_chaos:block/smart_glass_clear___nsuw"
     },
-    "clear=true,down=true,east=false,north=true,south=true,up=true,west=true": {
+    "clear=true,powered=true,down=false,east=false,north=true,south=true,up=true,west=true": {
+      "model": "realms_of_chaos:block/smart_glass_clear___nsuw"
+    },
+    "clear=true,powered=false,down=true,east=false,north=true,south=true,up=true,west=true": {
       "model": "realms_of_chaos:block/smart_glass_clear_d_nsuw"
     },
-    "clear=true,down=false,east=true,north=true,south=true,up=true,west=true": {
+    "clear=true,powered=true,down=true,east=false,north=true,south=true,up=true,west=true": {
+      "model": "realms_of_chaos:block/smart_glass_clear_d_nsuw"
+    },
+    "clear=true,powered=false,down=false,east=true,north=true,south=true,up=true,west=true": {
       "model": "realms_of_chaos:block/smart_glass_clear__ensuw"
     },
-    "clear=true,down=true,east=true,north=true,south=true,up=true,west=true": {
+    "clear=true,powered=true,down=false,east=true,north=true,south=true,up=true,west=true": {
+      "model": "realms_of_chaos:block/smart_glass_clear__ensuw"
+    },
+    "clear=true,powered=false,down=true,east=true,north=true,south=true,up=true,west=true": {
+      "model": "realms_of_chaos:block/smart_glass_clear_densuw"
+    },
+    "clear=true,powered=true,down=true,east=true,north=true,south=true,up=true,west=true": {
       "model": "realms_of_chaos:block/smart_glass_clear_densuw"
     }
   }

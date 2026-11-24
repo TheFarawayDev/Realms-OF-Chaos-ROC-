@@ -146,7 +146,7 @@
   "block.realms_of_chaos.reinforced_glass": "Reinforced Glass",
   "block.realms_of_chaos.frosted_glass": "Frosted Glass",
   "block.realms_of_chaos.smart_glass": "Smart Glass",
-  "block.realms_of_chaos.brittle_glass": "Brittle Glass",
+  "block.realms_of_chaos.veil_glass": "Veil Glass",
   "block.realms_of_chaos.one_way_glass": "One-Way Glass",
   "hud.realms_of_chaos.bunk": "A soldier's bunk - nobody sleeps in the passages",
   "hud.realms_of_chaos.dummy.hit": "Hit %s  -  %s in a row",

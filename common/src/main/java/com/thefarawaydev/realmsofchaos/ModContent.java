@@ -112,7 +112,7 @@ public final class ModContent {
     public static final Ref<Block> MOVING_DUMMY = new Ref<>(), CHAIR = new Ref<>(), TABLE = new Ref<>(), BENCH = new Ref<>(), DRESSER = new Ref<>(),
             BUNK_BED = new Ref<>(), GARRISON_DOOR = new Ref<>(), GARRISON_TRAPDOOR = new Ref<>(), VERDIGRIS_DOOR = new Ref<>(), VERDIGRIS_TRAPDOOR = new Ref<>(),
             IVORY_DOOR = new Ref<>(), IVORY_TRAPDOOR = new Ref<>(), REINFORCED_GLASS = new Ref<>(), FROSTED_GLASS = new Ref<>(), SMART_GLASS = new Ref<>(),
-            BRITTLE_GLASS = new Ref<>(), ONE_WAY_GLASS = new Ref<>();
+            VEIL_GLASS = new Ref<>(), ONE_WAY_GLASS = new Ref<>();
     /** The fittings of the proving grounds and barracks. */
     public static final Ref<Block> ARENA_SAND = new Ref<>(), WAR_DRUM = new Ref<>(), WAR_STANDARD = new Ref<>(), BEAST_GATE = new Ref<>(),
             TRAINING_DUMMY = new Ref<>();
@@ -318,7 +318,7 @@ public final class ModContent {
         block("reinforced_glass", REINFORCED_GLASS, key -> new com.thefarawaydev.realmsofchaos.block.Glass.Pane(glass(key).strength(5.0F, 9.0F).requiresCorrectToolForDrops()));
         block("frosted_glass", FROSTED_GLASS, key -> new com.thefarawaydev.realmsofchaos.block.Glass.Pane(glass(key)));
         block("smart_glass", SMART_GLASS, key -> new com.thefarawaydev.realmsofchaos.block.Glass.Smart(glass(key)));
-        block("brittle_glass", BRITTLE_GLASS, key -> new com.thefarawaydev.realmsofchaos.block.Glass.Brittle(glass(key).strength(0.2F)));
+        block("veil_glass", VEIL_GLASS, key -> new com.thefarawaydev.realmsofchaos.block.Glass.Veil(glass(key)));
         block("one_way_glass", ONE_WAY_GLASS, key -> new com.thefarawaydev.realmsofchaos.block.Glass.OneWay(glass(key)));
         block("arrival_sigil", ARRIVAL_SIGIL, key -> new Block(decor(key).mapColor(MapColor.COLOR_PURPLE).lightLevel(s -> 10)));
         block("bronze_door", BRONZE_DOOR, key -> new net.minecraft.world.level.block.DoorBlock(net.minecraft.world.level.block.state.properties.BlockSetType.COPPER,
