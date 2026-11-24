@@ -17,7 +17,7 @@ import net.minecraft.world.level.block.state.BlockState;
  * solid stands inside the fight ring, the entrance and exit corridors are flat, and the whole floor is enclosed.
  */
 public final class TowerBuilder {
-    public static final int LAYOUT_VERSION = 9;
+    public static final int LAYOUT_VERSION = 10;
 
     public enum Layout { FLAT, MOUNDS, PILLARS, PIT, DAIS, WAVES, MOAT, TERRACES, SPLIT, ZIGGURAT, SUMMIT }
 
@@ -209,7 +209,7 @@ public final class TowerBuilder {
                             // a window set deep in the wall under a round head: glass at the back, the reveal open
                             boolean head = h == 11 && off >= 0.12;
                             if (face) b = head ? Mason.stair(wallStone.stairs(), out, true) : Blocks.AIR.defaultBlockState();
-                            else if (!head) b = p.glass().defaultBlockState();
+                            else if (!head) b = windowGlass(line, out);
                         }
                         // the face of the wall: a dado of the tower's panels, its brick between the windows
                         if (!summit && face && h >= 2 && h <= 4) b = Passages.wallPanel(line).defaultBlockState();
@@ -302,6 +302,18 @@ public final class TowerBuilder {
         gate(level, 0, y0, 19, p, ModContent.GATE_HUB.get(), Passages.portalFrame(line));
         if (!summit) gate(level, 0, y0, -19, p, ModContent.GATE_ASCEND.get(), Passages.portalFrame(line));
         com.thefarawaydev.realmsofchaos.block.ConnectedBlock.settle(level, new BlockPos(-ri, y0 - 1, -ri), new BlockPos(ri, y0 + Tower.ROOM_HEIGHT + 1, ri));
+    }
+
+    /**
+     * The glass in a tower's windows: Zeus's is reinforced, framed in bronze; Poseidon's frosted like sea-mist; Hades's
+     * one-way - a dark mirror to anyone outside, clear to anyone within.
+     */
+    public static BlockState windowGlass(Line line, Direction out) {
+        return switch (line) {
+            case ZEUS -> ModContent.REINFORCED_GLASS.get().defaultBlockState();
+            case POSEIDON -> ModContent.FROSTED_GLASS.get().defaultBlockState();
+            case HADES -> ModContent.ONE_WAY_GLASS.get().defaultBlockState().setValue(com.thefarawaydev.realmsofchaos.block.Glass.OneWay.FACING, out);
+        };
     }
 
     /** The paving block a column of the fight ring has under the given height map. */

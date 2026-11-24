@@ -6378,7 +6378,8 @@ public final class SelfTest {
                 Passages.rearm(level, over);
                 BlockPos om = over.centre(oc);
                 int of = over.half(oc);
-                check(over.height(oc) == Passages.TALL && level.getBlockState(om.offset(of, Passages.GALLERY_Y, 2)).getBlock() instanceof net.minecraft.world.level.block.SlabBlock
+                check(over.height(oc) == Passages.TALL && level.getBlockState(om.offset(of, Passages.GALLERY_Y, 0)).getBlock() instanceof net.minecraft.world.level.block.SlabBlock
+                        && level.getBlockState(om.offset(of, Passages.GALLERY_Y, 2)).is(ModContent.BRITTLE_GLASS.get())
                         && level.getBlockState(om.offset(of, 1, 2)).isAir() && level.getBlockState(om.offset(of, 1, of - 2)).is(Blocks.LADDER),
                         "an overlook is tall, with a gallery round its walls over a clear floor, and a ladder up");
                 check(level.getBlockState(Passages.overlookCache(over, oc)).is(ModContent.PASSAGE_CACHE.get()), "its cache is up on the gallery");
@@ -6389,7 +6390,15 @@ public final class SelfTest {
                 check(up >= 2 && guard.stream().filter(g -> g.getY() >= om.getY() + Passages.GALLERY_Y).allMatch(g -> ((Sentinel) g).kind().role == Sentinel.Role.CASTER),
                         "its bowmen and slingers stand on the gallery: " + up + " of " + guard.size());
                 for (net.minecraft.world.entity.Mob g : guard) check(level.noCollision(g), "each stands free: " + g.blockPosition().subtract(om));
+                net.minecraft.world.entity.Mob bowman = guard.stream().filter(g -> g.getY() >= om.getY() + Passages.GALLERY_Y + 1 - 0.01).findFirst().orElseThrow();
+                BlockPos under = bowman.blockPosition().below();
+                check(level.getBlockState(under).is(ModContent.BRITTLE_GLASS.get()), "a bowman stands on a pane of brittle glass");
+                ((com.thefarawaydev.realmsofchaos.block.Glass.Brittle) ModContent.BRITTLE_GLASS.get()).collapse(level, under);
+                check(level.getBlockState(under).isAir(), "shot out, it falls - and nothing is left under the bowman");
                 for (net.minecraft.world.entity.Mob g : guard) g.discard();
+                for (var e : level.getEntitiesOfClass(net.minecraft.world.entity.item.FallingBlockEntity.class, over.cellBox(oc).inflate(2), e -> true)) e.discard();
+                Passages.rearm(level, over);
+                check(level.getBlockState(under).is(ModContent.BRITTLE_GLASS.get()), "the passage sealing itself again lays the glass again");
 
                 // ---- the quiet hall
                 found = room(level, Line.ZEUS, Passages.Kind.AMBUSH);
@@ -6401,6 +6410,8 @@ public final class SelfTest {
                 BlockPos qm = quiet.centre(qc);
                 int qf = quiet.half(qc);
                 check(Passages.ambushStage(level, quiet, qc) == 0 && Passages.guardians(level, quiet, qc).isEmpty(), "a quiet hall is quiet");
+                BlockPos skylight = qm.offset(3, quiet.height(qc) + 1, 3);
+                check(level.getBlockState(skylight).is(ModContent.BRITTLE_GLASS.get()), "its holes are glazed with brittle glass");
                 Passages.Cell door = null;
                 for (Passages.Cell n : quiet.neighbours(qc)) if (door == null && quiet.connected(qc, n)) door = n;
                 BlockPos doorway = qm.offset((door.x() - qc.x()) * (qf + 1), 1, (door.z() - qc.z()) * (qf + 1));
@@ -6414,6 +6425,7 @@ public final class SelfTest {
                 check(Passages.ambushStage(level, quiet, qc) == 1 && drop.size() >= 3 && level.getBlockState(doorway).is(Blocks.IRON_BARS),
                         "close to the cache, it springs: the doors are barred and the guard drops in");
                 check(drop.stream().allMatch(g -> g.getY() > qm.getY() + 3), "they come down from the ceiling");
+                check(!level.getBlockState(skylight).is(ModContent.BRITTLE_GLASS.get()), "and the skylights give way under them");
                 check(!Passages.loot(level, quiet.featurePos(qc), hero), "the cache stays shut while they stand");
                 for (net.minecraft.world.entity.Mob g : drop) g.discard();
                 Passages.ambushTick(level, quiet, qc, hero);

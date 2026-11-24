@@ -97,6 +97,18 @@ The current build is an **Alpha**.
     sees in. Set it down and the mirror faces away from you. (`art/renders/one-way-glass-behind.png`)
   * **Brittle Glass** - struck by an arrow, a snowball, a trident, anything shot or thrown, the whole window it
     belongs to lets go and comes down like sand, landing as glass again. (`art/renders/brittle-glass-falling.png`)
+* **The glass in use.**
+  * **Tower windows** are glazed in their tower's glass now: Zeus's in Reinforced Glass, Poseidon's in Frosted, and
+    Hades's in One-Way Glass - from inside, the realm beyond; from outside, a ring of dark mirrors that shows nothing
+    of who is within. (`art/renders/one-way-window-both-sides.png`, `zeus-window-*.png`, `poseidon-window-*.png`)
+  * **Quiet halls**: the four holes in the ceiling are skylights of Brittle Glass. When the ambush springs, they give
+    way and the guard comes down with the glass. (`art/videos/brittle-glass-ambush-skylights.mp4`,
+    `art/renders/ambush-skylights.png`)
+  * **Overlooks**: where each bowman stands, the gallery is a pane of Brittle Glass - shoot it out from below and
+    the bowman comes down with it. Both are laid again when the passage seals itself.
+    (`art/videos/brittle-glass-gallery-archer.mp4`)
+  * Videos of the trigger: `art/videos/brittle-glass-arrow.mp4` (an arrow brings a whole window down, and it lands as
+    glass), and the two above.
 * **Twelve new sentinels with attacks of their own** - four to a tower, seventy-five kinds in all. Every one of
   these attacks is telegraphed and can be parried or dodged. (`art/renders/new-sentinels.png`)
   * **Duelists** (Storm Duelist, Coral Duelist, Grave Fencer): a guard glints on the blade when it is up, and the
