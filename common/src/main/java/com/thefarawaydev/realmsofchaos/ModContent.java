@@ -121,7 +121,8 @@ public final class ModContent {
     public static final Map<String, Ref<Item>> BLOCK_ITEMS = new HashMap<>();
     /** The stairs and slabs cut from the mod's stone, by the stone's id. */
     public static final Map<String, Ref<Block>> STAIRS = new java.util.LinkedHashMap<>(), SLABS = new java.util.LinkedHashMap<>();
-    public static final Ref<Block> BRONZE_DOOR = new Ref<>(), BRONZE_TRAPDOOR = new Ref<>();
+    public static final Ref<Block> BRONZE_DOOR = new Ref<>(), BRONZE_TRAPDOOR = new Ref<>(), SKY_DOOR = new Ref<>(), SKY_TRAPDOOR = new Ref<>(),
+            SEA_DOOR = new Ref<>(), SEA_TRAPDOOR = new Ref<>(), SHADE_DOOR = new Ref<>(), SHADE_TRAPDOOR = new Ref<>();
     public static final Ref<Item> TAROT_DECK = new Ref<>();
     public static final Map<Tarot, Ref<Item>> TAROT = new HashMap<>();
     public static final Map<VoodooDollItem.Pin, Ref<Item>> DOLLS = new HashMap<>();
@@ -297,6 +298,10 @@ public final class ModContent {
                 BlockBehaviour.Properties.of().setId(key).mapColor(MapColor.COLOR_ORANGE).strength(3.0F).requiresCorrectToolForDrops().noOcclusion()));
         block("bronze_trapdoor", BRONZE_TRAPDOOR, key -> new net.minecraft.world.level.block.TrapDoorBlock(net.minecraft.world.level.block.state.properties.BlockSetType.COPPER,
                 BlockBehaviour.Properties.of().setId(key).mapColor(MapColor.COLOR_ORANGE).strength(3.0F).requiresCorrectToolForDrops().noOcclusion()));
+        // each tower's own door and trapdoor
+        door("sky", SKY_DOOR, SKY_TRAPDOOR, net.minecraft.world.level.block.state.properties.BlockSetType.COPPER, MapColor.QUARTZ);
+        door("sea", SEA_DOOR, SEA_TRAPDOOR, net.minecraft.world.level.block.state.properties.BlockSetType.DARK_OAK, MapColor.WARPED_WART_BLOCK);
+        door("shade", SHADE_DOOR, SHADE_TRAPDOOR, net.minecraft.world.level.block.state.properties.BlockSetType.CRIMSON, MapColor.COLOR_BLACK);
         block("asphodel_bed", ASPHODEL_BED, key -> new Block(decor(key).mapColor(MapColor.COLOR_LIGHT_GRAY).sound(SoundType.AZALEA_LEAVES).strength(0.6F)));
 
         // stairs and slabs of the mod's stone (after the stone itself: a stair is cut from its block's state)
@@ -395,6 +400,13 @@ public final class ModContent {
 
     private static BlockBehaviour.Properties unbreakable(ResourceKey<Block> key) {
         return BlockBehaviour.Properties.of().setId(key).strength(-1.0F, 3600000.0F).noLootTable();
+    }
+
+    private static void door(String id, Ref<Block> door, Ref<Block> trapdoor, net.minecraft.world.level.block.state.properties.BlockSetType set, MapColor color) {
+        block(id + "_door", door, key -> new net.minecraft.world.level.block.DoorBlock(set,
+                BlockBehaviour.Properties.of().setId(key).mapColor(color).strength(3.0F).noOcclusion()));
+        block(id + "_trapdoor", trapdoor, key -> new net.minecraft.world.level.block.TrapDoorBlock(set,
+                BlockBehaviour.Properties.of().setId(key).mapColor(color).strength(3.0F).noOcclusion()));
     }
 
     /** Building stone: as hard as stone, dug with a pickaxe. */

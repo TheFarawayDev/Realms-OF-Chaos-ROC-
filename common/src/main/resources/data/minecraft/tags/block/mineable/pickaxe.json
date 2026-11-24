@@ -51,6 +51,8 @@
     "realms_of_chaos:portal_frame_hub",
     "realms_of_chaos:arrival_sigil",
     "realms_of_chaos:bronze_trapdoor",
+    "realms_of_chaos:sky_trapdoor",
+    "realms_of_chaos:shade_trapdoor",
     "realms_of_chaos:olympian_marble_stairs",
     "realms_of_chaos:olympian_marble_slab",
     "realms_of_chaos:cloudstone_stairs",
@@ -67,6 +69,8 @@
     "realms_of_chaos:ash_brick_slab",
     "realms_of_chaos:underworld_brick_stairs",
     "realms_of_chaos:underworld_brick_slab",
-    "realms_of_chaos:bronze_door"
+    "realms_of_chaos:bronze_door",
+    "realms_of_chaos:sky_door",
+    "realms_of_chaos:shade_door"
   ]
 }

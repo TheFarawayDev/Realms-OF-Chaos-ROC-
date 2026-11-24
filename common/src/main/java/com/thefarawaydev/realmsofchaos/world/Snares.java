@@ -365,8 +365,8 @@ public final class Snares {
         return out;
     }
 
-    private static BlockState lid(boolean open) {
-        return com.thefarawaydev.realmsofchaos.ModContent.BRONZE_TRAPDOOR.get().defaultBlockState()
+    private static BlockState lid(Plan plan, boolean open) {
+        return Passages.trapdoor(plan.line).defaultBlockState()
                 .setValue(net.minecraft.world.level.block.TrapDoorBlock.HALF, net.minecraft.world.level.block.state.properties.Half.TOP)
                 .setValue(net.minecraft.world.level.block.TrapDoorBlock.OPEN, open);
     }
@@ -374,13 +374,13 @@ public final class Snares {
     /** Digs a corridor's pit: its floor bronze lids over a drop with iron spikes in it. */
     public static void layPit(ServerLevel level, Plan plan, Cell c, int dir) {
         for (BlockPos at : lids(plan, c, dir)) {
-            level.setBlock(at, lid(false), 2);
+            level.setBlock(at, lid(plan, false), 2);
             level.setBlock(at.below(), spike().defaultBlockState(), 2);
         }
     }
 
     private static void setLids(ServerLevel level, Plan plan, Cell c, int dir, boolean open) {
-        for (BlockPos at : lids(plan, c, dir)) if (level.getBlockState(at).getBlock() instanceof net.minecraft.world.level.block.TrapDoorBlock) level.setBlock(at, lid(open), 2);
+        for (BlockPos at : lids(plan, c, dir)) if (level.getBlockState(at).getBlock() instanceof net.minecraft.world.level.block.TrapDoorBlock) level.setBlock(at, lid(plan, open), 2);
     }
 
     /** One tick of the pit in the corridor east (dir 0) or south (dir 1) of a room. */

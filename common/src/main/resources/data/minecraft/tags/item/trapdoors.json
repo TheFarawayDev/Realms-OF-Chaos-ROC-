@@ -1,0 +1,9 @@
+{
+  "replace": false,
+  "values": [
+    "realms_of_chaos:bronze_trapdoor",
+    "realms_of_chaos:sky_trapdoor",
+    "realms_of_chaos:sea_trapdoor",
+    "realms_of_chaos:shade_trapdoor"
+  ]
+}

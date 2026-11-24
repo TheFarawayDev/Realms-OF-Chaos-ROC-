@@ -601,7 +601,7 @@ def run(assets, data=None):
         gen_upper(assets, data)
         gen_floor_polish(assets)
         gen_cuts(assets, data)
-        gen_doors(assets, data)
+        gen_doors2(assets, data)
         for floor in ("sunstone_panel", "pearl_panel", "ember_panel", "sky_mosaic", "sea_mosaic", "shade_mosaic"):
             connected_breaks(assets, floor)
 
@@ -1852,3 +1852,141 @@ def gen_doors(assets, data):
                                                                                                        "conditions": [{"condition": "minecraft:survives_explosion"}]}]})
     wj(os.path.join(RES_DATA_MC(data), "tags/block/doors.json"), {"replace": False, "values": [f"{MOD}:bronze_door"]})
     wj(os.path.join(RES_DATA_MC(data), "tags/block/trapdoors.json"), {"replace": False, "values": [f"{MOD}:bronze_trapdoor"]})
+
+
+# ---- doors: a proper panelled leaf, one for each tower and the bronze one --------------------------------------------------
+
+EMBLEMS = {
+    "sun": ["..#..#..", "...##...", "#.####.#", ".######.", ".######.", "#.####.#", "...##...", "..#..#.."],
+    "bolt": ["....##..", "...##...", "..##....", ".######.", "....##..", "...##...", "..##....", ".##....."],
+    "trident": ["#..##..#", "#..##..#", "#..##..#", "########", "...##...", "...##...", "...##...", "...##..."],
+    "skull": [".######.", "########", "##.##.##", "##.##.##", "########", ".##..##.", "..####..", "..#..#.."],
+}
+
+DOOR_SPECS = {
+    # name: (field, frame, band, stud, emblem colour, emblem, style)
+    "bronze": ((176, 110, 50), (96, 56, 24), (226, 160, 86), GOLD_HI, GOLD, "sun", "metal"),
+    "sky": ((236, 232, 222), (168, 160, 148), GOLD, GOLD_HI, (240, 196, 60), "bolt", "stone"),
+    "sea": ((54, 104, 108), (24, 54, 60), (130, 200, 190), (236, 236, 226), (150, 230, 220), "trident", "planks"),
+    "shade": ((52, 40, 52), (22, 16, 24), (110, 96, 110), (190, 120, 240), (200, 140, 255), "skull", "planks"),
+}
+
+
+def door_textures(field, frame, band, stud, glow, emblem, style, seed):
+    g = grain(seed, 0.05)
+
+    def surface(x, y):
+        if style == "planks":
+            c = shade(field, g[y][x] * (0.8 if x % 4 == 3 else 1.06 if x % 4 == 0 else 1.0))
+        elif style == "stone":
+            c = shade(field, g[y][x] * (0.97 + 0.03 * ((x + y) % 3)))
+        else:
+            c = shade(field, g[y][x] * (1.08 if (x + y) % 7 == 0 else 1.0))
+        return c
+
+    def leaf(top):
+        img = Image.new("RGBA", (16, 16))
+        for y in range(16):
+            for x in range(16):
+                c = surface(x, y)
+                # the stiles and rails: a frame round the leaf, lit on its left, shadowed on its right
+                if x <= 1 or x >= 14:
+                    c = shade(frame, 1.25 if x == 1 else 0.75 if x == 14 else 1.0)
+                if (top and y <= 1) or (not top and y >= 14):
+                    c = shade(frame, 1.25 if (top and y == 1) else 0.75 if (not top and y == 14) else 1.0)
+                # a rail across the middle of the door: the bottom of the upper leaf, the top of the lower one
+                if (top and y >= 14) or (not top and y <= 1):
+                    c = band if (top and y == 14) or (not top and y == 1) else shade(frame, 1.0)
+                # the sunk panel: shadowed on its top and left edge, lit on its bottom and right
+                px0, px1 = 3, 12
+                py0, py1 = (3, 12) if top else (3, 12)
+                if px0 <= x <= px1 and py0 <= y <= py1:
+                    if x == px0 or y == py0: c = shade(frame, 0.9)
+                    elif x == px1 or y == py1: c = shade(field, 1.25)
+                    else: c = shade(surface(x, y), 0.9)
+                # the emblem raised in the upper panel; a lozenge and bands in the lower
+                if top:
+                    ex, ey = x - 4, y - 4
+                    if 0 <= ex < 8 and 0 <= ey < 8 and EMBLEMS[emblem][ey][ex] == "#":
+                        c = glow if (ex + ey) % 4 else shade(glow, 1.15)
+                else:
+                    d = abs(x - 7.5) + abs(y - 7.5)
+                    if 3.0 <= d < 4.0: c = glow
+                    if d < 1.5: c = shade(glow, 1.1)
+                # studs at the corners of the panel, hinges on the left stile, a ring on the right
+                if (x, y) in ((2, 2), (13, 2), (2, 13), (13, 13)): c = stud
+                if x <= 1 and y in ((4, 5) if top else (10, 11)): c = shade(band, 0.9)
+                if top and x == 12 and y == 14: c = stud
+                if not top and x in (11, 12, 13) and y == 2: c = stud
+                img.putpixel((x, y), tuple(c[:3]) + (255,))
+        return img
+
+    hatch = Image.new("RGBA", (16, 16))
+    for y in range(16):
+        for x in range(16):
+            c = surface(x, y)
+            e = min(x, y, 15 - x, 15 - y)
+            if e <= 1: c = shade(frame, 1.25 if (x == 1 or y == 1) and e == 1 else 0.75 if e == 1 else 1.0)
+            elif e == 2: c = band if (x + y) % 2 else shade(band, 0.85)
+            ex, ey = x - 4, y - 4
+            if 0 <= ex < 8 and 0 <= ey < 8 and EMBLEMS[emblem][ey][ex] == "#": c = glow
+            if (x, y) in ((3, 3), (12, 3), (3, 12), (12, 12)): c = stud
+            hatch.putpixel((x, y), tuple(c[:3]) + (255,))
+    return leaf(True), leaf(False), hatch
+
+
+def gen_doors2(assets, data):
+    T = os.path.join(assets, "textures/block")
+    TI = os.path.join(assets, "textures/item")
+    for n, (key, spec) in enumerate(DOOR_SPECS.items()):
+        door, trapdoor = f"{key}_door", f"{key}_trapdoor"
+        top, bottom, hatch = door_textures(*spec, seed=131 + n)
+        top.save(os.path.join(T, f"{door}_top.png"))
+        bottom.save(os.path.join(T, f"{door}_bottom.png"))
+        hatch.save(os.path.join(T, f"{trapdoor}.png"))
+        # the door as an item: drawn for its own size, a narrow leaf standing up with its two panels and emblem
+        field, frame, band, stud, glow = spec[0], spec[1], spec[2], spec[3], spec[4]
+        item = Image.new("RGBA", (16, 16))
+        for y in range(16):
+            for x in range(3, 13):
+                if x in (3, 12) or y in (0, 15): c = shade(frame, 0.7)
+                elif x == 4 or y == 1: c = shade(frame, 1.3)
+                elif x == 11 or y == 14: c = frame
+                elif y in (7, 8): c = band if y == 7 else shade(band, 0.75)
+                else:
+                    c = shade(field, 1.0)
+                    upper = 2 <= y <= 6
+                    if (upper or 9 <= y <= 13) and (x in (5, 10) or y in (2, 9) or y in (6, 13)):
+                        c = shade(frame, 0.95) if x == 5 or y in (2, 9) else shade(field, 1.25)
+                    if upper and 6 <= x <= 9 and 3 <= y <= 5 and (x, y) not in ((6, 3), (9, 3), (6, 5), (9, 5)): c = glow
+                    if not upper and (x, y) in ((7, 11), (8, 11), (7, 10), (8, 12)): c = glow
+                if (x, y) == (10, 8): c = stud
+                item.putpixel((x, y), tuple(c[:3]) + (255,))
+        item.save(os.path.join(TI, f"{door}.png"))
+        wj(os.path.join(assets, f"blockstates/{door}.json"), _retarget(_template("door"), "minecraft:block/iron_door", f"{MOD}:block/{door}"))
+        for part in ("bottom_left", "bottom_left_open", "bottom_right", "bottom_right_open", "top_left", "top_left_open", "top_right", "top_right_open"):
+            wj(os.path.join(assets, f"models/block/{door}_{part}.json"),
+               {"parent": f"minecraft:block/door_{part}", "textures": {"bottom": f"{MOD}:block/{door}_bottom", "top": f"{MOD}:block/{door}_top"}})
+        wj(os.path.join(assets, f"models/block/{door}.json"), {"parent": f"{MOD}:block/{door}_bottom_left"})
+        wj(os.path.join(assets, f"models/item/{door}.json"), {"parent": "minecraft:item/generated", "textures": {"layer0": f"{MOD}:item/{door}"}})
+        wj(os.path.join(assets, f"items/{door}.json"), {"model": {"type": "minecraft:model", "model": f"{MOD}:item/{door}"}})
+        wj(os.path.join(assets, f"blockstates/{trapdoor}.json"), _retarget(_template("trapdoor"), "minecraft:block/iron_trapdoor", f"{MOD}:block/{trapdoor}"))
+        for part, parent in (("bottom", "template_trapdoor_bottom"), ("top", "template_trapdoor_top"), ("open", "template_trapdoor_open")):
+            wj(os.path.join(assets, f"models/block/{trapdoor}_{part}.json"), {"parent": f"minecraft:block/{parent}", "textures": {"texture": f"{MOD}:block/{trapdoor}"}})
+        wj(os.path.join(assets, f"models/block/{trapdoor}.json"), {"parent": f"{MOD}:block/{trapdoor}_bottom"})
+        wj(os.path.join(assets, f"items/{trapdoor}.json"), {"model": {"type": "minecraft:model", "model": f"{MOD}:block/{trapdoor}_bottom"}})
+        mat = {"bronze": ("minecraft:copper_ingot", "minecraft:gold_nugget"), "sky": (f"{MOD}:olympian_marble", "minecraft:gold_nugget"),
+               "sea": ("minecraft:dark_oak_planks", "minecraft:prismarine_shard"), "shade": ("minecraft:crimson_planks", "minecraft:amethyst_shard")}[key]
+        wj(os.path.join(data, f"recipe/{door}.json"), {"type": "minecraft:crafting_shaped", "category": "redstone", "key": {"C": mat[0], "G": mat[1]},
+                                                       "pattern": ["CC", "CG", "CC"], "result": {"id": f"{MOD}:{door}", "count": 3}})
+        wj(os.path.join(data, f"recipe/{trapdoor}.json"), {"type": "minecraft:crafting_shaped", "category": "redstone", "key": {"C": mat[0], "G": mat[1]},
+                                                           "pattern": ["CC", "CG"], "result": {"id": f"{MOD}:{trapdoor}", "count": 2}})
+        wj(os.path.join(data, f"loot_table/blocks/{door}.json"), {"type": "minecraft:block", "pools": [{"rolls": 1, "entries": [{"type": "minecraft:item", "name": f"{MOD}:{door}"}],
+            "conditions": [{"condition": "minecraft:block_state_property", "block": f"{MOD}:{door}", "properties": {"half": "lower"}}, {"condition": "minecraft:survives_explosion"}]}]})
+        wj(os.path.join(data, f"loot_table/blocks/{trapdoor}.json"), {"type": "minecraft:block", "pools": [{"rolls": 1, "entries": [{"type": "minecraft:item", "name": f"{MOD}:{trapdoor}"}],
+                                                                                                       "conditions": [{"condition": "minecraft:survives_explosion"}]}]})
+    keys = list(DOOR_SPECS)
+    wj(os.path.join(RES_DATA_MC(data), "tags/block/doors.json"), {"replace": False, "values": [f"{MOD}:{k}_door" for k in keys]})
+    wj(os.path.join(RES_DATA_MC(data), "tags/block/trapdoors.json"), {"replace": False, "values": [f"{MOD}:{k}_trapdoor" for k in keys]})
+    wj(os.path.join(RES_DATA_MC(data), "tags/item/doors.json"), {"replace": False, "values": [f"{MOD}:{k}_door" for k in keys]})
+    wj(os.path.join(RES_DATA_MC(data), "tags/item/trapdoors.json"), {"replace": False, "values": [f"{MOD}:{k}_trapdoor" for k in keys]})

@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "redstone",
+  "key": {
+    "C": "minecraft:dark_oak_planks",
+    "G": "minecraft:prismarine_shard"
+  },
+  "pattern": [
+    "CC",
+    "CG",
+    "CC"
+  ],
+  "result": {
+    "id": "realms_of_chaos:sea_door",
+    "count": 3
+  }
+}

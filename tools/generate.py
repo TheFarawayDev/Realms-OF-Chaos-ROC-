@@ -850,6 +850,12 @@ def gen_lang():
         "block.realms_of_chaos.underworld_brick_slab": "Underworld Brick Slab",
         "block.realms_of_chaos.bronze_door": "Bronze Door",
         "block.realms_of_chaos.bronze_trapdoor": "Bronze Trapdoor",
+        "block.realms_of_chaos.sky_door": "Door of the Sky",
+        "block.realms_of_chaos.sky_trapdoor": "Trapdoor of the Sky",
+        "block.realms_of_chaos.sea_door": "Door of the Sea",
+        "block.realms_of_chaos.sea_trapdoor": "Trapdoor of the Sea",
+        "block.realms_of_chaos.shade_door": "Door of the Shades",
+        "block.realms_of_chaos.shade_trapdoor": "Trapdoor of the Shades",
         "hud.realms_of_chaos.passage.room.observatory": "An observatory - a vault of stars",
         "hud.realms_of_chaos.passage.room.armory": "An armoury",
         "hud.realms_of_chaos.passage.room.baths": "Baths",
@@ -1937,8 +1943,9 @@ DECOR = ["olympian_marble", "olympian_marble_pillar", "gilded_frieze", "abyssal_
          "laurel_hedge", "kelp_weave", "asphodel_bed",
          "cloudstone", "cloud_tile", "trench_stone", "nacre_tile", "tartarus_stone", "throne_tile",
          "portal_frame_sky", "portal_frame_sea", "portal_frame_shade", "portal_frame_hub", "arrival_sigil",
-         "bronze_trapdoor"] + [f"{b}_{k}" for b in ("olympian_marble", "cloudstone", "trench_stone", "tartarus_stone", "storm_brick", "tide_brick", "ash_brick", "underworld_brick") for k in ("stairs", "slab")]
-PICKAXE_ONLY = ["bronze_door"]
+         "bronze_trapdoor", "sky_trapdoor", "shade_trapdoor"] + [f"{b}_{k}" for b in ("olympian_marble", "cloudstone", "trench_stone", "tartarus_stone", "storm_brick", "tide_brick", "ash_brick", "underworld_brick") for k in ("stairs", "slab")]
+PICKAXE_ONLY = ["bronze_door", "sky_door", "shade_door"]
+AXE_ONLY = ["sea_door", "sea_trapdoor"]
 FIELD_DROPS = FIELD_DROPS + DECOR
 
 # The 22 Major Arcana: (id, numeral, name, what the card does, 8x8 symbol (# ink, + colour), colour)
@@ -3390,6 +3397,7 @@ def gen_field_data():
                        "conditions": [{"condition": "minecraft:survives_explosion"}]}],
         })
     wj(os.path.join(RES, "data/minecraft/tags/block/mineable/pickaxe.json"), {"replace": False, "values": [f"{MOD}:{b}" for b in FIELD_DROPS + PICKAXE_ONLY]})
+    wj(os.path.join(RES, "data/minecraft/tags/block/mineable/axe.json"), {"replace": False, "values": [f"{MOD}:{b}" for b in AXE_ONLY]})
 
 def gen_tags():
     """Item tags: realms_of_chaos:relics/<tower> holds the relic weapons won in that tower, and realms_of_chaos:relics

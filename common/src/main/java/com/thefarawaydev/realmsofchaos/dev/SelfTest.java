@@ -6029,7 +6029,7 @@ public final class SelfTest {
                 check(plan != null, "some corridor in the tower of the Shades has a pit");
                 Passages.build(level, plan);
                 BlockPos mid = plan.corridorMiddle(pitCell, pitDir);
-                check(level.getBlockState(mid).is(ModContent.BRONZE_TRAPDOOR.get()) && !level.getBlockState(mid).getValue(net.minecraft.world.level.block.TrapDoorBlock.OPEN)
+                check(level.getBlockState(mid).is(ModContent.SHADE_TRAPDOOR.get()) && !level.getBlockState(mid).getValue(net.minecraft.world.level.block.TrapDoorBlock.OPEN)
                         && level.getBlockState(mid.below()).is(com.thefarawaydev.realmsofchaos.world.Snares.spike()) && solid(level, mid),
                         "a pit's floor is shut bronze lids, walked on like any floor, with spikes under them");
                 com.thefarawaydev.realmsofchaos.world.Snares.forgetPits();
@@ -6059,9 +6059,9 @@ public final class SelfTest {
                                 Passages.Kind.SHRINE, Passages.Kind.BATHS).contains(plan.kind(c))) continue;
                         int d = Passages.CORRIDOR_FROM + 1;
                         BlockPos left = Passages.along(plan, c, dir, d, -1, 1), right = Passages.along(plan, c, dir, d, 1, 1), middle = Passages.along(plan, c, dir, d, 0, 1);
-                        check(level.getBlockState(left).is(ModContent.BRONZE_DOOR.get()) && level.getBlockState(right).is(ModContent.BRONZE_DOOR.get())
-                                && level.getBlockState(left.above()).is(ModContent.BRONZE_DOOR.get())
-                                && level.getBlockState(left).getValue(net.minecraft.world.level.block.DoorBlock.OPEN), "a " + plan.kind(c) + " is entered through a pair of open bronze doors");
+                        net.minecraft.world.level.block.Block leaf = plan.kind(c) == Passages.Kind.STORE || plan.kind(c) == Passages.Kind.ARMORY ? ModContent.BRONZE_DOOR.get() : ModContent.SHADE_DOOR.get();
+                        check(level.getBlockState(left).is(leaf) && level.getBlockState(right).is(leaf) && level.getBlockState(left.above()).is(leaf)
+                                && level.getBlockState(left).getValue(net.minecraft.world.level.block.DoorBlock.OPEN), "a " + plan.kind(c) + " is entered through a pair of open doors, the tower's own or bronze");
                         check(level.getBlockState(middle).isAir() && level.getBlockState(middle.above()).isAir(), "and the way between them is clear");
                         var box = level.getBlockState(left).getShape(level, left).bounds();
                         double across = dir == 0 ? (box.minZ + box.maxZ) / 2 : (box.minX + box.maxX) / 2;

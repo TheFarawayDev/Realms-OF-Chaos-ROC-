@@ -70,7 +70,7 @@ public final class Passages {
     public static final int TALL = 8;
     public static final int MAX_SIZE = 6;
     public static final int X0 = 600, PITCH = 160;
-    public static final int LAYOUT_VERSION = 19;
+    public static final int LAYOUT_VERSION = 20;
     public static final String GUARDIAN_TAG = "realms_of_chaos_guardian";
     private static final String HUD = "hud." + RealmsOfChaos.MOD_ID + ".passage.";
 
@@ -935,8 +935,8 @@ public final class Passages {
                     wind(level, plan, c, dir, p);
                     if (plan.pit(c, dir)) Snares.layPit(level, plan, c, dir);
                     // a special room is entered through double doors of bronze, thrown open against the walls
-                    if (entrance(plan.kind(c))) doors(level, plan, c, dir, CORRIDOR_FROM + 1 - (plan.small(c) ? 1 : 0));
-                    if (entrance(plan.kind(next))) doors(level, plan, c, dir, CORRIDOR_TO - 1 + (plan.small(next) ? 1 : 0));
+                    if (entrance(plan.kind(c))) doors(level, plan, c, dir, CORRIDOR_FROM + 1 - (plan.small(c) ? 1 : 0), door(plan, plan.kind(c)));
+                    if (entrance(plan.kind(next))) doors(level, plan, c, dir, CORRIDOR_TO - 1 + (plan.small(next) ? 1 : 0), door(plan, plan.kind(next)));
                 }
             }
         });
@@ -1135,6 +1135,25 @@ public final class Passages {
         }
     }
 
+    /** The doors a room is entered by: bronze for the working rooms, the tower's own for the rest. */
+    static Block door(Plan plan, Kind kind) {
+        if (kind == Kind.STORE || kind == Kind.ARMORY) return ModContent.BRONZE_DOOR.get();
+        return switch (plan.line) {
+            case ZEUS -> ModContent.SKY_DOOR.get();
+            case POSEIDON -> ModContent.SEA_DOOR.get();
+            case HADES -> ModContent.SHADE_DOOR.get();
+        };
+    }
+
+    /** A tower's own trapdoor. */
+    public static Block trapdoor(Line line) {
+        return switch (line) {
+            case ZEUS -> ModContent.SKY_TRAPDOOR.get();
+            case POSEIDON -> ModContent.SEA_TRAPDOOR.get();
+            case HADES -> ModContent.SHADE_TRAPDOOR.get();
+        };
+    }
+
     /** The rooms entered through a pair of doors. */
     static boolean entrance(Kind kind) {
         return kind == Kind.STORE || kind == Kind.ARMORY || kind == Kind.LIBRARY || kind == Kind.SANCTUM || kind == Kind.OBSERVATORY
@@ -1142,9 +1161,9 @@ public final class Passages {
     }
 
     /** A pair of bronze doors either side of a corridor's middle line, {@code d} along it, open against the walls. */
-    static void doors(ServerLevel level, Plan plan, Cell c, int dir, int d) {
+    static void doors(ServerLevel level, Plan plan, Cell c, int dir, int d, Block leaf) {
         net.minecraft.core.Direction facing = dir == 0 ? net.minecraft.core.Direction.EAST : net.minecraft.core.Direction.SOUTH;
-        BlockState door = ModContent.BRONZE_DOOR.get().defaultBlockState().setValue(net.minecraft.world.level.block.DoorBlock.FACING, facing)
+        BlockState door = leaf.defaultBlockState().setValue(net.minecraft.world.level.block.DoorBlock.FACING, facing)
                 .setValue(net.minecraft.world.level.block.DoorBlock.OPEN, true);
         for (int k = -1; k <= 1; k += 2) {
             BlockPos at = along(plan, c, dir, d, k, 1);
