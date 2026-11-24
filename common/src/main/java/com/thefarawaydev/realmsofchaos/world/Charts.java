@@ -88,7 +88,8 @@ public final class Charts {
             case TREASURE, VAULT, CHIMES, BEAM, PLATES, STAIRWELL -> MapColor.GOLD;
             case SHRINE -> MapColor.COLOR_LIGHT_BLUE;
             case TRAP, CRUSHER, DARTS, SPIKES, FLAMES, BLADES, ARC, GAS -> MapColor.COLOR_ORANGE;
-            case ARENA -> MapColor.COLOR_PURPLE;
+            case ARENA, PROVING -> MapColor.COLOR_PURPLE;
+            case BARRACKS -> MapColor.COLOR_RED;
             case GARDEN -> MapColor.PLANT;
             case POOL -> MapColor.WATER;
             case LIBRARY, ARMORY -> MapColor.WOOD;

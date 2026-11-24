@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "key": {
+    "L": "minecraft:leather",
+    "N": "minecraft:note_block",
+    "C": "minecraft:copper_ingot"
+  },
+  "pattern": [
+    " L ",
+    "CNC"
+  ],
+  "result": {
+    "id": "realms_of_chaos:war_drum",
+    "count": 1
+  }
+}

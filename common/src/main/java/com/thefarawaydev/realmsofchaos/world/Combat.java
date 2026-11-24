@@ -33,6 +33,11 @@ import net.minecraft.world.phys.Vec3;
  * <p><b>Riposte, exposure, plunge.</b> A riposte and a blow on a staggered creature each count half as much again;
  * a blow struck while falling shakes everything round the one it lands on.
  *
+ * <p><b>Dodge.</b> Tap sneak while moving and you throw yourself the way you are going instead: a quick dash, and for
+ * a moment no blow of the realms' creatures can find you. A blow slipped that way leaves its striker open - the
+ * next blow struck within three seconds is a riposte, as after a parry. A dodge has to be caught breath for before
+ * the next. Stand still and the same tap parries, as before.
+ *
  * <p>All of it is worked out on the server from what a player is already doing: it needs no key of its own.
  */
 public final class Combat {
@@ -43,10 +48,13 @@ public final class Combat {
     public static final float MOMENTUM_STEP = 0.04F, RIPOSTE = 1.5F, EXPOSED = 1.5F, PLUNGE = 1.25F;
     /** A fall of at least this far makes a blow a plunge. */
     public static final double PLUNGE_FALL = 2.0;
+    /** How long a dodge keeps its dodger out of reach, how long before the next, and how hard it throws them. */
+    public static final int DODGE_TICKS = 8, DODGE_RECOVERY = 24;
+    public static final double DODGE_SPEED = 0.95;
 
     private static final class State {
         boolean wasSneaking, wasGuarding;
-        long pressedAt = Long.MIN_VALUE / 2, riposteUntil, lastBlow, plungeReady;
+        long pressedAt = Long.MIN_VALUE / 2, riposteUntil, lastBlow, plungeReady, dodgeUntil, dodgeReady;
         int momentum, shown = -1;
     }
 
@@ -84,7 +92,11 @@ public final class Combat {
             if (!sneaking && !guarding) return;
             st = state(player);
         }
-        if ((sneaking && !st.wasSneaking) || (guarding && !st.wasGuarding)) press(player, now);
+        if (sneaking && !st.wasSneaking) {
+            if (!dodge(player, now)) press(player, now);
+        } else if (guarding && !st.wasGuarding) {
+            press(player, now);
+        }
         st.wasSneaking = sneaking;
         st.wasGuarding = guarding;
         if (st.momentum > 0 && now - st.lastBlow > MOMENTUM_FADE) {
@@ -105,6 +117,39 @@ public final class Combat {
         return true;
     }
 
+    /**
+     * A tap of sneak while a direction is held: the player dashes that way and cannot be found for a moment.
+     * @return true if it was a dodge (and not a parry)
+     */
+    public static boolean dodge(ServerPlayer player, long now) {
+        net.minecraft.world.entity.player.Input in = player.getLastClientInput();
+        if (in == null || !(in.forward() || in.backward() || in.left() || in.right())) return false;
+        if (!player.onGround() || player.isPassenger() || player.isSpectator() || player.isFallFlying()) return false;
+        State st = state(player);
+        if (now < st.dodgeReady) return true;                          // (still catching breath: no parry either)
+        double yaw = Math.toRadians(player.getYRot());
+        double fx = -Math.sin(yaw), fz = Math.cos(yaw), lx = Math.cos(yaw), lz = Math.sin(yaw);
+        double dx = (in.forward() ? fx : 0) - (in.backward() ? fx : 0) + (in.left() ? lx : 0) - (in.right() ? lx : 0);
+        double dz = (in.forward() ? fz : 0) - (in.backward() ? fz : 0) + (in.left() ? lz : 0) - (in.right() ? lz : 0);
+        double len = Math.sqrt(dx * dx + dz * dz);
+        if (len < 0.01) return false;
+        player.setDeltaMovement(dx / len * DODGE_SPEED, 0.2, dz / len * DODGE_SPEED);
+        player.needsSync = true;
+        st.dodgeUntil = now + DODGE_TICKS;
+        st.dodgeReady = now + DODGE_RECOVERY;
+        if (player.level() instanceof ServerLevel level) {
+            level.sendParticles(ParticleTypes.CLOUD, player.getX(), player.getY() + 0.1, player.getZ(), 8, 0.3, 0.05, 0.3, 0.02);
+            level.playSound(null, player.blockPosition(), SoundEvents.PLAYER_ATTACK_SWEEP, SoundSource.PLAYERS, 0.6F, 1.7F);
+        }
+        return true;
+    }
+
+    /** True while a dodge keeps a player out of reach. */
+    public static boolean dodging(ServerPlayer player) {
+        State st = STATES.get(player.getUUID());
+        return st != null && now(player) <= st.dodgeUntil;
+    }
+
     public static boolean ready(ServerPlayer player) {
         long since = now(player) - state(player).pressedAt;
         return since >= 0 && since <= window(player);
@@ -115,7 +160,21 @@ public final class Combat {
      * the player has a riposte coming. @return true if the blow should do nothing
      */
     public static boolean tryParry(ServerLevel level, ServerPlayer player, LivingEntity attacker) {
-        if (!ready(player) || player.isCreative() || player.isSpectator()) return false;
+        if (player.isCreative() || player.isSpectator()) return false;
+        if (dodging(player)) {
+            // slipped: the blow finds nothing, and its striker is left open to a riposte
+            State st = state(player);
+            long now = now(player);
+            st.riposteUntil = now + RIPOSTE_TICKS;
+            st.momentum = Math.min(MAX_MOMENTUM, st.momentum + 1);
+            st.lastBlow = now;
+            level.playSound(null, player.blockPosition(), SoundEvents.PLAYER_ATTACK_NODAMAGE, SoundSource.PLAYERS, 1.0F, 1.4F);
+            level.sendParticles(ParticleTypes.CLOUD, player.getX(), player.getY() + 1.0, player.getZ(), 10, 0.3, 0.4, 0.3, 0.05);
+            ProgressData.get(level.getServer()).addCounter("dodges/" + player.getUUID(), 1);
+            show(player, st, now);
+            return true;
+        }
+        if (!ready(player)) return false;
         State st = state(player);
         long now = now(player);
         st.pressedAt = Long.MIN_VALUE / 2;                      // one tap, one blow

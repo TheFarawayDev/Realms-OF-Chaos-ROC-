@@ -602,6 +602,7 @@ def run(assets, data=None):
         gen_floor_polish(assets)
         gen_cuts(assets, data)
         gen_doors2(assets, data)
+        gen_combat(assets, data)
         for floor in ("sunstone_panel", "pearl_panel", "ember_panel", "sky_mosaic", "sea_mosaic", "shade_mosaic"):
             connected_breaks(assets, floor)
 
@@ -1990,3 +1991,191 @@ def gen_doors2(assets, data):
     wj(os.path.join(RES_DATA_MC(data), "tags/block/trapdoors.json"), {"replace": False, "values": [f"{MOD}:{k}_trapdoor" for k in keys]})
     wj(os.path.join(RES_DATA_MC(data), "tags/item/doors.json"), {"replace": False, "values": [f"{MOD}:{k}_door" for k in keys]})
     wj(os.path.join(RES_DATA_MC(data), "tags/item/trapdoors.json"), {"replace": False, "values": [f"{MOD}:{k}_trapdoor" for k in keys]})
+
+
+# ---- the proving grounds and barracks: arena sand, beast gates, war drums, standards, training dummies ------------------
+
+COMBAT_BLOCKS = ["arena_sand", "beast_gate", "war_drum", "war_standard", "training_dummy"]
+
+
+def _el(a, b, faces, rot=None):
+    """One box of a model, each face its own texture (by key); faces missing from the map are left off."""
+    el = {"from": list(a), "to": list(b), "faces": {d: {"texture": f"#{t}"} for d, t in faces.items()}}
+    if rot:
+        el["rotation"] = rot
+    return el
+
+
+def _all(t, **over):
+    f = {d: t for d in ("north", "south", "east", "west", "up", "down")}
+    f.update(over)
+    return f
+
+
+def _facing_block(assets, name, model):
+    """A block that faces the way it was set: one model, turned for each facing."""
+    wj(os.path.join(assets, f"models/block/{name}.json"), model)
+    wj(os.path.join(assets, f"blockstates/{name}.json"),
+       {"variants": {f"facing={f}": {"model": f"{MOD}:block/{name}", "y": r} for f, r in (("north", 0), ("east", 90), ("south", 180), ("west", 270))}})
+    wj(os.path.join(assets, f"items/{name}.json"), {"model": {"type": "minecraft:model", "model": f"{MOD}:block/{name}"}})
+
+
+def gen_combat(assets, data):
+    T = os.path.join(assets, "textures/block")
+    t = lambda n: f"{MOD}:block/{n}"
+    g = grain(141, 0.06)
+    rnd = random.Random(141)
+
+    # arena sand: raked in long furrows; one look scuffed with footprints, one with stones turned up and an old stain
+    sand = (220, 198, 146)
+    grit = random.Random(142)
+    speck = [[grit.random() for _ in range(16)] for _ in range(16)]
+
+    def raked(x, y):
+        # grains of three tones, as sand is; the rake's furrows only a faint swell across it, never a seam
+        v = speck[y][x]
+        c = shade(sand, 0.9 if v < 0.18 else 1.07 if v > 0.86 else 1.0)
+        if v < 0.04: c = (172, 150, 112)
+        swell = math.sin((y + 1.6 * math.sin(x * 0.55)) * math.tau / 5.0)
+        if swell > 0.8: c = shade(c, 0.94)
+        return c
+    base = paint_hi(raked)
+    steps = base.copy()
+    for fx, fy in ((3, 3), (9, 9)):
+        for dx, dy in ((0, 0), (1, 0), (0, 1), (1, 1), (0, 2), (1, 2), (2, 1), (0, -1), (1, -1)):
+            if 0 <= fx + dx < 16 and 0 <= fy + dy < 16:
+                steps.putpixel((fx + dx, fy + dy), tuple(shade(sand, 0.72)) + (255,))
+    stones = base.copy()
+    for _ in range(6):
+        x, y = rnd.randrange(16), rnd.randrange(16)
+        stones.putpixel((x, y), tuple(shade((150, 140, 128), 1.0 + rnd.random() * 0.2)) + (255,))
+        if x + 1 < 16: stones.putpixel((x + 1, y), tuple(shade((120, 112, 104), 1.0)) + (255,))
+    for x in range(10, 14):
+        for y in range(2, 5):
+            if (x - 12) ** 2 + (y - 3) ** 2 <= 3:
+                stones.putpixel((x, y), tuple(mix(shade(sand, 0.9), (120, 50, 40), 0.35)) + (255,))
+    variants(assets, "arena_sand", [base, steps, stones], [6, 2, 2], turn=True)
+    wj(os.path.join(assets, "items/arena_sand.json"), {"model": {"type": "minecraft:model", "model": f"{MOD}:block/arena_sand"}})
+
+    # the beast gate: a portcullis of black iron over darkness, rivets where its bars cross; behind one, eyes
+    def gate(x, y):
+        bar_x, bar_y = x in (1, 5, 10, 14), y in (2, 7, 13)
+        if x in (0, 15) or y in (0, 15): return (52, 48, 50)
+        if bar_x and bar_y: return (150, 146, 150)
+        if bar_x: return (92, 88, 94) if y % 3 else (72, 68, 74)
+        if bar_y: return (84, 80, 86) if x % 3 else (66, 62, 68)
+        return shade((22, 16, 16), 0.8 + 0.4 * g[y][x] - 0.4)
+    plain = paint_hi(gate)
+    eyes = plain.copy()
+    for ex, ey, col in ((7, 10, (255, 120, 40)), (8, 10, (255, 200, 90)), (11, 10, (255, 200, 90)), (12, 10, (255, 120, 40))):
+        eyes.putpixel((ex, ey), col + (255,))
+    clawed = plain.copy()
+    for y in range(3, 12):
+        for x0 in (6, 8):
+            x = x0 + (y // 3) % 2
+            if x not in (1, 5, 10, 14) and y % 2: clawed.putpixel((x, y), (120, 112, 104, 255))
+    variants(assets, "beast_gate", [plain, eyes, clawed], [6, 1, 2])
+    wj(os.path.join(assets, "items/beast_gate.json"), {"model": {"type": "minecraft:model", "model": f"{MOD}:block/beast_gate"}})
+
+    # the war drum: red hide laced in a zigzag of cord between bronze hoops; a pale skin on top, a mark burned in it
+    hide = (150, 42, 34)
+
+    def drum_side(x, y):
+        c = shade(hide, g[y][x])
+        zig = 5 + abs((x % 8) - 4) * 2
+        if abs(y - zig) < 1 or abs(y - (zig - 1)) < 1 and x % 2 == 0: c = (226, 206, 160)
+        if y <= 4: c = shade((176, 110, 50), g[y][x] * (1.15 if y == 4 else 1.0))
+        return c
+
+    def drum_top(x, y):
+        r = math.hypot(x - 7.5, y - 7.5)
+        if r > 5.6: return shade((176, 110, 50), 1.1 if (x + y) % 3 == 0 else 0.95)
+        c = shade((228, 206, 168), g[y][x])
+        if 1.6 < r < 2.6: c = (130, 40, 30)
+        if r < 0.9: c = (130, 40, 30)
+        return c
+    paint_hi(drum_side).save(os.path.join(T, "war_drum_side.png"))
+    paint_hi(drum_top).save(os.path.join(T, "war_drum_top.png"))
+    tx = {"particle": t("war_drum_side"), "hide": t("war_drum_side"), "skin": t("war_drum_top"), "bronze": t("bronze")}
+    drum = [_el((3, 1, 3), (13, 12, 13), _all("hide", up="skin", down="bronze")),
+            _el((2.5, 0, 2.5), (13.5, 2, 13.5), _all("bronze")),
+            _el((2.5, 11, 2.5), (13.5, 13, 13.5), _all("bronze", up="skin")),
+            # four feet
+            _el((2, 0, 2), (4, 1, 4), _all("bronze")), _el((12, 0, 2), (14, 1, 4), _all("bronze")),
+            _el((2, 0, 12), (4, 1, 14), _all("bronze")), _el((12, 0, 12), (14, 1, 14), _all("bronze"))]
+    wj(os.path.join(assets, "models/block/war_drum.json"), {"parent": "minecraft:block/block", "textures": tx, "elements": drum})
+    wj(os.path.join(assets, "blockstates/war_drum.json"), {"variants": {"": {"model": f"{MOD}:block/war_drum"}}})
+    wj(os.path.join(assets, "items/war_drum.json"), {"model": {"type": "minecraft:model", "model": f"{MOD}:block/war_drum"}})
+
+    # the war standard: a crimson cloth with a gold border and a gold helm on it, hung from a gilded bar on a spear
+    def cloth(x, y):
+        c = shade((158, 30, 36), 0.92 + 0.16 * g[y][x])
+        if x in (0, 15) or y == 0: c = GOLD
+        if y == 15: c = GOLD if x % 2 == 0 else (110, 20, 26)
+        # a crested helm in profile, facing left: plume, dome, the eye slot and cheek guard, the neck guard behind
+        rows = ["................", "................", ".....#####......", "....#######.....", "......####......", ".....######.....",
+                "....########....", "....#..#####....", "....##.#####....", "....##..####....", ".....#...###....", "................"]
+        helm = {(i, j) for j, row in enumerate(rows) for i, ch in enumerate(row) if ch == "#"}
+        if (x, y) in helm: c = (200, 40, 36) if y <= 3 else GOLD_HI if y <= 5 else GOLD
+        if y == 12 and 3 <= x <= 12: c = GOLD
+        return c
+    paint_hi(cloth).save(os.path.join(T, "war_standard.png"))
+    paint_hi(lambda x, y: shade((96, 64, 38), g[y][x] * (0.86 if y % 4 == 3 else 1.0))).save(os.path.join(T, "standard_pole.png"))
+    paint_hi(lambda x, y: GOLD_HI if (x + y) % 4 == 0 else GOLD).save(os.path.join(T, "standard_gold.png"))
+    paint_hi(lambda x, y: mix((150, 156, 170), (236, 240, 248), (15 - y + x) / 30)).save(os.path.join(T, "standard_iron.png"))
+    tx = {"particle": t("war_standard"), "cloth": t("war_standard"), "pole": t("standard_pole"), "gold": t("standard_gold"), "iron": t("standard_iron")}
+    standard = [_el((7.5, 0, 7.5), (8.5, 15, 8.5), _all("pole")),
+                _el((6, 0, 6), (10, 1, 10), _all("gold")),
+                _el((7.25, 15, 7.25), (8.75, 16, 8.75), _all("iron")),
+                _el((2.5, 13.5, 6.5), (13.5, 14.5, 7.5), _all("gold")),
+                _el((3, 2, 6.75), (13, 13.5, 7.25), _all("cloth"))]
+    _facing_block(assets, "war_standard", {"parent": "minecraft:block/block", "textures": tx, "elements": standard})
+
+    # the training dummy: a straw sack on a post with a target on its chest, a crossbar for arms, a burlap head
+    straw = (206, 176, 86)
+
+    def straw_fn(x, y):
+        c = shade(straw, g[y][x])
+        if (x * 3 + y) % 7 == 0: c = shade(straw, 1.18)
+        if (x + y * 2) % 9 == 0: c = shade(straw, 0.8)
+        return c
+
+    def target(x, y):
+        c = straw_fn(x, y)
+        r = math.hypot(x - 7.5, y - 7.5)
+        if r < 6.0: c = (196, 44, 40) if int(r / 1.6) % 2 == 0 else (236, 226, 204)
+        return c
+
+    def burlap(x, y):
+        return shade((168, 136, 96), (1.08 if (x + y) % 2 else 0.92) * g[y][x])
+
+    def face(x, y):
+        c = burlap(x, y)
+        if (x, y) in ((4, 5), (5, 6), (6, 5), (4, 7), (6, 7), (9, 5), (10, 6), (11, 5), (9, 7), (11, 7)): c = (50, 34, 26)
+        if y == 10 and 5 <= x <= 10: c = (90, 60, 40) if x % 2 else (50, 34, 26)
+        return c
+    paint_hi(straw_fn).save(os.path.join(T, "dummy_straw.png"))
+    paint_hi(target).save(os.path.join(T, "dummy_target.png"))
+    paint_hi(burlap).save(os.path.join(T, "dummy_burlap.png"))
+    paint_hi(face).save(os.path.join(T, "dummy_face.png"))
+    paint_hi(lambda x, y: (96, 56, 40) if (x + y) % 3 else (70, 40, 30)).save(os.path.join(T, "dummy_rope.png"))
+    tx = {"particle": t("dummy_straw"), "straw": t("dummy_straw"), "target": t("dummy_target"), "burlap": t("dummy_burlap"), "face": t("dummy_face"),
+          "rope": t("dummy_rope"), "pole": t("standard_pole")}
+    dummy = [_el((5, 0, 5), (11, 1, 11), _all("pole")),
+             _el((7, 1, 7), (9, 5, 9), _all("pole")),
+             _el((4, 5, 5.5), (12, 12, 10.5), _all("straw", north="target")),
+             _el((3.9, 7, 5.4), (12.1, 7.75, 10.6), _all("rope")),
+             _el((0.5, 9.5, 7.25), (15.5, 10.5, 8.75), _all("pole")),
+             _el((5.5, 12, 6), (10.5, 16, 10), _all("burlap", north="face"))]
+    _facing_block(assets, "training_dummy", {"parent": "minecraft:block/block", "textures": tx, "elements": dummy})
+
+    recipes = {
+        "arena_sand": ({"S": "minecraft:sand", "G": "minecraft:gravel"}, ["SG", "GS"], 4),
+        "beast_gate": ({"I": "minecraft:iron_ingot", "B": "minecraft:iron_bars"}, ["IBI", "BBB", "IBI"], 4),
+        "war_drum": ({"L": "minecraft:leather", "N": "minecraft:note_block", "C": "minecraft:copper_ingot"}, [" L ", "CNC"], 1),
+        "war_standard": ({"G": "minecraft:gold_ingot", "W": "minecraft:red_wool", "S": "minecraft:stick"}, ["GWG", " S ", " S "], 1),
+        "training_dummy": ({"H": "minecraft:hay_block", "S": "minecraft:stick", "W": "minecraft:white_wool"}, [" W ", "SHS", " S "], 1),
+    }
+    for rid, (key_, pattern_, count) in recipes.items():
+        wj(os.path.join(data, f"recipe/{rid}.json"), {"type": "minecraft:crafting_shaped", "category": "building", "key": key_, "pattern": pattern_,
+                                                      "result": {"id": f"{MOD}:{rid}", "count": count}})

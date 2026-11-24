@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "key": {
+    "G": "minecraft:gold_ingot",
+    "W": "minecraft:red_wool",
+    "S": "minecraft:stick"
+  },
+  "pattern": [
+    "GWG",
+    " S ",
+    " S "
+  ],
+  "result": {
+    "id": "realms_of_chaos:war_standard",
+    "count": 1
+  }
+}

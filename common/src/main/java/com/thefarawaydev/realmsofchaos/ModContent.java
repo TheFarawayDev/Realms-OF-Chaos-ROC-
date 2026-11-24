@@ -108,6 +108,9 @@ public final class ModContent {
             TARTARUS_STONE = new Ref<>(), THRONE_TILE = new Ref<>(), PORTAL_FRAME_SKY = new Ref<>(), PORTAL_FRAME_SEA = new Ref<>(),
             PORTAL_FRAME_SHADE = new Ref<>(), PORTAL_FRAME_HUB = new Ref<>(), ARRIVAL_SIGIL = new Ref<>();
     public static final Ref<Block> TOWER_BRAZIER = new Ref<>();
+    /** The fittings of the proving grounds and barracks. */
+    public static final Ref<Block> ARENA_SAND = new Ref<>(), WAR_DRUM = new Ref<>(), WAR_STANDARD = new Ref<>(), BEAST_GATE = new Ref<>(),
+            TRAINING_DUMMY = new Ref<>();
 
     public static final List<Def<Block>> BLOCK_DEFS = new ArrayList<>();
 
@@ -293,6 +296,11 @@ public final class ModContent {
         block("portal_frame_sea", PORTAL_FRAME_SEA, key -> new com.thefarawaydev.realmsofchaos.block.ConnectedBlock(decor(key).mapColor(MapColor.WARPED_WART_BLOCK).lightLevel(s -> 7)));
         block("portal_frame_shade", PORTAL_FRAME_SHADE, key -> new com.thefarawaydev.realmsofchaos.block.ConnectedBlock(decor(key).mapColor(MapColor.COLOR_PURPLE).lightLevel(s -> 7)));
         block("portal_frame_hub", PORTAL_FRAME_HUB, key -> new com.thefarawaydev.realmsofchaos.block.ConnectedBlock(decor(key).mapColor(MapColor.COLOR_GRAY).lightLevel(s -> 7)));
+        block("arena_sand", ARENA_SAND, key -> new Block(decor(key).mapColor(MapColor.SAND).sound(SoundType.SAND).strength(1.0F)));
+        block("war_drum", WAR_DRUM, key -> new com.thefarawaydev.realmsofchaos.block.WarDrumBlock(decor(key).mapColor(MapColor.COLOR_RED).sound(SoundType.WOOD).strength(1.5F).noOcclusion()));
+        block("war_standard", WAR_STANDARD, key -> new com.thefarawaydev.realmsofchaos.block.WarStandardBlock(decor(key).mapColor(MapColor.COLOR_RED).sound(SoundType.WOOD).strength(1.0F).noOcclusion()));
+        block("beast_gate", BEAST_GATE, key -> new Block(decor(key).mapColor(MapColor.METAL).sound(SoundType.METAL).strength(5.0F)));
+        block("training_dummy", TRAINING_DUMMY, key -> new com.thefarawaydev.realmsofchaos.block.TrainingDummyBlock(decor(key).mapColor(MapColor.WOOD).sound(SoundType.WOOD).strength(1.0F).noOcclusion()));
         block("arrival_sigil", ARRIVAL_SIGIL, key -> new Block(decor(key).mapColor(MapColor.COLOR_PURPLE).lightLevel(s -> 10)));
         block("bronze_door", BRONZE_DOOR, key -> new net.minecraft.world.level.block.DoorBlock(net.minecraft.world.level.block.state.properties.BlockSetType.COPPER,
                 BlockBehaviour.Properties.of().setId(key).mapColor(MapColor.COLOR_ORANGE).strength(3.0F).requiresCorrectToolForDrops().noOcclusion()));

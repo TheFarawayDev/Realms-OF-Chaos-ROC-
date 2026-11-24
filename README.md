@@ -69,6 +69,28 @@ The current build is an **Alpha**.
   (white marble and gold, a thunderbolt), the **Door of the Sea** (dark sea-wood, a trident) and the **Door of the
   Shades** (black wood with violet light, a skull), each with its trapdoor. All open by hand and are craftable.
   (`art/renders/door-textures.png`, `door-items.png`, `doors-placed.png`)
+* **The dodge.** Hold a direction and tap sneak, and you throw yourself that way - a quick dash, and for eight
+  ticks no blow of the realms' creatures can find you. A blow slipped like that leaves its striker open: your next
+  blow within three seconds is a riposte, as after a parry, and it counts towards momentum. A dodge needs a little
+  over a second's breath before the next, and only works from the ground. Stand still and the same tap parries,
+  as before, so there is still no key of its own.
+* **Proving grounds.** One great room on most passage levels - the widest and tallest kind - floored in Arena Sand
+  with a chalk ring round its middle, eight Beast Gates in its walls (each with a dark tunnel behind it where the
+  rock allows), a War Standard on a plinth in every corner and a ledge round the walls overhead. Beat either War
+  Drum and the trial begins: the gates grind open and three waves come out of them, one after the other - the
+  tower's soldiers, then skirmishers and a brute, then a lesser god of the passage leading the last. Titles call
+  each wave. The cache in the middle stays shut until the last one is down, and pays the best of any room: a
+  second share of the tier's material and a golden apple or a totem. When the passage seals itself again, so
+  does the proving. (`art/renders/proving-ground.png`, `proving-ground-wave.png`)
+* **Barracks.** A wide room whose soldiers are already awake: two quarters of bunk beds against the walls with a
+  footlocker at each foot (a few arrows, a loaf), racks of arms on the walls, and two drill quarters of Training
+  Dummies, more racks, a barrel and a standard. (`art/renders/barracks-bunks.png`, `barracks-drill.png`)
+* **Five new blocks for them, all 16x16 and craftable.** **Arena Sand** (three looks: raked, scuffed with
+  footprints, stony with an old stain), the **Beast Gate** (a black portcullis; now and then a pair of eyes behind
+  it), the **War Drum** (red hide laced between bronze hoops - beat it and it booms), the **War Standard** (a
+  crimson cloth with a crested gold helm, on a spear) and the **Training Dummy** (a straw sack on a post with a
+  target on its chest; strike it and it thumps, right-click it and it teaches the parry and the dodge). More of
+  the passage rooms are of the wider size than before.
 * **Entrances.** Storerooms and armouries are entered through a pair of bronze doors; libraries, sanctums,
   observatories, shrines and baths through the tower's own - thrown open against the corridor walls under the arch,
   the way between them left clear. Storerooms have a bronze cellar hatch in the floor, and a corridor pit's lids
@@ -307,6 +329,8 @@ The current build is an **Alpha**.
     attacker reels (slowed, weakened, and open), and the next blow within three seconds is a **riposte**, half as
     hard again. A bolt parried goes back to whoever loosed it. Even a god's blow can be met. The moment is seven
     ticks; a tap that parries nothing has to be waited out.
+  * **Dodge.** Hold a direction and tap sneak instead, and you dash that way; for a moment no blow can find you,
+    and one that misses leaves its striker open to a riposte.
   * **Momentum.** Every blow landed without being hit builds it, to five; each point adds 4% to every blow. Being
     struck loses it all.
   * **Exposure and the plunge.** A blow on a reeling enemy counts half as much again; a blow struck while falling

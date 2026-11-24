@@ -392,6 +392,7 @@ HANDBOOK = [
     ]),
     ("fights", "Reading a fight", [
         "Tap sneak, or raise a shield, just as a blow would land and it is parried: no harm done, the attacker reels, and your next blow within three seconds is a riposte, half as hard again. A parried bolt goes back to whoever loosed it. Sentinels draw back before a heavy blow - that is the one to parry.",
+        "Hold a direction and tap sneak and you dodge instead: a quick dash that way, and for a moment no blow can find you. A blow slipped like that leaves its striker open to a riposte, just as a parry does. A dodge needs a breath before the next.",
         "Blows landed without being hit build momentum, up to five, and each point adds a little to every blow. A blow on a reeling enemy counts half as much again, and one struck while falling shakes everything round it.",
         "Every god has a signature move with a name, and raises its arms before it: that is your warning. Turn on the cast bar in the Codex's settings and each move is named and counted down as it comes.",
         "The gods remember how you fight. Shoot from afar, hide behind a shield, stop to heal or keep out of reach in trial after trial, and the next god has an answer ready. The Codex shows what they know of you; fight differently and they forget.",
@@ -457,7 +458,7 @@ TIPS = [
     ("scan", "Keep the compass in hand and read above your hotbar. Sneak-click changes its target"),
     ("waygate", "Choose where to go, then stand still while the obelisk gathers"),
     ("insight", "The gods remember how you fight. The Codex shows what they know. Fight differently and they forget"),
-    ("parry", "It is drawing back for a heavy blow. Tap sneak just as it lands to parry - then strike back"),
+    ("parry", "A heavy blow is coming. Tap sneak as it lands to parry, or hold a direction and tap sneak to dodge"),
     ("boon", "A broken seal offers three boons. Take one: it lasts until you leave this passage"),
 ]
 
@@ -860,6 +861,30 @@ def gen_lang():
         "hud.realms_of_chaos.passage.room.armory": "An armoury",
         "hud.realms_of_chaos.passage.room.baths": "Baths",
         "hud.realms_of_chaos.passage.room.sanctum": "A sanctum - quiet, and lit by the tower's fire",
+        "hud.realms_of_chaos.passage.room.proving": "A proving ground. Beat a war drum to call three waves - the cache is for whoever stands at the end",
+        "hud.realms_of_chaos.passage.room.proving.done": "A proving ground, its trial won",
+        "hud.realms_of_chaos.passage.room.barracks": "A barracks - and its soldiers are awake",
+        "hud.realms_of_chaos.passage.proving.wave": "Wave %s of %s",
+        "hud.realms_of_chaos.passage.proving.wave.1": "The tower's soldiers",
+        "hud.realms_of_chaos.passage.proving.wave.2": "Skirmishers, and a brute",
+        "hud.realms_of_chaos.passage.proving.wave.3": "Its champion leads the last",
+        "hud.realms_of_chaos.passage.proving.won": "Proving won",
+        "hud.realms_of_chaos.passage.proving.won.sub": "The cache is yours to open",
+        "hud.realms_of_chaos.passage.proving.locked": "Locked. Beat a war drum and win the proving first",
+        "hud.realms_of_chaos.passage.proving.underway": "The proving is under way: wave %s of %s",
+        "hud.realms_of_chaos.passage.proving.done": "This proving is won",
+        "hud.realms_of_chaos.passage.proving.peaceful": "No one answers the drum on Peaceful. The cache is open",
+        "hud.realms_of_chaos.dummy.parry": "Parry",
+        "hud.realms_of_chaos.dummy.parry.sub": "Stand still and tap sneak, or raise a shield, just as a blow lands. The attacker reels, and your next blow within three seconds is a riposte",
+        "hud.realms_of_chaos.dummy.dodge": "Dodge",
+        "hud.realms_of_chaos.dummy.dodge.sub": "Hold a direction and tap sneak to throw yourself that way. For a moment nothing can touch you, and a blow slipped leaves its striker open to a riposte",
+        "menu.realms_of_chaos.passage.kind.proving": "Proving Ground",
+        "menu.realms_of_chaos.passage.kind.barracks": "Barracks",
+        "block.realms_of_chaos.arena_sand": "Arena Sand",
+        "block.realms_of_chaos.beast_gate": "Beast Gate",
+        "block.realms_of_chaos.war_drum": "War Drum",
+        "block.realms_of_chaos.war_standard": "War Standard",
+        "block.realms_of_chaos.training_dummy": "Training Dummy",
         "menu.realms_of_chaos.passage.kind.observatory": "Observatory",
         "menu.realms_of_chaos.passage.kind.armory": "Armoury",
         "menu.realms_of_chaos.passage.kind.baths": "Baths",
@@ -1943,7 +1968,8 @@ DECOR = ["olympian_marble", "olympian_marble_pillar", "gilded_frieze", "abyssal_
          "laurel_hedge", "kelp_weave", "asphodel_bed",
          "cloudstone", "cloud_tile", "trench_stone", "nacre_tile", "tartarus_stone", "throne_tile",
          "portal_frame_sky", "portal_frame_sea", "portal_frame_shade", "portal_frame_hub", "arrival_sigil",
-         "bronze_trapdoor", "sky_trapdoor", "shade_trapdoor"] + [f"{b}_{k}" for b in ("olympian_marble", "cloudstone", "trench_stone", "tartarus_stone", "storm_brick", "tide_brick", "ash_brick", "underworld_brick") for k in ("stairs", "slab")]
+         "bronze_trapdoor", "sky_trapdoor", "shade_trapdoor",
+         "arena_sand", "beast_gate", "war_drum", "war_standard", "training_dummy"] + [f"{b}_{k}" for b in ("olympian_marble", "cloudstone", "trench_stone", "tartarus_stone", "storm_brick", "tide_brick", "ash_brick", "underworld_brick") for k in ("stairs", "slab")]
 PICKAXE_ONLY = ["bronze_door", "sky_door", "shade_door"]
 AXE_ONLY = ["sea_door", "sea_trapdoor"]
 FIELD_DROPS = FIELD_DROPS + DECOR

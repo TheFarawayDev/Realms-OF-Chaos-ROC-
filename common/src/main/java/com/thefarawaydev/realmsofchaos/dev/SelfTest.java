@@ -6079,6 +6079,169 @@ public final class SelfTest {
             }
         });
 
+        step("the dodge: a tap of sneak while moving throws you aside, and a blow then finds nothing", () -> {
+            ServerPlayer hero = fakePlayer(server, level, "RocDodger");
+            com.thefarawaydev.realmsofchaos.world.Combat.forgetAll();
+            com.thefarawaydev.realmsofchaos.world.Boons.clear(hero);
+            com.thefarawaydev.realmsofchaos.ui.Cards.clear(hero);
+            hero.setPos(8.5, level.getHeight(net.minecraft.world.level.levelgen.Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, 8, 8), 8.5);
+            hero.setHealth(hero.getMaxHealth());
+            level.addNewPlayer(hero);
+            settle(level);
+            Sentinel foe = ModContent.SENTINEL.get().create(level, EntitySpawnReason.TRIGGERED);
+            foe.setUp(Sentinel.Kind.of(Line.ZEUS, Sentinel.Role.SOLDIER), 3, 6.0, false);
+            foe.setPos(hero.getX() + 1.5, hero.getY(), hero.getZ());
+            level.addFreshEntity(foe);
+            try {
+                java.util.function.Consumer<net.minecraft.world.entity.player.Input> tap = in -> {
+                    hero.setLastClientInput(in);
+                    hero.setOnGround(true);
+                    hero.setShiftKeyDown(false);
+                    com.thefarawaydev.realmsofchaos.world.Combat.watch(hero, server.getTickCount());
+                    hero.setShiftKeyDown(true);
+                    com.thefarawaydev.realmsofchaos.world.Combat.watch(hero, server.getTickCount());
+                    hero.setShiftKeyDown(false);
+                    com.thefarawaydev.realmsofchaos.world.Combat.watch(hero, server.getTickCount());
+                };
+                net.minecraft.world.entity.player.Input forward = new net.minecraft.world.entity.player.Input(true, false, false, false, false, true, false),
+                        left = new net.minecraft.world.entity.player.Input(false, false, true, false, false, true, false),
+                        still = new net.minecraft.world.entity.player.Input(false, false, false, false, false, true, false);
+                hero.setYRot(0.0F);
+                hero.setDeltaMovement(net.minecraft.world.phys.Vec3.ZERO);
+                tap.accept(forward);
+                net.minecraft.world.phys.Vec3 v = hero.getDeltaMovement();
+                check(v.z > 0.6 && Math.abs(v.x) < 0.05 && v.y > 0.0, "walking forward (facing south), a tap of sneak throws the player south: " + v);
+                check(com.thefarawaydev.realmsofchaos.world.Combat.dodging(hero) && !com.thefarawaydev.realmsofchaos.world.Combat.ready(hero),
+                        "for a moment nothing can find them - and that tap was a dodge, not a parry");
+                float whole = hero.getHealth();
+                check(!foe.doHurtTarget(level, hero) && hero.getHealth() == whole, "a blow in that moment finds nothing");
+                check(com.thefarawaydev.realmsofchaos.world.Combat.riposteReady(hero) && com.thefarawaydev.realmsofchaos.world.Combat.momentum(hero) == 1
+                        && !com.thefarawaydev.realmsofchaos.world.Combat.isStaggered(foe), "and leaves its striker open to a riposte (though it does not reel as from a parry)");
+                advance(server, com.thefarawaydev.realmsofchaos.world.Combat.DODGE_TICKS + 1);
+                check(!com.thefarawaydev.realmsofchaos.world.Combat.dodging(hero), "the moment passes");
+                hero.setDeltaMovement(net.minecraft.world.phys.Vec3.ZERO);
+                tap.accept(forward);
+                check(hero.getDeltaMovement().lengthSqr() < 0.001 && !com.thefarawaydev.realmsofchaos.world.Combat.dodging(hero)
+                        && !com.thefarawaydev.realmsofchaos.world.Combat.ready(hero), "a dodge needs a breath before the next, and a tap meanwhile is no parry either");
+                advance(server, com.thefarawaydev.realmsofchaos.world.Combat.DODGE_RECOVERY);
+                hero.setYRot(90.0F);                                    // facing west: left is south
+                tap.accept(left);
+                v = hero.getDeltaMovement();
+                check(v.z > 0.6 && Math.abs(v.x) < 0.05, "a dodge to the left goes to the player's left, whichever way they face: " + v);
+                advance(server, com.thefarawaydev.realmsofchaos.world.Combat.DODGE_RECOVERY + 1);
+                hero.setDeltaMovement(net.minecraft.world.phys.Vec3.ZERO);
+                tap.accept(still);
+                check(com.thefarawaydev.realmsofchaos.world.Combat.ready(hero) && !com.thefarawaydev.realmsofchaos.world.Combat.dodging(hero)
+                        && hero.getDeltaMovement().lengthSqr() < 0.001, "standing still, the same tap is a parry, as before");
+                hero.setOnGround(false);
+                advance(server, com.thefarawaydev.realmsofchaos.world.Combat.DODGE_RECOVERY + com.thefarawaydev.realmsofchaos.world.Combat.PARRY_RECOVERY);
+                tap.accept(forward);
+                hero.setOnGround(false);
+                hero.setLastClientInput(forward);
+                check(!com.thefarawaydev.realmsofchaos.world.Combat.dodge(hero, server.getTickCount() + 1000), "no dodging off thin air");
+            } finally {
+                com.thefarawaydev.realmsofchaos.world.Combat.forget(hero);
+                foe.discard();
+                hero.remove(net.minecraft.world.entity.Entity.RemovalReason.DISCARDED);
+            }
+        });
+
+        step("proving grounds: a war drum calls three waves out of the beast gates, and the cache opens to whoever is left; barracks hold soldiers", () -> {
+            Realm.testAlias(Level.OVERWORLD, Realm.OLYMPUS);
+            ServerPlayer hero = fakePlayer(server, level, "RocChallenger");
+            level.addNewPlayer(hero);
+            com.thefarawaydev.realmsofchaos.world.ProgressData.get(server).unmarkPrefix("looted/" + hero.getUUID() + "/");
+            Passages.Plan plan = null, barracksPlan = null;
+            Passages.Cell ring = null, bunks = null;
+            try {
+                for (int index = 1; index <= Passages.COUNT && (plan == null || barracksPlan == null); index++) {
+                    for (int stage = 0; stage < Passages.stages(level, Line.ZEUS, index); stage++) {
+                        Passages.Plan candidate = Passages.plan(level, Line.ZEUS, index, stage);
+                        for (Passages.Cell c : candidate.cells()) {
+                            if (plan == null && candidate.kind(c) == Passages.Kind.PROVING) { plan = candidate; ring = c; }
+                            if (barracksPlan == null && candidate.kind(c) == Passages.Kind.BARRACKS) { barracksPlan = candidate; bunks = c; }
+                        }
+                    }
+                }
+                check(plan != null && barracksPlan != null, "the tower of Storms has proving grounds and barracks in its passages");
+                Passages.build(level, plan);
+                Passages.rearm(level, plan);
+                BlockPos m = plan.centre(ring);
+                int far = plan.half(ring);
+                check(plan.height(ring) == Passages.TALL && far == 5, "a proving ground is one of the great rooms: tall and wide");
+                int gates = 0;
+                for (BlockPos at : BlockPos.betweenClosed(m.offset(-far - 1, 1, -far - 1), m.offset(far + 1, 3, far + 1))) if (level.getBlockState(at).is(ModContent.BEAST_GATE.get())) gates++;
+                check(gates == 24, "eight beast gates, three high, in its walls: " + gates);
+                int[][] gateSpots = {{far + 1, 3}, {far + 1, -3}, {-far - 1, 3}, {-far - 1, -3}, {3, far + 1}, {-3, far + 1}, {3, -far - 1}, {-3, -far - 1}};
+                BlockPos gate = null;
+                for (int[] k : gateSpots) {
+                    BlockPos at = m.offset(k[0], 1, k[1]);
+                    BlockPos behind = m.offset(k[0] + Integer.signum(k[0]) * (Math.abs(k[0]) > far ? 1 : 0), 1, k[1] + Integer.signum(k[1]) * (Math.abs(k[1]) > far ? 1 : 0));
+                    if (gate == null && level.getBlockState(behind.below()).is(Blocks.GRAVEL)) gate = at;
+                }
+                check(gate != null, "at least one gate has its tunnel behind it");
+                check(level.getBlockState(m.offset(4, 0, 2)).is(ModContent.ARENA_SAND.get()) && level.getBlockState(m.offset(2, 1, 2)).is(ModContent.WAR_DRUM.get())
+                        && level.getBlockState(m.offset(far, 3, far)).is(ModContent.WAR_STANDARD.get()), "a sanded floor, war drums, a standard in each corner");
+                BlockPos cache = plan.featurePos(ring);
+                hero.setPos(m.getX() + 0.5, m.getY() + 1.0, m.getZ() + 1.5);
+                check(!Passages.loot(level, cache, hero), "the cache is shut until the proving is won");
+                Passages.drum(level, m.offset(2, 1, 2), hero);
+                check(Passages.provingStage(level, plan, ring) == 1 && !Passages.guardians(level, plan, ring).isEmpty()
+                        && level.getBlockState(gate).isAir(), "the drum beaten, the gates open and the first wave comes out");
+                for (int[] k : gateSpots) {
+                    BlockPos at = m.offset(k[0], 1, k[1]);
+                    BlockPos behind = m.offset(k[0] + Integer.signum(k[0]) * (Math.abs(k[0]) > far ? 1 : 0), 0, k[1] + Integer.signum(k[1]) * (Math.abs(k[1]) > far ? 1 : 0));
+                    check(!level.getBlockState(at).isAir() || level.getBlockState(behind).is(Blocks.GRAVEL), "a gate opens only onto its own tunnel, never into a corridor");
+                }
+                int first = Passages.guardians(level, plan, ring).size();
+                Passages.drum(level, m.offset(-2, 1, -2), hero);
+                check(Passages.guardians(level, plan, ring).size() == first, "beating it again calls nothing more");
+                java.util.List<Integer> sizes = new java.util.ArrayList<>();
+                boolean champion = false;
+                for (int wave = 1; wave <= Passages.PROVING_WAVES; wave++) {
+                    java.util.List<net.minecraft.world.entity.Mob> standing = Passages.guardians(level, plan, ring);
+                    sizes.add(standing.size());
+                    for (net.minecraft.world.entity.Mob mob : standing) {
+                        if (mob.hasCustomName()) champion = true;
+                        BlockPos at = mob.blockPosition();
+                        check(Math.abs(at.getX() - m.getX()) <= far && Math.abs(at.getZ() - m.getZ()) <= far && level.getBlockState(at.below()).isSolid(),
+                                "each comes out on the floor before a gate: " + at.subtract(m));
+                    }
+                    Passages.provingTick(level, plan, ring);
+                    check(Passages.provingStage(level, plan, ring) == wave, "a wave still standing is still the wave");
+                    for (net.minecraft.world.entity.Mob mob : standing) mob.discard();
+                    Passages.provingTick(level, plan, ring);
+                    check(Passages.provingStage(level, plan, ring) == wave + 1, "a wave down, the next comes (or the proving is won)");
+                }
+                check(sizes.get(2) > sizes.get(0) && champion, "each wave is bigger than the first, and a champion leads the last: " + sizes);
+                check(level.getBlockState(gate).is(ModContent.BEAST_GATE.get()) && Passages.guardians(level, plan, ring).isEmpty(),
+                        "won: the gates shut again");
+                check(Passages.loot(level, cache, hero), "and the cache opens");
+                Passages.rearm(level, plan);
+                check(Passages.provingStage(level, plan, ring) == 0, "the passage sealing itself again resets the proving");
+
+                Passages.build(level, barracksPlan);
+                Passages.rearm(level, barracksPlan);
+                BlockPos b = barracksPlan.centre(bunks);
+                int dummies = 0, racks = 0;
+                int bf = barracksPlan.half(bunks);
+                for (BlockPos at : BlockPos.betweenClosed(b.offset(-bf, 1, -bf), b.offset(bf, 3, bf))) {
+                    if (level.getBlockState(at).is(ModContent.TRAINING_DUMMY.get())) dummies++;
+                    if (level.getBlockState(at).is(ModContent.WEAPON_RACK.get())) racks++;
+                }
+                check(dummies == 4 && racks >= 8, "a barracks has its training dummies and racks of arms: " + dummies + " / " + racks);
+                for (int dx = -1; dx <= 1; dx++) for (int y = 1; y <= 3; y++) {
+                    check(level.getBlockState(b.offset(dx, y, bf)).isAir() && level.getBlockState(b.offset(bf, y, dx)).isAir(), "and its lanes are clear");
+                }
+                check(Passages.garrisoned(barracksPlan, bunks) && Passages.wake(level, barracksPlan, bunks) >= 2, "and its soldiers are awake");
+                Passages.rearm(level, barracksPlan);
+            } finally {
+                if (plan != null) Passages.rearm(level, plan);
+                if (barracksPlan != null) Passages.rearm(level, barracksPlan);
+                hero.remove(net.minecraft.world.entity.Entity.RemovalReason.DISCARDED);
+            }
+        });
+
         step("every word on the mod's menus is in its language file: nobody is shown a key", () -> {
             ServerPlayer hero = fakePlayer(server, level, "RocProofreader");
             com.thefarawaydev.realmsofchaos.ui.Options.reset(hero);

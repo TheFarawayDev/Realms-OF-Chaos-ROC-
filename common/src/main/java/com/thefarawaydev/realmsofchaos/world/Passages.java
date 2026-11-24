@@ -70,12 +70,13 @@ public final class Passages {
     public static final int TALL = 8;
     public static final int MAX_SIZE = 6;
     public static final int X0 = 600, PITCH = 160;
-    public static final int LAYOUT_VERSION = 20;
+    public static final int LAYOUT_VERSION = 21;
     public static final String GUARDIAN_TAG = "realms_of_chaos_guardian";
     private static final String HUD = "hud." + RealmsOfChaos.MOD_ID + ".passage.";
 
     public enum Kind { START, EXIT, SEAL, TREASURE, SHRINE, HALL, ROOM, TRAP, GARDEN, LIBRARY, POOL, ARENA, VAULT, CHIMES, BEAM, PLATES, CRUSHER, DARTS,
-        SPIKES, FLAMES, BLADES, STAIRWELL, ARC, GAS, CELLS, STORE, GAUNTLET, OBSERVATORY, ARMORY, BATHS, SANCTUM }
+        SPIKES, FLAMES, BLADES, STAIRWELL, ARC, GAS, CELLS, STORE, GAUNTLET, OBSERVATORY, ARMORY, BATHS, SANCTUM,
+        PROVING, BARRACKS }
 
     /** How the corridor between two rooms runs: straight, round a baffle to one side or either, or past a nook. */
     public static final int RUN_STRAIGHT = 0, RUN_BEND_LOW = 1, RUN_BEND_HIGH = 2, RUN_SPLIT = 3, RUN_NOOK_LOW = 4, RUN_NOOK_HIGH = 5, RUN_GALLERY = 6, RUN_CAUSEWAY = 7;
@@ -243,8 +244,12 @@ public final class Passages {
                     case START -> h = 6;
                     case EXIT, SEAL, SHRINE -> h = 7;
                     case TREASURE -> h = random.nextBoolean() ? 7 : HEADROOM;
-                    case ARENA, STAIRWELL -> {
+                    case ARENA, STAIRWELL, PROVING -> {
                         h = TALL;
+                        wide = true;
+                    }
+                    case BARRACKS -> {
+                        h = random.nextBoolean() ? 7 : TALL;
                         wide = true;
                     }
                     case BEAM -> {
@@ -264,7 +269,7 @@ public final class Passages {
                         float roll = random.nextFloat();
                         // (more of them are tall, and more than half a step wider: room to breathe between the halls)
                         h = roll < 0.25F ? HEADROOM : roll < 0.6F ? 7 : TALL;
-                        wide = random.nextFloat() < 0.55F;
+                        wide = random.nextFloat() < 0.7F;
                         form = kinds[c.x][c.z] == Kind.ROOM ? random.nextInt(4) : random.nextInt(2);
                     }
                     default -> { }
@@ -498,11 +503,16 @@ public final class Passages {
                 Cell c = free.remove(0);
                 kinds[c.x][c.z] = Kind.STAIRWELL;
             }
+            // a proving ground: a great sanded floor ringed in beast gates, and a war drum that calls three waves
+            if (free.size() > 3) {
+                Cell c = take(free, Kind.PROVING);
+                kinds[c.x][c.z] = Kind.PROVING;
+            }
             // the rest, as a stronghold is laid out: corridors and crossings between rooms, no two rooms of a kind
             // joined by a doorway, and a kind already used on the level less likely to be used again
             Kind[] common = {Kind.HALL, Kind.ROOM, Kind.TRAP, Kind.CRUSHER, Kind.DARTS, Kind.SPIKES, Kind.FLAMES, Kind.BLADES, Kind.ARC, Kind.GAS,
-                    Kind.GARDEN, Kind.LIBRARY, Kind.POOL, Kind.CELLS, Kind.STORE, Kind.GAUNTLET, Kind.OBSERVATORY, Kind.ARMORY, Kind.BATHS, Kind.SANCTUM};
-            float[] weight = {2.4F, 1.8F, 0.4F, 0.22F, 0.22F, 0.22F, 0.22F, 0.22F, 0.22F, 0.22F, 0.9F, 0.8F, 0.7F, 0.7F, 0.7F, 2.6F, 0.55F, 0.55F, 0.55F, 0.55F};
+                    Kind.GARDEN, Kind.LIBRARY, Kind.POOL, Kind.CELLS, Kind.STORE, Kind.GAUNTLET, Kind.OBSERVATORY, Kind.ARMORY, Kind.BATHS, Kind.SANCTUM, Kind.BARRACKS};
+            float[] weight = {2.4F, 1.8F, 0.4F, 0.22F, 0.22F, 0.22F, 0.22F, 0.22F, 0.22F, 0.22F, 0.9F, 0.8F, 0.7F, 0.7F, 0.7F, 3.2F, 0.55F, 0.55F, 0.55F, 0.55F, 0.6F};
             // the trap halls this level is dangerous enough for, in an order of its own: no hall twice on a level
             List<Gauntlet.Variant> halls = new ArrayList<>();
             for (Gauntlet.Variant v : Gauntlet.Variant.values()) if (v.threat <= threat) halls.add(v);
@@ -582,6 +592,8 @@ public final class Passages {
                         case ARMORY -> 'W';
                         case BATHS -> 'w';
                         case SANCTUM -> 'S';
+                        case PROVING -> 'R';
+                        case BARRACKS -> 'K';
                     });
                     if (x + 1 < size) rooms.append(east[x][z] ? "--" : "  ");
                     below.append(z + 1 < size && south[x][z] ? "|  " : "   ");
@@ -1526,6 +1538,8 @@ public final class Passages {
                     for (int[] k : CORNERS) set(level, m.offset(k[0] + Integer.signum(k[0]), 1, k[1] + Integer.signum(k[1])), Blocks.CAMPFIRE);
                 }
             }
+            case PROVING -> buildProving(level, plan, c, p, random);
+            case BARRACKS -> buildBarracks(level, plan, c, p, random);
             case SANCTUM -> {
                 // a quiet room: its whole floor one framed mosaic of the tower, its walls lined in the tower's panels, a
                 // brazier of the tower's fire in each corner, a chaos lamp hung over the middle
@@ -1598,7 +1612,7 @@ public final class Passages {
     private static void extras(ServerLevel level, Plan plan, Cell c, Random random) {
         Kind kind = plan.kind(c);
         if (kind != Kind.ROOM && kind != Kind.GARDEN && kind != Kind.LIBRARY && kind != Kind.POOL && kind != Kind.ARENA && kind != Kind.SHRINE && kind != Kind.STORE
-                && kind != Kind.OBSERVATORY && kind != Kind.ARMORY && kind != Kind.BATHS && kind != Kind.SANCTUM) return;
+                && kind != Kind.OBSERVATORY && kind != Kind.ARMORY && kind != Kind.BATHS && kind != Kind.SANCTUM && kind != Kind.BARRACKS) return;
         BlockPos m = plan.centre(c);
         // against the walls, clear of the lanes that run door to door
         int w = plan.half(c);
@@ -1621,13 +1635,288 @@ public final class Passages {
         }
     }
 
+    // ---- the proving ground and the barracks ---------------------------------------------------------------
+
+    /** The beast gates of a proving ground: x (or z) out to the wall, and how far along it from the lane. */
+    private static final int GATE_ALONG = 3;
+
+    /** Where a proving ground's beast gates stand, as {dx, dz, outward x, outward z}: two in each wall, clear of the doorways. */
+    private static int[][] gates(Plan plan, Cell c) {
+        int w = plan.half(c) + 1;
+        return new int[][]{{w, GATE_ALONG, 1, 0}, {w, -GATE_ALONG, 1, 0}, {-w, GATE_ALONG, -1, 0}, {-w, -GATE_ALONG, -1, 0},
+                {GATE_ALONG, w, 0, 1}, {-GATE_ALONG, w, 0, 1}, {GATE_ALONG, -w, 0, -1}, {-GATE_ALONG, -w, 0, -1}};
+    }
+
+    /**
+     * A proving ground: a sanded floor ringed in the tower's inlay, a chalk ring round its middle, the cache on a
+     * lit stone at the heart of it. Two beast gates in every wall, each with a dark tunnel behind it; a war standard
+     * in every corner; a ledge running round the walls overhead; and two war drums - either one calls the trial.
+     */
+    private static void buildProving(ServerLevel level, Plan plan, Cell c, TowerBuilder.Palette p, Random random) {
+        BlockPos m = plan.centre(c);
+        int far = plan.half(c), h = plan.height(c);
+        for (int dx = -far; dx <= far; dx++) {
+            for (int dz = -far; dz <= far; dz++) {
+                int ring = Math.max(Math.abs(dx), Math.abs(dz));
+                Block floor = ring == far ? p.inlay() : ring == 3 && !lane(dx, dz) ? p.trim() : ModContent.ARENA_SAND.get();
+                set(level, m.offset(dx, 0, dz), floor);
+            }
+        }
+        set(level, m, p.light());
+        set(level, plan.featurePos(c), ModContent.PASSAGE_CACHE.get());
+        for (int[] g : gates(plan, c)) {
+            // the tunnel the beasts come up, dark behind the bars - only where there is rock behind the wall, so that a
+            // corridor winding past is left alone (there the gate is shut fast, and the beasts come from its foot)
+            boolean rock = true;
+            for (int out = 1; out <= 2; out++) {
+                for (int y = 0; y <= 4; y++) rock &= !level.getBlockState(m.offset(g[0] + out * g[2], y, g[1] + out * g[3])).isAir();
+            }
+            for (int y = 1; y <= 3; y++) {
+                set(level, m.offset(g[0], y, g[1]), ModContent.BEAST_GATE.get());
+                if (rock) set(level, m.offset(g[0] + g[2], y, g[1] + g[3]), Blocks.AIR);
+            }
+            set(level, m.offset(g[0], 4, g[1]), p.trim());
+            if (rock) set(level, m.offset(g[0] + g[2], 0, g[1] + g[3]), Blocks.GRAVEL);
+        }
+        // a standard in every corner, on a plinth of the tower's stone
+        for (int sx : new int[]{-1, 1}) {
+            for (int sz : new int[]{-1, 1}) {
+                BlockPos foot = m.offset(sx * far, 0, sz * far);
+                set(level, foot.above(), p.trim());
+                set(level, foot.above(2), p.pillar());
+                net.minecraft.core.Direction facing = sx > 0 ? net.minecraft.core.Direction.WEST : net.minecraft.core.Direction.EAST;
+                level.setBlock(foot.above(3), ModContent.WAR_STANDARD.get().defaultBlockState()
+                        .setValue(com.thefarawaydev.realmsofchaos.block.WarStandardBlock.FACING, facing), 2);
+            }
+        }
+        // a ledge round the walls, high up, where the tower's watchers would stand
+        Block ledge = Mason.of(p.wall()).slab();
+        for (int d = -far; d <= far; d++) {
+            for (int[] k : new int[][]{{d, -far}, {d, far}, {-far, d}, {far, d}}) {
+                // (not over the doorways, nor over the standards in the corners)
+                if (lane(k[0], k[1]) || (Math.abs(k[0]) == far && Math.abs(k[1]) == far)) continue;
+                level.setBlock(m.offset(k[0], Math.min(5, h - 2), k[1]), Mason.slab(ledge, true), 2);
+            }
+        }
+        // the drums: on the chalk ring, either side of the middle
+        for (int s : new int[]{-1, 1}) set(level, m.offset(2 * s, 1, 2 * s), ModContent.WAR_DRUM.get());
+    }
+
+    /**
+     * A barracks: two quarters of bedrolls laid head to the wall, a footlocker at each foot and a rack of arms over
+     * each head; two quarters for drill, with training dummies set facing in, racks along the walls and a barrel of
+     * practice blades. Its soldiers are awake when anyone walks in.
+     */
+    private static void buildBarracks(ServerLevel level, Plan plan, Cell c, TowerBuilder.Palette p, Random random) {
+        BlockPos m = plan.centre(c);
+        int far = plan.half(c);
+        Block bedroll = Blocks.CARPET.pick(plan.line == Line.ZEUS ? net.minecraft.world.item.DyeColor.BLUE
+                : plan.line == Line.POSEIDON ? net.minecraft.world.item.DyeColor.CYAN : net.minecraft.world.item.DyeColor.RED);
+        Block pillow = Blocks.CARPET.pick(net.minecraft.world.item.DyeColor.WHITE);
+        com.thefarawaydev.realmsofchaos.block.WeaponRackBlock racks = (com.thefarawaydev.realmsofchaos.block.WeaponRackBlock) ModContent.WEAPON_RACK.get();
+        int[][] quarters = {{1, 1}, {-1, -1}, {1, -1}, {-1, 1}};
+        for (int i = 0; i < quarters.length; i++) {
+            int sx = quarters[i][0], sz = quarters[i][1];
+            net.minecraft.core.Direction inX = sx > 0 ? net.minecraft.core.Direction.WEST : net.minecraft.core.Direction.EAST;
+            net.minecraft.core.Direction inZ = sz > 0 ? net.minecraft.core.Direction.NORTH : net.minecraft.core.Direction.SOUTH;
+            // the floor of the quarter in boards
+            for (int u = 2; u <= far; u++) for (int v = 2; v <= far; v++) if (!cut(plan, c, sx * u, sz * v)) set(level, m.offset(sx * u, 0, sz * v), Blocks.SPRUCE_PLANKS);
+            if (i < 2) {
+                // bunk beds, head to the x wall, every other row: a bedroll on the floor, a frame of boards over it
+                // and a second bedroll on that, a footlocker at the foot
+                for (int v = 2; v <= far; v += 2) {
+                    if (cut(plan, c, sx * far, sz * v)) continue;
+                    for (int u = far - 1; u <= far; u++) {
+                        BlockPos at = m.offset(sx * u, 0, sz * v);
+                        set(level, at.above(), u == far ? pillow : bedroll);
+                        level.setBlock(at.above(2), Mason.slab(Blocks.SPRUCE_SLAB, true), 2);
+                        set(level, at.above(3), u == far ? pillow : bedroll);
+                    }
+                    if (far - 2 >= 2) {
+                        BlockPos locker = m.offset(sx * (far - 2), 1, sz * v);
+                        level.setBlock(locker, Blocks.CHEST.defaultBlockState().setValue(net.minecraft.world.level.block.ChestBlock.FACING, inX), 2);
+                        // (a soldier's kit: a few arrows, a loaf, now and then a bandage of honey)
+                        if (level.getBlockEntity(locker) instanceof net.minecraft.world.level.block.entity.ChestBlockEntity kit) {
+                            kit.setItem(random.nextInt(9), new ItemStack(Items.ARROW, 3 + random.nextInt(6)));
+                            kit.setItem(9 + random.nextInt(9), new ItemStack(Items.BREAD, 1 + random.nextInt(2)));
+                            if (random.nextFloat() < 0.3F) kit.setItem(18 + random.nextInt(9), new ItemStack(Items.HONEY_BOTTLE));
+                        }
+                    }
+                }
+                // arms racked on the far wall
+                for (int u = 2; u <= far - 2; u++) if (!cut(plan, c, sx * u, sz * far)) level.setBlock(m.offset(sx * u, 2, sz * far), racks.facing(inZ), 2);
+                // a light let into the wall between them
+                if (!cut(plan, c, sx * far, sz * 3)) set(level, m.offset(sx * (far + 1), 3, sz * 3), p.light());
+            } else {
+                // drill: two dummies facing the middle, racks along both walls, a barrel of blades in the corner
+                int a = Math.min(3, far - 1);
+                level.setBlock(m.offset(sx * a, 1, sz * 2), ModContent.TRAINING_DUMMY.get().defaultBlockState()
+                        .setValue(com.thefarawaydev.realmsofchaos.block.TrainingDummyBlock.FACING, inX), 2);
+                level.setBlock(m.offset(sx * 2, 1, sz * a), ModContent.TRAINING_DUMMY.get().defaultBlockState()
+                        .setValue(com.thefarawaydev.realmsofchaos.block.TrainingDummyBlock.FACING, inZ), 2);
+                for (int d = 2; d < far; d++) {
+                    if (!cut(plan, c, sx * far, sz * d)) level.setBlock(m.offset(sx * far, 2, sz * d), racks.facing(inX), 2);
+                    if (!cut(plan, c, sx * d, sz * far)) level.setBlock(m.offset(sx * d, 2, sz * far), racks.facing(inZ), 2);
+                }
+                if (!cut(plan, c, sx * far, sz * far)) {
+                    set(level, m.offset(sx * far, 1, sz * far), Blocks.BARREL);
+                    set(level, m.offset(sx * far, 2, sz * far), ModContent.WAR_STANDARD.get());
+                }
+            }
+        }
+        // and where the lanes cross, the tower's inlay
+        for (int dx = -1; dx <= 1; dx++) for (int dz = -1; dz <= 1; dz++) set(level, m.offset(dx, 0, dz), p.inlay());
+    }
+
+    public static final int PROVING_WAVES = 3;
+
+    private static String provingKey(Plan plan, Cell c) {
+        return "proving/" + builtKey(plan) + "/" + c.x + "/" + c.z;
+    }
+
+    /** How far a proving ground has come: 0 untried, 1 to 3 that wave under way, 4 won. */
+    public static int provingStage(ServerLevel level, Plan plan, Cell c) {
+        return ProgressData.get(level.getServer()).counter(provingKey(plan, c));
+    }
+
+    /** Opens (or shuts) a proving ground's beast gates. */
+    static void provingGates(ServerLevel level, Plan plan, Cell c, boolean open) {
+        BlockPos m = plan.centre(c);
+        for (int[] g : gates(plan, c)) {
+            // (a gate opens onto its own tunnel - its gravel floor says so - never onto a corridor)
+            if (open && !level.getBlockState(m.offset(g[0] + g[2], 0, g[1] + g[3])).is(Blocks.GRAVEL)) continue;
+            for (int y = 1; y <= 3; y++) {
+                BlockPos at = m.offset(g[0], y, g[1]);
+                if (open ? level.getBlockState(at).is(ModContent.BEAST_GATE.get()) : level.getBlockState(at).isAir()) {
+                    set(level, at, open ? Blocks.AIR : ModContent.BEAST_GATE.get());
+                }
+            }
+        }
+        level.playSound(null, m.above(2), open ? SoundEvents.IRON_DOOR_OPEN : SoundEvents.IRON_DOOR_CLOSE, SoundSource.BLOCKS, 2.0F, 0.6F);
+    }
+
+    /** Who comes out of the gates in a wave. Each is harder than the last; the third has a lesser god leading it. */
+    public static List<Post> wave(Plan plan, Cell c, int wave, int players) {
+        Random random = new Random(plan.seed + c.x * 31L + c.z * 7L + wave * 977L);
+        List<Sentinel.Role> roles = roles(plan);
+        java.util.function.UnaryOperator<Sentinel.Role> have = r -> roles.contains(r) ? r : Sentinel.Role.SOLDIER;
+        List<Sentinel.Role> out = new ArrayList<>();
+        boolean champion = false;
+        switch (wave) {
+            case 1 -> {
+                out.add(Sentinel.Role.SOLDIER);
+                out.add(Sentinel.Role.SOLDIER);
+                if (plan.stage >= 1 || plan.tier >= 2) out.add(Sentinel.Role.CASTER);
+            }
+            case 2 -> {
+                out.add(have.apply(Sentinel.Role.SKIRMISHER));
+                out.add(have.apply(Sentinel.Role.SKIRMISHER));
+                out.add(Sentinel.Role.CASTER);
+                out.add(have.apply(Sentinel.Role.BRUTE));
+            }
+            default -> {
+                champion = true;
+                out.add(have.apply(Sentinel.Role.BRUTE));
+                out.add(roles.contains(Sentinel.Role.MYSTIC) ? Sentinel.Role.MYSTIC : Sentinel.Role.CASTER);
+                out.add(Sentinel.Role.SOLDIER);
+                out.add(have.apply(Sentinel.Role.SKIRMISHER));
+            }
+        }
+        for (int i = 0; i < Adapt.extraGuardians(players); i++) out.add(roles.get(random.nextInt(roles.size())) == Sentinel.Role.MYSTIC ? Sentinel.Role.SOLDIER : roles.get(random.nextInt(roles.size())));
+        List<Post> posts = new ArrayList<>();
+        for (int i = 0; i < out.size(); i++) {
+            Sentinel.Role role = out.get(i) == Sentinel.Role.KEEPER ? Sentinel.Role.SOLDIER : out.get(i);
+            posts.add(new Post(Sentinel.Kind.pick(plan.line, role, plan.threat, random), champion && i == 0));
+        }
+        return posts;
+    }
+
+    /** Raises one sentinel of a room at a spot: a guardian of that room, tagged to it. */
+    private static Sentinel raise(ServerLevel level, Plan plan, Cell c, Post post, BlockPos at, float yaw) {
+        Sentinel mob = ModContent.SENTINEL.get().create(level, EntitySpawnReason.TRIGGERED);
+        if (mob == null) return null;
+        mob.setUp(post.kind(), plan.tier, plan.threat, post.elite());
+        mob.snapTo(at.getX() + 0.5, at.getY(), at.getZ() + 0.5, yaw, 0.0F);
+        mob.setPersistenceRequired();
+        mob.addTag(GUARDIAN_TAG);
+        mob.addTag(GUARDIAN_TAG + "/" + c.x + "/" + c.z);
+        if (post.elite()) Lesser.crown(mob, plan);
+        level.addFreshEntity(mob);
+        level.sendParticles(Signature.spark(plan.line), at.getX() + 0.5, at.getY() + 1.0, at.getZ() + 0.5, 20, 0.3, 0.6, 0.3, 0.05);
+        return mob;
+    }
+
+    private static List<ServerPlayer> within(ServerLevel level, Plan plan, Cell c) {
+        return level.getEntitiesOfClass(ServerPlayer.class, plan.cellBox(c).inflate(4, 2, 4), pl -> pl.isAlive() && !pl.isSpectator());
+    }
+
+    /** Opens the gates and lets a wave out: one to each gate's mouth, in turn. */
+    private static int letOut(ServerLevel level, Plan plan, Cell c, int wave) {
+        ProgressData.get(level.getServer()).setCounter(provingKey(plan, c), wave);
+        List<ServerPlayer> here = within(level, plan, c);
+        BlockPos m = plan.centre(c);
+        int far = plan.half(c);
+        provingGates(level, plan, c, true);
+        int[][] mouths = gates(plan, c);
+        int from = new Random(plan.seed + wave).nextInt(mouths.length), n = 0;
+        for (Post post : wave(plan, c, wave, Math.max(1, here.size()))) {
+            int[] g = mouths[(from + n * 3) % mouths.length];
+            BlockPos at = m.offset(g[0] - g[2], 1, g[1] - g[3]);
+            float yaw = (float) Math.toDegrees(Math.atan2(g[2], -g[3]));
+            if (raise(level, plan, c, post, at, yaw) != null) n++;
+        }
+        level.playSound(null, m.above(3), SoundEvents.RAID_HORN.value(), SoundSource.HOSTILE, 4.0F, 0.8F + 0.1F * wave);
+        for (ServerPlayer pl : here) {
+            Hud.title(pl, Hud.colored(Component.translatable(HUD + "proving.wave", wave, PROVING_WAVES), 0xFF5555),
+                    Hud.colored(Component.translatable(HUD + "proving.wave." + wave), 0xFFDD88), 5, 40, 10);
+        }
+        return n;
+    }
+
+    /** A war drum is beaten: in an untried proving ground, the trial begins. */
+    public static void drum(ServerLevel level, BlockPos pos, ServerPlayer player) {
+        Plan plan = planAt(level, pos);
+        Cell c = plan == null ? null : plan.cellAt(pos);
+        if (c == null || plan.kind(c) != Kind.PROVING || player.isSpectator()) return;
+        int stage = provingStage(level, plan, c);
+        if (stage > PROVING_WAVES) {
+            Hud.actionBar(player, Hud.colored(Component.translatable(HUD + "proving.done"), 0xAAAAAA));
+        } else if (stage > 0) {
+            Hud.actionBar(player, Hud.colored(Component.translatable(HUD + "proving.underway", stage, PROVING_WAVES), 0xFFAA00));
+        } else if (level.getDifficulty() == Difficulty.PEACEFUL) {
+            ProgressData.get(level.getServer()).setCounter(provingKey(plan, c), PROVING_WAVES + 1);
+            Hud.actionBar(player, Hud.colored(Component.translatable(HUD + "proving.peaceful"), 0xAAAAAA));
+        } else {
+            letOut(level, plan, c, 1);
+        }
+    }
+
+    /** A proving under way: when a wave is down, the next comes; when the last is down, the proving is won. */
+    public static void provingTick(ServerLevel level, Plan plan, Cell c) {
+        int stage = provingStage(level, plan, c);
+        if (stage < 1 || stage > PROVING_WAVES || !guardians(level, plan, c).isEmpty()) return;
+        if (stage < PROVING_WAVES) {
+            letOut(level, plan, c, stage + 1);
+            return;
+        }
+        ProgressData.get(level.getServer()).setCounter(provingKey(plan, c), PROVING_WAVES + 1);
+        provingGates(level, plan, c, false);
+        BlockPos m = plan.centre(c);
+        level.playSound(null, m.above(2), SoundEvents.UI_TOAST_CHALLENGE_COMPLETE, SoundSource.PLAYERS, 1.0F, 1.0F);
+        level.sendParticles(ParticleTypes.TOTEM_OF_UNDYING, m.getX() + 0.5, m.getY() + 2.0, m.getZ() + 0.5, 60, 1.5, 1.0, 1.5, 0.2);
+        for (ServerPlayer pl : within(level, plan, c)) {
+            Hud.title(pl, Hud.colored(Component.translatable(HUD + "proving.won"), 0xF5B82E),
+                    Hud.colored(Component.translatable(HUD + "proving.won.sub"), 0xFFFFFF), 5, 50, 15);
+        }
+    }
+
     // ---- treasure --------------------------------------------------------------------------------------------
 
     /** One player's share of a cache: always some of this tier's forge material, then a mixed handful. Arenas pay better. */
     public static List<ItemStack> lootFor(Plan plan, Cell cell, UUID player) {
         Random random = new Random(plan.seed ^ player.getLeastSignificantBits() ^ (cell.x * 131L + cell.z * 17L + 5));
         // an arena's cache and a puzzle's are the richer ones
-        boolean arena = plan.kind(cell) == Kind.ARENA || Rooms.isPuzzle(plan.kind(cell));
+        boolean arena = plan.kind(cell) == Kind.ARENA || plan.kind(cell) == Kind.PROVING || Rooms.isPuzzle(plan.kind(cell));
         List<ItemStack> loot = new ArrayList<>();
         loot.add(new ItemStack(ModContent.materialItem(plan.line, plan.tier), 1 + random.nextInt(2) + (arena ? 1 : 0)));
         loot.add(new ItemStack(Items.EXPERIENCE_BOTTLE, 2 + random.nextInt(3) + plan.tier + plan.stage));
@@ -1638,6 +1927,11 @@ public final class Passages {
         if (arena || random.nextFloat() < 0.25F + 0.15F * plan.tier) loot.add(new ItemStack(Items.GOLDEN_APPLE));
         if (random.nextFloat() < 0.35F) loot.add(new ItemStack(Items.ENDER_PEARL, 1 + random.nextInt(2)));
         if (plan.tier >= 2 && random.nextFloat() < 0.4F) loot.add(new ItemStack(ModContent.materialItem(plan.line, plan.tier - 1), 1 + random.nextInt(2)));
+        if (plan.kind(cell) == Kind.PROVING) {
+            // the proving pays best of all: a second share of the tier's material, and something to fight on with
+            loot.add(new ItemStack(ModContent.materialItem(plan.line, plan.tier), 1 + random.nextInt(2)));
+            loot.add(new ItemStack(random.nextBoolean() ? Items.GOLDEN_APPLE : Items.TOTEM_OF_UNDYING, 1));
+        }
         if (plan.line == Line.HADES && random.nextFloat() < 0.5F) {
             Tarot card = Tarot.values()[random.nextInt(Tarot.values().length)];
             if (card != Tarot.DEVIL) loot.add(new ItemStack(ModContent.tarotItem(card)));
@@ -1661,12 +1955,19 @@ public final class Passages {
         String hud = "hud." + RealmsOfChaos.MOD_ID + ".cache.";
         Plan plan = planAt(level, pos);
         Cell cell = plan == null ? null : plan.cellAt(pos);
-        if (cell == null || (plan.kind(cell) != Kind.TREASURE && plan.kind(cell) != Kind.ARENA && plan.kind(cell) != Kind.STAIRWELL && !Rooms.isPuzzle(plan.kind(cell)))) {
+        if (cell == null || (plan.kind(cell) != Kind.TREASURE && plan.kind(cell) != Kind.ARENA && plan.kind(cell) != Kind.STAIRWELL && plan.kind(cell) != Kind.PROVING
+                && !Rooms.isPuzzle(plan.kind(cell)))) {
             Hud.actionBar(player, Hud.colored(Component.translatable(hud + "empty"), 0xAAAAAA));
             return false;
         }
         if (Rooms.isPuzzle(plan.kind(cell)) && !Rooms.solved(level, plan, cell)) {
             Hud.actionBar(player, Hud.colored(Component.translatable(hud + "locked"), 0xFF5555));
+            return false;
+        }
+        if (plan.kind(cell) == Kind.PROVING && provingStage(level, plan, cell) <= PROVING_WAVES) {
+            int stage = provingStage(level, plan, cell);
+            Hud.actionBar(player, Hud.colored(stage == 0 ? Component.translatable(HUD + "proving.locked")
+                    : Component.translatable(HUD + "proving.underway", stage, PROVING_WAVES), 0xFF5555));
             return false;
         }
         if (plan.kind(cell) == Kind.ARENA) {
@@ -1750,6 +2051,10 @@ public final class Passages {
         } else if (kind == Kind.ARENA) {
             others = 3 + Math.min(3, plan.stage);
             elites = 1;
+        } else if (kind == Kind.BARRACKS) {
+            // a barracks is never empty: its soldiers are up, and an officer among them past the first level
+            others = 2 + (plan.threat >= 4.0 ? 1 : 0) + (plan.threat >= 8.0 ? 1 : 0);
+            elites = plan.stage >= 1 ? 1 : 0;
         } else {
             others = 1 + (plan.threat >= 8.0 ? 1 : 0);
             elites = 0;
@@ -1769,7 +2074,7 @@ public final class Passages {
 
     /** True for rooms that have sentinels to wake: sealed chambers, arenas and patrolled rooms. */
     public static boolean garrisoned(Plan plan, Cell c) {
-        return plan.kind(c) == Kind.SEAL || plan.kind(c) == Kind.ARENA || plan.patrols.contains(c);
+        return plan.kind(c) == Kind.SEAL || plan.kind(c) == Kind.ARENA || plan.kind(c) == Kind.BARRACKS || plan.patrols.contains(c);
     }
 
     /**
@@ -1815,6 +2120,8 @@ public final class Passages {
         for (Cell c : plan.seals) set(level, plan.sealPos(c), ModContent.PASSAGE_SEAL.get());
         ProgressData.get(level.getServer()).unmarkPrefix(wokenKey(plan));
         Rooms.rearm(level, plan);
+        ProgressData.get(level.getServer()).clearCounters("proving/" + builtKey(plan) + "/");
+        for (Cell c : plan.cells()) if (plan.kind(c) == Kind.PROVING) provingGates(level, plan, c, false);
         for (Cell c : plan.cells()) if (plan.kind(c) == Kind.SPIKES) Snares.lower(level, plan, c);
         shutGate(level, plan);
     }
@@ -2043,7 +2350,8 @@ public final class Passages {
             boolean fresh = see(player, plan, cell);
             Kind kind = plan.kind(cell);
             boolean sealed = kind == Kind.SEAL && level.getBlockState(plan.sealPos(cell)).is(ModContent.PASSAGE_SEAL.get());
-            boolean wakes = sealed || kind == Kind.ARENA || plan.patrols.contains(cell);
+            boolean wakes = sealed || kind == Kind.ARENA || kind == Kind.BARRACKS || plan.patrols.contains(cell);
+            if (kind == Kind.PROVING) provingTick(level, plan, cell);
             if (wakes && !player.isSpectator() && !player.isCreative()) wake(level, plan, cell);
             if (kind == Kind.TRAP) Traps.service(player, level, plan, cell);
             Rooms.service(player, level, plan, cell);
@@ -2076,6 +2384,8 @@ public final class Passages {
                     case ARMORY -> "armory";
                     case BATHS -> "baths";
                     case SANCTUM -> "sanctum";
+                    case PROVING -> provingStage(level, plan, cell) > PROVING_WAVES ? "proving.done" : "proving";
+                    case BARRACKS -> "barracks";
                     case EXIT -> sealsLeft(level, plan) > 0 ? "exit.sealed" : plan.last() ? "exit.open" : "exit.deeper";
                     default -> null;
                 };

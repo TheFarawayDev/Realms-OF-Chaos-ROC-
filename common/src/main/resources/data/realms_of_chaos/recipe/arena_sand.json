@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "key": {
+    "S": "minecraft:sand",
+    "G": "minecraft:gravel"
+  },
+  "pattern": [
+    "SG",
+    "GS"
+  ],
+  "result": {
+    "id": "realms_of_chaos:arena_sand",
+    "count": 4
+  }
+}

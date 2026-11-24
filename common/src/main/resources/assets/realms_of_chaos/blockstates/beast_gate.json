@@ -1,0 +1,18 @@
+{
+  "variants": {
+    "": [
+      {
+        "model": "realms_of_chaos:block/beast_gate",
+        "weight": 6
+      },
+      {
+        "model": "realms_of_chaos:block/beast_gate_v1",
+        "weight": 1
+      },
+      {
+        "model": "realms_of_chaos:block/beast_gate_v2",
+        "weight": 2
+      }
+    ]
+  }
+}

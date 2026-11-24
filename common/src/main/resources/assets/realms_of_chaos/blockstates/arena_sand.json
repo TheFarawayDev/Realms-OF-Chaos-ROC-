@@ -1,0 +1,72 @@
+{
+  "variants": {
+    "": [
+      {
+        "model": "realms_of_chaos:block/arena_sand",
+        "weight": 6
+      },
+      {
+        "model": "realms_of_chaos:block/arena_sand",
+        "weight": 6,
+        "y": 90,
+        "x": 0
+      },
+      {
+        "model": "realms_of_chaos:block/arena_sand",
+        "weight": 6,
+        "y": 180,
+        "x": 0
+      },
+      {
+        "model": "realms_of_chaos:block/arena_sand",
+        "weight": 6,
+        "y": 270,
+        "x": 0
+      },
+      {
+        "model": "realms_of_chaos:block/arena_sand_v1",
+        "weight": 2
+      },
+      {
+        "model": "realms_of_chaos:block/arena_sand_v1",
+        "weight": 2,
+        "y": 90,
+        "x": 0
+      },
+      {
+        "model": "realms_of_chaos:block/arena_sand_v1",
+        "weight": 2,
+        "y": 180,
+        "x": 0
+      },
+      {
+        "model": "realms_of_chaos:block/arena_sand_v1",
+        "weight": 2,
+        "y": 270,
+        "x": 0
+      },
+      {
+        "model": "realms_of_chaos:block/arena_sand_v2",
+        "weight": 2
+      },
+      {
+        "model": "realms_of_chaos:block/arena_sand_v2",
+        "weight": 2,
+        "y": 90,
+        "x": 0
+      },
+      {
+        "model": "realms_of_chaos:block/arena_sand_v2",
+        "weight": 2,
+        "y": 180,
+        "x": 0
+      },
+      {
+        "model": "realms_of_chaos:block/arena_sand_v2",
+        "weight": 2,
+        "y": 270,
+        "x": 0
+      }
+    ]
+  }
+}
