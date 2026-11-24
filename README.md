@@ -63,13 +63,18 @@ The current build is an **Alpha**.
   builder in the mod uses them: the cornices, column bases, arches and steps of the upper tower floors and the
   passages built of these stones are cut from their own stairs and slabs, not from vanilla ones near in colour.
   (`art/renders/stairs-slabs-doors.png`)
-* **A bronze door and trapdoor.** Bronze leaves with a sun boss and a meander band, studded at the corners; a studded
-  bronze hatch with a ring. Opened by hand, mined with a pickaxe, crafted from copper and gold.
-* **Entrances.** Storerooms, armouries, libraries, sanctums, observatories, shrines and baths are entered through a
-  pair of bronze doors, thrown open against the corridor walls under the arch, the way between them left clear; the
-  storerooms have a cellar hatch in the floor. (`art/renders/entrance-doors.png`)
+* **Doors and trapdoors.** Four of each, every one a proper panelled leaf at 16x16: stiles and rails lit on the left
+  and shadowed on the right, a sunk panel with its bevel, a raised emblem in the upper panel and a lozenge in the
+  lower, studs, hinges and a ring, and an item drawn for its own size. **Bronze** (a sun), the **Door of the Sky**
+  (white marble and gold, a thunderbolt), the **Door of the Sea** (dark sea-wood, a trident) and the **Door of the
+  Shades** (black wood with violet light, a skull), each with its trapdoor. All open by hand and are craftable.
+  (`art/renders/door-textures.png`, `door-items.png`, `doors-placed.png`)
+* **Entrances.** Storerooms and armouries are entered through a pair of bronze doors; libraries, sanctums,
+  observatories, shrines and baths through the tower's own - thrown open against the corridor walls under the arch,
+  the way between them left clear. Storerooms have a bronze cellar hatch in the floor, and a corridor pit's lids
+  are the tower's own trapdoors. (`art/renders/entrance-doors.png`)
 * **A new trap: the pit.** Some corridors - more the deeper the level, never beside the room you arrive in, never
-  where there are jets - have their middle floored with nine bronze lids over iron spikes. Step on them and they
+  where there are jets - have their middle floored with nine of the tower's trapdoors over iron spikes. Step on them and they
   creak; half a second later they drop. Whoever goes down is on the spikes until the lids swing shut again three
   seconds later and heave them back up. Jump, or run. (`art/renders/pit-trap.png`)
 * **Rooms furnished as a whole.** An ordinary room's four quarters - the floor between the lanes that run door to
