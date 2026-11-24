@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "key": {
+    "B": "realms_of_chaos:underworld_brick",
+    "D": "minecraft:white_dye"
+  },
+  "pattern": [
+    "BDB",
+    "DBD",
+    "BDB"
+  ],
+  "result": {
+    "id": "realms_of_chaos:shade_mosaic",
+    "count": 8
+  }
+}

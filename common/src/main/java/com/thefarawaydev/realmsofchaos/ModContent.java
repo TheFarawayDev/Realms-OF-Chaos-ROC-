@@ -99,6 +99,10 @@ public final class ModContent {
     public static final Ref<Block> MARBLE_COLUMN = new Ref<>(), SUNSTONE_PANEL = new Ref<>(), STORM_BRICK = new Ref<>(),
             CORAL_COLUMN = new Ref<>(), PEARL_PANEL = new Ref<>(), TIDE_BRICK = new Ref<>(),
             BONE_COLUMN = new Ref<>(), EMBER_PANEL = new Ref<>(), ASH_BRICK = new Ref<>();
+    /** The furnishings of the new rooms. */
+    public static final Ref<Block> SKY_MOSAIC = new Ref<>(), SEA_MOSAIC = new Ref<>(), SHADE_MOSAIC = new Ref<>(), STAR_VAULT = new Ref<>(),
+            CELESTIAL_GLOBE = new Ref<>(), BRONZE_GRATE = new Ref<>(), WEAPON_RACK = new Ref<>(), SCROLL_SHELF = new Ref<>(), BATH_TILE = new Ref<>(),
+            LAUREL_HEDGE = new Ref<>(), KELP_WEAVE = new Ref<>(), ASPHODEL_BED = new Ref<>();
     public static final Ref<Block> TOWER_BRAZIER = new Ref<>();
 
     public static final List<Def<Block>> BLOCK_DEFS = new ArrayList<>();
@@ -259,6 +263,19 @@ public final class ModContent {
         block("bone_column", BONE_COLUMN, key -> new com.thefarawaydev.realmsofchaos.block.ConnectedBlock(decor(key).mapColor(MapColor.SAND)));
         block("ember_panel", EMBER_PANEL, key -> new com.thefarawaydev.realmsofchaos.block.ConnectedBlock(decor(key).mapColor(MapColor.COLOR_BLACK).lightLevel(s -> 5)));
         block("ash_brick", ASH_BRICK, key -> new Block(decor(key).mapColor(MapColor.SAND)));
+        // the furnishings of the observatories, armouries, baths, sanctums, gardens and libraries
+        block("sky_mosaic", SKY_MOSAIC, key -> new com.thefarawaydev.realmsofchaos.block.ConnectedBlock(decor(key).mapColor(MapColor.COLOR_LIGHT_BLUE)));
+        block("sea_mosaic", SEA_MOSAIC, key -> new com.thefarawaydev.realmsofchaos.block.ConnectedBlock(decor(key).mapColor(MapColor.COLOR_CYAN)));
+        block("shade_mosaic", SHADE_MOSAIC, key -> new com.thefarawaydev.realmsofchaos.block.ConnectedBlock(decor(key).mapColor(MapColor.COLOR_PURPLE)));
+        block("star_vault", STAR_VAULT, key -> new Block(decor(key).mapColor(MapColor.COLOR_BLUE).lightLevel(s -> 6)));
+        block("celestial_globe", CELESTIAL_GLOBE, key -> new Block(decor(key).mapColor(MapColor.COLOR_BLUE).noOcclusion().lightLevel(s -> 9).sound(SoundType.METAL)));
+        block("bronze_grate", BRONZE_GRATE, key -> new Block(decor(key).mapColor(MapColor.COLOR_ORANGE).sound(SoundType.METAL)));
+        block("weapon_rack", WEAPON_RACK, key -> new Block(decor(key).mapColor(MapColor.WOOD).sound(SoundType.WOOD).strength(2.0F)));
+        block("scroll_shelf", SCROLL_SHELF, key -> new Block(decor(key).mapColor(MapColor.WOOD).sound(SoundType.WOOD).strength(1.5F)));
+        block("bath_tile", BATH_TILE, key -> new Block(decor(key).mapColor(MapColor.SNOW)));
+        block("laurel_hedge", LAUREL_HEDGE, key -> new Block(decor(key).mapColor(MapColor.PLANT).sound(SoundType.AZALEA_LEAVES).strength(0.6F)));
+        block("kelp_weave", KELP_WEAVE, key -> new Block(decor(key).mapColor(MapColor.PLANT).sound(SoundType.WET_GRASS).strength(0.6F)));
+        block("asphodel_bed", ASPHODEL_BED, key -> new Block(decor(key).mapColor(MapColor.COLOR_LIGHT_GRAY).sound(SoundType.AZALEA_LEAVES).strength(0.6F)));
 
         // items: codex, compass, 45 god weapons (ordered by line, rank 1 -> 15), then the block items
         item("chaos_codex", CHAOS_CODEX, key -> new CodexItem(new Item.Properties().setId(key).stacksTo(1)));

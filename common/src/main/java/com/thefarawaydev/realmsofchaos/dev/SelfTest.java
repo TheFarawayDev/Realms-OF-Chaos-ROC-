@@ -4417,8 +4417,9 @@ public final class SelfTest {
                             check(level.getBlockState(at.offset(0, 1, r - 1)).isAir() && level.getBlockState(at.offset(r - 1, 1, 0)).isAir(), in + "and none in the ways through");
                         } else if (form == Passages.FORM_CUT_CORNERS) {
                             sawCut = true;
+                            // (the corner inside the cut may hold a prop at the floor; up near the ceiling it is room)
                             check(solid(level, at.offset(r, 1, r)) && solid(level, at.offset(r, 1, r - 1)) && level.getBlockState(at.offset(r, 1, 0)).isAir()
-                                    && level.getBlockState(at.offset(r - 1, 1, r - 1)).isAir(), in + "its corners are cut off");
+                                    && level.getBlockState(at.offset(r - 1, h - 1, r - 1)).isAir(), in + "its corners are cut off");
                         } else {
                             sawTallWide = true;
                             // (its outermost blocks at the ceiling are the cornice: hanging stairs, not wall)
@@ -4870,16 +4871,24 @@ public final class SelfTest {
             try {
                 // ---- corridors: rooms stand apart, with a lit corridor between them
                 check(Passages.CELL == 16 && Passages.CORRIDOR_TO - Passages.CORRIDOR_FROM + 1 == 7, "seven blocks of corridor between two rooms");
-                Object[] found = room(level, Line.POSEIDON, Passages.Kind.ARC);
-                Passages.Plan plan = (Passages.Plan) found[0];
-                Passages.Cell arcRoom = (Passages.Cell) found[1];
+                // (a level with an arc hall, and two ordinary rooms side by side down a straight corridor)
+                Passages.Plan plan = null;
+                Passages.Cell arcRoom = null, west = null, east = null;
+                for (int index = 1; index <= Passages.COUNT && west == null; index++) {
+                    for (int stage = 0; stage < Passages.stages(level, Line.POSEIDON, index) && west == null; stage++) {
+                        Passages.Plan candidate = Passages.plan(level, Line.POSEIDON, index, stage);
+                        Passages.Cell arc = candidate.cells().stream().filter(c -> candidate.kind(c) == Passages.Kind.ARC).findFirst().orElse(null);
+                        if (arc == null) continue;
+                        for (Passages.Cell c : candidate.cells()) {
+                            Passages.Cell e = new Passages.Cell(c.x() + 1, c.z());
+                            if (west == null && c.x() + 1 < candidate.size && candidate.connected(c, e) && !candidate.wide(c) && !candidate.wide(e) && !candidate.small(c) && !candidate.small(e)
+                                    && candidate.run(c, 0) == Passages.RUN_STRAIGHT) { west = c; east = e; plan = candidate; arcRoom = arc; }
+                        }
+                    }
+                }
+                check(plan != null, "test setup: a level with an arc hall");
                 Passages.build(level, plan);
                 checkPassage(level, plan, "corridor level " + plan.label() + ": ");
-                Passages.Cell west = null, east = null;
-                for (Passages.Cell c : plan.cells()) {
-                    Passages.Cell e = new Passages.Cell(c.x() + 1, c.z());
-                    if (west == null && c.x() + 1 < plan.size && plan.connected(c, e) && !plan.wide(c) && !plan.wide(e) && !plan.small(c) && !plan.small(e) && plan.run(c, 0) == Passages.RUN_STRAIGHT) { west = c; east = e; }
-                }
                 check(west != null, "test setup: two ordinary rooms side by side");
                 BlockPos m = plan.centre(west);
                 check(plan.centre(east).getX() - m.getX() == Passages.CELL, "rooms are sixteen apart, middle to middle");
@@ -4918,7 +4927,7 @@ public final class SelfTest {
                 check(hero.getHealth() < hero.getMaxHealth(), "as it comes round it strikes: " + hero.getHealth());
 
                 // ---- the gas hall
-                found = room(level, Line.POSEIDON, Passages.Kind.GAS);
+                Object[] found = room(level, Line.POSEIDON, Passages.Kind.GAS);
                 Passages.Plan gasPlan = (Passages.Plan) found[0];
                 Passages.Cell gasRoom = (Passages.Cell) found[1];
                 Passages.build(level, gasPlan);

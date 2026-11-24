@@ -1,0 +1,7 @@
+{
+  "parent": "minecraft:block/cube_column",
+  "textures": {
+    "end": "realms_of_chaos:block/weapon_rack_top",
+    "side": "realms_of_chaos:block/weapon_rack"
+  }
+}

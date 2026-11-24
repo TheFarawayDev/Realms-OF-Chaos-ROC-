@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "key": {
+    "C": "minecraft:white_terracotta",
+    "L": "minecraft:lapis_lazuli"
+  },
+  "pattern": [
+    "CC",
+    "CL"
+  ],
+  "result": {
+    "id": "realms_of_chaos:bath_tile",
+    "count": 4
+  }
+}

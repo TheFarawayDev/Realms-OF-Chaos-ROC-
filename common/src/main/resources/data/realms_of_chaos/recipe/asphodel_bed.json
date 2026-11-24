@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "key": {
+    "L": "minecraft:azalea_leaves",
+    "D": "minecraft:white_dye"
+  },
+  "pattern": [
+    "LL",
+    "LD"
+  ],
+  "result": {
+    "id": "realms_of_chaos:asphodel_bed",
+    "count": 3
+  }
+}

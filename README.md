@@ -58,6 +58,16 @@ The current build is an **Alpha**.
   between the windows, and its walkway paved in its floor panels with one frame round the whole ring; every
   passage room of the tower has its columns in the tower's column and, in the tall rooms, its brick above the
   band. All craftable and dug with a pickaxe. (`art/renders/tower-stone*.png`)
+* **Four new rooms, and twelve more blocks to furnish them.** Passages now have **observatories** (a vault of
+  stars overhead, the floor's quarters in the tower's mosaic, celestial globes on bronze stands and lecterns of
+  star charts), **armouries** (racks of arms along the walls, bronze grates underfoot, an anvil, a grindstone and a
+  smithing table), **baths** (four tiled basins of lit water, tiled ways between them) and **sanctums** (the whole
+  floor one framed mosaic of the tower, the walls lined in its panels, a brazier of its fire in every corner, a chaos
+  lamp hung over the middle). Gardens grow each tower's own clipped hedges in their corners, and libraries keep
+  scrolls among their books. The new blocks: the Mosaics of the Sky, the Sea and the Shades (connecting floors), the
+  Star Vault, the Celestial Globe, the Bronze Grate, the Weapon Rack, the Scroll Shelf, Bath Tile, and the Laurel
+  Hedge, Kelp Weave and Asphodel Bed. Every one is craftable and drops itself. (`art/renders/new-rooms.png`,
+  `room-observatory.png`, `blocks-rooms.png`)
 * **Reliefs.** The Relief of the Sky, of the Sea and of the Shades - a thunderbolt under clouds, a trident over the
   waves, a skull over a bident and flames - carved into the walls of every passage room either side of the middle
   of each wall, and under every other window of the tower floors. (`art/renders/passage-reliefs.png`,

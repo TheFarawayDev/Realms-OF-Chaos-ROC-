@@ -70,12 +70,12 @@ public final class Passages {
     public static final int TALL = 8;
     public static final int MAX_SIZE = 6;
     public static final int X0 = 600, PITCH = 160;
-    public static final int LAYOUT_VERSION = 13;
+    public static final int LAYOUT_VERSION = 14;
     public static final String GUARDIAN_TAG = "realms_of_chaos_guardian";
     private static final String HUD = "hud." + RealmsOfChaos.MOD_ID + ".passage.";
 
     public enum Kind { START, EXIT, SEAL, TREASURE, SHRINE, HALL, ROOM, TRAP, GARDEN, LIBRARY, POOL, ARENA, VAULT, CHIMES, BEAM, PLATES, CRUSHER, DARTS,
-        SPIKES, FLAMES, BLADES, STAIRWELL, ARC, GAS, CELLS, STORE, GAUNTLET }
+        SPIKES, FLAMES, BLADES, STAIRWELL, ARC, GAS, CELLS, STORE, GAUNTLET, OBSERVATORY, ARMORY, BATHS, SANCTUM }
 
     /** How the corridor between two rooms runs: straight, round a baffle to one side or either, or past a nook. */
     public static final int RUN_STRAIGHT = 0, RUN_BEND_LOW = 1, RUN_BEND_HIGH = 2, RUN_SPLIT = 3, RUN_NOOK_LOW = 4, RUN_NOOK_HIGH = 5, RUN_GALLERY = 6, RUN_CAUSEWAY = 7;
@@ -260,7 +260,7 @@ public final class Passages {
                         smalls[c.x][c.z] = v.size == Gauntlet.Size.SMALL;
                         h = v.hazard == Gauntlet.Hazard.LEVITATE ? TALL : v.size == Gauntlet.Size.SMALL ? HEADROOM : wide || random.nextBoolean() ? 7 : HEADROOM;
                     }
-                    case ROOM, GARDEN, LIBRARY, POOL -> {
+                    case ROOM, GARDEN, LIBRARY, POOL, OBSERVATORY, ARMORY, BATHS, SANCTUM -> {
                         float roll = random.nextFloat();
                         // (more of them are tall, and more than half a step wider: room to breathe between the halls)
                         h = roll < 0.25F ? HEADROOM : roll < 0.6F ? 7 : TALL;
@@ -501,8 +501,8 @@ public final class Passages {
             // the rest, as a stronghold is laid out: corridors and crossings between rooms, no two rooms of a kind
             // joined by a doorway, and a kind already used on the level less likely to be used again
             Kind[] common = {Kind.HALL, Kind.ROOM, Kind.TRAP, Kind.CRUSHER, Kind.DARTS, Kind.SPIKES, Kind.FLAMES, Kind.BLADES, Kind.ARC, Kind.GAS,
-                    Kind.GARDEN, Kind.LIBRARY, Kind.POOL, Kind.CELLS, Kind.STORE, Kind.GAUNTLET};
-            float[] weight = {2.4F, 1.8F, 0.4F, 0.22F, 0.22F, 0.22F, 0.22F, 0.22F, 0.22F, 0.22F, 1.0F, 0.9F, 0.8F, 0.8F, 0.8F, 2.0F};
+                    Kind.GARDEN, Kind.LIBRARY, Kind.POOL, Kind.CELLS, Kind.STORE, Kind.GAUNTLET, Kind.OBSERVATORY, Kind.ARMORY, Kind.BATHS, Kind.SANCTUM};
+            float[] weight = {2.4F, 1.8F, 0.4F, 0.22F, 0.22F, 0.22F, 0.22F, 0.22F, 0.22F, 0.22F, 0.9F, 0.8F, 0.7F, 0.7F, 0.7F, 2.6F, 0.55F, 0.55F, 0.55F, 0.55F};
             // the trap halls this level is dangerous enough for, in an order of its own: no hall twice on a level
             List<Gauntlet.Variant> halls = new ArrayList<>();
             for (Gauntlet.Variant v : Gauntlet.Variant.values()) if (v.threat <= threat) halls.add(v);
@@ -578,6 +578,10 @@ public final class Passages {
                         case CELLS -> 'H';
                         case STORE -> 'B';
                         case GAUNTLET -> 'x';
+                        case OBSERVATORY -> 'O';
+                        case ARMORY -> 'W';
+                        case BATHS -> 'w';
+                        case SANCTUM -> 'S';
                     });
                     if (x + 1 < size) rooms.append(east[x][z] ? "--" : "  ");
                     below.append(z + 1 < size && south[x][z] ? "|  " : "   ");
@@ -1092,6 +1096,23 @@ public final class Passages {
         }
     }
 
+    /** Each tower's own mosaic (connecting) and garden hedge. */
+    public static Block mosaic(Line line) {
+        return switch (line) {
+            case ZEUS -> ModContent.SKY_MOSAIC.get();
+            case POSEIDON -> ModContent.SEA_MOSAIC.get();
+            case HADES -> ModContent.SHADE_MOSAIC.get();
+        };
+    }
+
+    public static Block hedge(Line line) {
+        return switch (line) {
+            case ZEUS -> ModContent.LAUREL_HEDGE.get();
+            case POSEIDON -> ModContent.KELP_WEAVE.get();
+            case HADES -> ModContent.ASPHODEL_BED.get();
+        };
+    }
+
     /** Each tower's own column (connecting), floor panel (connecting) and brick. */
     public static Block column(Line line) {
         return switch (line) {
@@ -1316,7 +1337,11 @@ public final class Passages {
                         else if (roll < 0.42F) set(level, m.offset(dx, 1, dz), Blocks.MOSS_CARPET);
                     }
                 }
-                for (int[] k : CORNERS) set(level, m.offset(k[0], 1, k[1]), random.nextBoolean() ? Blocks.FLOWERING_AZALEA : Blocks.AZALEA);
+                // in each corner a clipped hedge of the tower's own plant, two high
+                for (int[] k : CORNERS) {
+                    set(level, m.offset(k[0], 1, k[1]), hedge(plan.line));
+                    set(level, m.offset(k[0], 2, k[1]), random.nextBoolean() ? hedge(plan.line) : Blocks.FLOWERING_AZALEA);
+                }
             }
             case LIBRARY -> {
                 // shelves along the walls between the doors, a carpet down the middle, a lectern to one side
@@ -1325,7 +1350,8 @@ public final class Passages {
                     for (int[] k : new int[][]{{d, -far}, {-d, -far}, {d, far}, {-d, far}, {-far, d}, {-far, -d}, {far, d}, {far, -d}}) {
                         if (cut(plan, c, k[0], k[1])) continue;
                         for (int y = 1; y <= shelves; y++) {
-                            set(level, m.offset(k[0], y, k[1]), y == 3 && random.nextFloat() < 0.3F ? Blocks.CHISELED_BOOKSHELF : Blocks.BOOKSHELF);
+                            set(level, m.offset(k[0], y, k[1]), y == 3 && random.nextFloat() < 0.3F ? Blocks.CHISELED_BOOKSHELF
+                                    : (k[0] + k[1] + y & 1) == 0 ? ModContent.SCROLL_SHELF.get() : Blocks.BOOKSHELF);
                         }
                     }
                 }
@@ -1345,6 +1371,82 @@ public final class Passages {
                         if (random.nextFloat() < 0.2F) set(level, m.offset(dx, 1, dz), Blocks.LILY_PAD);
                     }
                 }
+            }
+            case OBSERVATORY -> {
+                // a vault of stars over a floor of the tower's mosaic; a celestial globe on a bronze stand in each of two
+                // corners, a lectern of star charts in the others
+                int far = plan.half(c), h = plan.height(c);
+                for (int dx = -far; dx <= far; dx++) {
+                    for (int dz = -far; dz <= far; dz++) {
+                        if (cut(plan, c, dx, dz)) continue;
+                        set(level, m.offset(dx, h + 1, dz), ModContent.STAR_VAULT.get());
+                        if (!lane(dx, dz)) set(level, m.offset(dx, 0, dz), mosaic(plan.line));
+                    }
+                }
+                for (int i = 0; i < CORNERS.length; i++) {
+                    int[] k = CORNERS[i];
+                    if (i % 2 == 0) {
+                        set(level, m.offset(k[0], 1, k[1]), ModContent.BRONZE_GRATE.get());
+                        set(level, m.offset(k[0], 2, k[1]), ModContent.CELESTIAL_GLOBE.get());
+                    } else {
+                        set(level, m.offset(k[0], 1, k[1]), Blocks.LECTERN);
+                    }
+                }
+            }
+            case ARMORY -> {
+                // racks of arms along the walls between the doors, a bronze grate floor in the quarters, a grindstone
+                // and an anvil where the work is done
+                int far = plan.half(c);
+                for (int d = 2; d <= far; d++) {
+                    for (int[] k : new int[][]{{d, -far}, {-d, -far}, {d, far}, {-d, far}, {-far, d}, {-far, -d}, {far, d}, {far, -d}}) {
+                        if (cut(plan, c, k[0], k[1])) continue;
+                        for (int y = 1; y <= 2; y++) set(level, m.offset(k[0], y, k[1]), ModContent.WEAPON_RACK.get());
+                    }
+                }
+                for (int dx = -far + 1; dx <= far - 1; dx++) {
+                    for (int dz = -far + 1; dz <= far - 1; dz++) if (!lane(dx, dz) && !cut(plan, c, dx, dz)) set(level, m.offset(dx, 0, dz), ModContent.BRONZE_GRATE.get());
+                }
+                set(level, m.offset(3, 1, 3), Blocks.ANVIL);
+                set(level, m.offset(-3, 1, -3), Blocks.GRINDSTONE);
+                set(level, m.offset(3, 1, -3), Blocks.SMITHING_TABLE);
+            }
+            case BATHS -> {
+                // four basins in the quarters, tiled, their water warm and lit from below; tiled ways between them
+                for (int dx = -plan.half(c); dx <= plan.half(c); dx++) {
+                    for (int dz = -plan.half(c); dz <= plan.half(c); dz++) {
+                        if (cut(plan, c, dx, dz)) continue;
+                        boolean basin = Math.abs(dx) >= 2 && Math.abs(dz) >= 2 && Math.abs(dx) <= 3 && Math.abs(dz) <= 3;
+                        if (basin) {
+                            set(level, m.offset(dx, -1, dz), (dx + dz & 1) == 0 ? p.light() : ModContent.BATH_TILE.get());
+                            set(level, m.offset(dx, 0, dz), Blocks.WATER);
+                        } else {
+                            set(level, m.offset(dx, 0, dz), ModContent.BATH_TILE.get());
+                        }
+                    }
+                }
+                if (plan.half(c) >= 5) {
+                    for (int[] k : CORNERS) set(level, m.offset(k[0] + Integer.signum(k[0]), 1, k[1] + Integer.signum(k[1])), Blocks.CAMPFIRE);
+                }
+            }
+            case SANCTUM -> {
+                // a quiet room: its whole floor one framed mosaic of the tower, its walls lined in the tower's panels, a
+                // brazier of the tower's fire in each corner, a chaos lamp hung over the middle
+                int far = plan.half(c), h = plan.height(c);
+                for (int dx = -far; dx <= far; dx++) {
+                    for (int dz = -far; dz <= far; dz++) if (!cut(plan, c, dx, dz)) set(level, m.offset(dx, 0, dz), mosaic(plan.line));
+                }
+                for (int d = -far; d <= far; d++) {
+                    for (int[] k : new int[][]{{d, -(far + 1)}, {d, far + 1}, {-(far + 1), d}, {far + 1, d}}) {
+                        for (int y = 1; y <= 3; y++) {
+                            BlockPos at = m.offset(k[0], y, k[1]);
+                            if (!level.getBlockState(at).isAir()) set(level, at, wallPanel(plan.line));
+                        }
+                    }
+                }
+                for (int[] k : CORNERS) level.setBlock(m.offset(k[0], 1, k[1]), ModContent.TOWER_BRAZIER.get().defaultBlockState()
+                        .setValue(com.thefarawaydev.realmsofchaos.block.BrazierBlock.TOWER, plan.line.ordinal()), 2);
+                for (int y = h; y > h - 2; y--) set(level, m.offset(0, y, 0), Blocks.IRON_CHAIN);
+                set(level, m.offset(0, h - 2, 0), ModContent.CHAOS_LAMP.get());
             }
             case ROOM -> {
                 int variant = random.nextInt(4), reach = plan.half(c), tall = plan.height(c);
@@ -1416,7 +1518,8 @@ public final class Passages {
     /** The small things that make a room a place: the tower's braziers, urns to smash, a tablet to read. */
     private static void extras(ServerLevel level, Plan plan, Cell c, Random random) {
         Kind kind = plan.kind(c);
-        if (kind != Kind.ROOM && kind != Kind.GARDEN && kind != Kind.LIBRARY && kind != Kind.POOL && kind != Kind.ARENA && kind != Kind.SHRINE && kind != Kind.STORE) return;
+        if (kind != Kind.ROOM && kind != Kind.GARDEN && kind != Kind.LIBRARY && kind != Kind.POOL && kind != Kind.ARENA && kind != Kind.SHRINE && kind != Kind.STORE
+                && kind != Kind.OBSERVATORY && kind != Kind.ARMORY && kind != Kind.BATHS && kind != Kind.SANCTUM) return;
         BlockPos m = plan.centre(c);
         // against the walls, clear of the lanes that run door to door
         int w = plan.half(c);
@@ -1890,6 +1993,10 @@ public final class Passages {
                     case GAS -> "gas";
                     case CELLS -> "cells";
                     case STORE -> "store";
+                    case OBSERVATORY -> "observatory";
+                    case ARMORY -> "armory";
+                    case BATHS -> "baths";
+                    case SANCTUM -> "sanctum";
                     case EXIT -> sealsLeft(level, plan) > 0 ? "exit.sealed" : plan.last() ? "exit.open" : "exit.deeper";
                     default -> null;
                 };

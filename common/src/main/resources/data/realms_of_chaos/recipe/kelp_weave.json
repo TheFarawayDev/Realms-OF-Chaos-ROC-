@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "key": {
+    "K": "minecraft:dried_kelp",
+    "S": "minecraft:seagrass"
+  },
+  "pattern": [
+    "KK",
+    "KS"
+  ],
+  "result": {
+    "id": "realms_of_chaos:kelp_weave",
+    "count": 3
+  }
+}

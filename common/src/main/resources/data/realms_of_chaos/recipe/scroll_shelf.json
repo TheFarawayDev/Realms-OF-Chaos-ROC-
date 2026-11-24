@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "key": {
+    "P": "minecraft:dark_oak_planks",
+    "B": "minecraft:paper"
+  },
+  "pattern": [
+    "PPP",
+    "BBB",
+    "PPP"
+  ],
+  "result": {
+    "id": "realms_of_chaos:scroll_shelf",
+    "count": 1
+  }
+}

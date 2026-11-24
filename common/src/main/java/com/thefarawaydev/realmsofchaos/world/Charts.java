@@ -91,7 +91,9 @@ public final class Charts {
             case ARENA -> MapColor.COLOR_PURPLE;
             case GARDEN -> MapColor.PLANT;
             case POOL -> MapColor.WATER;
-            case LIBRARY -> MapColor.WOOD;
+            case LIBRARY, ARMORY -> MapColor.WOOD;
+            case OBSERVATORY, SANCTUM -> MapColor.COLOR_BLUE;
+            case BATHS -> MapColor.WATER;
             default -> MapColor.STONE;
         };
     }

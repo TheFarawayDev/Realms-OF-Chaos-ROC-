@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "key": {
+    "T": "realms_of_chaos:abyssal_tile",
+    "P": "minecraft:prismarine_crystals"
+  },
+  "pattern": [
+    "TPT",
+    "PTP",
+    "TPT"
+  ],
+  "result": {
+    "id": "realms_of_chaos:sea_mosaic",
+    "count": 8
+  }
+}

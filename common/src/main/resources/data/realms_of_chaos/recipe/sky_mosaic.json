@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "key": {
+    "M": "realms_of_chaos:olympian_tiles",
+    "L": "minecraft:lapis_lazuli"
+  },
+  "pattern": [
+    "MLM",
+    "LML",
+    "MLM"
+  ],
+  "result": {
+    "id": "realms_of_chaos:sky_mosaic",
+    "count": 8
+  }
+}

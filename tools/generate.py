@@ -809,6 +809,26 @@ def gen_lang():
         "block.realms_of_chaos.bone_column": "Bone Column",
         "block.realms_of_chaos.ember_panel": "Ember Panel",
         "block.realms_of_chaos.ash_brick": "Ash Brick",
+        "block.realms_of_chaos.sky_mosaic": "Mosaic of the Sky",
+        "block.realms_of_chaos.sea_mosaic": "Mosaic of the Sea",
+        "block.realms_of_chaos.shade_mosaic": "Mosaic of the Shades",
+        "block.realms_of_chaos.star_vault": "Star Vault",
+        "block.realms_of_chaos.celestial_globe": "Celestial Globe",
+        "block.realms_of_chaos.bronze_grate": "Bronze Grate",
+        "block.realms_of_chaos.weapon_rack": "Weapon Rack",
+        "block.realms_of_chaos.scroll_shelf": "Scroll Shelf",
+        "block.realms_of_chaos.bath_tile": "Bath Tile",
+        "block.realms_of_chaos.laurel_hedge": "Laurel Hedge",
+        "block.realms_of_chaos.kelp_weave": "Kelp Weave",
+        "block.realms_of_chaos.asphodel_bed": "Asphodel Bed",
+        "hud.realms_of_chaos.passage.room.observatory": "An observatory - a vault of stars",
+        "hud.realms_of_chaos.passage.room.armory": "An armoury",
+        "hud.realms_of_chaos.passage.room.baths": "Baths",
+        "hud.realms_of_chaos.passage.room.sanctum": "A sanctum - quiet, and lit by the tower's fire",
+        "menu.realms_of_chaos.passage.kind.observatory": "Observatory",
+        "menu.realms_of_chaos.passage.kind.armory": "Armoury",
+        "menu.realms_of_chaos.passage.kind.baths": "Baths",
+        "menu.realms_of_chaos.passage.kind.sanctum": "Sanctum",
         "block.realms_of_chaos.beam_mirror": "Beam Mirror",
         "block.realms_of_chaos.beam_emitter": "Beam Emitter",
         "block.realms_of_chaos.beam_receiver": "Beam Receiver",
@@ -1883,7 +1903,9 @@ FIELD_DROPS = ["relay_core", "signal_jammer", "waygate_obelisk"]
 # the realms' own building stone: dug by pickaxe, drops itself
 DECOR = ["olympian_marble", "olympian_marble_pillar", "gilded_frieze", "abyssal_tile", "underworld_brick", "chaos_lamp",
          "olympian_tiles", "chaos_mosaic", "olympian_panel", "abyssal_panel", "underworld_panel", "sky_relief", "sea_relief", "shade_relief",
-         "marble_column", "sunstone_panel", "storm_brick", "coral_column", "pearl_panel", "tide_brick", "bone_column", "ember_panel", "ash_brick"]
+         "marble_column", "sunstone_panel", "storm_brick", "coral_column", "pearl_panel", "tide_brick", "bone_column", "ember_panel", "ash_brick",
+         "sky_mosaic", "sea_mosaic", "shade_mosaic", "star_vault", "celestial_globe", "bronze_grate", "weapon_rack", "scroll_shelf", "bath_tile",
+         "laurel_hedge", "kelp_weave", "asphodel_bed"]
 FIELD_DROPS = FIELD_DROPS + DECOR
 
 # The 22 Major Arcana: (id, numeral, name, what the card does, 8x8 symbol (# ink, + colour), colour)

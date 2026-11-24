@@ -37,6 +37,28 @@ public final class RocCommands {
                                     com.thefarawaydev.realmsofchaos.world.Access.attune(p);
                                     Teleports.enterTower(p, line);
                                 }))))
+                        .then(Commands.literal("room")
+                                .then(Commands.argument("line", com.mojang.brigadier.arguments.StringArgumentType.word())
+                                        .then(Commands.argument("kind", com.mojang.brigadier.arguments.StringArgumentType.word()).executes(ctx -> ui(ctx.getSource().getPlayerOrException(), p -> {
+                                            // into the first room of a kind in a tower's passages, built if need be: somewhere to go and look
+                                            com.thefarawaydev.realmsofchaos.god.Line line = com.thefarawaydev.realmsofchaos.god.Line.valueOf(com.mojang.brigadier.arguments.StringArgumentType.getString(ctx, "line").toUpperCase(java.util.Locale.ROOT));
+                                            com.thefarawaydev.realmsofchaos.world.Passages.Kind kind = com.thefarawaydev.realmsofchaos.world.Passages.Kind.valueOf(com.mojang.brigadier.arguments.StringArgumentType.getString(ctx, "kind").toUpperCase(java.util.Locale.ROOT));
+                                            com.thefarawaydev.realmsofchaos.world.Access.attune(p);
+                                            if (com.thefarawaydev.realmsofchaos.world.Realm.of(p.level().dimension()) == null) Teleports.enterTower(p, line);
+                                            if (!(p.level() instanceof net.minecraft.server.level.ServerLevel level)) return;
+                                            for (int index = 1; index <= com.thefarawaydev.realmsofchaos.world.Passages.COUNT; index++) {
+                                                for (int stage = 0; stage < com.thefarawaydev.realmsofchaos.world.Passages.stages(level, line, index); stage++) {
+                                                    com.thefarawaydev.realmsofchaos.world.Passages.Plan plan = com.thefarawaydev.realmsofchaos.world.Passages.plan(level, line, index, stage);
+                                                    for (com.thefarawaydev.realmsofchaos.world.Passages.Cell c : plan.cells()) {
+                                                        if (plan.kind(c) != kind) continue;
+                                                        com.thefarawaydev.realmsofchaos.world.Passages.build(level, plan);
+                                                        net.minecraft.core.BlockPos m = plan.centre(c);
+                                                        p.teleportTo(level, m.getX() + 0.5, m.getY() + 1, m.getZ() + 0.5, java.util.Set.of(), 0.0F, 0.0F, false);
+                                                        return;
+                                                    }
+                                                }
+                                            }
+                                        })))))
                         .then(Commands.literal("passage")
                                 .then(Commands.argument("line", com.mojang.brigadier.arguments.StringArgumentType.word())
                                         .then(Commands.argument("index", com.mojang.brigadier.arguments.IntegerArgumentType.integer(1, 14)).executes(ctx -> ui(ctx.getSource().getPlayerOrException(), p -> {

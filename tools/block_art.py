@@ -594,6 +594,7 @@ def run(assets, data=None):
         gen_hi_decor(assets, data)
         gen_traps(assets, data)
         gen_tower_stone(assets, data)
+        gen_room_furnishings(assets, data)
 
 
 # ---- high-resolution building stone: 64x64, with connecting panels ---------------------------------------------------
@@ -1110,5 +1111,158 @@ def gen_tower_stone(assets, data):
         wj(os.path.join(data, f"recipe/{rid}.json"), {"type": "minecraft:crafting_shaped", "category": "building", "key": key_, "pattern": pattern_,
                                                       "result": {"id": f"{MOD}:{rid}", "count": count}})
     for b in TOWER_BLOCKS:
+        wj(os.path.join(data, f"loot_table/blocks/{b}.json"), {"type": "minecraft:block", "pools": [{"rolls": 1, "entries": [{"type": "minecraft:item", "name": f"{MOD}:{b}"}],
+                                                                                                  "conditions": [{"condition": "minecraft:survives_explosion"}]}]})
+
+
+# ---- the furnishings of the new rooms ----------------------------------------------------------------------------------
+
+ROOM_BLOCKS_2 = ["sky_mosaic", "sea_mosaic", "shade_mosaic", "star_vault", "celestial_globe", "bronze_grate", "weapon_rack", "scroll_shelf",
+                 "bath_tile", "laurel_hedge", "kelp_weave", "asphodel_bed"]
+
+
+def gen_room_furnishings(assets, data):
+    T = os.path.join(assets, "textures/block")
+    g = grain(91, 0.05)
+    tess = lambda x, y: x % 2 == 1 and y % 2 == 1
+
+    # the towers' mosaics: tesserae two pixels square in a pattern that runs on from block to block, framed as a run
+    def sky(x, y):
+        if tess(x, y): return (150, 150, 160)
+        cx, cy = x // 2, y // 2
+        c = (238, 236, 228) if (cx + cy) % 2 else (120, 170, 230)
+        if (cx % 4, cy % 4) == (1, 1): c = GOLD
+        return shade(c, g[y][x])
+
+    def sea(x, y):
+        if tess(x, y): return (40, 80, 90)
+        cx, cy = x // 2, y // 2
+        wave = (cy + (1 if cx % 4 in (1, 2) else 0)) % 4
+        c = [(40, 110, 140), (70, 160, 180), (140, 214, 220), (236, 244, 240)][wave]
+        return shade(c, g[y][x])
+
+    def shade_m(x, y):
+        if tess(x, y): return (20, 16, 24)
+        cx, cy = x // 2, y // 2
+        c = (46, 40, 58)
+        if (cx % 4, cy % 4) in ((1, 1), (2, 1), (1, 2)): c = (214, 206, 232)            # asphodel petals
+        if (cx % 4, cy % 4) == (2, 2): c = (220, 190, 90)
+        return shade(c, g[y][x])
+    connected(assets, "sky_mosaic", sky, (226, 220, 206), (250, 248, 240), (150, 140, 128), GOLD)
+    connected(assets, "sea_mosaic", sea, (60, 120, 124), (150, 214, 206), (24, 64, 70), (220, 226, 236))
+    connected(assets, "shade_mosaic", shade_m, (58, 50, 66), (104, 92, 118), (20, 16, 26), (190, 120, 240))
+
+    # the star vault: night blue, gold stars, a faint band of the galaxy
+    rnd = random.Random(7)
+    stars = {(rnd.randrange(16), rnd.randrange(16)) for _ in range(9)}
+
+    def vault(x, y):
+        c = mix((18, 20, 54), (40, 36, 90), 0.5 + 0.5 * math.sin((x + y) * 0.4))
+        if abs((x - y) % 16 - 8) < 2: c = mix(c, (120, 110, 180), 0.25)
+        if (x, y) in stars: c = (255, 236, 150) if (x + y) % 3 else (255, 255, 255)
+        return c
+    paint_hi(vault).save(os.path.join(T, "star_vault.png"))
+    cube(assets, "star_vault")
+
+    # the celestial globe: a blue sphere banded in gold on a bronze foot
+    def globe(x, y):
+        c = mix((40, 70, 150), (110, 160, 230), 0.5 + 0.5 * math.sin(x * 0.7 + y * 0.3))
+        if y % 5 == 2: c = GOLD
+        if x == 7 or x == 8: c = GOLD_HI if y % 3 else GOLD
+        if (x * 7 + y * 3) % 19 == 0: c = (255, 250, 220)
+        return c
+    paint_hi(globe).save(os.path.join(T, "celestial_globe.png"))
+    paint_hi(lambda x, y: shade((176, 110, 50), g[y][x] * (1.15 if (x + y) % 5 == 0 else 1.0))).save(os.path.join(T, "bronze.png"))
+    s = lambda k: f"{MOD}:block/{k}"
+    parts = [((4, 0, 4, 12, 2, 12), s("bronze"), s("bronze"), s("bronze")), ((7, 2, 7, 9, 4, 9), s("bronze"), s("bronze"), s("bronze")),
+             ((3, 4, 3, 13, 14, 13), s("celestial_globe"), s("celestial_globe"), s("celestial_globe")),
+             ((2, 8, 7.5, 14, 9, 8.5), s("bronze"), s("bronze"), s("bronze")), ((7.5, 3, 2, 8.5, 15, 14), s("bronze"), s("bronze"), s("bronze"))]
+    wj(os.path.join(assets, "models/block/celestial_globe.json"), parts_model(parts, s("celestial_globe")))
+    wj(os.path.join(assets, "blockstates/celestial_globe.json"), {"variants": {"": {"model": f"{MOD}:block/celestial_globe"}}})
+    wj(os.path.join(assets, "items/celestial_globe.json"), {"model": {"type": "minecraft:model", "model": f"{MOD}:block/celestial_globe"}})
+
+    # the bronze grate: a lattice of bars over darkness
+    def grate(x, y):
+        if x in (0, 15) or y in (0, 15): return (120, 74, 34)
+        if x % 4 == 1 or y % 4 == 1: return (196, 130, 62) if (x + y) % 2 else (176, 110, 50)
+        return (22, 18, 16)
+    paint_hi(grate).save(os.path.join(T, "bronze_grate.png"))
+    cube(assets, "bronze_grate")
+
+    # the weapon rack: a spear, a sword and a shield hung on a rack of dark oak
+    def rack(x, y):
+        c = shade((84, 56, 34), g[y][x] * (0.9 if x % 5 == 4 else 1.0))
+        if y in (2, 13): c = (60, 40, 26)
+        if x == 3 and 1 <= y <= 14: c = (150, 110, 70)                                     # spear shaft
+        if x == 3 and y <= 2: c = (214, 218, 226)
+        if 6 <= x <= 7 and 3 <= y <= 11: c = (206, 212, 224) if x == 6 else (160, 166, 180)  # sword
+        if 5 <= x <= 8 and y == 11: c = GOLD
+        if 6 <= x <= 7 and y >= 12: c = (100, 60, 40)
+        r = math.hypot(x - 12, y - 7.5)
+        if r < 3.2: c = (176, 50, 40) if r > 2.0 else GOLD                                  # shield
+        return c
+    paint_hi(rack).save(os.path.join(T, "weapon_rack.png"))
+    paint_hi(lambda x, y: shade((84, 56, 34), g[y][x] * (0.85 if x % 4 == 3 else 1.0))).save(os.path.join(T, "weapon_rack_top.png"))
+    cube(assets, "weapon_rack", side="weapon_rack", top="weapon_rack_top")
+
+    # the scroll shelf: pigeonholes full of rolled scrolls, their ends tied in red
+    def shelf(x, y):
+        if y % 8 in (0, 7) or x in (0, 15): return (96, 64, 38) if y % 8 == 0 else (70, 46, 28)
+        cell = (x - 1) // 2
+        cy = y % 8
+        if 2 <= cy <= 5:
+            c = (236, 224, 190) if (cell + y // 8) % 3 else (214, 200, 160)
+            if cy in (3, 4) and x % 2 == 0: c = (170, 150, 120)                             # the scroll's rolled end
+            if cy == 2 and (cell * 3 + y) % 4 == 0: c = (190, 50, 40)                       # a red tie
+            return c
+        return (40, 28, 18)
+    paint_hi(shelf).save(os.path.join(T, "scroll_shelf.png"))
+    cube(assets, "scroll_shelf", side="scroll_shelf", top="weapon_rack_top")
+
+    # bath tile: white tiles with a band of blue meander
+    def bath(x, y):
+        tx, ty = x % 4, y % 4
+        if tx == 0 or ty == 0: return (170, 186, 196)
+        c = shade((238, 242, 244), g[y][x])
+        if 6 <= y <= 9 and (x + (y - 6) * 2) % 8 < 3: c = (70, 130, 190)
+        return c
+    paint_hi(bath).save(os.path.join(T, "bath_tile.png"))
+    cube(assets, "bath_tile")
+
+    # the towers' garden plants, clipped into blocks
+    def hedge(leaf, flower, fseed):
+        r2 = random.Random(fseed)
+        flowers = {(r2.randrange(16), r2.randrange(16)) for _ in range(10)}
+
+        def fn(x, y):
+            v = 0.5 + 0.5 * math.sin(x * 1.7 + y * 2.3) * math.cos(x * 0.9 - y * 1.1)
+            c = shade(leaf, 0.7 + 0.5 * v)
+            if (x, y) in flowers and flower: c = flower
+            return c
+        return fn
+    paint_hi(hedge((70, 120, 50), (240, 210, 90), 1)).save(os.path.join(T, "laurel_hedge.png"))
+    paint_hi(hedge((40, 110, 80), (240, 160, 150), 2)).save(os.path.join(T, "kelp_weave.png"))
+    paint_hi(hedge((140, 146, 132), (230, 224, 240), 3)).save(os.path.join(T, "asphodel_bed.png"))
+    for b in ("laurel_hedge", "kelp_weave", "asphodel_bed"):
+        cube(assets, b)
+
+    recipes = {
+        "sky_mosaic": ({"M": f"{MOD}:olympian_tiles", "L": "minecraft:lapis_lazuli"}, ["MLM", "LML", "MLM"], 8),
+        "sea_mosaic": ({"T": f"{MOD}:abyssal_tile", "P": "minecraft:prismarine_crystals"}, ["TPT", "PTP", "TPT"], 8),
+        "shade_mosaic": ({"B": f"{MOD}:underworld_brick", "D": "minecraft:white_dye"}, ["BDB", "DBD", "BDB"], 8),
+        "star_vault": ({"B": "minecraft:blue_concrete", "G": "minecraft:glowstone_dust"}, ["BGB", "GBG", "BGB"], 8),
+        "celestial_globe": ({"G": "minecraft:gold_ingot", "L": "minecraft:lapis_block", "C": "minecraft:copper_ingot"}, [" G ", "GLG", " C "], 1),
+        "bronze_grate": ({"C": "minecraft:copper_ingot", "I": "minecraft:iron_bars"}, ["CIC", "ICI", "CIC"], 4),
+        "weapon_rack": ({"P": "minecraft:dark_oak_planks", "S": "minecraft:iron_sword", "R": "minecraft:stick"}, ["RRR", "PSP", "RRR"], 2),
+        "scroll_shelf": ({"P": "minecraft:dark_oak_planks", "B": "minecraft:paper"}, ["PPP", "BBB", "PPP"], 1),
+        "bath_tile": ({"C": "minecraft:white_terracotta", "L": "minecraft:lapis_lazuli"}, ["CC", "CL"], 4),
+        "laurel_hedge": ({"L": "minecraft:oak_leaves", "D": "minecraft:yellow_dye"}, ["LL", "LD"], 3),
+        "kelp_weave": ({"K": "minecraft:dried_kelp", "S": "minecraft:seagrass"}, ["KK", "KS"], 3),
+        "asphodel_bed": ({"L": "minecraft:azalea_leaves", "D": "minecraft:white_dye"}, ["LL", "LD"], 3),
+    }
+    for rid, (key_, pattern_, count) in recipes.items():
+        wj(os.path.join(data, f"recipe/{rid}.json"), {"type": "minecraft:crafting_shaped", "category": "building", "key": key_, "pattern": pattern_,
+                                                      "result": {"id": f"{MOD}:{rid}", "count": count}})
+    for b in ROOM_BLOCKS_2:
         wj(os.path.join(data, f"loot_table/blocks/{b}.json"), {"type": "minecraft:block", "pools": [{"rolls": 1, "entries": [{"type": "minecraft:item", "name": f"{MOD}:{b}"}],
                                                                                                   "conditions": [{"condition": "minecraft:survives_explosion"}]}]})

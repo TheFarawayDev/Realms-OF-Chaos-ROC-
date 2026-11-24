@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "key": {
+    "G": "minecraft:gold_ingot",
+    "L": "minecraft:lapis_block",
+    "C": "minecraft:copper_ingot"
+  },
+  "pattern": [
+    " G ",
+    "GLG",
+    " C "
+  ],
+  "result": {
+    "id": "realms_of_chaos:celestial_globe",
+    "count": 1
+  }
+}

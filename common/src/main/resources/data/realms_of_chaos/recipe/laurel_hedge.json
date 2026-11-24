@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "key": {
+    "L": "minecraft:oak_leaves",
+    "D": "minecraft:yellow_dye"
+  },
+  "pattern": [
+    "LL",
+    "LD"
+  ],
+  "result": {
+    "id": "realms_of_chaos:laurel_hedge",
+    "count": 3
+  }
+}
