@@ -119,6 +119,9 @@ public final class Gauntlets {
             case GALE -> Blocks.CALCITE;
             case LEVITATE -> Blocks.PURPUR_BLOCK;
             case BLIGHT -> Blocks.SCULK;
+            case CRUSH -> Blocks.DRIPSTONE_BLOCK;
+            case SNARE -> Blocks.ROOTED_DIRT;
+            case DRAIN -> Blocks.NETHER_WART_BLOCK;
         };
     }
 
@@ -276,6 +279,23 @@ public final class Gauntlets {
                 p.hurtServer(level, level.damageSources().magic(), harm * 0.6F);
                 p.addEffect(new MobEffectInstance(MobEffects.BLINDNESS, 70, 0));
             }
+            case CRUSH -> {
+                // a stone drops from the ceiling: a heavy blow, and the head swims
+                p.hurtServer(level, level.damageSources().fallingStalactite(null), harm * 1.1F);
+                p.addEffect(new MobEffectInstance(MobEffects.NAUSEA, 100, 0));
+            }
+            case SNARE -> {
+                // roots close on the ankles: held all but still, and squeezed
+                p.hurtServer(level, level.damageSources().magic(), harm * 0.4F);
+                p.addEffect(new MobEffectInstance(MobEffects.SLOWNESS, 50, 4));
+                p.setDeltaMovement(0, Math.min(0, p.getDeltaMovement().y), 0);
+            }
+            case DRAIN -> {
+                // the floor feeds: strength and food are drawn out through the feet
+                p.hurtServer(level, level.damageSources().magic(), harm * 0.4F);
+                p.addEffect(new MobEffectInstance(MobEffects.HUNGER, 120, 2));
+                p.addEffect(new MobEffectInstance(MobEffects.WEAKNESS, 80, 0));
+            }
         }
         p.needsSync = true;
     }
@@ -292,6 +312,9 @@ public final class Gauntlets {
             case GALE -> ParticleTypes.WHITE_ASH;
             case LEVITATE -> ParticleTypes.WITCH;
             case BLIGHT -> ParticleTypes.SQUID_INK;
+            case CRUSH -> ParticleTypes.POOF;
+            case SNARE -> ParticleTypes.SPORE_BLOSSOM_AIR;
+            case DRAIN -> ParticleTypes.DAMAGE_INDICATOR;
         };
     }
 
@@ -308,6 +331,9 @@ public final class Gauntlets {
             case GALE -> ParticleTypes.CLOUD;
             case LEVITATE -> ParticleTypes.END_ROD;
             case BLIGHT -> ParticleTypes.LARGE_SMOKE;
+            case CRUSH -> ParticleTypes.EXPLOSION;
+            case SNARE -> ParticleTypes.COMPOSTER;
+            case DRAIN -> ParticleTypes.CRIMSON_SPORE;
         };
     }
 
@@ -318,6 +344,9 @@ public final class Gauntlets {
             case FROST -> SoundEvents.GLASS_BREAK;
             case SHOCK -> SoundEvents.LIGHTNING_BOLT_IMPACT;
             case WITHER, LEVITATE -> SoundEvents.BEACON_DEACTIVATE;
+            case CRUSH -> SoundEvents.ANVIL_LAND;
+            case SNARE -> SoundEvents.ROOTED_DIRT_BREAK;
+            case DRAIN -> SoundEvents.SCULK_CATALYST_BLOOM;
             default -> SoundEvents.FIRE_EXTINGUISH;
         };
     }

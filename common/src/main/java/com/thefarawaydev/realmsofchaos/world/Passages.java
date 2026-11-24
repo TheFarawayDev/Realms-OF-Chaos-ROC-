@@ -70,7 +70,7 @@ public final class Passages {
     public static final int TALL = 8;
     public static final int MAX_SIZE = 6;
     public static final int X0 = 600, PITCH = 160;
-    public static final int LAYOUT_VERSION = 11;
+    public static final int LAYOUT_VERSION = 12;
     public static final String GUARDIAN_TAG = "realms_of_chaos_guardian";
     private static final String HUD = "hud." + RealmsOfChaos.MOD_ID + ".passage.";
 
@@ -906,7 +906,7 @@ public final class Passages {
                             }
                             if (k != 0) set(level, floor, p.top());
                             if (d == mid && k == 0) set(level, floor.above(4), p.light());
-                            if (d == mid && jets) set(level, floor, Snares.VENT);
+                            if (d == mid && jets) set(level, floor, Snares.vent());
                         }
                         // and a sconce in each wall, a third of the way along
                         if (d == CORRIDOR_FROM + 2 || d == CORRIDOR_TO - 2) {
@@ -1057,6 +1057,14 @@ public final class Passages {
                 }
             }
         }
+        // a carved relief of the tower's story either side of the middle of each wall, at eye height
+        Block relief = relief(plan.line);
+        for (int d : new int[]{-2, 2}) {
+            for (int[] k : new int[][]{{d, -(r + 1)}, {d, r + 1}, {-(r + 1), d}, {r + 1, d}}) {
+                BlockPos at = m.offset(k[0], 2, k[1]);
+                if (!level.getBlockState(at).isAir() && level.getBlockState(at.below()).isSolidRender()) set(level, at, relief);
+            }
+        }
         // a band of trim round its walls, and sconces set into them; a tall room has a second band under its ceiling
         int wall = r + 1;
         for (int d = -r; d <= r; d++) {
@@ -1069,6 +1077,15 @@ public final class Passages {
                 }
             }
         }
+    }
+
+    /** The carved relief set into a tower's walls. */
+    public static Block relief(Line line) {
+        return switch (line) {
+            case ZEUS -> ModContent.SKY_RELIEF.get();
+            case POSEIDON -> ModContent.SEA_RELIEF.get();
+            case HADES -> ModContent.SHADE_RELIEF.get();
+        };
     }
 
     /** A hall is not a room but corridors: a small crossing in the middle and an arm towards every doorway. */

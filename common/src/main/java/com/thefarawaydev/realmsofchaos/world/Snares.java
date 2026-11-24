@@ -36,7 +36,11 @@ public final class Snares {
     public static final double BLADE_REACH = 0.7;
     /** The traps fill the middle of a hall and leave a step of plain floor inside each wall. */
     public static final int SPAN = 3;
-    public static final Block SPIKE_TILE_A = Blocks.POLISHED_TUFF, SPIKE_TILE_B = Blocks.TUFF_BRICKS, VENT = Blocks.SMOOTH_BASALT;
+    /** The two colours of a spike hall's floor plates, the vents of a flame hall and the corridors, the spikes that rise. */
+    public static Block spikeTileA() { return com.thefarawaydev.realmsofchaos.ModContent.SPIKE_PLATE.get(); }
+    public static Block spikeTileB() { return com.thefarawaydev.realmsofchaos.ModContent.SPIKE_PLATE_DARK.get(); }
+    public static Block vent() { return com.thefarawaydev.realmsofchaos.ModContent.FLAME_VENT.get(); }
+    public static Block spike() { return com.thefarawaydev.realmsofchaos.ModContent.TRAP_SPIKES.get(); }
     /** The arc: once round the hall in this many ticks, reaching this far from the pillar. */
     public static final int ARC_PERIOD = 160;
     public static final double ARC_REACH = 4.4, ARC_WIDTH = 0.6;
@@ -44,7 +48,7 @@ public final class Snares {
     public static final int GAS_TURN = 50, GAS_WARN = 15, GAS_PERIOD = GAS_TURN * 4;
     /** A corridor's jets: warned of, then burning, once in this many ticks. */
     public static final int JET_PERIOD = 70, JET_WARN = 20, JET_BURN = 18;
-    public static final Block GAS_VENT = Blocks.CHISELED_TUFF;
+    public static Block gasVent() { return com.thefarawaydev.realmsofchaos.ModContent.GAS_VENT.get(); }
 
     private static final Map<String, Long> TENDED = new HashMap<>();
     private static final Map<UUID, Long> CUT = new HashMap<>();
@@ -76,11 +80,11 @@ public final class Snares {
             for (int dz = -4; dz <= 4; dz++) {
                 boolean inside = Math.abs(dx) <= SPAN && Math.abs(dz) <= SPAN;
                 Block floor = switch (kind) {
-                    case SPIKES -> inside ? (spikeGroup(dx, dz) == 0 ? SPIKE_TILE_A : SPIKE_TILE_B) : p.trim();
-                    case FLAMES -> inside ? ((dx & 1) == 0 ? VENT : p.inlay()) : p.trim();
+                    case SPIKES -> inside ? (spikeGroup(dx, dz) == 0 ? spikeTileA() : spikeTileB()) : p.trim();
+                    case FLAMES -> inside ? ((dx & 1) == 0 ? vent() : p.inlay()) : p.trim();
                     // an arc hall's floor is rings about its pillar; a gas hall's is quartered, a vent in the middle of each side
                     case ARC -> (int) Math.round(Math.hypot(dx, dz)) % 2 == 0 ? p.inlay() : p.top();
-                    case GAS -> (Math.abs(dx) == 3 && dz == 0) || (Math.abs(dz) == 3 && dx == 0) ? GAS_VENT : dx == 0 || dz == 0 ? p.trim() : p.topAlt();
+                    case GAS -> (Math.abs(dx) == 3 && dz == 0) || (Math.abs(dz) == 3 && dx == 0) ? gasVent() : dx == 0 || dz == 0 ? p.trim() : p.topAlt();
                     // a blade hall's floor is scored from wall to wall, the way the blade runs
                     default -> Math.abs(dz) == 4 ? p.trim() : (dx & 1) == 0 ? p.inlay() : p.top();
                 };
@@ -172,8 +176,8 @@ public final class Snares {
                     if (warn) {
                         level.sendParticles(ParticleTypes.CRIT, at.getX() + 0.5, at.getY() + 0.1, at.getZ() + 0.5, 1, 0.2, 0.0, 0.2, 0.0);
                     } else if (rise) {
-                        if (level.getBlockState(at).isAir()) level.setBlock(at, Blocks.POINTED_DRIPSTONE.defaultBlockState(), 2);
-                    } else if (level.getBlockState(at).is(Blocks.POINTED_DRIPSTONE)) {
+                        if (level.getBlockState(at).isAir()) level.setBlock(at, spike().defaultBlockState(), 2);
+                    } else if (level.getBlockState(at).is(spike())) {
                         level.setBlock(at, Blocks.AIR.defaultBlockState(), 2);
                     }
                 }
@@ -197,7 +201,7 @@ public final class Snares {
         BlockPos m = plan.centre(cell);
         for (int dx = -SPAN; dx <= SPAN; dx++) {
             for (int dz = -SPAN; dz <= SPAN; dz++) {
-                if (level.getBlockState(m.offset(dx, 1, dz)).is(Blocks.POINTED_DRIPSTONE)) level.setBlock(m.offset(dx, 1, dz), Blocks.AIR.defaultBlockState(), 2);
+                if (level.getBlockState(m.offset(dx, 1, dz)).is(spike())) level.setBlock(m.offset(dx, 1, dz), Blocks.AIR.defaultBlockState(), 2);
             }
         }
     }

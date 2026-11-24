@@ -17,7 +17,7 @@ import net.minecraft.world.level.block.state.BlockState;
  * solid stands inside the fight ring, the entrance and exit corridors are flat, and the whole floor is enclosed.
  */
 public final class TowerBuilder {
-    public static final int LAYOUT_VERSION = 6;
+    public static final int LAYOUT_VERSION = 7;
 
     public enum Layout { FLAT, MOUNDS, PILLARS, PIT, DAIS, WAVES, MOAT, TERRACES, SPLIT, ZIGGURAT, SUMMIT }
 
@@ -452,6 +452,15 @@ public final class TowerBuilder {
         }
         int[][] lesser = {{9, 9}, {-9, 9}, {9, -9}, {-9, -9}};
         for (int[] c : lesser) Mason.chandelier(level, new BlockPos(c[0], roofY, c[1]), 4, lantern);
+
+        // a carved relief of the tower's story under every other window, set into the face of the wall
+        Block relief = Passages.relief(line);
+        for (int i = 0; i < 16; i += 2) {
+            double a = Math.PI * 2 * (i + 0.5) / 16;
+            int x = (int) Math.round(Math.cos(a) * 21.4), z = (int) Math.round(Math.sin(a) * 21.4);
+            if (Math.abs(x) <= 5) continue;                                  // (not beside the gates)
+            for (int y = 2; y <= 3; y++) set(level, x, y0 + y, z, relief);
+        }
 
         // themed props under the windows (floors whose layout already fills the walkway keep it clear)
         if (layout != Layout.MOAT && layout != Layout.PILLARS) {

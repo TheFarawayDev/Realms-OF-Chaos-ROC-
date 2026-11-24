@@ -592,11 +592,12 @@ def run(assets, data=None):
     if data:
         gen_decor(assets, data)
         gen_hi_decor(assets, data)
+        gen_traps(assets, data)
 
 
 # ---- high-resolution building stone: 64x64, with connecting panels ---------------------------------------------------
 
-H = 64
+H = 16
 
 
 def vnoise(seed, cells=8):
@@ -672,7 +673,7 @@ def blackstone_fn(seed):
     return f
 
 
-def framed(inner, mask, frame, frame_hi, frame_lo, band, width=6):
+def framed(inner, mask, frame, frame_hi, frame_lo, band, width=3):
     """A face of a connecting panel: the inner surface, and a frame on every edge that does not meet another
     panel (mask bits: 1 up, 2 down, 4 left, 8 right). The frame is bevelled - light on its top and left, dark on its
     bottom and right - with a band of metal let into it."""
@@ -688,8 +689,7 @@ def framed(inner, mask, frame, frame_hi, frame_lo, band, width=6):
         if near is not None and near[1] < width:
             side, d = near
             if d == 0: return shade(frame_lo, 0.6)
-            if d in (2, 3): return band
-            if d == width - 1: return shade(frame_lo, 0.85)                 # the inner lip
+            if d == 2: return band
             lit = side in ("t", "l")
             return frame_hi if lit else frame_lo
         # where two connected edges meet but the panel beside them is not there, nothing marks it: a plain field
@@ -733,131 +733,109 @@ CONNECTED = ["olympian_panel", "abyssal_panel", "underworld_panel"]
 
 
 def gen_hi_decor(assets, data):
+    """The realms' building stone, drawn at 16x16 like the game's own blocks."""
     T = os.path.join(assets, "textures/block")
-    marble = marble_fn(31)
-    paint_hi(marble).save(os.path.join(T, "olympian_marble.png"))
+    rnd = random.Random(31)
 
-    # a fluted pillar: twelve flutes across, each lit on its left and shadowed on its right, a fillet between
+    def save(name, fn):
+        paint_hi(fn).save(os.path.join(T, name + ".png"))
+
+    # marble: warm white, a few grey veins running diagonally, a fleck of gold in one of them
+    MARBLE = (232, 228, 220)
+    veins = {(x, y) for x in range(16) for y in range(16) if (x + y * 2 + int(2 * math.sin(y * 0.9))) % 11 == 0}
+    grain = [[rnd.uniform(-0.035, 0.035) for _ in range(16)] for _ in range(16)]
+
+    def marble(x, y):
+        c = shade(MARBLE, 1 + grain[y][x])
+        if (x, y) in veins: c = (190, 184, 178) if (x * 3 + y) % 7 else GOLD
+        return c
+    save("olympian_marble", marble)
+
     def flute(x, y):
-        k = x % 16
-        f = 0.82 + 0.22 * math.cos((k - 8) / 8 * math.pi / 2) if 2 <= k <= 13 else 1.02
-        if k in (0, 1, 14, 15): f = 1.05 if k in (0, 15) else 0.95
-        if 2 <= k <= 4: f += 0.08
-        return quant(shade(marble(x, y), f), 4)
-    paint_hi(flute).save(os.path.join(T, "olympian_marble_pillar.png"))
+        k = x % 4
+        return shade(marble(x, y), {0: 0.8, 1: 1.08, 2: 1.0, 3: 0.92}[k])
+    save("olympian_marble_pillar", flute)
 
     def pillar_top(x, y):
-        r = math.hypot(x - 31.5, y - 31.5)
+        r = math.hypot(x - 7.5, y - 7.5)
         c = marble(x, y)
-        if 23 < r < 26: c = shade(c, 0.8)
-        if 26 <= r < 27.5: c = shade(c, 1.06)
-        if r < 7: c = mix(GOLD, GOLD_HI, max(0.0, 1 - r / 7))
-        elif r < 8.5: c = GOLD_LO
-        return quant(c, 4)
-    paint_hi(pillar_top).save(os.path.join(T, "olympian_marble_pillar_top.png"))
+        if 5.6 < r < 6.6: c = shade(c, 0.8)
+        if r < 2.2: c = GOLD_HI if r < 1.2 else GOLD
+        return c
+    save("olympian_marble_pillar_top", pillar_top)
 
-    # the frieze: a gold Greek key, two turns to a block, between bands of marble and gold beading
-    key = ["################", "#..............#", "#.############.#", "#.#..........#.#", "#.#.########.#.#", "#.#.#......#.#.#",
-           "#.#.#.####.#.#.#", "#...#.#..#...#.#", "#####.#..#####.#", "......#.......#.", "#######.#######."]
-    pattern = ["######..", "#....#..", "#.##.#..", "#.#..#..", "#.####..", "#.......", "########", "........"]
+    # the frieze: a gold Greek key, one turn to eight pixels, between a marble fillet and a row of gold beads
+    key = ["######..", "#....#..", "#.##.#..", "#.#..#..", "#.####..", "#.......", "########", "........"]
 
     def frieze(x, y):
-        if y < 6 or y >= 58:
-            c = marble(x, y)
-            if y in (5, 58): c = shade(c, 0.78)
-            return c
-        if y < 10 or y >= 54:
-            # a row of gold beads
-            cx = (x // 4) * 4 + 1.5
-            cy = 7.5 if y < 10 else 55.5
-            return quant(mix(GOLD_LO, GOLD_HI, max(0.0, 1 - math.hypot(x - cx, y - cy) / 2.6)), 4) if math.hypot(x - cx, y - cy) < 2.2 else (60, 46, 30)
-        py, px = (y - 10) * 8 // 44, (x % 32) * 8 // 32
-        on = pattern[py][px] == "#"
-        if on:
-            lit = ((y - 10) * 8 % 44) < 3 or ((x % 32) * 8 % 32) < 3
-            return GOLD_HI if lit else GOLD
-        return (54, 40, 34) if (x + y) % 3 else (48, 36, 30)
-    paint_hi(frieze).save(os.path.join(T, "gilded_frieze.png"))
+        if y == 0: return shade(MARBLE, 0.95)
+        if y == 1: return (150, 140, 128)
+        if y == 2 or y == 13: return GOLD_HI if x % 2 == 0 else GOLD_LO
+        if y >= 14: return shade(MARBLE, 0.95 if y == 14 else 0.8)
+        on = key[(y - 3) * 8 // 10][x % 8] == "#"
+        return (GOLD if (x + y) % 3 else GOLD_HI) if on else (54, 40, 34)
+    save("gilded_frieze", frieze)
 
-    # abyssal tile: four tiles of prismarine, each carved with a wave, set in dark grout
-    pr = prismarine_fn(41)
-
+    # abyssal tile: four tiles of sea-stone, each with a carved wave, in dark grout
     def abyssal(x, y):
-        tx, ty = x % 32, y % 32
-        if tx < 2 or ty < 2: return (14, 40, 46)
-        c = pr(x, y)
-        if tx == 2 or ty == 2: c = mix(c, (190, 240, 226), 0.35)
-        if tx == 31 or ty == 31: c = shade(c, 0.7)
-        w = 16 + math.sin((tx - 2) / 29 * math.tau) * 6
-        if abs(ty - w) < 1.3: c = mix(c, (200, 248, 236), 0.7)
-        elif abs(ty - w - 2) < 1.0: c = shade(c, 0.7)
-        return quant(c, 6)
-    paint_hi(abyssal).save(os.path.join(T, "abyssal_tile.png"))
-
-    # underworld brick: blackstone bricks, half a block long, with embers in the mortar
-    bs = blackstone_fn(51)
-
-    def brick(x, y):
-        row = y // 16
-        off = 16 if row % 2 else 0
-        bx, by = (x + off) % 32, y % 16
-        if by < 2 or bx < 2:
-            glow = 0.5 + 0.5 * math.sin(x * 0.7 + y * 1.3)
-            return quant(mix((48, 16, 10), (255, 120, 40), glow * 0.8), 6) if (x * 5 + y * 3) % 7 < 3 else (40, 14, 10)
-        c = bs(x, y)
-        if by == 2 or bx == 2: c = shade(c, 1.35)
-        if by == 15 or bx == 31: c = shade(c, 0.7)
+        tx, ty = x % 8, y % 8
+        if tx == 0 or ty == 0: return (16, 44, 50)
+        c = shade((70, 150, 146), 1 + grain[y][x] * 1.5)
+        if tx == 1 or ty == 1: c = (120, 196, 186)
+        if tx == 7 or ty == 7: c = (44, 104, 104)
+        if ty == 4 + (1 if tx in (2, 3) else -1 if tx in (5, 6) else 0): c = (190, 244, 230)
         return c
-    paint_hi(brick).save(os.path.join(T, "underworld_brick.png"))
+    save("abyssal_tile", abyssal)
 
-    # the chaos lamp: a pane of glowing glass in a gold frame, the three gods' colours swirling in it
+    # underworld brick: blackstone bricks, embers glowing in the mortar
+    def brick(x, y):
+        row = y // 4
+        bx, by = (x + (4 if row % 2 else 0)) % 8, y % 4
+        if by == 3 or bx == 7:
+            return (255, 130, 50) if (x * 5 + y * 3) % 7 == 0 else (110, 36, 20) if (x + y) % 3 == 0 else (52, 18, 14)
+        c = shade((58, 50, 66), 1 + grain[y][x] * 2)
+        if by == 0 or bx == 0: c = (86, 76, 98)
+        return c
+    save("underworld_brick", brick)
+
+    # the chaos lamp: glowing glass in a gold frame, the three gods' colours swirling in it
     cols = [(255, 214, 100), (100, 228, 236), (200, 130, 255)]
 
     def lamp(x, y):
-        e = min(x, y, H - 1 - x, H - 1 - y)
-        if e < 2: return GOLD_LO
-        if e < 5: return GOLD_HI if (e == 2 or x + y < 64) and e < 4 else GOLD
-        if e < 6: return (90, 60, 20)
-        r = math.hypot(x - 31.5, y - 31.5)
-        a = math.atan2(y - 31.5, x - 31.5) + r * 0.12
+        e = min(x, y, 15 - x, 15 - y)
+        if e == 0: return GOLD_LO
+        if e == 1: return GOLD_HI if x + y < 15 else GOLD
+        r = math.hypot(x - 7.5, y - 7.5)
+        a = math.atan2(y - 7.5, x - 7.5) + r * 0.5
         k = (a / math.tau * 3) % 3
-        c = mix(cols[int(k) % 3], cols[(int(k) + 1) % 3], k - int(k))
-        c = mix(c, (255, 250, 236), max(0.0, 1 - r / 20))
-        return quant(c, 8)
-    paint_hi(lamp).save(os.path.join(T, "chaos_lamp.png"))
+        c = cols[int(k) % 3]
+        return mix(c, (255, 250, 236), max(0.0, 1 - r / 4.0))
+    save("chaos_lamp", lamp)
 
-    # Olympian tiles: four great flags of marble, gold stars set where their corners meet
-    m2 = marble_fn(61, gold_vein=False)
-
+    # Olympian tiles: four flags of marble with a gold star where their corners meet
     def tiles(x, y):
-        tx, ty = x % 32, y % 32
-        c = m2(x, y)
-        if tx == 0 or ty == 0: c = (160, 150, 140)
-        elif tx == 1 or ty == 1: c = shade(c, 1.05)
-        elif tx == 31 or ty == 31: c = shade(c, 0.85)
-        # a four-pointed gold star at each corner of the flags
-        dx, dy = min(tx, 32 - tx), min(ty, 32 - ty)
-        if dx + dy < 7 and min(dx, dy) < 2: c = GOLD_HI if dx + dy < 3 else GOLD
-        return quant(c, 4)
-    paint_hi(tiles).save(os.path.join(T, "olympian_tiles.png"))
+        tx, ty = x % 8, y % 8
+        c = marble(x, y) if (x, y) not in veins else shade(MARBLE, 0.97)
+        if tx == 0 or ty == 0: c = (164, 154, 144)
+        elif tx == 1 or ty == 1: c = shade(MARBLE, 1.05)
+        elif tx == 7 or ty == 7: c = shade(MARBLE, 0.86)
+        if (x, y) in ((0, 0), (8, 8), (0, 8), (8, 0)): c = GOLD_HI
+        if (x in (15, 1, 7, 9) and y in (0, 8)) or (y in (15, 1, 7, 9) and x in (0, 8)): c = GOLD
+        return c
+    save("olympian_tiles", tiles)
 
-    # chaos mosaic: tesserae four pixels square, a ring in the three gods' colours on marble
+    # chaos mosaic: tesserae two pixels square, a ring of the three gods' colours on marble
     def mosaic(x, y):
-        cx, cy = (x // 4) * 4 + 2, (y // 4) * 4 + 2
-        if x % 4 == 0 or y % 4 == 0: return (120, 112, 104)
-        r = math.hypot(cx - 32, cy - 32)
-        a = (math.atan2(cy - 32, cx - 32) + math.pi) / math.tau
-        rnd = random.Random(cx * 131 + cy * 7)
-        if 18 <= r < 26:
-            c = cols[int(a * 3) % 3]
-        elif r < 8:
-            c = (255, 236, 170)
-        elif 12 <= r < 14:
-            c = GOLD
-        else:
-            c = (232, 226, 214)
-        return quant(shade(c, 0.9 + rnd.random() * 0.16), 6)
-    paint_hi(mosaic).save(os.path.join(T, "chaos_mosaic.png"))
+        if x % 2 == 1 and y % 2 == 1: return (120, 112, 104)
+        cx, cy = (x // 2) * 2 + 1, (y // 2) * 2 + 1
+        r = math.hypot(cx - 8, cy - 8)
+        a = (math.atan2(cy - 8, cx - 8) + math.pi) / math.tau
+        jitter = 0.92 + random.Random(cx * 31 + cy).random() * 0.14
+        if 4.5 <= r < 7: c = cols[int(a * 3) % 3]
+        elif r < 2.5: c = (255, 236, 170)
+        else: c = (232, 226, 214)
+        return shade(c, jitter)
+    save("chaos_mosaic", mosaic)
 
     plain = ["olympian_marble", "gilded_frieze", "abyssal_tile", "underworld_brick", "chaos_lamp", "olympian_tiles", "chaos_mosaic"]
     for b in plain + ["olympian_marble_pillar"]:
@@ -870,9 +848,11 @@ def gen_hi_decor(assets, data):
         wj(os.path.join(assets, f"items/{b}.json"), {"model": {"type": "minecraft:model", "model": f"{MOD}:block/{b}"}})
 
     # the connecting panels: one per tower, a field of its stone in a frame that runs round a whole run of them
-    connected(assets, "olympian_panel", marble_fn(71), (230, 220, 200), (252, 248, 238), (150, 140, 128), GOLD)
-    connected(assets, "abyssal_panel", prismarine_fn(72), (60, 120, 124), (150, 214, 206), (24, 64, 70), (220, 226, 236))
-    connected(assets, "underworld_panel", blackstone_fn(73), (58, 50, 66), (104, 92, 118), (20, 16, 26), (190, 120, 240))
+    sea = lambda x, y: (190, 244, 230) if (y % 8) == 4 + (1 if x % 8 in (1, 2) else -1 if x % 8 in (5, 6) else 0) else shade((70, 150, 146), 1 + grain[y][x] * 1.5)
+    shade_field = lambda x, y: (150, 90, 210) if (x * 7 + y * 5) % 23 == 0 else shade((50, 44, 60), 1 + grain[y][x] * 2)
+    connected(assets, "olympian_panel", marble, (230, 220, 200), (252, 248, 238), (150, 140, 128), GOLD)
+    connected(assets, "abyssal_panel", sea, (60, 120, 124), (150, 214, 206), (24, 64, 70), (220, 226, 236))
+    connected(assets, "underworld_panel", shade_field, (58, 50, 66), (104, 92, 118), (20, 16, 26), (190, 120, 240))
 
     recipes = {
         "olympian_tiles": ({"M": f"{MOD}:olympian_marble"}, ["MM", "MM"], 4),
@@ -889,3 +869,134 @@ def gen_hi_decor(assets, data):
     for b in HI_DECOR:
         wj(os.path.join(data, f"loot_table/blocks/{b}.json"), {"type": "minecraft:block", "pools": [{"rolls": 1, "entries": [{"type": "minecraft:item", "name": f"{MOD}:{b}"}],
                                                                                                   "conditions": [{"condition": "minecraft:survives_explosion"}]}]})
+
+
+# ---- the trap halls' fittings and the towers' reliefs ----------------------------------------------------------------
+
+TRAP_BLOCKS = ["spike_plate", "spike_plate_dark", "trap_spikes", "flame_vent", "gas_vent"]
+RELIEFS = ["sky_relief", "sea_relief", "shade_relief"]
+
+
+def cube(assets, name, all_tex=None, side=None, top=None):
+    if side:
+        model = {"parent": "minecraft:block/cube_column", "textures": {"end": f"{MOD}:block/{top}", "side": f"{MOD}:block/{side}"}}
+    else:
+        model = {"parent": "minecraft:block/cube_all", "textures": {"all": f"{MOD}:block/{all_tex or name}"}}
+    wj(os.path.join(assets, f"models/block/{name}.json"), model)
+    wj(os.path.join(assets, f"blockstates/{name}.json"), {"variants": {"": {"model": f"{MOD}:block/{name}"}}})
+    wj(os.path.join(assets, f"items/{name}.json"), {"model": {"type": "minecraft:model", "model": f"{MOD}:block/{name}"}})
+
+
+def gen_traps(assets, data):
+    T = os.path.join(assets, "textures/block")
+    g = grain(81, 0.05)
+
+    def plate(base):
+        def fn(x, y):
+            c = shade(base, g[y][x])
+            if x in (0, 15) or y in (0, 15): c = shade(base, 0.72)
+            elif x in (1,) or y in (1,): c = shade(base, 1.12)
+            # four holes the spikes come up through, each a dark socket with a lit lower lip
+            for hx, hy in ((4, 4), (11, 4), (4, 11), (11, 11)):
+                d = max(abs(x - hx), abs(y - hy))
+                if d == 0: c = (18, 16, 20)
+                elif d == 1: c = (36, 32, 38) if (x - hx) + (y - hy) < 1 else shade(base, 1.2)
+            if (x, y) in ((7, 7), (8, 8), (7, 8), (8, 7)): c = (150, 118, 70)            # a bronze rivet
+            return c
+        return fn
+    paint_hi(plate((138, 140, 134))).save(os.path.join(T, "spike_plate.png"))
+    paint_hi(plate((86, 84, 96))).save(os.path.join(T, "spike_plate_dark.png"))
+    for b in ("spike_plate", "spike_plate_dark"):
+        cube(assets, b)
+
+    # the spikes: iron, rusted at their roots, bright at their points
+    def iron(x, y):
+        t = y / 15
+        c = mix((236, 238, 244), (92, 70, 56), t)
+        if x % 4 == 0: c = shade(c, 1.15)
+        if x % 4 == 3: c = shade(c, 0.7)
+        return c
+    paint_hi(iron).save(os.path.join(T, "trap_spikes.png"))
+    elements = []
+    for sx, sz in ((2, 2), (9, 2), (2, 9), (9, 9), (5.5, 5.5)):
+        tall = 12 if (sx, sz) == (5.5, 5.5) else 10
+        for k, (w, h0, h1) in enumerate(((5, 0, tall * 0.45), (3, tall * 0.45, tall * 0.8), (1, tall * 0.8, tall))):
+            o = (5 - w) / 2
+            f = [sx + o, h0, sz + o, sx + o + w, h1, sz + o + w]
+            faces = {d: {"uv": [f[0] if d in ("north", "south") else f[2], 16 - f[4], (f[3] if d in ("north", "south") else f[5]), 16 - f[1]], "texture": "#s"}
+                     for d in ("north", "south", "east", "west")}
+            faces["up"] = {"uv": [6, 0, 8, 2], "texture": "#s"}
+            faces["down"] = {"uv": [6, 14, 8, 16], "texture": "#s"}
+            elements.append({"from": [f[0], f[1], f[2]], "to": [f[3], f[4], f[5]], "faces": faces})
+    wj(os.path.join(assets, "models/block/trap_spikes.json"), {"parent": "minecraft:block/block", "textures": {"particle": f"{MOD}:block/trap_spikes", "s": f"{MOD}:block/trap_spikes"},
+                                                              "elements": elements})
+    wj(os.path.join(assets, "blockstates/trap_spikes.json"), {"variants": {"": {"model": f"{MOD}:block/trap_spikes"}}})
+    wj(os.path.join(assets, "items/trap_spikes.json"), {"model": {"type": "minecraft:model", "model": f"{MOD}:block/trap_spikes"}})
+
+    # the flame vent: an iron grate over coals, glowing between its bars
+    def vent_top(x, y):
+        if x in (0, 15) or y in (0, 15): return (40, 36, 44)
+        if x in (1, 14) or y in (1, 14): return (86, 80, 92)
+        if x % 3 == 2:
+            return (70, 66, 76) if y % 4 else (110, 104, 118)
+        heat = 0.5 + 0.5 * math.sin(x * 1.3 + y * 0.9)
+        return mix((90, 20, 10), (255, 160, 60), heat)
+    paint_hi(vent_top).save(os.path.join(T, "flame_vent_top.png"))
+
+    def vent_side(x, y):
+        c = shade((62, 58, 70), g[y][x])
+        if y in (0, 1): c = (86, 80, 92)
+        if y == 2: c = (40, 36, 44)
+        if y > 12: c = shade(c, 0.8)
+        return c
+    paint_hi(vent_side).save(os.path.join(T, "flame_vent_side.png"))
+    cube(assets, "flame_vent", side="flame_vent_side", top="flame_vent_top")
+
+    # the gas vent: a ring of green-stained stone round a dark mouth
+    def gas_top(x, y):
+        r = math.hypot(x - 7.5, y - 7.5)
+        c = shade((112, 116, 104), g[y][x])
+        if x in (0, 15) or y in (0, 15): c = (80, 84, 76)
+        if r < 2.6: c = (16, 22, 14)
+        elif r < 3.6: c = (60, 92, 44)
+        elif r < 5.2: c = mix((140, 190, 90), c, (r - 3.6) / 1.6)
+        if 5.6 < r < 6.4 and int(math.degrees(math.atan2(y - 7.5, x - 7.5))) % 45 < 15: c = (150, 118, 70)
+        return c
+    paint_hi(gas_top).save(os.path.join(T, "gas_vent_top.png"))
+    paint_hi(lambda x, y: shade((112, 116, 104), g[y][x] * (0.75 if y > 12 else 1.0))).save(os.path.join(T, "gas_vent_side.png"))
+    cube(assets, "gas_vent", side="gas_vent_side", top="gas_vent_top")
+
+    # reliefs: a scene carved into a frame of the tower's stone, the carving lit on its upper left edges
+    scenes = {
+        "sky_relief": ((226, 222, 212), (250, 210, 80),
+                       ["................", "..##.....###....", ".####...#####...", "######.#######..", "........#.......", ".......##.......",
+                        "......##........", ".....#######....", ".......##.......", "......##........", ".....##.........", "....#...........",
+                        "................"]),
+        "sea_relief": ((80, 150, 144), (210, 236, 236),
+                       ["................", "..#....#....#...", "..#....#....#...", "..##...#...##...", "...#########....", ".......#........",
+                        ".......#........", ".......#........", "..##...#...##...", ".#..#.###.#..#..", "#....#...#....#.", "................",
+                        "................"]),
+        "shade_relief": ((56, 50, 66), (196, 140, 240),
+                         ["................", ".....######.....", "....########....", "...##..##..##...", "...##..##..##...", "...##########...",
+                          "....###..###....", ".....######.....", "......#..#......", "..#..........#..", ".###...##...###.", "#####.####.#####",
+                          "................"]),
+    }
+    for name, (base, accent, art) in scenes.items():
+        def fn(x, y, base=base, accent=accent, art=art):
+            c = shade(base, g[y][x])
+            if x == 0 or y == 0: return shade(base, 1.18)
+            if x == 15 or y == 15: return shade(base, 0.6)
+            if x == 1 or y == 1: return shade(base, 0.78)                          # the field is sunk inside its frame
+            ry = y - 2
+            on = 0 <= ry < len(art) and art[ry][x] == "#"
+            above = 0 <= ry - 1 < len(art) and x > 0 and art[ry - 1][x - 1] == "#"
+            if on:
+                c = shade(base, 1.22) if not above else shade(base, 1.04)
+                if (x + y) % 5 == 0: c = mix(c, accent, 0.6)
+            elif above:
+                c = shade(base, 0.62)                                                 # the carving's shadow
+            return c
+        paint_hi(fn).save(os.path.join(T, name + ".png"))
+        cube(assets, name)
+        wj(os.path.join(data, f"loot_table/blocks/{name}.json"), {"type": "minecraft:block", "pools": [{"rolls": 1, "entries": [{"type": "minecraft:item", "name": f"{MOD}:{name}"}],
+                                                                                                     "conditions": [{"condition": "minecraft:survives_explosion"}]}]})

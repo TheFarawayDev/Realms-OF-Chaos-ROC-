@@ -792,6 +792,14 @@ def gen_lang():
         "block.realms_of_chaos.olympian_panel": "Olympian Panel",
         "block.realms_of_chaos.abyssal_panel": "Abyssal Panel",
         "block.realms_of_chaos.underworld_panel": "Underworld Panel",
+        "block.realms_of_chaos.spike_plate": "Spike Plate",
+        "block.realms_of_chaos.spike_plate_dark": "Dark Spike Plate",
+        "block.realms_of_chaos.trap_spikes": "Trap Spikes",
+        "block.realms_of_chaos.flame_vent": "Flame Vent",
+        "block.realms_of_chaos.gas_vent": "Gas Vent",
+        "block.realms_of_chaos.sky_relief": "Relief of the Sky",
+        "block.realms_of_chaos.sea_relief": "Relief of the Sea",
+        "block.realms_of_chaos.shade_relief": "Relief of the Shades",
         "block.realms_of_chaos.beam_mirror": "Beam Mirror",
         "block.realms_of_chaos.beam_emitter": "Beam Emitter",
         "block.realms_of_chaos.beam_receiver": "Beam Receiver",
@@ -898,6 +906,15 @@ def gen_lang():
         "trap.realms_of_chaos.gale_pendulum": "Gale Pendulum",
         "trap.realms_of_chaos.twin_tides": "Twin Tides",
         "trap.realms_of_chaos.marching_thorns": "Marching Thorns",
+        "trap.realms_of_chaos.crushing_rows": "Crushing Rows",
+        "trap.realms_of_chaos.falling_sky": "Falling Sky",
+        "trap.realms_of_chaos.millstone": "The Millstone",
+        "trap.realms_of_chaos.root_tangle": "Root Tangle",
+        "trap.realms_of_chaos.briar_rings": "Briar Rings",
+        "trap.realms_of_chaos.stranglevine": "Stranglevine",
+        "trap.realms_of_chaos.leech_floor": "Leech Floor",
+        "trap.realms_of_chaos.hunger_tide": "Hunger Tide",
+        "trap.realms_of_chaos.sapping_weave": "Sapping Weave",
         "trap.realms_of_chaos.pattern.rings": "Every other ring about the middle, then the rings between. Step inward a ring at a time, onto the one just spent",
         "trap.realms_of_chaos.pattern.comb": "Teeth from one wall, then from the other. Change columns as the halves swap",
         "trap.realms_of_chaos.pattern.pendulum": "A line swings from side to side and back. Cross behind it, and mind its return",
@@ -1856,7 +1873,7 @@ FIELD_MODELS = {
 FIELD_DROPS = ["relay_core", "signal_jammer", "waygate_obelisk"]
 # the realms' own building stone: dug by pickaxe, drops itself
 DECOR = ["olympian_marble", "olympian_marble_pillar", "gilded_frieze", "abyssal_tile", "underworld_brick", "chaos_lamp",
-         "olympian_tiles", "chaos_mosaic", "olympian_panel", "abyssal_panel", "underworld_panel"]
+         "olympian_tiles", "chaos_mosaic", "olympian_panel", "abyssal_panel", "underworld_panel", "sky_relief", "sea_relief", "shade_relief"]
 FIELD_DROPS = FIELD_DROPS + DECOR
 
 # The 22 Major Arcana: (id, numeral, name, what the card does, 8x8 symbol (# ink, + colour), colour)
@@ -3600,7 +3617,24 @@ def gen_field_textures():
         tile("beam_mirror" + ("_lit_side" if lit else "_side"), (70, 74, 90), lambda x, y: (200, 215, 230) if 3 <= x <= 12 and 3 <= y <= 13 and (x + y) % 6 != 0 else None)
     tile("beam_emitter", (60, 62, 76), lambda x, y: (255, 240, 150) if math.hypot(x - 7.5, y - 7.5) < 2.4 else ((230, 180, 70) if math.hypot(x - 7.5, y - 7.5) < 4.2 else None))
     tile("dart_tile", (104, 100, 96), lambda x, y: (24, 22, 22) if (x in (4, 5, 10, 11) and y in (4, 5, 10, 11)) else ((150, 60, 50) if x in (1, 14) and y in (1, 14) else None))
-    tile("ancient_urn_side", (176, 112, 74), lambda x, y: (236, 208, 150) if y in (5, 6) and (x + y) % 3 != 0 else ((110, 64, 44) if y in (4, 7) else ((90, 54, 38) if y > 13 else None)))
+    def urn_side(x, y):
+        terra = (196, 112, 64)
+        c = shade(terra, 1.12 if x < 5 else 0.82 if x > 11 else 1.0)            # lit on its left, round
+        if y in (1, 2) or y in (12, 13): c = (34, 22, 18)                          # black bands
+        if y == 2 and x % 4 in (0, 1): c = (210, 130, 80)                           # a meander in the band
+        if 4 <= y <= 10:
+            # a black-figure warrior: shield, spear, running legs
+            fig = ["................", "......##........", ".....####...#...", "....######.#....", "....#####.#.....", ".....###.#......",
+                   "....#...#.......", "...#.....#......", "................"]
+            row = fig[y - 3] if 0 <= y - 3 < len(fig) else ""
+            if x < len(row) and row[x] == "#": c = (34, 22, 18)
+        if y in (0, 15): c = (90, 54, 38)
+        return c
+    img = Image.new("RGBA", (16, 16))
+    for y in range(16):
+        for x in range(16):
+            img.putpixel((x, y), urn_side(x, y) + (255,))
+    img.save(os.path.join(T, "ancient_urn_side.png"))
     tile("ancient_urn_top", (150, 94, 62), lambda x, y: (40, 24, 18) if math.hypot(x - 7.5, y - 7.5) < 3.0 else None)
     tile("lore_tablet_side", (128, 126, 118), lambda x, y: (70, 68, 64) if y in (4, 6, 8, 10, 12) and 4 <= x <= 11 and (x * 3 + y) % 5 != 0 else ((236, 196, 84) if y == 2 and 5 <= x <= 10 else None))
     tile("lore_tablet_top", (120, 118, 110), lambda x, y: None)
@@ -3612,18 +3646,31 @@ def gen_field_textures():
     stone_grain = [[1 + stone_rnd.uniform(-0.08, 0.08) for _ in range(16)] for _ in range(16)]
 
     def carved(name, sign, glow, lit, base=STONE, frame=True):
-        """An 8x8 sign carved in the middle of a stone face."""
+        """A face of dressed stone: bevelled at its edges, a sunken panel in its middle with a chamfer round it, and
+        an 8x8 sign cut into the panel - a groove with a lit lip below it when dark, a glowing inlay with a halo
+        round it and gold studs at the panel's corners when lit."""
         img = Image.new("RGBA", (16, 16))
+        on = lambda rx, ry: sign is not None and 0 <= ry < 8 and 0 <= rx < 8 and sign[ry][rx] == "#"
         for y in range(16):
             for x in range(16):
-                c = shade(base, stone_grain[y][x] * (0.76 if x in (0, 15) or y in (0, 15) else 1.0))
-                if frame and (x in (2, 13) and 2 <= y <= 13 or y in (2, 13) and 2 <= x <= 13):
-                    c = shade(c, 0.82)
-                ry, rx = y - 4, x - 4
-                if sign is not None and 0 <= ry < 8 and 0 <= rx < 8 and sign[ry][rx] == "#":
-                    c = mix(glow, (255, 255, 255), 0.25) if lit else shade(mix(glow, (60, 60, 70), 0.72), 0.9)
+                g = stone_grain[y][x]
+                c = shade(base, g)
+                if x == 0 or y == 0: c = shade(base, g * 1.14)                  # the lit edges
+                if x == 15 or y == 15: c = shade(base, g * 0.66)                # and the shadowed ones
+                if frame and 2 <= x <= 13 and 2 <= y <= 13:
+                    if x == 2 or y == 2: c = shade(base, 0.7)                   # the panel is sunk: shadow on its top and left
+                    elif x == 13 or y == 13: c = shade(base, 1.1)               # light on its bottom and right
+                    else: c = shade(base, g * 0.9)
+                rx, ry = x - 4, y - 4
+                if on(rx, ry):
+                    c = mix(glow, (255, 255, 255), 0.3) if lit else shade(base, 0.48)
+                elif sign is not None and not lit and on(rx - 1, ry - 1):
+                    c = shade(base, 1.18)                                       # the lip the light catches
                 elif lit and 3 <= x <= 12 and 3 <= y <= 12:
-                    c = mix(c, glow, 0.22)
+                    near = any(on(rx + dx, ry + dy) for dx in (-1, 0, 1) for dy in (-1, 0, 1))
+                    c = mix(c, glow, 0.5 if near else 0.16)
+                if frame and (x, y) in ((2, 2), (13, 2), (2, 13), (13, 13)):
+                    c = mix(glow, (255, 255, 255), 0.4) if lit else (150, 118, 60)  # studs, bronze until lit
                 img.putpixel((x, y), c + (255,))
         img.save(os.path.join(T, name + ".png"))
 
@@ -3639,8 +3686,19 @@ def gen_field_textures():
         carved("glyph_tile" + suffix, eye, (90, 220, 240), lit)
         carved("memory_plate" + suffix, step, (250, 215, 90), lit)
         carved("beam_receiver" + suffix, ring, (255, 240, 170), lit)
-        carved("chime_crystal" + suffix + "_side", bell, (200, 120, 255), lit)
-        carved("chime_crystal" + suffix + "_top", ring, (200, 120, 255), lit)
+        crystal = (196, 120, 255) if lit else (120, 84, 150)
+        for face in ("side", "top"):
+            img = Image.new("RGBA", (16, 16))
+            for y in range(16):
+                for x in range(16):
+                    # long facets running up the crystal, each lit on one side; a bright vein down the middle
+                    f = (x + (y // 6)) % 4
+                    c = shade(crystal, {0: 0.62, 1: 1.0, 2: 1.18, 3: 0.82}[f])
+                    if face == "side" and x in (7, 8) and (y + (3 if lit else 0)) % 5 < 3: c = mix(c, (255, 255, 255), 0.55 if lit else 0.2)
+                    if face == "top" and math.hypot(x - 7.5, y - 7.5) < 2.5: c = mix(crystal, (255, 255, 255), 0.7 if lit else 0.25)
+                    if (x + y * 3) % 17 == 0: c = mix(c, (255, 255, 255), 0.6)          # a glint
+                    img.putpixel((x, y), c + (255,))
+            img.save(os.path.join(T, "chime_crystal" + suffix + "_" + face + ".png"))
         # a mirror: a pane of polished silver set in a stone frame, the glint across it leaning the way it is turned
         for face in ("side", "top"):
             img = Image.new("RGBA", (16, 16))

@@ -43,14 +43,30 @@ The current build is an **Alpha**.
   reflects at; the emitter and the receiver are lenses on pedestals; and the beam is drawn as a straight, solid line
   of light with a halo, flashing at each mirror, instead of a scatter of sparks. (`art/renders/blocks-new.png`,
   `beam-mirrors-above.png`)
-* **Eleven building blocks with 64x64 textures**, used across the hub and craftable: Olympian Marble, Olympian
-  Marble Pillar (fluted), Gilded Frieze (a gold Greek key between bead mouldings), Abyssal Tile (carved waves),
-  Underworld Brick (embers in its mortar), the Chaos Lamp, Olympian Tiles (great flags with gold stars where they
+* **Eleven building blocks**, drawn at 16x16 like the game's own, used across the hub and craftable: Olympian
+  Marble, Olympian Marble Pillar (fluted), Gilded Frieze (a gold Greek key over a row of beads), Abyssal Tile (carved
+  waves), Underworld Brick (embers in its mortar), the Chaos Lamp, Olympian Tiles (flags with gold stars where they
   meet) and the Chaos Mosaic - and three with **connecting textures**: the Olympian, Abyssal and Underworld Panels.
   Set side by side, panels drop their frames where they meet, so a wall or a floor of them reads as one great
   panel with a single frame round its outside. They face the statues' pedestals, the entablatures of the Sea and
   Shade gates and the rim of the hub's pool; the rotunda is floored in mosaic and tiles, the ways in Olympian
-  Tiles, Abyssal Tile and Underworld Brick. (`art/renders/blocks-64.png`, `connected-panel-wall.png`)
+  Tiles, Abyssal Tile and Underworld Brick. (`art/renders/blocks-16.png`, `connected-panel-wall.png`)
+* **Reliefs.** The Relief of the Sky, of the Sea and of the Shades - a thunderbolt under clouds, a trident over the
+  waves, a skull over a bident and flames - carved into the walls of every passage room either side of the middle
+  of each wall, and under every other window of the tower floors. (`art/renders/passage-reliefs.png`,
+  `tower-relief.png`)
+* **More traps.** Three new hazards and nine new trap halls, fifty-five in all: **Crush** (a stone drops from the
+  ceiling: a heavy blow and a swimming head) in Crushing Rows, Falling Sky and the Millstone; **Snare** (roots close
+  on the ankles and hold you all but still) in Root Tangle, Briar Rings and Stranglevine; and **Drain** (the floor
+  feeds on you: hunger and weakness) in the Leech Floor, the Hunger Tide and the Sapping Weave. Each was checked to
+  be crossable by somebody who watches it, and neither harmless nor a wall.
+* **Trap fittings of their own.** Spike halls are floored in Spike Plates, light and dark, each with four sockets,
+  and what comes up through them are Trap Spikes - a cluster of iron spikes, rusted at the root - instead of
+  dripstone. Flame halls and jet corridors have Flame Vents (a grate over glowing coals); gas halls have Gas Vents.
+* **Puzzle blocks redone.** Glyph tiles, trembling plates, the dart tile, the beam receiver and the lore tablet are
+  dressed stone now: bevelled edges, a sunken panel with a chamfer, the sign cut in as a groove with a lit lip - and,
+  when lit, a glowing inlay with a halo and gold studs. The chime crystal is a faceted crystal with a vein of light,
+  and the ancient urn a black-figure amphora with a running warrior on it.
 * **The middle of the hub is built as a place.**
   * A **rotunda** stands over the spawn: eight marble columns with bases and capitals, a gilded entablature, and a
     dome of verdigris copper with a gold lantern at its crown and chandeliers hung under it. The Oracle's Flame

@@ -14,6 +14,9 @@
     "realms_of_chaos:chaos_mosaic",
     "realms_of_chaos:olympian_panel",
     "realms_of_chaos:abyssal_panel",
-    "realms_of_chaos:underworld_panel"
+    "realms_of_chaos:underworld_panel",
+    "realms_of_chaos:sky_relief",
+    "realms_of_chaos:sea_relief",
+    "realms_of_chaos:shade_relief"
   ]
 }

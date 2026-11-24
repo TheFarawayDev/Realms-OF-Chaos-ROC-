@@ -93,6 +93,8 @@ public final class ModContent {
     public static final Ref<Block> OLYMPIAN_MARBLE = new Ref<>(), OLYMPIAN_MARBLE_PILLAR = new Ref<>(), GILDED_FRIEZE = new Ref<>(),
             ABYSSAL_TILE = new Ref<>(), UNDERWORLD_BRICK = new Ref<>(), CHAOS_LAMP = new Ref<>(),
             OLYMPIAN_TILES = new Ref<>(), CHAOS_MOSAIC = new Ref<>(), OLYMPIAN_PANEL = new Ref<>(), ABYSSAL_PANEL = new Ref<>(), UNDERWORLD_PANEL = new Ref<>();
+    public static final Ref<Block> SPIKE_PLATE = new Ref<>(), SPIKE_PLATE_DARK = new Ref<>(), TRAP_SPIKES = new Ref<>(), FLAME_VENT = new Ref<>(), GAS_VENT = new Ref<>(),
+            SKY_RELIEF = new Ref<>(), SEA_RELIEF = new Ref<>(), SHADE_RELIEF = new Ref<>();
     public static final Ref<Block> TOWER_BRAZIER = new Ref<>();
 
     public static final List<Def<Block>> BLOCK_DEFS = new ArrayList<>();
@@ -233,6 +235,16 @@ public final class ModContent {
         block("olympian_panel", OLYMPIAN_PANEL, key -> new com.thefarawaydev.realmsofchaos.block.ConnectedBlock(decor(key).mapColor(MapColor.QUARTZ)));
         block("abyssal_panel", ABYSSAL_PANEL, key -> new com.thefarawaydev.realmsofchaos.block.ConnectedBlock(decor(key).mapColor(MapColor.WARPED_WART_BLOCK)));
         block("underworld_panel", UNDERWORLD_PANEL, key -> new com.thefarawaydev.realmsofchaos.block.ConnectedBlock(decor(key).mapColor(MapColor.COLOR_BLACK)));
+        // the trap halls' own fittings
+        block("spike_plate", SPIKE_PLATE, key -> new Block(unbreakable(key).mapColor(MapColor.STONE).sound(SoundType.STONE)));
+        block("spike_plate_dark", SPIKE_PLATE_DARK, key -> new Block(unbreakable(key).mapColor(MapColor.DEEPSLATE).sound(SoundType.STONE)));
+        block("trap_spikes", TRAP_SPIKES, key -> new com.thefarawaydev.realmsofchaos.block.SpikesBlock(unbreakable(key).mapColor(MapColor.METAL).noCollision().noOcclusion().sound(SoundType.METAL)));
+        block("flame_vent", FLAME_VENT, key -> new Block(unbreakable(key).mapColor(MapColor.COLOR_BLACK).lightLevel(s -> 5).sound(SoundType.BASALT)));
+        block("gas_vent", GAS_VENT, key -> new Block(unbreakable(key).mapColor(MapColor.COLOR_GREEN).lightLevel(s -> 3).sound(SoundType.TUFF)));
+        // carved reliefs of each tower's story, set into the walls of its rooms and floors
+        block("sky_relief", SKY_RELIEF, key -> new Block(decor(key).mapColor(MapColor.QUARTZ)));
+        block("sea_relief", SEA_RELIEF, key -> new Block(decor(key).mapColor(MapColor.WARPED_WART_BLOCK)));
+        block("shade_relief", SHADE_RELIEF, key -> new Block(decor(key).mapColor(MapColor.COLOR_BLACK)));
 
         // items: codex, compass, 45 god weapons (ordered by line, rank 1 -> 15), then the block items
         item("chaos_codex", CHAOS_CODEX, key -> new CodexItem(new Item.Properties().setId(key).stacksTo(1)));

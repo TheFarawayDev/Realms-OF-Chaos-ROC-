@@ -23,7 +23,7 @@ public final class Gauntlet {
     private Gauntlet() {}
 
     /** What a hall hurts with. */
-    public enum Hazard { SPIKE, FLAME, SOULFIRE, FROST, VENOM, SHOCK, WITHER, GEYSER, GALE, LEVITATE, BLIGHT }
+    public enum Hazard { SPIKE, FLAME, SOULFIRE, FROST, VENOM, SHOCK, WITHER, GEYSER, GALE, LEVITATE, BLIGHT, CRUSH, SNARE, DRAIN }
 
     /** How far a hall reaches from its middle. */
     public enum Size {
@@ -209,7 +209,17 @@ public final class Gauntlet {
         PENDULUM_FIRE(Hazard.SOULFIRE, Pattern.PENDULUM, Size.NORMAL, 11, 14, 7, 4),
         GALE_PENDULUM(Hazard.GALE, Pattern.PENDULUM, Size.WIDE, 11, 14, 7, 2),
         TWIN_TIDES(Hazard.WITHER, Pattern.TWIN_ROWS, Size.WIDE, 12, 16, 8, 3),
-        MARCHING_THORNS(Hazard.SPIKE, Pattern.TWIN_ROWS, Size.NORMAL, 12, 14, 8, 1);
+        MARCHING_THORNS(Hazard.SPIKE, Pattern.TWIN_ROWS, Size.NORMAL, 12, 14, 8, 1),
+        // stones from the ceiling, roots from the floor, and floors that feed on whoever crosses them
+        CRUSHING_ROWS(Hazard.CRUSH, Pattern.ROWS, Size.NORMAL, 12, 14, 8, 2),
+        FALLING_SKY(Hazard.CRUSH, Pattern.HAIL, Size.NORMAL, 30, 14, 14, 3),
+        MILLSTONE(Hazard.CRUSH, Pattern.SPIRAL, Size.WIDE, 10, 14, 12, 4),
+        ROOT_TANGLE(Hazard.SNARE, Pattern.CHECKER, Size.SMALL, 34, 14, 14, 1),
+        BRIAR_RINGS(Hazard.SNARE, Pattern.RINGS, Size.NORMAL, 34, 14, 14, 2),
+        STRANGLEVINE(Hazard.SNARE, Pattern.CHASE, Size.NORMAL, 16, 14, 18, 4),
+        LEECH_FLOOR(Hazard.DRAIN, Pattern.QUARTERS, Size.NORMAL, 36, 16, 26, 2),
+        HUNGER_TIDE(Hazard.DRAIN, Pattern.BOUNCE, Size.NORMAL, 10, 14, 7, 5),
+        SAPPING_WEAVE(Hazard.DRAIN, Pattern.WEAVE, Size.WIDE, 22, 14, 14, 3);
 
         public final Hazard hazard;
         public final Pattern pattern;

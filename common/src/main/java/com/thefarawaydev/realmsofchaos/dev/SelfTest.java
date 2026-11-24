@@ -4445,9 +4445,9 @@ public final class SelfTest {
                 Passages.Cell cell = (Passages.Cell) found[1];
                 Passages.build(level, plan);
                 BlockPos m = plan.centre(cell);
-                check(level.getBlockState(m).is(com.thefarawaydev.realmsofchaos.world.Snares.SPIKE_TILE_A) && level.getBlockState(m.east()).is(com.thefarawaydev.realmsofchaos.world.Snares.SPIKE_TILE_B),
+                check(level.getBlockState(m).is(com.thefarawaydev.realmsofchaos.world.Snares.spikeTileA()) && level.getBlockState(m.east()).is(com.thefarawaydev.realmsofchaos.world.Snares.spikeTileB()),
                         "a spike hall's floor is two colours of tile");
-                check(!level.getBlockState(m.offset(4, 0, 0)).is(com.thefarawaydev.realmsofchaos.world.Snares.SPIKE_TILE_A) && !level.getBlockState(m.offset(4, 0, 0)).is(com.thefarawaydev.realmsofchaos.world.Snares.SPIKE_TILE_B),
+                check(!level.getBlockState(m.offset(4, 0, 0)).is(com.thefarawaydev.realmsofchaos.world.Snares.spikeTileA()) && !level.getBlockState(m.offset(4, 0, 0)).is(com.thefarawaydev.realmsofchaos.world.Snares.spikeTileB()),
                         "with a step of plain floor inside each wall");
                 hero.setPos(m.getX() + 0.5, m.getY() + 1, m.getZ() + 0.5);
                 hero.setHealth(hero.getMaxHealth());
@@ -4458,13 +4458,13 @@ public final class SelfTest {
                 com.thefarawaydev.realmsofchaos.world.Snares.tend(level, plan, cell, turn);
                 check(level.getBlockState(m.above()).isAir() && hero.getHealth() == hero.getMaxHealth(), "a warning first: nothing comes up yet");
                 com.thefarawaydev.realmsofchaos.world.Snares.tend(level, plan, cell, turn + com.thefarawaydev.realmsofchaos.world.Snares.SPIKE_WARN);
-                check(level.getBlockState(m.above()).is(Blocks.POINTED_DRIPSTONE) && level.getBlockState(m.offset(2, 1, 0)).is(Blocks.POINTED_DRIPSTONE), "then that colour's spikes come up");
+                check(level.getBlockState(m.above()).is(com.thefarawaydev.realmsofchaos.world.Snares.spike()) && level.getBlockState(m.offset(2, 1, 0)).is(com.thefarawaydev.realmsofchaos.world.Snares.spike()), "then that colour's spikes come up");
                 check(level.getBlockState(m.offset(1, 1, 0)).isAir(), "and the other colour's stay down");
                 check(hero.getHealth() < hero.getMaxHealth(), "whoever stood on that colour is hurt: " + hero.getHealth());
                 com.thefarawaydev.realmsofchaos.world.Snares.tend(level, plan, cell, turn + com.thefarawaydev.realmsofchaos.world.Snares.SPIKE_WARN + com.thefarawaydev.realmsofchaos.world.Snares.SPIKE_UP);
                 check(level.getBlockState(m.above()).isAir(), "and they go down again");
                 com.thefarawaydev.realmsofchaos.world.Snares.tend(level, plan, cell, turn + 40 + com.thefarawaydev.realmsofchaos.world.Snares.SPIKE_WARN);
-                check(level.getBlockState(m.offset(1, 1, 0)).is(Blocks.POINTED_DRIPSTONE) && level.getBlockState(m.above()).isAir(), "half a turn later it is the other colour");
+                check(level.getBlockState(m.offset(1, 1, 0)).is(com.thefarawaydev.realmsofchaos.world.Snares.spike()) && level.getBlockState(m.above()).isAir(), "half a turn later it is the other colour");
                 com.thefarawaydev.realmsofchaos.world.Snares.lower(level, plan, cell);
                 check(level.getBlockState(m.offset(1, 1, 0)).isAir(), "a hall can be put back as it was");
 
@@ -4474,7 +4474,7 @@ public final class SelfTest {
                 cell = (Passages.Cell) found[1];
                 Passages.build(level, plan);
                 m = plan.centre(cell);
-                check(level.getBlockState(m).is(com.thefarawaydev.realmsofchaos.world.Snares.VENT), "a flame hall has vents in its floor");
+                check(level.getBlockState(m).is(com.thefarawaydev.realmsofchaos.world.Snares.vent()), "a flame hall has vents in its floor");
                 hero.setPos(m.getX() + 0.5, m.getY() + 1, m.getZ() + 0.5);
                 hero.setHealth(hero.getMaxHealth());
                 hero.clearFire();
@@ -4923,7 +4923,7 @@ public final class SelfTest {
                 Passages.Cell gasRoom = (Passages.Cell) found[1];
                 Passages.build(level, gasPlan);
                 m = gasPlan.centre(gasRoom);
-                check(level.getBlockState(m.offset(3, 0, 0)).is(com.thefarawaydev.realmsofchaos.world.Snares.GAS_VENT) && level.getBlockState(m.offset(0, 0, -3)).is(com.thefarawaydev.realmsofchaos.world.Snares.GAS_VENT), "a gas hall has a vent in each side of its floor");
+                check(level.getBlockState(m.offset(3, 0, 0)).is(com.thefarawaydev.realmsofchaos.world.Snares.gasVent()) && level.getBlockState(m.offset(0, 0, -3)).is(com.thefarawaydev.realmsofchaos.world.Snares.gasVent()), "a gas hall has a vent in each side of its floor");
                 turn = 200L * 1000;
                 check(com.thefarawaydev.realmsofchaos.world.Snares.gasHalf(turn) == 0 && com.thefarawaydev.realmsofchaos.world.Snares.gasHalf(turn + 50) == 1 && !com.thefarawaydev.realmsofchaos.world.Snares.gasOut(turn + 5)
                         && com.thefarawaydev.realmsofchaos.world.Snares.gasOut(turn + 25), "the halves take turns, each warned of before it fills");
@@ -4974,7 +4974,7 @@ public final class SelfTest {
                 check(jetKinds.size() == 4, "and what they let out differs from corridor to corridor: fire, frost, sparks, venom: " + jetKinds);
                 Passages.build(level, jetPlan);
                 BlockPos mid = jetPlan.corridorMiddle(jetCell, jetDir);
-                check(level.getBlockState(mid).is(com.thefarawaydev.realmsofchaos.world.Snares.VENT) && jetPlan.cellAt(mid) == null, "vents across the middle of the corridor");
+                check(level.getBlockState(mid).is(com.thefarawaydev.realmsofchaos.world.Snares.vent()) && jetPlan.cellAt(mid) == null, "vents across the middle of the corridor");
                 hero.setPos(mid.getX() + 0.5, mid.getY() + 1, mid.getZ() + 0.5);
                 hero.setHealth(hero.getMaxHealth());
                 hero.clearFire();
@@ -5281,7 +5281,7 @@ public final class SelfTest {
                 }
                 check(all.length >= 36 && hazards.size() == com.thefarawaydev.realmsofchaos.world.Gauntlet.Hazard.values().length && patterns.size() == com.thefarawaydev.realmsofchaos.world.Gauntlet.Pattern.values().length && sizes.size() == 3,
                         "thirty-six or more halls, using every hazard, every pattern and every size: " + all.length);
-                check(all.length >= 46, "forty-six of them now: " + all.length);
+                check(all.length >= 55, "fifty-five of them now, fourteen hazards: " + all.length);
                 check(com.thefarawaydev.realmsofchaos.world.Gauntlet.Size.SMALL.half == 3 && com.thefarawaydev.realmsofchaos.world.Gauntlet.Size.NORMAL.half == 4 && com.thefarawaydev.realmsofchaos.world.Gauntlet.Size.WIDE.half == 5, "small, ordinary and wide");
                 // (a path hall: its path is never live, the rest of the floor is - and the doormats never are)
                 boolean[] four = doorSets[0];
@@ -5462,6 +5462,9 @@ public final class SelfTest {
                         case GALE -> Math.abs(hero.getDeltaMovement().x) + Math.abs(hero.getDeltaMovement().z) > 1.0;
                         case LEVITATE -> hero.hasEffect(net.minecraft.world.effect.MobEffects.LEVITATION);
                         case BLIGHT -> hero.hasEffect(net.minecraft.world.effect.MobEffects.BLINDNESS);
+                        case CRUSH -> hero.hasEffect(net.minecraft.world.effect.MobEffects.NAUSEA);
+                        case SNARE -> hero.hasEffect(net.minecraft.world.effect.MobEffects.SLOWNESS) && hero.getEffect(net.minecraft.world.effect.MobEffects.SLOWNESS).getAmplifier() >= 3;
+                        case DRAIN -> hero.hasEffect(net.minecraft.world.effect.MobEffects.HUNGER) && hero.hasEffect(net.minecraft.world.effect.MobEffects.WEAKNESS);
                     };
                     check(hero.getHealth() < hero.getMaxHealth() && own, hazard + " hurts, and in its own way");
                 }
