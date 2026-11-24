@@ -16,17 +16,20 @@ The current build is an **Alpha**.
 
 ## What's in 1.2.0
 
-* **Every item redrawn at 64x64.** All 45 relic weapons, the codex, the compass, the seekers, the keystones, the
-  essences, the field bag, the Deck of Fate and its 22 cards, the voodoo dolls, the eight pieces of the panoply, the
-  forge materials and the bolts the staffs fire. Each is drawn as smooth solids cut into crisp pixels - no blur -
-  shaded from the top left in five tones with cool shadows and warm lights, outlined, and the weapons keep their
-  glint sweeping along the metal. (`art/renders/items-64-*.png`; the generator is `tools/item_art.py`)
+* **Every item redrawn.** All 45 relic weapons, the codex, the compass, the seekers, the keystones, the essences,
+  the field bag, the Deck of Fate and its 22 cards, the voodoo dolls, the eight pieces of the panoply, the forge
+  materials and the bolts the staffs fire. Each is designed as smooth solids and cut into crisp 16x16 pixels - the
+  size Minecraft's own items are, so they sit beside them - shaded from the top left in five tones with cool
+  shadows and warm lights, outlined, and the weapons keep their glint sweeping along the metal. Every part is at
+  least a pixel wide, so a spear's shaft or a bow's string never breaks up. (`art/renders/items-16-*.png`; the
+  generator is `tools/item_art.py`)
 * **The hub, bigger and better spaced.** The plaza's radius goes from 26 to 40 blocks: the gates stand at 28, the
   ways to them are seven wide, the canal, the gardens and the echoes' plinths move out with them, two pairs of
   beacons line each way, flowering beds with benches ring the outer plaza, and the empty quarter has a still pool
   with an obelisk in it. The rotunda is larger and the Oracle and the Heart now stand inside it, under the dome.
-  The statues and the model towers stand further out to match, and whatever an earlier hub left in the sky is
-  cleared away when it is rebuilt. (`art/renders/hub-larger.png`)
+  Each tower's god now stands on top of its own gate, on an attic raised over the entablature, facing the plaza;
+  the model towers stand far off behind. Whatever an earlier hub left in the sky is cleared away when it is
+  rebuilt. (`art/renders/hub-larger.png`)
 * **Forges join up.** Forges of Chaos set side by side become one furnace: each block knows which of its
   neighbours are forges and drops its frame along those edges, so a bank of them shows one long grated mouth of
   fire. Any block of the bank opens the forge. (`art/renders/hub-forge-bank.png`)

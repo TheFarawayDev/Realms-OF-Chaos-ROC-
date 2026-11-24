@@ -16,7 +16,8 @@ import os
 
 from PIL import Image
 
-N = 64
+N = 64          # the size the designs are drawn at
+OUT = 16        # the size they are cut into: Minecraft's own, so items sit beside vanilla ones
 LIGHT = (-0.62, -0.78)          # where the light comes from (x right, y down)
 
 
@@ -137,46 +138,46 @@ class Icon:
         return self
 
     def render(self, glint=None, outline=True):
-        """glint: a position along the icon's diagonal (0 at bottom left, 1 at top right) where a bright band crosses
-        the metal, or None."""
-        owner = [[None] * N for _ in range(N)]
-        depth = [[0.0] * N for _ in range(N)]
+        """Cuts the solids into OUT x OUT pixels. Each pixel takes the topmost solid that covers at least a third of
+        it (sampled four by four), so a shaft narrower than a pixel still gets its line of pixels. glint: a position
+        along the icon's diagonal (0 at bottom left, 1 at top right) where a bright band crosses the metal."""
+        K = N // OUT
+        owner = [[None] * OUT for _ in range(OUT)]
         order = sorted(range(len(self.parts)), key=lambda i: self.parts[i][2])
-        for y in range(N):
-            for x in range(N):
-                px, py = x + 0.5, y + 0.5
+        subs = [(i + 0.5) * K / 4 for i in range(4)]
+        for y in range(OUT):
+            for x in range(OUT):
                 for i in reversed(order):
-                    d = self.parts[i][0](px, py)
-                    if d < 0:
+                    f = self.parts[i][0]
+                    hits = sum(1 for sy in subs for sx in subs if f(x * K + sx, y * K + sy) < 0)
+                    if hits >= 5:
                         owner[y][x] = i
-                        depth[y][x] = -d
                         break
-        img = Image.new("RGBA", (N, N), (0, 0, 0, 0))
+        img = Image.new("RGBA", (OUT, OUT), (0, 0, 0, 0))
         pix = img.load()
-        for y in range(N):
-            for x in range(N):
+        for y in range(OUT):
+            for x in range(OUT):
                 i = owner[y][x]
                 if i is None:
                     continue
                 sdf, mat, z, axis = self.parts[i]
-                px, py = x + 0.5, y + 0.5
-                gx = sdf(px + 0.6, py) - sdf(px - 0.6, py)
-                gy = sdf(px, py + 0.6) - sdf(px, py - 0.6)
+                px, py = (x + 0.5) * K, (y + 0.5) * K
+                h = 0.6 * K
+                gx = sdf(px + h, py) - sdf(px - h, py)
+                gy = sdf(px, py + h) - sdf(px, py - h)
                 gl = math.hypot(gx, gy) or 1.0
                 nx, ny = gx / gl, gy / gl                       # outward normal
                 rim = -(nx * LIGHT[0] + ny * LIGHT[1])          # 1 where the edge faces the light
-                d = depth[y][x]
-                diag = ((x - y) + N) / (2 * N)                  # 0 bottom-left .. 1 top-right... (y down)
+                d = max(0.05, -sdf(px, py) / K)                # depth in pixels
                 if mat.kind == "gem":
-                    s = 0.62 + 0.38 * rim * min(1.0, d / 2.5) - 0.0
-                    s = 0.45 + 0.55 * max(0.0, 1 - math.hypot(nx * min(d, 4) + 2, ny * min(d, 4) + 2) / 6) if d > 2 else s
-                elif d < 1.15:
+                    s = 0.5 + 0.45 * rim if d < 1.2 else 0.45 + 0.5 * max(0.0, 1 - math.hypot(x - OUT * 0.4, y - OUT * 0.35) / (OUT * 0.5))
+                elif d < 0.6:
                     s = 0.52 + 0.46 * rim
-                elif d < 2.6:
-                    s = 0.55 + 0.28 * rim
+                elif d < 1.4:
+                    s = 0.55 + 0.3 * rim
                 else:
-                    s = 0.56 + 0.12 * (1 - (x + y) / (2 * N))
-                if mat.kind == "metal" and 1.2 <= d < 2.4 and rim > 0.25:
+                    s = 0.56 + 0.12 * (1 - (x + y) / (2 * OUT))
+                if mat.kind == "metal" and 0.6 <= d < 1.5 and rim > 0.25:
                     s = 0.98
                 if mat.kind == "wood":
                     along = px * axis[0] + py * axis[1]
@@ -185,34 +186,33 @@ class Icon:
                 if mat.kind == "cloth" and ((x * 7 + y * 13) % 11 == 0):
                     s -= 0.12                                    # the odd darker thread in the weave
                 if glint is not None and mat.kind == "metal":
-                    g = (x + (N - y)) / (2 * N)
-                    if abs(g - glint) < 0.035:
+                    g = (x + (OUT - y)) / (2 * OUT)
+                    if abs(g - glint) < 0.05:
                         s = 1.1
-                    elif abs(g - glint) < 0.06:
+                    elif abs(g - glint) < 0.09:
                         s = max(s, 0.86)
                 if mat.glow:
-                    s = 0.6 + 0.4 * min(1.0, d / 4.0)
+                    s = 0.6 + 0.4 * min(1.0, d / 1.5)
                 t = 1 if s < 0.26 else 2 if s < 0.44 else 3 if s < 0.66 else 4 if s < 0.86 else 5
                 # where this part lies over another, a crisp line divides them
                 for dx, dy in ((1, 0), (-1, 0), (0, 1), (0, -1)):
                     qx, qy = x + dx, y + dy
-                    if 0 <= qx < N and 0 <= qy < N:
+                    if 0 <= qx < OUT and 0 <= qy < OUT:
                         j = owner[qy][qx]
                         if j is not None and j != i and self.parts[j][2] < z and not mat.glow:
-                            t = min(t, 1)
+                            t = min(t, 2)
                 pix[x, y] = mat.tones[t] + (255,)
         if outline:
             out = []
-            for y in range(N):
-                for x in range(N):
+            for y in range(OUT):
+                for x in range(OUT):
                     if owner[y][x] is not None:
                         continue
                     best = None
                     for dx, dy in ((1, 0), (-1, 0), (0, 1), (0, -1)):
                         qx, qy = x + dx, y + dy
-                        if 0 <= qx < N and 0 <= qy < N and owner[qy][qx] is not None:
-                            m = self.parts[owner[qy][qx]][1]
-                            c = m.tones[0]
+                        if 0 <= qx < OUT and 0 <= qy < OUT and owner[qy][qx] is not None:
+                            c = self.parts[owner[qy][qx]][1].tones[0]
                             if best is None or sum(c) < sum(best):
                                 best = c
                     if best is not None:
@@ -223,10 +223,12 @@ class Icon:
 
 
 def sparkle(img, x, y, c=(255, 255, 250), size=2):
+    """A star of light at a point given in design units."""
     p = img.load()
+    x, y, size = int(x * OUT / N), int(y * OUT / N), max(0, size // 2)
     for k in range(-size, size + 1):
         for (qx, qy) in ((x + k, y), (x, y + k)):
-            if 0 <= qx < N and 0 <= qy < N and p[qx, qy][3]:
+            if 0 <= qx < OUT and 0 <= qy < OUT and p[qx, qy][3]:
                 p[qx, qy] = (mix(p[qx, qy][:3], c, 0.9 if k == 0 else 0.55)) + (255,)
 
 
@@ -261,9 +263,9 @@ def save_png(img, path):
 
 def save_frames(frames, path, mcmeta):
     os.makedirs(os.path.dirname(path), exist_ok=True)
-    strip = Image.new("RGBA", (N, N * len(frames)))
+    strip = Image.new("RGBA", (OUT, OUT * len(frames)))
     for i, f in enumerate(frames):
-        strip.paste(f, (0, i * N))
+        strip.paste(f, (0, i * OUT))
     strip.save(path)
     with open(path + ".mcmeta", "w") as fh:
         json.dump(mcmeta, fh, indent=2)
@@ -395,7 +397,7 @@ def weapon_icon(shape, metal_c, trim_c, gem_c, wood_c):
         ic.add(circle(*ax.at(45, 0), 3.2), G, 5)
     elif shape == "bolt":
         pts = [(8, 60), (22, 38), (16, 37), (36, 14), (30, 13), (56, 2), (36, 26), (42, 27), (24, 48), (30, 49)]
-        ic.add(polygon(pts), glow((255, 236, 120)), 2)
+        ic.add(polygon(pts), metal((250, 204, 60)), 2)
         ic.add(polygon([(14, 54), (24, 40), (20, 40), (34, 20), (28, 20), (46, 8), (34, 24), (38, 25), (24, 44), (28, 45)]), glow((255, 255, 220)), 3)
     elif shape == "whip":
         ic.add(ax.cap(2, 18, 2.6), leather, 3, ax.dir())
@@ -597,7 +599,7 @@ def keystone(line, k):
     stone = {"zeus": (226, 222, 212), "poseidon": (88, 164, 156), "hades": (62, 56, 74)}[line]
     ic.add(polygon([(32, 4), (56, 18), (56, 46), (32, 60), (8, 46), (8, 18)]), matte(stone), 1)
     ic.add(polygon([(32, 10), (50, 21), (50, 43), (32, 54), (14, 43), (14, 21)]), matte(shade(stone, 0.85)), 2)
-    pixel_symbol(ic, SIGILS[line], 20, 20, 3, glow(mix(col, (255, 255, 255), 0.15 + 0.2 * math.sin(k / 6 * math.tau))), z=4)
+    pixel_symbol(ic, SIGILS[line], 16, 16, 4, glow(mix(col, (255, 255, 255), 0.15 + 0.2 * math.sin(k / 6 * math.tau))), z=4)
     for (x, y) in ((32, 6), (54, 19), (54, 45), (32, 58), (10, 45), (10, 19)):
         ic.add(circle(x, y, 2.0), gold(), 3)
     return ic.render()
@@ -626,22 +628,22 @@ def doll(pin):
 
 def card(symbol, colour, k, back=False):
     ic = Icon()
-    ic.add(polygon([(14, 4), (50, 4), (50, 60), (14, 60)]), gold(), 1)
-    ic.add(polygon([(17, 7), (47, 7), (47, 57), (17, 57)]), matte(mix(colour, (30, 24, 44), 0.55) if back else (240, 230, 206)), 2)
+    ic.add(polygon([(8, 0), (56, 0), (56, 64), (8, 64)]), gold(), 1)
+    ic.add(polygon([(12, 4), (52, 4), (52, 60), (12, 60)]), matte(mix(colour, (30, 24, 44), 0.55) if back else (240, 230, 206)), 2)
     if back:
         for i in range(4):
             ic.add(ring(32, 32, 4 + i * 4, 0.8), gold(), 3)
         ic.add(circle(32, 32, 3), glow((200, 170, 255)), 4)
     else:
-        ic.add(polygon([(19, 9), (45, 9), (45, 15), (19, 15)]), matte(colour), 3)
-        ic.add(polygon([(19, 49), (45, 49), (45, 55), (19, 55)]), matte(colour), 3)
-        pixel_symbol(ic, symbol, 20, 19, 3, matte((54, 40, 46)), z=4, accent=glow(colour))
+        ic.add(polygon([(12, 4), (52, 4), (52, 8), (12, 8)]), matte(colour), 3)
+        ic.add(polygon([(12, 56), (52, 56), (52, 60), (12, 60)]), matte(colour), 3)
+        pixel_symbol(ic, symbol, 16, 20, 4, matte((54, 40, 46)), z=4, accent=glow(colour))
     img = ic.render()
     if k:
         p = img.load()
-        for y in range(N):
-            for x in range(N):
-                if p[x, y][3] and abs((x + y) - (k * 18 - 10)) < 3:
+        for y in range(OUT):
+            for x in range(OUT):
+                if p[x, y][3] and abs((x + y) - (k * 5 - 3)) < 1:
                     p[x, y] = mix(p[x, y][:3], (255, 255, 255), 0.45) + (255,)
     return img
 
@@ -753,7 +755,7 @@ def material(shape, col):
 
 
 def run(assets):
-    """Writes every item's 64x64 art over the old, using the mod's own data from generate.py."""
+    """Writes every item's art over the old, using the mod's own data from generate.py."""
     import generate as G
     T = os.path.join(assets, "textures/item")
 
@@ -780,7 +782,7 @@ def run(assets):
     for line in ("zeus", "poseidon", "hades"):
         save_frames([essence(line, k) for k in range(6)], os.path.join(T, f"essence_{line}.png"), pulse(6))
         save_frames([keystone(line, k) for k in range(6)], os.path.join(T, f"keystone_{line}.png"), pulse(6))
-        save_frames([compass(k, face=shade(LINE_COL[line], 0.25), needle=LINE_COL[line], mark=SIGILS[line]) for k in range(8)],
+        save_frames([compass(k, face=shade(LINE_COL[line], 0.25), needle=LINE_COL[line]) for k in range(8)],
                     os.path.join(T, f"seeker_{line}.png"), pulse(8))
     for did, _, _, pin in G.DOLLS:
         static(f"voodoo_doll_{did}", doll(pin))
@@ -800,17 +802,17 @@ def run(assets):
         frames = []
         for f in range(4):
             pulse = 0.5 + 0.5 * math.sin(f / 4 * math.tau)
-            img = Image.new("RGBA", (N, N))
+            img = Image.new("RGBA", (OUT, OUT))
             px = img.load()
-            for y in range(N):
-                for x in range(N):
-                    off = abs(y - 31.5) / 31.5
-                    along = x / (N - 1)
+            for y in range(OUT):
+                for x in range(OUT):
+                    off = abs(y - (OUT - 1) / 2) / ((OUT - 1) / 2)
+                    along = x / (OUT - 1)
                     core = max(0.0, 1.0 - off * 2.2)
                     v = min(1.0, core * (0.55 + 0.45 * along) + 0.25 * pulse * along)
                     v = round(v * 5) / 5                                  # in bands, not a smear
                     c = mix(shade(col, 0.55 + 0.35 * round(along * 4) / 4), (255, 255, 255), v)
-                    if ((x // 4) + f) % 5 == 0 and off > 0.25 and (y // 4) % 2 == 0:
+                    if (x + f) % 5 == 0 and off > 0.25:
                         c = mix(c, (255, 255, 255), 0.35)
                     px[x, y] = c + (255,)
             frames.append(img)

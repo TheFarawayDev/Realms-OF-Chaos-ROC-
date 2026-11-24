@@ -24,9 +24,9 @@ public final class HubVista {
     /** How far out from the middle of the plaza a statue stands, and a tower. */
     public static final int STATUE_OUT = 60, TOWER_OUT = 125, TOWER_ASIDE = 36;
     /** A statue stands on a pedestal whose top is this far above the plaza. */
-    public static final int STATUE_FOOT = 18;
+    public static final int STATUE_FOOT = 9;
     /** Blocks to a unit of the figure. */
-    private static final double SCALE = 1.8;
+    private static final double SCALE = 1.2;
     /** How tall the model of a tower is (fifteen floors of ten), and its radius at the foot. */
     public static final int TOWER_HEIGHT = 150;
     private static final double TOWER_RADIUS = 9.0;
@@ -46,7 +46,7 @@ public final class HubVista {
 
     /** Where a god's statue stands: the middle of the top of its pedestal. */
     public static BlockPos statueFoot(Line line) {
-        return BlockPos.ZERO.relative(outward(line), STATUE_OUT).atY(Y + STATUE_FOOT);
+        return BlockPos.ZERO.relative(outward(line), RealmBuilder.GATE_OUT).atY(Y + STATUE_FOOT);
     }
 
     /** Where the model of a tower stands: the middle of its foot. */
@@ -71,6 +71,7 @@ public final class HubVista {
         for (Line line : Line.values()) {
             Direction out = outward(line);
             BlockPos statue = BlockPos.ZERO.relative(out, 44).atY(Y);
+            clearBox(level, BlockPos.ZERO.relative(out, 60).atY(Y), 16, -45, 72);           // (where they stood on islands of their own)
             BlockPos tower = BlockPos.ZERO.relative(out, 105).relative(out.getClockWise(), 30).atY(Y - 6);
             clearBox(level, statue, 14, -40, 72);
             clearBox(level, tower, 22, -40, TOWER_HEIGHT + 22);
@@ -291,46 +292,42 @@ public final class HubVista {
         return null;
     }
 
-    /** A colossus of the tower's god, on a pedestal on its own island, facing the plaza. */
+    /**
+     * The tower's god, standing on top of its gate: an attic is raised on the gate's entablature - a block of the
+     * god's stone with a cornice round it and a plinth on top - and the figure stands on that, facing the plaza.
+     */
     private static void statue(ServerLevel level, Line line) {
         Stones s = stones(line);
         BlockPos foot = statueFoot(line);
         Direction front = outward(line).getOpposite(), right = front.getClockWise();
         Mason.Stone cut = Mason.of(s.plinth());
-        // clear the space it stands in, so a rebuild leaves nothing of an earlier one
-        for (int a = -15; a <= 15; a++) for (int b = -15; b <= 15; b++) for (int y = -44; y <= 52; y++) {
-            BlockPos at = foot.offset(a, y, b);
+        // the gate's pediment gives way to the attic; the air above it is cleared for the figure
+        for (int a = -6; a <= 6; a++) for (int b = -5; b <= 5; b++) for (int y = -2; y <= 48; y++) {
+            BlockPos at = foot.relative(right, a).relative(front, b).above(y);
             if (!level.getBlockState(at).isAir()) set(level, at, Blocks.AIR);
         }
-        // the island, and the pedestal on it: a stepped base, a die with the god's mark, a cornice
-        island(level, foot.below(6), 13.5, 30, s.top(), line == Line.HADES ? Blocks.SOUL_SOIL : line == Line.POSEIDON ? Blocks.SANDSTONE : Blocks.DIRT, s.rock(), s.deep());
-        for (int a = -8; a <= 8; a++) {
-            for (int b = -8; b <= 8; b++) {
-                int ring = Math.max(Math.abs(a), Math.abs(b));
-                Direction out = Mason.outward(a, b);
-                BlockPos at = foot.offset(a, 0, b);
-                if (ring == 8) set(level, at.below(5), Mason.stair(cut.stairs(), out.getOpposite(), false));
-                else set(level, at.below(5), s.plinthTrim());
-                if (ring <= 7) set(level, at.below(4), ring == 7 ? Mason.stair(cut.stairs(), out.getOpposite(), false) : s.plinth().defaultBlockState());
-                if (ring <= 6) {
-                    for (int y = 3; y >= 2; y--) set(level, at.below(y), ring == 6 && Math.abs(a) == Math.abs(b) ? s.plinthTrim() : s.plinth());
-                    set(level, at.below(1), s.plinthTrim());
+        for (int a = -5; a <= 5; a++) {
+            for (int b = -3; b <= 3; b++) {
+                BlockPos at = foot.relative(right, a).relative(front, b);
+                boolean rim = Math.abs(a) == 5 || Math.abs(b) == 3;
+                Direction out = Math.abs(a) == 5 ? (a > 0 ? right : right.getOpposite()) : (b > 0 ? front : front.getOpposite());
+                // the attic: a course of the god's stone, carried out on a cornice of hanging stairs
+                set(level, at.below(2), rim ? Mason.stair(cut.stairs(), out.getOpposite(), true) : s.plinthTrim().defaultBlockState());
+                // and the plinth on it, its edge stepped
+                if (Math.abs(a) <= 4 && Math.abs(b) <= 2) {
+                    boolean edge = Math.abs(a) == 4 || Math.abs(b) == 2;
+                    Direction o2 = Math.abs(a) == 4 ? (a > 0 ? right : right.getOpposite()) : (b > 0 ? front : front.getOpposite());
+                    set(level, at.below(1), edge ? Mason.stair(cut.stairs(), o2.getOpposite(), false) : s.plinth().defaultBlockState());
                 }
-                if (ring == 7) set(level, at.below(1), Mason.stair(cut.stairs(), out.getOpposite(), true));
             }
         }
-        // the god's mark on the face of the die that looks at the plaza, and a lamp at each corner of the top
-        BlockPos face = foot.relative(front, 6);
-        for (int k = -1; k <= 1; k++) set(level, face.relative(right, k).below(3), k == 0 ? s.light() : s.plinthTrim());
-        set(level, face.below(2), s.trim());
-        for (int a = -1; a <= 1; a += 2) for (int b = -1; b <= 1; b += 2) {
-            set(level, foot.offset(a * 6, 0, b * 6), s.plinthTrim());
-            set(level, foot.offset(a * 6, 1, b * 6), s.light());
-        }
+        // a lamp at each front corner of the attic, and the god's mark in the middle of its face
+        for (int side = -1; side <= 1; side += 2) set(level, foot.relative(right, side * 4).relative(front, 2).below(1), s.light());
+        set(level, foot.relative(front, 3).below(2), s.light());
         // the figure
-        for (int bx = -11; bx <= 14; bx++) {
-            for (int by = 0; by <= 49; by++) {
-                for (int bz = -6; bz <= 8; bz++) {
+        for (int bx = -8; bx <= 9; bx++) {
+            for (int by = 0; by <= 34; by++) {
+                for (int bz = -4; bz <= 5; bz++) {
                     Part p = part(line, bx / SCALE, by / SCALE, bz / SCALE);
                     if (p == null) continue;
                     set(level, foot.relative(right, bx).relative(front, bz).above(by), s.of(p));

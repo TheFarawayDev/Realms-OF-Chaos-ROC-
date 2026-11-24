@@ -384,7 +384,7 @@ def moulded(base, light, dark, accent, kind):
         elif kind == "plain":
             pass
         return c
-    return paint(fn, hash(kind) & 0xFFFF)
+    return paint(fn, sum(ord(ch) * (i + 1) for i, ch in enumerate(kind)))
 
 
 def gen_pedestals(assets):
