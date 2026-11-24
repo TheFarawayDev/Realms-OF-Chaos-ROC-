@@ -76,7 +76,7 @@ public final class Passages {
 
     public enum Kind { START, EXIT, SEAL, TREASURE, SHRINE, HALL, ROOM, TRAP, GARDEN, LIBRARY, POOL, ARENA, VAULT, CHIMES, BEAM, PLATES, CRUSHER, DARTS,
         SPIKES, FLAMES, BLADES, STAIRWELL, ARC, GAS, CELLS, STORE, GAUNTLET, OBSERVATORY, ARMORY, BATHS, SANCTUM,
-        PROVING, BARRACKS }
+        PROVING, BARRACKS, DUEL, AMBUSH, OVERLOOK }
 
     /** How the corridor between two rooms runs: straight, round a baffle to one side or either, or past a nook. */
     public static final int RUN_STRAIGHT = 0, RUN_BEND_LOW = 1, RUN_BEND_HIGH = 2, RUN_SPLIT = 3, RUN_NOOK_LOW = 4, RUN_NOOK_HIGH = 5, RUN_GALLERY = 6, RUN_CAUSEWAY = 7;
@@ -248,8 +248,13 @@ public final class Passages {
                         h = TALL;
                         wide = true;
                     }
-                    case BARRACKS -> {
+                    case BARRACKS, DUEL -> {
                         h = random.nextBoolean() ? 7 : TALL;
+                        wide = true;
+                    }
+                    case AMBUSH, OVERLOOK -> {
+                        // an ambush needs a ceiling to drop from; an overlook, room for its gallery
+                        h = TALL;
                         wide = true;
                     }
                     case BEAM -> {
@@ -511,8 +516,9 @@ public final class Passages {
             // the rest, as a stronghold is laid out: corridors and crossings between rooms, no two rooms of a kind
             // joined by a doorway, and a kind already used on the level less likely to be used again
             Kind[] common = {Kind.HALL, Kind.ROOM, Kind.TRAP, Kind.CRUSHER, Kind.DARTS, Kind.SPIKES, Kind.FLAMES, Kind.BLADES, Kind.ARC, Kind.GAS,
-                    Kind.GARDEN, Kind.LIBRARY, Kind.POOL, Kind.CELLS, Kind.STORE, Kind.GAUNTLET, Kind.OBSERVATORY, Kind.ARMORY, Kind.BATHS, Kind.SANCTUM, Kind.BARRACKS};
-            float[] weight = {2.4F, 1.8F, 0.4F, 0.22F, 0.22F, 0.22F, 0.22F, 0.22F, 0.22F, 0.22F, 0.9F, 0.8F, 0.7F, 0.7F, 0.7F, 3.2F, 0.55F, 0.55F, 0.55F, 0.55F, 0.6F};
+                    Kind.GARDEN, Kind.LIBRARY, Kind.POOL, Kind.CELLS, Kind.STORE, Kind.GAUNTLET, Kind.OBSERVATORY, Kind.ARMORY, Kind.BATHS, Kind.SANCTUM, Kind.BARRACKS, Kind.DUEL, Kind.AMBUSH, Kind.OVERLOOK};
+            float[] weight = {2.4F, 1.8F, 0.4F, 0.22F, 0.22F, 0.22F, 0.22F, 0.22F, 0.22F, 0.22F, 0.9F, 0.8F, 0.7F, 0.7F, 0.7F, 3.9F, 0.55F, 0.55F, 0.55F, 0.55F, 0.6F,
+                    0.45F, 0.5F, 0.5F};
             // the trap halls this level is dangerous enough for, in an order of its own: no hall twice on a level
             List<Gauntlet.Variant> halls = new ArrayList<>();
             for (Gauntlet.Variant v : Gauntlet.Variant.values()) if (v.threat <= threat) halls.add(v);
@@ -594,6 +600,9 @@ public final class Passages {
                         case SANCTUM -> 'S';
                         case PROVING -> 'R';
                         case BARRACKS -> 'K';
+                        case DUEL -> 'D';
+                        case AMBUSH -> 'Y';
+                        case OVERLOOK -> 'L';
                     });
                     if (x + 1 < size) rooms.append(east[x][z] ? "--" : "  ");
                     below.append(z + 1 < size && south[x][z] ? "|  " : "   ");
@@ -1540,6 +1549,9 @@ public final class Passages {
             }
             case PROVING -> buildProving(level, plan, c, p, random);
             case BARRACKS -> buildBarracks(level, plan, c, p, random);
+            case DUEL -> buildDuel(level, plan, c, p, random);
+            case AMBUSH -> buildAmbush(level, plan, c, p, random);
+            case OVERLOOK -> buildOverlook(level, plan, c, p, random);
             case SANCTUM -> {
                 // a quiet room: its whole floor one framed mosaic of the tower, its walls lined in the tower's panels, a
                 // brazier of the tower's fire in each corner, a chaos lamp hung over the middle
@@ -1612,7 +1624,7 @@ public final class Passages {
     private static void extras(ServerLevel level, Plan plan, Cell c, Random random) {
         Kind kind = plan.kind(c);
         if (kind != Kind.ROOM && kind != Kind.GARDEN && kind != Kind.LIBRARY && kind != Kind.POOL && kind != Kind.ARENA && kind != Kind.SHRINE && kind != Kind.STORE
-                && kind != Kind.OBSERVATORY && kind != Kind.ARMORY && kind != Kind.BATHS && kind != Kind.SANCTUM && kind != Kind.BARRACKS) return;
+                && kind != Kind.OBSERVATORY && kind != Kind.ARMORY && kind != Kind.BATHS && kind != Kind.SANCTUM && kind != Kind.BARRACKS && kind != Kind.DUEL && kind != Kind.AMBUSH) return;
         BlockPos m = plan.centre(c);
         // against the walls, clear of the lanes that run door to door
         int w = plan.half(c);
@@ -1768,6 +1780,264 @@ public final class Passages {
         for (int dx = -1; dx <= 1; dx++) for (int dz = -1; dz <= 1; dz++) set(level, m.offset(dx, 0, dz), p.inlay());
     }
 
+    /**
+     * A duelling circle: a ring of the tower's mosaic in the middle, posts round it with the tower's fire burning on
+     * them, benches along the walls for those who watch, standards on the walls. Its champion waits in the circle;
+     * the cache stands on a plinth in a corner and stays shut while the champion stands.
+     */
+    private static void buildDuel(ServerLevel level, Plan plan, Cell c, TowerBuilder.Palette p, Random random) {
+        BlockPos m = plan.centre(c);
+        int far = plan.half(c);
+        for (int dx = -far; dx <= far; dx++) {
+            for (int dz = -far; dz <= far; dz++) {
+                double r = Math.sqrt(dx * dx + dz * dz);
+                if (r <= 3.2) set(level, m.offset(dx, 0, dz), r > 2.5 ? p.trim() : mosaic(plan.line));
+                else if (r <= 4.2) set(level, m.offset(dx, 0, dz), ModContent.ARENA_SAND.get());
+            }
+        }
+        set(level, m, p.light());
+        // eight posts round the circle, the tower's brazier on each
+        for (int[] k : new int[][]{{3, 3}, {-3, 3}, {3, -3}, {-3, -3}, {4, 2}, {-4, -2}, {2, -4}, {-2, 4}}) {
+            BlockPos post = m.offset(k[0], 1, k[1]);
+            set(level, post, Passages.column(plan.line));
+            level.setBlock(post.above(), ModContent.TOWER_BRAZIER.get().defaultBlockState()
+                    .setValue(com.thefarawaydev.realmsofchaos.block.BrazierBlock.TOWER, plan.line.ordinal()), 2);
+        }
+        // benches facing in along the walls, standards over them
+        for (int d = 2; d <= far; d++) {
+            for (int[] k : new int[][]{{far, d}, {far, -d}, {-far, d}, {-far, -d}, {d, far}, {-d, far}, {d, -far}, {-d, -far}}) {
+                if (Math.abs(k[0]) == far && Math.abs(k[1]) == far) continue;
+                if (cut(plan, c, k[0], k[1]) || !level.getBlockState(m.offset(k[0], 1, k[1])).isAir()) continue;
+                net.minecraft.core.Direction into = Mason.outward(k[0], k[1]).getOpposite();
+                level.setBlock(m.offset(k[0], 1, k[1]), Mason.stair(Mason.of(p.wall()).stairs(), into.getOpposite(), false), 2);
+            }
+        }
+        // standards on plinths in the two corners either side of the prize's
+        for (int[] k : new int[][]{{-far, far}, {far, -far}}) {
+            if (cut(plan, c, k[0], k[1])) continue;
+            set(level, m.offset(k[0], 1, k[1]), p.trim());
+            level.setBlock(m.offset(k[0], 2, k[1]), ModContent.WAR_STANDARD.get().defaultBlockState()
+                    .setValue(com.thefarawaydev.realmsofchaos.block.WarStandardBlock.FACING, k[0] > 0 ? net.minecraft.core.Direction.WEST : net.minecraft.core.Direction.EAST), 2);
+        }
+        // the prize, in a corner, on a plinth
+        BlockPos plinth = duelCache(plan, c).below();
+        set(level, plinth, p.trim());
+        set(level, plinth.above(), ModContent.PASSAGE_CACHE.get());
+    }
+
+    /** Where a duelling circle keeps its cache: on a plinth in one corner. */
+    public static BlockPos duelCache(Plan plan, Cell c) {
+        int far = plan.half(c);
+        return plan.centre(c).offset(far, 2, far);
+    }
+
+    /** The gallery of an overlook: a walk two blocks deep round the walls, this high above the floor. */
+    public static final int GALLERY_Y = 4;
+
+    /** Where on its gallery an overlook's n-th bowman stands. */
+    static int[] gallerySpot(Plan plan, Cell c, int n) {
+        // (against the wall: the rail runs along the gallery's inner edge)
+        int g = plan.half(c);
+        int[][] spots = {{g, 2}, {-g, -2}, {2, -g}, {-2, g}, {g, -4}, {-g, 4}, {-4, -g}, {4, g}};
+        return spots[n % spots.length];
+    }
+
+    /** Where an overlook keeps its cache: up on the gallery, in a corner. */
+    public static BlockPos overlookCache(Plan plan, Cell c) {
+        int far = plan.half(c);
+        return plan.centre(c).offset(-far, GALLERY_Y + 1, -far);
+    }
+
+    /**
+     * An overlook: a tall hall with a gallery round all four walls, railed, reached by ladders in two corners. Its
+     * bowmen and slingers stand up there; four great pillars on the floor are the cover from them. The cache is up
+     * on the gallery too - whoever wants it has to climb.
+     */
+    private static void buildOverlook(ServerLevel level, Plan plan, Cell c, TowerBuilder.Palette p, Random random) {
+        BlockPos m = plan.centre(c);
+        int far = plan.half(c), h = plan.height(c);
+        Mason.Stone stone = Mason.of(p.wall());
+        for (int dx = -far; dx <= far; dx++) {
+            for (int dz = -far; dz <= far; dz++) {
+                int ring = Math.max(Math.abs(dx), Math.abs(dz));
+                if (ring < far - 1 || cut(plan, c, dx, dz)) continue;
+                // the gallery's floor, slabs high in the block so that the way under it stays clear
+                level.setBlock(m.offset(dx, GALLERY_Y, dz), Mason.slab(stone.slab(), true), 2);
+                // its rail, a wall along its inner edge, broken where the lanes run under
+                if (ring == far - 1 && !lane(dx, dz)) level.setBlock(m.offset(dx, GALLERY_Y + 1, dz), stone.wall().defaultBlockState(), 2);
+            }
+        }
+        // ladders up in two corners, against the wall
+        for (int s : new int[]{-1, 1}) {
+            int lx = s * far, lz = s * (far - 2);
+            net.minecraft.core.Direction facing = s > 0 ? net.minecraft.core.Direction.WEST : net.minecraft.core.Direction.EAST;
+            for (int y = 1; y <= GALLERY_Y; y++) {
+                level.setBlock(m.offset(lx, y, lz), Blocks.LADDER.defaultBlockState().setValue(net.minecraft.world.level.block.LadderBlock.FACING, facing), 2);
+            }
+        }
+        // four great pillars to stand behind
+        for (int[] k : new int[][]{{3, 3}, {-3, 3}, {3, -3}, {-3, -3}}) {
+            for (int y = 1; y <= h; y++) set(level, m.offset(k[0], y, k[1]), y == 1 || y == h ? p.trim() : p.pillar());
+        }
+        // arrow slits' worth of light along the walls above the gallery, and the floor of the hall in the tower's inlay
+        for (int dx = -2; dx <= 2; dx++) for (int dz = -2; dz <= 2; dz++) if (Math.max(Math.abs(dx), Math.abs(dz)) == 2) set(level, m.offset(dx, 0, dz), p.inlay());
+        set(level, m, p.light());
+        set(level, overlookCache(plan, c), ModContent.PASSAGE_CACHE.get());
+        level.setBlock(m.offset(far, GALLERY_Y + 1, far), ModContent.WAR_STANDARD.get().defaultBlockState()
+                .setValue(com.thefarawaydev.realmsofchaos.block.WarStandardBlock.FACING, net.minecraft.core.Direction.WEST), 2);
+    }
+
+    /**
+     * A quiet hall: dust, cobwebs and fallen stone, a cache left on a lit plinth in the middle - and four dark holes
+     * in the ceiling. Whoever walks up to the cache, or reaches for it, springs it: the doorways are barred, and the
+     * room's guard drops from the holes. When they are down the bars lift.
+     */
+    private static void buildAmbush(ServerLevel level, Plan plan, Cell c, TowerBuilder.Palette p, Random random) {
+        BlockPos m = plan.centre(c);
+        int far = plan.half(c), h = plan.height(c);
+        Mason.Stone stone = Mason.of(p.wall());
+        set(level, m, p.trim());
+        set(level, plan.featurePos(c), ModContent.PASSAGE_CACHE.get());
+        for (int[] k : new int[][]{{1, 0}, {-1, 0}, {0, 1}, {0, -1}}) set(level, m.offset(k[0], 0, k[1]), p.light());
+        for (int[] k : ambushHoles()) {
+            for (int y = h + 1; y <= h + 3; y++) set(level, m.offset(k[0], y, k[1]), Blocks.AIR);
+            set(level, m.offset(k[0], h + 4, k[1]), Blocks.COBWEB);
+        }
+        // the dust of a room nobody comes to: rubble and cobwebs in the quarters, bones here and there
+        for (int dx = -far; dx <= far; dx++) {
+            for (int dz = -far; dz <= far; dz++) {
+                if (lane(dx, dz) || cut(plan, c, dx, dz)) continue;
+                boolean under = false;
+                for (int[] k : ambushHoles()) under |= Math.abs(dx - k[0]) <= 1 && Math.abs(dz - k[1]) <= 1;
+                if (under) continue;
+                BlockPos at = m.offset(dx, 1, dz);
+                float roll = random.nextFloat();
+                if (roll < 0.14F) level.setBlock(at, Mason.slab(stone.slab(), false), 2);
+                else if (roll < 0.2F) level.setBlock(at, Mason.stair(stone.stairs(), net.minecraft.core.Direction.Plane.HORIZONTAL.getRandomDirection(net.minecraft.util.RandomSource.create(random.nextLong())), false), 2);
+                else if (roll < 0.23F) set(level, at, Blocks.BONE_BLOCK);
+                if (random.nextFloat() < 0.1F) set(level, m.offset(dx, h, dz), Blocks.COBWEB);
+            }
+        }
+    }
+
+    /** The holes an ambush drops from: over the middle of each quarter. */
+    static int[][] ambushHoles() {
+        return new int[][]{{3, 3}, {-3, -3}, {3, -3}, {-3, 3}};
+    }
+
+    private static String ambushKey(Plan plan, Cell c) {
+        return "ambush/" + builtKey(plan) + "/" + c.x + "/" + c.z;
+    }
+
+    /** 0 untouched, 1 sprung (the doors barred, its guard down among you), 2 over. */
+    public static int ambushStage(ServerLevel level, Plan plan, Cell c) {
+        return ProgressData.get(level.getServer()).counter(ambushKey(plan, c));
+    }
+
+    /** Bars (or unbars) every doorway of a room: iron bars across the openings in its walls. */
+    static void bar(ServerLevel level, Plan plan, Cell c, boolean shut) {
+        BlockPos m = plan.centre(c);
+        int w = plan.half(c) + 1;
+        for (Cell n : plan.neighbours(c)) {
+            if (!plan.connected(c, n)) continue;
+            int ox = n.x - c.x, oz = n.z - c.z;
+            for (int k = -3; k <= 3; k++) {
+                for (int y = 1; y <= 4; y++) {
+                    BlockPos at = m.offset(ox != 0 ? ox * w : k, y, oz != 0 ? oz * w : k);
+                    BlockState here = level.getBlockState(at);
+                    if (shut && here.isAir()) level.setBlock(at, Blocks.IRON_BARS.defaultBlockState(), 3);
+                    else if (!shut && here.is(Blocks.IRON_BARS)) level.setBlock(at, Blocks.AIR.defaultBlockState(), 3);
+                }
+            }
+        }
+        level.playSound(null, m.above(2), shut ? SoundEvents.IRON_DOOR_CLOSE : SoundEvents.IRON_DOOR_OPEN, SoundSource.BLOCKS, 2.0F, shut ? 0.5F : 0.7F);
+    }
+
+    /** Who drops on you in an ambush: the level's sentinels, quick ones mostly, more the deeper it is. */
+    public static List<Post> ambushers(Plan plan, Cell c, int players) {
+        Random random = new Random(plan.seed + c.x * 59L + c.z * 13L);
+        List<Sentinel.Role> roles = new ArrayList<>(roles(plan));
+        roles.remove(Sentinel.Role.MYSTIC);
+        int n = 3 + (plan.threat >= 3.0 ? 1 : 0) + (plan.threat >= 7.0 ? 1 : 0) + Adapt.extraGuardians(players);
+        List<Post> out = new ArrayList<>();
+        for (int i = 0; i < n; i++) {
+            Sentinel.Role role = i == 0 && roles.contains(Sentinel.Role.SKIRMISHER) ? Sentinel.Role.SKIRMISHER : roles.get(random.nextInt(roles.size()));
+            out.add(new Post(Sentinel.Kind.pick(plan.line, role, plan.threat, random), i == 0 && plan.stage >= 1));
+        }
+        return out;
+    }
+
+    /** The ambush is sprung: the doors are barred, and the guard drops from the ceiling. @return how many dropped */
+    public static int spring(ServerLevel level, Plan plan, Cell c) {
+        if (ambushStage(level, plan, c) != 0) return 0;
+        ProgressData.get(level.getServer()).setCounter(ambushKey(plan, c), 1);
+        if (level.getDifficulty() == Difficulty.PEACEFUL) {
+            ProgressData.get(level.getServer()).setCounter(ambushKey(plan, c), 2);
+            return 0;
+        }
+        bar(level, plan, c, true);
+        BlockPos m = plan.centre(c);
+        List<ServerPlayer> here = within(level, plan, c);
+        int n = 0, h = plan.height(c);
+        int[][] holes = ambushHoles();
+        for (Post post : ambushers(plan, c, Math.max(1, here.size()))) {
+            int[] k = holes[n % holes.length];
+            Sentinel mob = raise(level, plan, c, post, m.offset(k[0], h - 1, k[1]), n * 90.0F);
+            if (mob == null) continue;
+            mob.addEffect(new net.minecraft.world.effect.MobEffectInstance(net.minecraft.world.effect.MobEffects.SLOW_FALLING, 30, 0));
+            if (!here.isEmpty()) mob.setTarget(here.get(n % here.size()));
+            n++;
+        }
+        level.playSound(null, m.above(3), SoundEvents.EVOKER_PREPARE_SUMMON, SoundSource.HOSTILE, 2.0F, 0.6F);
+        for (ServerPlayer pl : here) {
+            Hud.title(pl, Hud.colored(Component.translatable(HUD + "ambush"), 0xFF5555), Hud.colored(Component.translatable(HUD + "ambush.sub"), 0xFFDD88), 3, 30, 10);
+        }
+        // and if everyone leaves the room (or falls), the bars lift: nobody is shut out of their own passage
+        watchAmbush(level, plan, c);
+        return n;
+    }
+
+    private static void watchAmbush(ServerLevel level, Plan plan, Cell c) {
+        Scheduler.after(level.getServer(), 20, () -> {
+            if (ambushStage(level, plan, c) != 1) return;
+            if (within(level, plan, c).isEmpty()) {
+                bar(level, plan, c, false);
+                return;
+            }
+            watchAmbush(level, plan, c);
+        });
+    }
+
+    /** A player in a quiet hall: close to the cache, it springs; with the ambush down, the bars lift. */
+    public static void ambushTick(ServerLevel level, Plan plan, Cell c, ServerPlayer player) {
+        int stage = ambushStage(level, plan, c);
+        BlockPos m = plan.centre(c);
+        if (stage == 0) {
+            double dx = player.getX() - (m.getX() + 0.5), dz = player.getZ() - (m.getZ() + 0.5);
+            if (dx * dx + dz * dz < 9.0) spring(level, plan, c);
+        } else if (stage == 1) {
+            if (!guardians(level, plan, c).isEmpty()) {
+                // (a player who walked back in after the bars lifted is shut in with them again)
+                if (!level.getBlockState(barsCheck(plan, c)).is(Blocks.IRON_BARS) && within(level, plan, c).contains(player)) bar(level, plan, c, true);
+                return;
+            }
+            ProgressData.get(level.getServer()).setCounter(ambushKey(plan, c), 2);
+            bar(level, plan, c, false);
+            level.playSound(null, m.above(2), SoundEvents.UI_TOAST_CHALLENGE_COMPLETE, SoundSource.PLAYERS, 0.8F, 1.2F);
+            for (ServerPlayer pl : within(level, plan, c)) Hud.actionBar(pl, Hud.colored(Component.translatable(HUD + "ambush.over"), 0xF5B82E));
+        }
+    }
+
+    /** One doorway block of a room, to see whether it is barred. */
+    private static BlockPos barsCheck(Plan plan, Cell c) {
+        for (Cell n : plan.neighbours(c)) {
+            if (!plan.connected(c, n)) continue;
+            int w = plan.half(c) + 1;
+            return plan.centre(c).offset((n.x - c.x) * w, 1, (n.z - c.z) * w);
+        }
+        return plan.centre(c);
+    }
+
     public static final int PROVING_WAVES = 3;
 
     private static String provingKey(Plan plan, Cell c) {
@@ -1916,7 +2186,8 @@ public final class Passages {
     public static List<ItemStack> lootFor(Plan plan, Cell cell, UUID player) {
         Random random = new Random(plan.seed ^ player.getLeastSignificantBits() ^ (cell.x * 131L + cell.z * 17L + 5));
         // an arena's cache and a puzzle's are the richer ones
-        boolean arena = plan.kind(cell) == Kind.ARENA || plan.kind(cell) == Kind.PROVING || Rooms.isPuzzle(plan.kind(cell));
+        boolean arena = plan.kind(cell) == Kind.ARENA || plan.kind(cell) == Kind.PROVING || plan.kind(cell) == Kind.DUEL || plan.kind(cell) == Kind.OVERLOOK
+                || Rooms.isPuzzle(plan.kind(cell));
         List<ItemStack> loot = new ArrayList<>();
         loot.add(new ItemStack(ModContent.materialItem(plan.line, plan.tier), 1 + random.nextInt(2) + (arena ? 1 : 0)));
         loot.add(new ItemStack(Items.EXPERIENCE_BOTTLE, 2 + random.nextInt(3) + plan.tier + plan.stage));
@@ -1956,7 +2227,7 @@ public final class Passages {
         Plan plan = planAt(level, pos);
         Cell cell = plan == null ? null : plan.cellAt(pos);
         if (cell == null || (plan.kind(cell) != Kind.TREASURE && plan.kind(cell) != Kind.ARENA && plan.kind(cell) != Kind.STAIRWELL && plan.kind(cell) != Kind.PROVING
-                && !Rooms.isPuzzle(plan.kind(cell)))) {
+                && plan.kind(cell) != Kind.DUEL && plan.kind(cell) != Kind.AMBUSH && plan.kind(cell) != Kind.OVERLOOK && !Rooms.isPuzzle(plan.kind(cell)))) {
             Hud.actionBar(player, Hud.colored(Component.translatable(hud + "empty"), 0xAAAAAA));
             return false;
         }
@@ -1970,7 +2241,13 @@ public final class Passages {
                     : Component.translatable(HUD + "proving.underway", stage, PROVING_WAVES), 0xFF5555));
             return false;
         }
-        if (plan.kind(cell) == Kind.ARENA) {
+        if (plan.kind(cell) == Kind.AMBUSH && ambushStage(level, plan, cell) < 2) {
+            // the bait: reaching for it springs the ambush, if walking in had not
+            if (ambushStage(level, plan, cell) == 0) spring(level, plan, cell);
+            Hud.actionBar(player, Hud.colored(Component.translatable(HUD + "guarded", guardians(level, plan, cell).size()), 0xFF5555));
+            return false;
+        }
+        if (plan.kind(cell) == Kind.ARENA || plan.kind(cell) == Kind.DUEL || plan.kind(cell) == Kind.OVERLOOK) {
             wake(level, plan, cell);
             int standing = guardians(level, plan, cell).size();
             if (standing > 0) {
@@ -2051,6 +2328,19 @@ public final class Passages {
         } else if (kind == Kind.ARENA) {
             others = 3 + Math.min(3, plan.stage);
             elites = 1;
+        } else if (kind == Kind.DUEL) {
+            // a duelling circle: its champion, alone - a duelist of the tower, one of the lesser gods
+            out.add(new Post(Sentinel.Kind.of(plan.line, Sentinel.Trait.DUELIST), true));
+            for (int i = 0; i < Adapt.extraGuardians(players); i++) out.add(new Post(Sentinel.Kind.pick(plan.line, Sentinel.Role.SOLDIER, plan.threat, random), false));
+            return out;
+        } else if (kind == Kind.OVERLOOK) {
+            // an overlook: bowmen and slingers up on the gallery, a guard below
+            others = 3 + (plan.threat >= 4.0 ? 1 : 0) + (plan.threat >= 8.0 ? 1 : 0) + Adapt.extraGuardians(players);
+            for (int i = 0; i < others; i++) {
+                Sentinel.Role role = i % 2 == 0 ? Sentinel.Role.CASTER : roles.contains(Sentinel.Role.BRUTE) && i == 3 ? Sentinel.Role.BRUTE : Sentinel.Role.SOLDIER;
+                out.add(new Post(Sentinel.Kind.pick(plan.line, role, plan.threat, random), false));
+            }
+            return out;
         } else if (kind == Kind.BARRACKS) {
             // a barracks is never empty: its soldiers are up, and an officer among them past the first level
             others = 2 + (plan.threat >= 4.0 ? 1 : 0) + (plan.threat >= 8.0 ? 1 : 0);
@@ -2074,7 +2364,8 @@ public final class Passages {
 
     /** True for rooms that have sentinels to wake: sealed chambers, arenas and patrolled rooms. */
     public static boolean garrisoned(Plan plan, Cell c) {
-        return plan.kind(c) == Kind.SEAL || plan.kind(c) == Kind.ARENA || plan.kind(c) == Kind.BARRACKS || plan.patrols.contains(c);
+        return plan.kind(c) == Kind.SEAL || plan.kind(c) == Kind.ARENA || plan.kind(c) == Kind.BARRACKS || plan.kind(c) == Kind.DUEL
+                || plan.kind(c) == Kind.OVERLOOK || plan.patrols.contains(c);
     }
 
     /**
@@ -2097,13 +2388,18 @@ public final class Passages {
             Sentinel mob = ModContent.SENTINEL.get().create(level, EntitySpawnReason.TRIGGERED);
             if (mob == null) continue;
             BlockPos at = m.offset(spots[woken % spots.length][0], 1, spots[woken % spots.length][1]);
+            if (plan.kind(c) == Kind.OVERLOOK && post.kind().role == Sentinel.Role.CASTER) {
+                // up on the gallery, along the walls
+                int[] g = gallerySpot(plan, c, woken);
+                at = m.offset(g[0], GALLERY_Y + 1, g[1]);
+            }
             mob.setUp(post.kind(), plan.tier, plan.threat, post.elite());
             mob.snapTo(at.getX() + 0.5, at.getY(), at.getZ() + 0.5, woken * 90.0F, 0.0F);
             mob.setPersistenceRequired();
             mob.addTag(GUARDIAN_TAG);
             mob.addTag(GUARDIAN_TAG + "/" + c.x + "/" + c.z);
             // an arena's champion is no nameless sentinel: one of the lesser gods holds it
-            if (post.elite() && plan.kind(c) == Kind.ARENA) Lesser.crown(mob, plan);
+            if (post.elite() && (plan.kind(c) == Kind.ARENA || plan.kind(c) == Kind.DUEL)) Lesser.crown(mob, plan);
             level.addFreshEntity(mob);
             level.sendParticles(Signature.spark(plan.line), at.getX() + 0.5, at.getY() + 1.0, at.getZ() + 0.5, 20, 0.3, 0.6, 0.3, 0.05);
             woken++;
@@ -2121,6 +2417,8 @@ public final class Passages {
         ProgressData.get(level.getServer()).unmarkPrefix(wokenKey(plan));
         Rooms.rearm(level, plan);
         ProgressData.get(level.getServer()).clearCounters("proving/" + builtKey(plan) + "/");
+        ProgressData.get(level.getServer()).clearCounters("ambush/" + builtKey(plan) + "/");
+        for (Cell c : plan.cells()) if (plan.kind(c) == Kind.AMBUSH) bar(level, plan, c, false);
         for (Cell c : plan.cells()) if (plan.kind(c) == Kind.PROVING) provingGates(level, plan, c, false);
         for (Cell c : plan.cells()) if (plan.kind(c) == Kind.SPIKES) Snares.lower(level, plan, c);
         shutGate(level, plan);
@@ -2350,7 +2648,8 @@ public final class Passages {
             boolean fresh = see(player, plan, cell);
             Kind kind = plan.kind(cell);
             boolean sealed = kind == Kind.SEAL && level.getBlockState(plan.sealPos(cell)).is(ModContent.PASSAGE_SEAL.get());
-            boolean wakes = sealed || kind == Kind.ARENA || kind == Kind.BARRACKS || plan.patrols.contains(cell);
+            boolean wakes = sealed || kind == Kind.ARENA || kind == Kind.BARRACKS || kind == Kind.DUEL || kind == Kind.OVERLOOK || plan.patrols.contains(cell);
+            if (kind == Kind.AMBUSH && !player.isSpectator() && !player.isCreative()) ambushTick(level, plan, cell, player);
             if (kind == Kind.PROVING) provingTick(level, plan, cell);
             if (wakes && !player.isSpectator() && !player.isCreative()) wake(level, plan, cell);
             if (kind == Kind.TRAP) Traps.service(player, level, plan, cell);
@@ -2386,6 +2685,9 @@ public final class Passages {
                     case SANCTUM -> "sanctum";
                     case PROVING -> provingStage(level, plan, cell) > PROVING_WAVES ? "proving.done" : "proving";
                     case BARRACKS -> "barracks";
+                    case DUEL -> "duel";
+                    case AMBUSH -> "ambush";
+                    case OVERLOOK -> "overlook";
                     case EXIT -> sealsLeft(level, plan) > 0 ? "exit.sealed" : plan.last() ? "exit.open" : "exit.deeper";
                     default -> null;
                 };

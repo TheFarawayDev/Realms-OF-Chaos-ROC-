@@ -47,7 +47,7 @@ import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.Vec3;
 
 /**
- * The passages' own enemies. One entity type, sixty-three kinds: twenty-one to a tower.
+ * The passages' own enemies. One entity type, seventy-five kinds: twenty-five to a tower.
  *
  * <p>Every kind has a <i>role</i>, which decides how it fights and how tough it is - soldiers close in, casters
  * stand off and shoot, skirmishers are quick and leap, brutes hit slowly and send you flying, mystics hang back and
@@ -70,6 +70,10 @@ import net.minecraft.world.phys.Vec3;
  * <li><b>Charge</b> - puts its head down and runs you through.
  * <li><b>Silence</b> - its bolt stops your relic's move from being cast for a while.
  * <li><b>Swap</b> - trades places with a wounded ally, and mends it.
+ * <li><b>Duelist</b> - turns the first blow struck at it from the front, and answers it; then its guard is down a while.
+ * <li><b>Volley</b> - looses a fan of five bolts at once.
+ * <li><b>Whirl</b> - spins up for a second, then cuts everything round it.
+ * <li><b>Slam</b> - marks the ground under you, leaps, and comes down on the mark in a shockwave.
  * </ul>
  *
  * How strong a sentinel is follows its <i>threat</i>: how far up the tower its passage lies and how deep into that
@@ -80,7 +84,9 @@ public class Sentinel extends Monster implements RangedAttackMob {
 
     /** The one thing a kind does that no other in its tower does. */
     public enum Trait {
-        NONE(0), SHIELD(0), BIND(1), BOMB(2), FRENZY(2), DISARM(3), TRAP(3), SNIPE(4), SWAP(4), CHARGE(5), MIRAGE(5), LINK(6), SILENCE(6), BANNER(7), HORN(8), REVIVE(9);
+        NONE(0), SHIELD(0), BIND(1), BOMB(2), FRENZY(2), DISARM(3), TRAP(3), SNIPE(4), SWAP(4), CHARGE(5), MIRAGE(5), LINK(6), SILENCE(6), BANNER(7), HORN(8), REVIVE(9),
+        // (added later)
+        DUELIST(2), VOLLEY(1), WHIRL(3), SLAM(5);
 
         /** The threat a level needs before kinds with this trait turn up on it. */
         public final double unlock;
@@ -113,7 +119,14 @@ public class Sentinel extends Monster implements RangedAttackMob {
         SHACKLER(Line.HADES, Role.CASTER, Trait.BIND), DEATH_KNELL(Line.HADES, Role.MYSTIC, Trait.HORN), GRAVE_ROBBER(Line.HADES, Role.SKIRMISHER, Trait.DISARM),
         MIASMA_SOWER(Line.HADES, Role.CASTER, Trait.TRAP), PHANTASM(Line.HADES, Role.CASTER, Trait.MIRAGE), SOUL_WARDEN(Line.HADES, Role.BRUTE, Trait.LINK),
         REVENANT(Line.HADES, Role.SOLDIER, Trait.FRENZY), PSYCHOPOMP(Line.HADES, Role.MYSTIC, Trait.REVIVE), BONE_LANCER(Line.HADES, Role.CASTER, Trait.SNIPE),
-        CHARIOT_SHADE(Line.HADES, Role.BRUTE, Trait.CHARGE), LETHE_DRINKER(Line.HADES, Role.CASTER, Trait.SILENCE), SHADOW_STEPPER(Line.HADES, Role.SKIRMISHER, Trait.SWAP);
+        CHARIOT_SHADE(Line.HADES, Role.BRUTE, Trait.CHARGE), LETHE_DRINKER(Line.HADES, Role.CASTER, Trait.SILENCE), SHADOW_STEPPER(Line.HADES, Role.SKIRMISHER, Trait.SWAP),
+        // ---- four more to a tower, each with an attack of its own
+        STORM_DUELIST(Line.ZEUS, Role.SOLDIER, Trait.DUELIST), GALE_SLINGER(Line.ZEUS, Role.CASTER, Trait.VOLLEY),
+        CYCLONE_REAVER(Line.ZEUS, Role.BRUTE, Trait.WHIRL), SKYFALL_BRUTE(Line.ZEUS, Role.BRUTE, Trait.SLAM),
+        CORAL_DUELIST(Line.POSEIDON, Role.SOLDIER, Trait.DUELIST), SPINE_THROWER(Line.POSEIDON, Role.CASTER, Trait.VOLLEY),
+        MAELSTROM_REAVER(Line.POSEIDON, Role.BRUTE, Trait.WHIRL), DEPTH_CRUSHER(Line.POSEIDON, Role.BRUTE, Trait.SLAM),
+        GRAVE_FENCER(Line.HADES, Role.SOLDIER, Trait.DUELIST), PYRE_ARCHER(Line.HADES, Role.CASTER, Trait.VOLLEY),
+        SCYTHE_REAPER(Line.HADES, Role.BRUTE, Trait.WHIRL), TOMB_BREAKER(Line.HADES, Role.BRUTE, Trait.SLAM);
 
         public final Line line;
         public final Role role;
@@ -189,6 +202,12 @@ public class Sentinel extends Monster implements RangedAttackMob {
     private int fuse = -1, trickCooldown = 60, frenzy, revives, life;
     private boolean illusion, split, wild, sharing;
     private Fallen fallen;
+    // ---- the attacks of duelists, reavers and slammers
+    private int guardCooldown = 40, specialCooldown = 60, whirlWindup, slamPhase, slamTimer;
+    private Vec3 slamMark;
+    /** How long a duelist's guard is down after it turns a blow; a reaver's spin-up; a slammer's crouch. */
+    public static final int GUARD_EVERY = 100, WHIRL_WINDUP = 20, SLAM_WINDUP = 25, COUNTER_DELAY = 6;
+    public static final double WHIRL_RADIUS = 3.2, SLAM_RADIUS = 3.0;
 
     public Sentinel(EntityType<? extends Sentinel> type, Level level) {
         super(type, level);
@@ -305,9 +324,10 @@ public class Sentinel extends Monster implements RangedAttackMob {
         getAttribute(Attributes.ATTACK_DAMAGE).setBaseValue(illusion ? 0.0 : damage(role, threat) * (elite ? 1.25 : 1.0) * (1.0 + 0.15 * frenzy));
         double speed = role == Role.BRUTE ? 0.22 : role == Role.SKIRMISHER ? 0.36 : kind == Kind.SHADE ? 0.33 : 0.28;
         if (kind.trait == Trait.SHIELD) speed = 0.24;
+        if (kind.trait == Trait.DUELIST) speed = 0.31;
         if (kind.trait == Trait.BOMB) speed = 0.40;
         getAttribute(Attributes.MOVEMENT_SPEED).setBaseValue(speed * (1.0 + 0.05 * frenzy));
-        getAttribute(Attributes.ARMOR).setBaseValue(kind.trait == Trait.SHIELD ? 8.0 : 2.0);
+        getAttribute(Attributes.ARMOR).setBaseValue(kind.trait == Trait.SHIELD ? 8.0 : kind.trait == Trait.DUELIST ? 5.0 : 2.0);
         getAttribute(Attributes.FOLLOW_RANGE).setBaseValue(kind.trait == Trait.SNIPE ? 36.0 : 24.0);
         getAttribute(Attributes.KNOCKBACK_RESISTANCE).setBaseValue(role == Role.BRUTE ? 0.6 : role == Role.KEEPER ? 0.4 : 0.0);
         getAttribute(Attributes.SCALE).setBaseValue((role == Role.KEEPER ? 1.25 : role == Role.BRUTE ? 1.15 : role == Role.SKIRMISHER ? 0.9 : 1.0) * (elite ? 1.1 : 1.0));
@@ -345,6 +365,10 @@ public class Sentinel extends Monster implements RangedAttackMob {
             case CHARGE -> Items.MACE;
             case SILENCE -> kind.line == Line.ZEUS ? Items.AMETHYST_SHARD : kind.line == Line.POSEIDON ? Items.NAUTILUS_SHELL : Items.POTION;
             case SWAP -> Items.FEATHER;
+            case DUELIST -> kind.line == Line.ZEUS ? Items.DIAMOND_SWORD : kind.line == Line.POSEIDON ? Items.IRON_SPEAR : Items.NETHERITE_SPEAR;
+            case VOLLEY -> kind.line == Line.ZEUS ? Items.WIND_CHARGE : kind.line == Line.POSEIDON ? Items.PRISMARINE_CRYSTALS : Items.MAGMA_CREAM;
+            case WHIRL -> kind.line == Line.ZEUS ? Items.DIAMOND_AXE : kind.line == Line.POSEIDON ? Items.TRIDENT : Items.NETHERITE_HOE;
+            case SLAM -> kind.line == Line.ZEUS ? Items.HEAVY_CORE : kind.line == Line.POSEIDON ? Items.ANVIL : Items.NETHERITE_PICKAXE;
             case NONE -> switch (kind) {
                 case STORM_HOPLITE -> Items.IRON_SWORD;
                 case TIDE_HOPLITE -> Items.TRIDENT;
@@ -420,6 +444,10 @@ public class Sentinel extends Monster implements RangedAttackMob {
             snipe(level, target, orb, damage * 2.2F);
             return;
         }
+        if (kind.trait == Trait.VOLLEY) {
+            volley(level, target, orb, damage * 0.6F);
+            return;
+        }
         RelicProjectile bolt = new RelicProjectile(level, this, new ItemStack(ModContent.orbItem(orb)));
         bolt.setDamage(illusion ? 0.0F : damage);
         bolt.setCurse(kind.role == Role.MYSTIC ? MobEffects.GLOWING : kind == Kind.SIREN ? MobEffects.SLOWNESS : MobEffects.WEAKNESS);
@@ -460,6 +488,199 @@ public class Sentinel extends Monster implements RangedAttackMob {
             level.addFreshEntity(bolt);
             level.playSound(null, blockPosition(), SoundEvents.CROSSBOW_SHOOT, SoundSource.HOSTILE, 1.5F, 0.7F);
         });
+    }
+
+    /** A slinger's volley: five bolts at once, fanned across a little over thirty degrees. Step between them, or out. */
+    public void volley(ServerLevel level, LivingEntity target, Power orb, float each) {
+        double dx = target.getX() - getX(), dz = target.getZ() - getZ();
+        for (int i = -2; i <= 2; i++) {
+            double a = Math.toRadians(i * 8.0), rx = dx * Math.cos(a) - dz * Math.sin(a), rz = dx * Math.sin(a) + dz * Math.cos(a);
+            RelicProjectile bolt = new RelicProjectile(level, this, new ItemStack(ModContent.orbItem(orb)));
+            bolt.setDamage(illusion ? 0.0F : each);
+            bolt.setCurse(MobEffects.WEAKNESS);
+            bolt.shoot(rx, target.getY(0.5) - bolt.getY(), rz, 1.3F, 1.0F);
+            level.addFreshEntity(bolt);
+        }
+        level.sendParticles(Signature.spark(kind().line), getX(), getY() + 1.4, getZ(), 16, 0.4, 0.3, 0.4, 0.05);
+        level.playSound(null, blockPosition(), SoundEvents.CROSSBOW_SHOOT, SoundSource.HOSTILE, 1.2F, 1.3F);
+        level.playSound(null, blockPosition(), SoundEvents.ILLUSIONER_PREPARE_MIRROR, SoundSource.HOSTILE, 0.8F, 1.6F);
+    }
+
+    /** True while a duelist's guard is up: the next blow from the front will be turned. */
+    public boolean guardUp() {
+        return trait() == Trait.DUELIST && guardCooldown <= 0 && !Combat.isStaggered(this);
+    }
+
+    /** Puts a duelist's guard up at once, as if it had been fighting a while. */
+    public void readyGuard() {
+        guardCooldown = 0;
+    }
+
+    /** True while a reaver spins up for its whirl, or a slammer crouches or is in the air. */
+    public boolean windingSpecial() {
+        return whirlWindup > 0 || slamPhase > 0;
+    }
+
+    /**
+     * A duelist turns a blow: no harm done, a ring of steel, and a moment later it answers - a blow of its own that
+     * can be parried or dodged like any other. Then its guard is down for five seconds.
+     */
+    private void turn(ServerLevel level, ServerPlayer striker) {
+        guardCooldown = GUARD_EVERY;
+        level.playSound(null, blockPosition(), SoundEvents.SHIELD_BLOCK.value(), SoundSource.HOSTILE, 1.2F, 1.3F);
+        level.playSound(null, blockPosition(), SoundEvents.ANVIL_LAND, SoundSource.HOSTILE, 0.4F, 2.0F);
+        level.sendParticles(ParticleTypes.ENCHANTED_HIT, getX(), getY() + 1.3, getZ(), 14, 0.4, 0.4, 0.4, 0.2);
+        com.thefarawaydev.realmsofchaos.ui.Hud.actionBar(striker, com.thefarawaydev.realmsofchaos.ui.Hud.colored(
+                Component.translatable("hud." + RealmsOfChaos.MOD_ID + ".sentinel.guarded", kind().displayName()), 0xFFAA00));
+        com.thefarawaydev.realmsofchaos.world.Scheduler.after(level.getServer(), COUNTER_DELAY, () -> {
+            if (!isAlive() || level() != level || !striker.isAlive() || Combat.isStaggered(this) || distanceToSqr(striker) > 12.25) return;
+            lookAt(net.minecraft.commands.arguments.EntityAnchorArgument.Anchor.EYES, striker.getEyePosition());
+            level.playSound(null, blockPosition(), SoundEvents.PLAYER_ATTACK_STRONG, SoundSource.HOSTILE, 1.0F, 1.2F);
+            doHurtTarget(level, striker);
+        });
+    }
+
+    /** A reaver draws its weapon round: a ring on the floor shows how far the cut will reach. */
+    public void beginWhirl(ServerLevel level) {
+        whirlWindup = WHIRL_WINDUP;
+        getNavigation().stop();
+        level.playSound(null, blockPosition(), SoundEvents.EVOKER_PREPARE_ATTACK, SoundSource.HOSTILE, 1.2F, 0.7F);
+        if (getTarget() instanceof ServerPlayer watcher) com.thefarawaydev.realmsofchaos.ui.Tutorial.tip(watcher, com.thefarawaydev.realmsofchaos.ui.Tutorial.Tip.PARRY);
+    }
+
+    /** The whirl: everyone within its reach is cut and thrown outward - unless they parried it or dodged it. @return how many were hit */
+    public int whirl(ServerLevel level) {
+        whirlWindup = 0;
+        specialCooldown = 120;
+        int hit = 0;
+        float damage = (float) getAttributeValue(Attributes.ATTACK_DAMAGE) * 1.4F;
+        for (Player p : level.getEntitiesOfClass(Player.class, getBoundingBox().inflate(WHIRL_RADIUS, 1.0, WHIRL_RADIUS), p -> p.isAlive() && Power.canHurt(this, p))) {
+            if (p.distanceToSqr(this) > WHIRL_RADIUS * WHIRL_RADIUS + 1.0) continue;
+            if (p instanceof ServerPlayer sp && Combat.tryParry(level, sp, this)) continue;
+            if (p.hurtServer(level, damageSources().mobAttack(this), damage)) {
+                Vec3 away = p.position().subtract(position());
+                double d = Math.max(0.01, Math.sqrt(away.x * away.x + away.z * away.z));
+                p.setDeltaMovement(away.x / d * 1.0, 0.35, away.z / d * 1.0);
+                p.needsSync = true;
+                if (p instanceof ServerPlayer sp) Combat.struck(sp);
+                hit++;
+            }
+        }
+        ring(level, ParticleTypes.SWEEP_ATTACK, WHIRL_RADIUS, getY() + 1.0, 14);
+        ring(level, Signature.spark(kind().line), WHIRL_RADIUS - 0.6, getY() + 0.8, 20);
+        level.playSound(null, blockPosition(), SoundEvents.PLAYER_ATTACK_SWEEP, SoundSource.HOSTILE, 1.6F, 0.6F);
+        return hit;
+    }
+
+    /** A slammer crouches and marks where its target stands: a ring on the ground, a second's warning. */
+    public void beginSlam(ServerLevel level, LivingEntity target) {
+        slamPhase = 1;
+        slamTimer = SLAM_WINDUP;
+        slamMark = target.position();
+        getNavigation().stop();
+        level.playSound(null, blockPosition(), SoundEvents.RAVAGER_ROAR, SoundSource.HOSTILE, 0.9F, 1.3F);
+        if (target instanceof ServerPlayer watcher) com.thefarawaydev.realmsofchaos.ui.Tutorial.tip(watcher, com.thefarawaydev.realmsofchaos.ui.Tutorial.Tip.PARRY);
+    }
+
+    /** Where a slammer means to come down, while it is crouching or in the air. */
+    public Vec3 slamMark() {
+        return slamPhase > 0 ? slamMark : null;
+    }
+
+    /**
+     * The slammer comes down: everyone within reach of where it lands is hurt and thrown into the air - unless they
+     * dodged clear or met it with a parry. @return how many were hit
+     */
+    public int slam(ServerLevel level) {
+        slamPhase = 0;
+        specialCooldown = 140;
+        resetFallDistance();
+        int hit = 0;
+        float damage = (float) getAttributeValue(Attributes.ATTACK_DAMAGE) * 1.6F;
+        for (Player p : level.getEntitiesOfClass(Player.class, getBoundingBox().inflate(SLAM_RADIUS, 2.0, SLAM_RADIUS), p -> p.isAlive() && Power.canHurt(this, p))) {
+            double dx = p.getX() - getX(), dz = p.getZ() - getZ();
+            if (dx * dx + dz * dz > SLAM_RADIUS * SLAM_RADIUS) continue;
+            if (p instanceof ServerPlayer sp && Combat.tryParry(level, sp, this)) continue;
+            if (p.hurtServer(level, damageSources().mobAttack(this), damage)) {
+                double d = Math.max(0.01, Math.sqrt(dx * dx + dz * dz));
+                p.setDeltaMovement(dx / d * 0.5, 0.7, dz / d * 0.5);
+                p.needsSync = true;
+                if (p instanceof ServerPlayer sp) Combat.struck(sp);
+                hit++;
+            }
+        }
+        level.sendParticles(ParticleTypes.EXPLOSION, getX(), getY() + 0.3, getZ(), 3, 1.0, 0.2, 1.0, 0.0);
+        ring(level, Signature.spark(kind().line), SLAM_RADIUS, getY() + 0.2, 24);
+        com.thefarawaydev.realmsofchaos.world.Fx.impact(level, position(), 5);
+        level.playSound(null, blockPosition(), SoundEvents.MACE_SMASH_GROUND_HEAVY, SoundSource.HOSTILE, 1.6F, 0.8F);
+        return hit;
+    }
+
+    private void ring(ServerLevel level, net.minecraft.core.particles.ParticleOptions particle, double radius, double y, int points) {
+        ring(level, particle, position(), radius, y, points);
+    }
+
+    private static void ring(ServerLevel level, net.minecraft.core.particles.ParticleOptions particle, Vec3 at, double radius, double y, int points) {
+        for (int i = 0; i < points; i++) {
+            double a = Math.PI * 2 * i / points;
+            level.sendParticles(particle, at.x + Math.cos(a) * radius, y, at.z + Math.sin(a) * radius, 1, 0, 0, 0, 0);
+        }
+    }
+
+    /** The reavers' and slammers' attacks, on their own clock. @return true while one is under way: nothing else is done */
+    private boolean tendSpecial(ServerLevel level, LivingEntity target) {
+        Trait t = trait();
+        if (t != Trait.WHIRL && t != Trait.SLAM) return false;
+        if (whirlWindup > 0) {
+            if (Combat.isStaggered(this)) {
+                whirlWindup = 0;
+                return true;
+            }
+            getNavigation().stop();
+            setYRot(getYRot() + 36.0F);
+            yBodyRot = getYRot();
+            if (whirlWindup % 4 == 0) ring(level, ParticleTypes.CRIT, WHIRL_RADIUS, getY() + 0.1, 24);
+            if (--whirlWindup == 0) whirl(level);
+            return true;
+        }
+        if (slamPhase == 1) {
+            getNavigation().stop();
+            if (slamTimer % 5 == 0) ring(level, Signature.spark(kind().line), slamMark, SLAM_RADIUS, slamMark.y + 0.1, 24);
+            if (Combat.isStaggered(this)) {
+                slamPhase = 0;
+                return true;
+            }
+            if (--slamTimer <= 0) {
+                // the leap: high, and far enough to come down on the mark
+                double dx = slamMark.x - getX(), dz = slamMark.z - getZ();
+                setDeltaMovement(dx / 20.0, 0.85, dz / 20.0);
+                needsSync = true;
+                slamPhase = 2;
+                slamTimer = 0;
+                level.playSound(null, blockPosition(), SoundEvents.RAVAGER_ATTACK, SoundSource.HOSTILE, 1.0F, 0.6F);
+            }
+            return true;
+        }
+        if (slamPhase == 2) {
+            resetFallDistance();
+            if ((++slamTimer > 4 && onGround()) || slamTimer > 40) slam(level);
+            return true;
+        }
+        if (specialCooldown > 0) {
+            specialCooldown--;
+            return false;
+        }
+        if (!hasLineOfSight(target)) return false;
+        double d2 = distanceToSqr(target);
+        if (t == Trait.WHIRL && d2 < 9.0) {
+            beginWhirl(level);
+            return true;
+        }
+        if (t == Trait.SLAM && d2 > 16.0 && d2 < 144.0 && onGround()) {
+            beginSlam(level, target);
+            return true;
+        }
+        return false;
     }
 
     /** What a binder's or a silencer's bolt does to whoever it hits, on top of its damage. */
@@ -573,7 +794,7 @@ public class Sentinel extends Monster implements RangedAttackMob {
     /** A brute's blow throws its target back; a Fury's sets it alight; a thief's empties your hand. */
     @Override
     public boolean doHurtTarget(ServerLevel level, Entity target) {
-        if (illusion || Combat.isStaggered(this) || heavyWindup > 0) return false;
+        if (illusion || Combat.isStaggered(this) || heavyWindup > 0 || windingSpecial()) return false;
         if (target instanceof ServerPlayer met && Combat.tryParry(level, met, this)) return false;
         boolean hit = super.doHurtTarget(level, target);
         if (hit && target instanceof ServerPlayer struck) Combat.struck(struck);
@@ -629,8 +850,14 @@ public class Sentinel extends Monster implements RangedAttackMob {
     @Override
     public boolean hurtServer(ServerLevel level, DamageSource source, float amount) {
         if (!source.is(net.minecraft.tags.DamageTypeTags.BYPASSES_INVULNERABILITY) && !sharing && !illusion) {
-            if (source.getEntity() instanceof ServerPlayer striker) amount = Combat.strike(level, striker, this, source, amount);
             Vec3 from = source.getSourcePosition();
+            // a duelist on guard turns a blow struck at it from the front by whoever it is fighting - though not one
+            // heavier than all the life left in it
+            if (guardUp() && source.getDirectEntity() instanceof ServerPlayer striker && striker == getTarget() && from != null && facing(from) && amount < getHealth()) {
+                turn(level, striker);
+                return false;
+            }
+            if (source.getEntity() instanceof ServerPlayer striker) amount = Combat.strike(level, striker, this, source, amount);
             if (trait() == Trait.SHIELD) {
                 if (from != null && facing(from)) {
                     amount *= 0.4F;
@@ -798,6 +1025,11 @@ public class Sentinel extends Monster implements RangedAttackMob {
     private void tickTrait(ServerLevel level, LivingEntity target) {
         if (trickCooldown > 0) trickCooldown--;
         switch (trait()) {
+            case DUELIST -> {
+                // its guard, when up, glints on its blade
+                if (guardCooldown > 0) guardCooldown--;
+                else if (tickCount % 10 == 0) level.sendParticles(ParticleTypes.ENCHANTED_HIT, getX(), getY() + 1.2, getZ(), 3, 0.3, 0.3, 0.3, 0.0);
+            }
             case BOMB -> {
                 if (fuse < 0 && distanceToSqr(target) < 6.25) {
                     fuse = FUSE_TICKS;
@@ -982,6 +1214,7 @@ public class Sentinel extends Monster implements RangedAttackMob {
         if (target == null || !target.isAlive()) return;
         tickTrait(level, target);
         if (!isAlive() || isRemoved()) return;
+        if (tendSpecial(level, target)) return;
         if (tendHeavy(level, target)) return;
         if (kind().role == Role.MYSTIC) {
             if (--riteCooldown <= 0) riteCooldown = rite(level) ? RITE_EVERY : 30;

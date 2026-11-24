@@ -1605,9 +1605,9 @@ public final class SelfTest {
             }
         });
 
-        step("sentinels: sixty-three kinds, twenty-one to a tower - every one sets up, fights, and does what its role says", () -> {
+        step("sentinels: seventy-five kinds, twenty-five to a tower - every one sets up, fights, and does what its role says", () -> {
             Set<String> names = new HashSet<>();
-            check(Sentinel.Kind.values().length == 63, "kinds: " + Sentinel.Kind.values().length);
+            check(Sentinel.Kind.values().length == 75, "kinds: " + Sentinel.Kind.values().length);
             for (Line line : Line.values()) {
                 for (Sentinel.Role role : Sentinel.Role.values()) check(Sentinel.Kind.of(line, role).line == line && Sentinel.Kind.of(line, role).role == role, "a " + role + " for " + line);
             }
@@ -1657,7 +1657,7 @@ public final class SelfTest {
                             Scheduler.tick(server);
                         }
                         List<Projectile> shots = level.getEntitiesOfClass(Projectile.class, near, e -> true);
-                        check(shots.size() == 1 && shots.get(0).getOwner() == strong, kind + ": one shot");
+                        check(shots.size() == (kind.trait == Sentinel.Trait.VOLLEY ? 5 : 1) && shots.get(0).getOwner() == strong, kind + ": one shot (a slinger's volley, five)");
                         check((shots.get(0) instanceof Arrow) == (kind == Sentinel.Kind.SKY_ARCHER), kind + ": archers loose arrows, the others bolts");
                         if (shots.get(0) instanceof RelicProjectile bolt) {
                             bolt.impact(level, strong, target);
@@ -3679,14 +3679,14 @@ public final class SelfTest {
                         if (k.trait == Sentinel.Trait.NONE) plain++;
                         else check(traits.add(k.trait) && Sentinel.Kind.of(line, k.trait) == k, line + ": one kind to a trait: " + k);
                     }
-                    check(kinds.size() == 21 && plain == 6 && traits.size() == 15, line + ": twenty-one kinds, fifteen of them with a trait of their own: " + kinds.size());
-                    check(Sentinel.Kind.pool(line, Sentinel.Role.SOLDIER, 0.0).size() == 2 && Sentinel.Kind.pool(line, Sentinel.Role.SOLDIER, high).size() == 3
+                    check(kinds.size() == 25 && plain == 6 && traits.size() == 19, line + ": twenty-five kinds, nineteen of them with a trait of their own: " + kinds.size());
+                    check(Sentinel.Kind.pool(line, Sentinel.Role.SOLDIER, 0.0).size() == 2 && Sentinel.Kind.pool(line, Sentinel.Role.SOLDIER, high).size() == 4
                             && Sentinel.Kind.pool(line, Sentinel.Role.KEEPER, high).size() == 1, line + ": the deeper the level, the more kinds it can field");
                     check(Sentinel.Kind.pool(line, Sentinel.Role.CASTER, high).get(0) == Sentinel.Kind.of(line, Sentinel.Role.CASTER), line + ": the plain kind is always among them");
                     Set<Sentinel.Kind> seen = new HashSet<>();
                     java.util.Random dice = new java.util.Random(5);
                     for (int i = 0; i < 300; i++) seen.add(Sentinel.Kind.pick(line, Sentinel.Role.CASTER, high, dice));
-                    check(seen.size() == 6 && seen.equals(new HashSet<>(Sentinel.Kind.pool(line, Sentinel.Role.CASTER, high))), line + ": every caster turns up: " + seen);
+                    check(seen.size() == 7 && seen.equals(new HashSet<>(Sentinel.Kind.pool(line, Sentinel.Role.CASTER, high))), line + ": every caster turns up: " + seen);
                 }
                 hero.setPos(6.5, ground(level, floor, 6.5, 0.5), 0.5);
                 settle(level);
@@ -4782,7 +4782,7 @@ public final class SelfTest {
                 check(!victim.isAlive() && com.thefarawaydev.realmsofchaos.ui.BestiaryMenu.slain(hero, kind) == 1 && com.thefarawaydev.realmsofchaos.ui.BestiaryMenu.known(hero) == 1, "a sentinel felled is written down");
                 com.thefarawaydev.realmsofchaos.ui.BestiaryMenu.open(hero);
                 var book = (com.thefarawaydev.realmsofchaos.ui.BestiaryMenu) hero.containerMenu;
-                check(book.page() == Line.ZEUS && com.thefarawaydev.realmsofchaos.ui.BestiaryMenu.kinds(Line.ZEUS).size() == 21, "the book opens at the first tower, twenty-one kinds to a page");
+                check(book.page() == Line.ZEUS && com.thefarawaydev.realmsofchaos.ui.BestiaryMenu.kinds(Line.ZEUS).size() == 25, "the book opens at the first tower, twenty-five kinds to a page");
                 book.clicked(com.thefarawaydev.realmsofchaos.ui.BestiaryMenu.TABS[1], 0, net.minecraft.world.inventory.ContainerInput.PICKUP, hero);
                 int where = com.thefarawaydev.realmsofchaos.ui.BestiaryMenu.kinds(Line.POSEIDON).indexOf(kind);
                 var entry = book.getSlot(com.thefarawaydev.realmsofchaos.ui.BestiaryMenu.slotOf(where)).getItem();
@@ -6238,6 +6238,188 @@ public final class SelfTest {
             } finally {
                 if (plan != null) Passages.rearm(level, plan);
                 if (barracksPlan != null) Passages.rearm(level, barracksPlan);
+                hero.remove(net.minecraft.world.entity.Entity.RemovalReason.DISCARDED);
+            }
+        });
+
+        step("new foes: a duelist turns a blow and answers it, a reaver whirls, a slammer comes down in a shockwave - each one parried or dodged", () -> {
+            ServerPlayer hero = fakePlayer(server, level, "RocChampion");
+            com.thefarawaydev.realmsofchaos.world.Combat.forgetAll();
+            com.thefarawaydev.realmsofchaos.world.Boons.clear(hero);
+            hero.setPos(8.5, level.getHeight(net.minecraft.world.level.levelgen.Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, 8, 8), 8.5);
+            hero.setHealth(hero.getMaxHealth());
+            level.addNewPlayer(hero);
+            settle(level);
+            List<Sentinel> made = new ArrayList<>();
+            java.util.function.Function<Sentinel.Kind, Sentinel> make = kind -> {
+                Sentinel s = ModContent.SENTINEL.get().create(level, EntitySpawnReason.TRIGGERED);
+                s.setUp(kind, 2, 4.0, false);
+                s.setPos(hero.getX() + 1.5, hero.getY(), hero.getZ());
+                s.setYRot(90.0F);                              // facing west, at the player
+                s.yBodyRot = 90.0F;
+                level.addFreshEntity(s);
+                s.setTarget(hero);
+                made.add(s);
+                return s;
+            };
+            Runnable fresh = () -> {
+                hero.setHealth(hero.getMaxHealth());
+                hero.damageCooldownTime = 0;
+                hero.setDeltaMovement(Vec3.ZERO);
+                hero.setPos(8.5, hero.getY(), 8.5);
+                com.thefarawaydev.realmsofchaos.world.Combat.forget(hero);
+            };
+            try {
+                for (Line line : Line.values()) {
+                    // ---- the duelist
+                    fresh.run();
+                    Sentinel duelist = make.apply(Sentinel.Kind.of(line, Sentinel.Trait.DUELIST));
+                    check(duelist.getMainHandItem().getCount() == 1 && duelist.guardUp() == false, line + ": a duelist's guard is not up the moment it arrives");
+                    duelist.setTarget(hero);
+                    duelist.setPos(hero.getX() + 1.5, hero.getY(), hero.getZ());
+                    duelist.setYRot(90.0F);
+                    duelist.yBodyRot = 90.0F;
+                    duelist.setHealth(duelist.getMaxHealth());
+                    float whole = duelist.getHealth();
+                    // (its guard comes up on its own clock, which only runs while it fights: wind it on)
+                    duelist.readyGuard();
+                    check(duelist.guardUp(), line + ": then its guard comes up");
+                    duelist.setYRot(90.0F);
+                    duelist.yBodyRot = 90.0F;
+                    duelist.setPos(hero.getX() + 1.5, hero.getY(), hero.getZ());
+                    check(!duelist.hurtServer(level, level.damageSources().playerAttack(hero), 4.0F) && duelist.getHealth() == whole && !duelist.guardUp(),
+                            line + ": a blow from the front is turned, and its guard is spent");
+                    fresh.run();
+                    duelist.setPos(hero.getX() + 1.5, hero.getY(), hero.getZ());
+                    advance(server, Sentinel.COUNTER_DELAY + 1);
+                    Scheduler.tick(server);
+                    check(hero.getHealth() < hero.getMaxHealth(), line + ": and it answers");
+                    check(duelist.hurtServer(level, level.damageSources().playerAttack(hero), 4.0F) && duelist.getHealth() < whole, line + ": while its guard is down, it can be hurt");
+                    duelist.discard();
+
+                    // ---- the reaver
+                    fresh.run();
+                    Sentinel reaver = make.apply(Sentinel.Kind.of(line, Sentinel.Trait.WHIRL));
+                    reaver.beginWhirl(level);
+                    check(reaver.windingSpecial() && !reaver.doHurtTarget(level, hero), line + ": a reaver spinning up lands no ordinary blow");
+                    check(reaver.whirl(level) == 1 && hero.getHealth() < hero.getMaxHealth() && hero.getDeltaMovement().horizontalDistance() > 0.5, line + ": its whirl cuts and throws");
+                    fresh.run();
+                    reaver.setPos(hero.getX() + 1.5, hero.getY(), hero.getZ());
+                    com.thefarawaydev.realmsofchaos.world.Combat.press(hero, server.getTickCount());
+                    check(reaver.whirl(level) == 0 && hero.getHealth() == hero.getMaxHealth(), line + ": a whirl met with a parry does no harm");
+                    fresh.run();
+                    reaver.setPos(hero.getX() + 5.0, hero.getY(), hero.getZ());
+                    check(reaver.whirl(level) == 0, line + ": and it only reaches so far");
+                    reaver.discard();
+
+                    // ---- the slammer
+                    fresh.run();
+                    Sentinel slammer = make.apply(Sentinel.Kind.of(line, Sentinel.Trait.SLAM));
+                    slammer.setPos(hero.getX() + 8.0, hero.getY(), hero.getZ());
+                    slammer.beginSlam(level, hero);
+                    check(slammer.windingSpecial() && slammer.slamMark() != null && slammer.slamMark().distanceTo(hero.position()) < 0.01, line + ": a slammer marks where its target stands");
+                    slammer.setPos(hero.getX() + 1.0, hero.getY(), hero.getZ());
+                    check(slammer.slam(level) == 1 && hero.getHealth() < hero.getMaxHealth() && hero.getDeltaMovement().y > 0.5, line + ": and comes down on it, throwing it up");
+                    fresh.run();
+                    slammer.setPos(hero.getX() + 1.0, hero.getY(), hero.getZ());
+                    hero.setLastClientInput(new net.minecraft.world.entity.player.Input(true, false, false, false, false, true, false));
+                    hero.setOnGround(true);
+                    check(com.thefarawaydev.realmsofchaos.world.Combat.dodge(hero, server.getTickCount()), line + ": (a dodge)");
+                    check(slammer.slam(level) == 0 && hero.getHealth() == hero.getMaxHealth(), line + ": a slam dodged finds nobody");
+                    slammer.discard();
+                }
+            } finally {
+                for (Sentinel s : made) s.discard();
+                com.thefarawaydev.realmsofchaos.world.Combat.forget(hero);
+                hero.remove(net.minecraft.world.entity.Entity.RemovalReason.DISCARDED);
+            }
+        });
+
+        step("combat rooms: a duelling circle and its champion, an overlook with its bowmen on the gallery, a quiet hall that is an ambush", () -> {
+            Realm.testAlias(Level.OVERWORLD, Realm.OLYMPUS);
+            ServerPlayer hero = fakePlayer(server, level, "RocAmbushed");
+            level.addNewPlayer(hero);
+            com.thefarawaydev.realmsofchaos.world.ProgressData.get(server).unmarkPrefix("looted/" + hero.getUUID() + "/");
+            List<Passages.Plan> built = new ArrayList<>();
+            try {
+                // ---- the duelling circle
+                Object[] found = room(level, Line.ZEUS, Passages.Kind.DUEL);
+                Passages.Plan duel = (Passages.Plan) found[0];
+                Passages.Cell dc = (Passages.Cell) found[1];
+                built.add(duel);
+                Passages.build(level, duel);
+                Passages.rearm(level, duel);
+                check(level.getBlockState(Passages.duelCache(duel, dc)).is(ModContent.PASSAGE_CACHE.get()) && duel.half(dc) == 5, "a duelling circle is wide, its cache on a plinth in a corner");
+                check(Passages.wake(level, duel, dc) >= 1, "its champion wakes");
+                List<net.minecraft.world.entity.Mob> champ = Passages.guardians(level, duel, dc);
+                check(champ.size() == 1 && champ.get(0) instanceof Sentinel one && one.trait() == Sentinel.Trait.DUELIST && one.isElite() && one.hasCustomName(),
+                        "alone: a duelist of the tower, one of its lesser gods");
+                check(!Passages.loot(level, Passages.duelCache(duel, dc), hero), "the cache is shut while it stands");
+                for (net.minecraft.world.entity.Mob mob : champ) mob.discard();
+                check(Passages.loot(level, Passages.duelCache(duel, dc), hero), "and opens when it has fallen");
+
+                // ---- the overlook
+                found = room(level, Line.ZEUS, Passages.Kind.OVERLOOK);
+                Passages.Plan over = (Passages.Plan) found[0];
+                Passages.Cell oc = (Passages.Cell) found[1];
+                built.add(over);
+                Passages.build(level, over);
+                Passages.rearm(level, over);
+                BlockPos om = over.centre(oc);
+                int of = over.half(oc);
+                check(over.height(oc) == Passages.TALL && level.getBlockState(om.offset(of, Passages.GALLERY_Y, 2)).getBlock() instanceof net.minecraft.world.level.block.SlabBlock
+                        && level.getBlockState(om.offset(of, 1, 2)).isAir() && level.getBlockState(om.offset(of, 1, of - 2)).is(Blocks.LADDER),
+                        "an overlook is tall, with a gallery round its walls over a clear floor, and a ladder up");
+                check(level.getBlockState(Passages.overlookCache(over, oc)).is(ModContent.PASSAGE_CACHE.get()), "its cache is up on the gallery");
+                for (int dx = -1; dx <= 1; dx++) for (int y = 1; y <= 3; y++) check(level.getBlockState(om.offset(dx, y, of)).isAir() && level.getBlockState(om.offset(of, y, dx)).isAir(), "its lanes are clear");
+                check(Passages.wake(level, over, oc) >= 3, "its guard wakes");
+                List<net.minecraft.world.entity.Mob> guard = Passages.guardians(level, over, oc);
+                long up = guard.stream().filter(g -> g.getY() >= om.getY() + Passages.GALLERY_Y + 1 - 0.01).count();
+                check(up >= 2 && guard.stream().filter(g -> g.getY() >= om.getY() + Passages.GALLERY_Y).allMatch(g -> ((Sentinel) g).kind().role == Sentinel.Role.CASTER),
+                        "its bowmen and slingers stand on the gallery: " + up + " of " + guard.size());
+                for (net.minecraft.world.entity.Mob g : guard) check(level.noCollision(g), "each stands free: " + g.blockPosition().subtract(om));
+                for (net.minecraft.world.entity.Mob g : guard) g.discard();
+
+                // ---- the quiet hall
+                found = room(level, Line.ZEUS, Passages.Kind.AMBUSH);
+                Passages.Plan quiet = (Passages.Plan) found[0];
+                Passages.Cell qc = (Passages.Cell) found[1];
+                built.add(quiet);
+                Passages.build(level, quiet);
+                Passages.rearm(level, quiet);
+                BlockPos qm = quiet.centre(qc);
+                int qf = quiet.half(qc);
+                check(Passages.ambushStage(level, quiet, qc) == 0 && Passages.guardians(level, quiet, qc).isEmpty(), "a quiet hall is quiet");
+                Passages.Cell door = null;
+                for (Passages.Cell n : quiet.neighbours(qc)) if (door == null && quiet.connected(qc, n)) door = n;
+                BlockPos doorway = qm.offset((door.x() - qc.x()) * (qf + 1), 1, (door.z() - qc.z()) * (qf + 1));
+                check(level.getBlockState(doorway).isAir(), "its doorways are open");
+                hero.setPos(qm.getX() + 4.5, qm.getY() + 1.0, qm.getZ() + 0.5);
+                Passages.ambushTick(level, quiet, qc, hero);
+                check(Passages.ambushStage(level, quiet, qc) == 0, "walking in at the door springs nothing");
+                hero.setPos(qm.getX() + 1.5, qm.getY() + 1.0, qm.getZ() + 0.5);
+                Passages.ambushTick(level, quiet, qc, hero);
+                List<net.minecraft.world.entity.Mob> drop = Passages.guardians(level, quiet, qc);
+                check(Passages.ambushStage(level, quiet, qc) == 1 && drop.size() >= 3 && level.getBlockState(doorway).is(Blocks.IRON_BARS),
+                        "close to the cache, it springs: the doors are barred and the guard drops in");
+                check(drop.stream().allMatch(g -> g.getY() > qm.getY() + 3), "they come down from the ceiling");
+                check(!Passages.loot(level, quiet.featurePos(qc), hero), "the cache stays shut while they stand");
+                for (net.minecraft.world.entity.Mob g : drop) g.discard();
+                Passages.ambushTick(level, quiet, qc, hero);
+                check(Passages.ambushStage(level, quiet, qc) == 2 && level.getBlockState(doorway).isAir(), "beaten, the bars lift");
+                check(Passages.loot(level, quiet.featurePos(qc), hero), "and the cache opens");
+                Passages.rearm(level, quiet);
+                check(Passages.ambushStage(level, quiet, qc) == 0, "sealing the passage again lays the ambush again");
+                // reaching for the cache springs it too
+                hero.setPos(qm.getX() + 4.5, qm.getY() + 1.0, qm.getZ() + 0.5);
+                check(!Passages.loot(level, quiet.featurePos(qc), hero) && Passages.ambushStage(level, quiet, qc) == 1, "reaching for the cache springs it as well");
+                // and nobody is shut out of their own passage: with nobody left in the room, the bars lift
+                hero.setPos(qm.getX() + 40.5, qm.getY() + 1.0, qm.getZ() + 0.5);
+                advance(server, 25);
+                Scheduler.tick(server);
+                check(level.getBlockState(doorway).isAir(), "with nobody left inside, the bars lift");
+            } finally {
+                for (Passages.Plan plan : built) Passages.rearm(level, plan);
                 hero.remove(net.minecraft.world.entity.Entity.RemovalReason.DISCARDED);
             }
         });

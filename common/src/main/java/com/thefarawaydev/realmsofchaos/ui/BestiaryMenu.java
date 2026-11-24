@@ -66,9 +66,9 @@ public class BestiaryMenu extends ButtonMenu {
         return out;
     }
 
-    /** Rows 2 to 4, seven to a row. */
+    /** Rows 2 to 4, nine to a row: room for twenty-seven kinds to a tower. */
     public static int slotOf(int index) {
-        return slot(2 + index / 7, 1 + index % 7);
+        return slot(2 + index / 9, index % 9);
     }
 
     private static ItemLike icon(Sentinel.Kind kind) {
@@ -114,7 +114,7 @@ public class BestiaryMenu extends ButtonMenu {
             view.setItem(TABS[line.ordinal()], pane(page == line ? colour : DyeColor.GRAY, com.thefarawaydev.realmsofchaos.world.Tower.towerName(line).copy().withStyle(plain(line.color())), List.of()));
         }
         List<Sentinel.Kind> kinds = kinds(page);
-        for (int i = 0; i < kinds.size() && i < 21; i++) {
+        for (int i = 0; i < kinds.size() && i < 27; i++) {
             Sentinel.Kind kind = kinds.get(i);
             int slain = slain(viewer, kind);
             if (slain == 0) {

@@ -69,6 +69,31 @@ The current build is an **Alpha**.
   (white marble and gold, a thunderbolt), the **Door of the Sea** (dark sea-wood, a trident) and the **Door of the
   Shades** (black wood with violet light, a skull), each with its trapdoor. All open by hand and are craftable.
   (`art/renders/door-textures.png`, `door-items.png`, `doors-placed.png`)
+* **Twelve new sentinels with attacks of their own** - four to a tower, seventy-five kinds in all. Every one of
+  these attacks is telegraphed and can be parried or dodged. (`art/renders/new-sentinels.png`)
+  * **Duelists** (Storm Duelist, Coral Duelist, Grave Fencer): a guard glints on the blade when it is up, and the
+    first blow struck at one from the front is turned with a ring of steel - then it answers a moment later. Its
+    guard is down for five seconds after; strike then, or from behind, or parry its answer and punish the stagger.
+  * **Slingers** (Gale Slinger, Spine Thrower, Pyre Archer): a fan of five bolts at once. Step out of the fan, or
+    between its bolts.
+  * **Reavers** (Cyclone Reaver, Maelstrom Reaver, Scythe Reaper): spin up for a second, a ring on the floor showing
+    the reach, then cut everything inside it and throw it outward.
+  * **Slammers** (Skyfall Brute, Depth Crusher, Tomb Breaker): from four to twelve blocks off, it marks the ground
+    under you with a ring, crouches, leaps, and comes down on the mark in a shockwave that throws you into the air.
+  They join the levels as their threat allows (slingers from the second floor up, slammers from the sixth). The
+  bestiary page now holds twenty-five to a tower.
+* **Three more combat rooms.**
+  * **Duelling circle** - a ring of the tower's mosaic, posts with the tower's fire, benches for those who watch.
+    Its champion waits alone: a duelist of the tower, crowned as one of the passage's lesser gods. The cache on its
+    corner plinth stays shut while the champion stands. (`art/renders/duelling-circle.png`)
+  * **Overlook** - a tall hall with a railed gallery round all four walls, ladders up in two corners and four great
+    pillars on the floor for cover. Its bowmen and slingers stand up on the gallery, a guard below; the cache is up
+    there too. (`art/renders/overlook-floor.png`, `overlook-gallery.png`)
+  * **Quiet hall** - it looks like a forgotten room: rubble, cobwebs, a cache left on a lit plinth in the middle,
+    four dark holes in the ceiling. Walk up to the cache, or reach for it, and it springs: iron bars drop across
+    every doorway and the room's guard drops in from the holes. The bars lift when they are beaten - or as soon as
+    nobody is left inside, so no one is ever shut out of their own passage. (`art/renders/ambush-barred.png`,
+    `ambush-sprung.png`)
 * **The dodge.** Hold a direction and tap sneak, and you throw yourself that way - a quick dash, and for eight
   ticks no blow of the realms' creatures can find you. A blow slipped like that leaves its striker open: your next
   blow within three seconds is a riposte, as after a parry, and it counts towards momentum. A dodge needs a little
@@ -492,7 +517,7 @@ The current build is an **Alpha**.
   twelve skills of three ranks each: *Combat* - Might, Swiftness, Focus, Reach; *Survival* - Vigor, Guard,
   Steadiness, Second Wind; *Exploration* - Cartographer (the chart sketches rooms next door), Signal, Scavenger,
   Pathfinder. The tree can be taken apart and re-spent at any time.
-* **Sixty-three sentinels.** Each tower now has twenty-one kinds instead of six. Every kind has a role (soldier,
+* **Sixty-three sentinels** (seventy-five since). Each tower now has twenty-one kinds instead of six. Every kind has a role (soldier,
   caster, skirmisher, brute, mystic, Keeper) and most have one **trait** that no other kind in their tower has. The
   deeper a level, the more kinds it fields.
   * *They cover for each other:* a **shield-bearer** turns blows from its front and shelters whoever stands beside
@@ -870,7 +895,7 @@ JAVA_HOME=/path/to/jdk-25 ./build.sh
 The mod contains a developer self-test that only runs when the JVM has `-Droc.selftest=true`. It exercises the mod
 on a real server: data loading, the hub, building and walking every floor of every tower, a full climb of all three
 towers through the altar menu (with rematches) and all 42 passages, the Ruined Gate and its keystones, the story's
-chapters, the hub's residents, all sixty-three sentinels and their traits, craters, the custom screens and their buttons, the tutorial, impacts, the
+chapters, the hub's residents, all seventy-five sentinels and their traits, craters, the custom screens and their buttons, the tutorial, impacts, the
 floor's eruptions and the gods' last stands, the three phases of a trial (health gates, pylons, stances, the collapsing floor and its restoration, strikes), gear and difficulty scaling,
 the compass scanner, relays and jammers, waygates, the Field Tower Bag, hub tiers and bounties, the rune chambers, the sidebar, level counts and names, building ahead, the four puzzle rooms (beam rooms laid out at random, with decoys and a limit of turns), no two rooms of a kind joined, cells and storerooms, afflictions, cards and lines not said twice, the written screens as pages (packing, pictures, buttons pressed), onslaughts, the three rune chambers, the panoply, commissions, the lesser gods, the thirty-eight trap halls (each proved crossable, each hazard, a chasing hall, a small hall), winding corridors, crusher and dart halls, urns and tablets, the Passage Chart, the mastery tree, the menu artwork, cards and tips, the drawn boss bar and the opt-in cast bar, settings, the gods' memory of each player, room shapes and stairwells, the spike, flame and blade halls, parries, ripostes, momentum and plunges, heavy blows, boons, the gate's facing, the shrine's chart, the bestiary, the frames of each phase, shut gates, corridors and their jets, the arc and gas halls, the chart's memory, plain-word fallbacks, every menu's words against the language file, parties, group scaling and per-player loot, the wall protection (built, checked room by room for reachability,
 seals struck, guardians, shrine, map), every god's signature move, the relic moves, the forging quick-time rounds,
