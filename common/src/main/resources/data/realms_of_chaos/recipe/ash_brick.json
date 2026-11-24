@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "key": {
+    "B": "minecraft:polished_blackstone_bricks",
+    "A": "minecraft:bone_meal"
+  },
+  "pattern": [
+    "BB",
+    "BA"
+  ],
+  "result": {
+    "id": "realms_of_chaos:ash_brick",
+    "count": 3
+  }
+}

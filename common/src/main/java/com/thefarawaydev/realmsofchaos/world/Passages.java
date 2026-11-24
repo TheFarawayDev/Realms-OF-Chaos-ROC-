@@ -70,7 +70,7 @@ public final class Passages {
     public static final int TALL = 8;
     public static final int MAX_SIZE = 6;
     public static final int X0 = 600, PITCH = 160;
-    public static final int LAYOUT_VERSION = 12;
+    public static final int LAYOUT_VERSION = 13;
     public static final String GUARDIAN_TAG = "realms_of_chaos_guardian";
     private static final String HUD = "hud." + RealmsOfChaos.MOD_ID + ".passage.";
 
@@ -919,6 +919,8 @@ public final class Passages {
             }
         });
         for (Cell c : plan.cells()) steps.add(() -> furnish(level, plan, c, p, random));
+        // the connecting blocks are joined once everything stands
+        steps.add(() -> com.thefarawaydev.realmsofchaos.block.ConnectedBlock.settle(level, o.offset(-1, -2, -1), o.offset(w, LEVEL_PITCH - 3, w)));
         return steps;
     }
 
@@ -952,7 +954,7 @@ public final class Passages {
             if (run == RUN_GALLERY) {
                 for (int d = mid - 1; d <= mid + 1; d += 2) {
                     for (int k = -reach; k <= reach; k += reach * 2) {
-                        for (int y = 1; y <= 4; y++) set(level, along(plan, c, dir, d, k, y), p.pillar());
+                        for (int y = 1; y <= 4; y++) set(level, along(plan, c, dir, d, k, y), column(plan.line));
                     }
                 }
                 set(level, along(plan, c, dir, mid, -reach, 0), p.light());
@@ -1065,6 +1067,17 @@ public final class Passages {
                 if (!level.getBlockState(at).isAir() && level.getBlockState(at.below()).isSolidRender()) set(level, at, relief);
             }
         }
+        // the tower's brick in the walls' face between the band and the ceiling of a tall room
+        if (h > HEADROOM + 1) {
+            for (int d = -r; d <= r; d++) {
+                for (int[] k : new int[][]{{d, -(r + 1)}, {d, r + 1}, {-(r + 1), d}, {r + 1, d}}) {
+                    for (int y = 5; y < h; y++) {
+                        BlockPos at = m.offset(k[0], y, k[1]);
+                        if (level.getBlockState(at).is(p.wall())) set(level, at, brick(plan.line));
+                    }
+                }
+            }
+        }
         // a band of trim round its walls, and sconces set into them; a tall room has a second band under its ceiling
         int wall = r + 1;
         for (int d = -r; d <= r; d++) {
@@ -1077,6 +1090,39 @@ public final class Passages {
                 }
             }
         }
+    }
+
+    /** Each tower's own column (connecting), floor panel (connecting) and brick. */
+    public static Block column(Line line) {
+        return switch (line) {
+            case ZEUS -> ModContent.MARBLE_COLUMN.get();
+            case POSEIDON -> ModContent.CORAL_COLUMN.get();
+            case HADES -> ModContent.BONE_COLUMN.get();
+        };
+    }
+
+    public static Block floorPanel(Line line) {
+        return switch (line) {
+            case ZEUS -> ModContent.SUNSTONE_PANEL.get();
+            case POSEIDON -> ModContent.PEARL_PANEL.get();
+            case HADES -> ModContent.EMBER_PANEL.get();
+        };
+    }
+
+    public static Block wallPanel(Line line) {
+        return switch (line) {
+            case ZEUS -> ModContent.OLYMPIAN_PANEL.get();
+            case POSEIDON -> ModContent.ABYSSAL_PANEL.get();
+            case HADES -> ModContent.UNDERWORLD_PANEL.get();
+        };
+    }
+
+    public static Block brick(Line line) {
+        return switch (line) {
+            case ZEUS -> ModContent.STORM_BRICK.get();
+            case POSEIDON -> ModContent.TIDE_BRICK.get();
+            case HADES -> ModContent.ASH_BRICK.get();
+        };
     }
 
     /** The carved relief set into a tower's walls. */
@@ -1131,7 +1177,7 @@ public final class Passages {
                 set(level, m.above(), p.trim());
                 set(level, plan.sealPos(c), ModContent.PASSAGE_SEAL.get());
                 for (int[] k : CORNERS) {
-                    for (int y = 1; y <= plan.height(c); y++) set(level, m.offset(k[0], y, k[1]), p.pillar());
+                    for (int y = 1; y <= plan.height(c); y++) set(level, m.offset(k[0], y, k[1]), column(plan.line));
                 }
                 // a ring of inlay round the pedestal, and four rays out to the lanes
                 for (int dx = -2; dx <= 2; dx++) {
@@ -1307,8 +1353,8 @@ public final class Passages {
                     for (int a : new int[]{-(reach - 1), reach - 1}) {
                         for (int b : new int[]{-(reach - 1), -2, 2, reach - 1}) {
                             for (int y = 1; y <= tall; y++) {
-                                set(level, m.offset(a, y, b), y == 1 || y == tall ? p.trim() : p.pillar());
-                                set(level, m.offset(b, y, a), y == 1 || y == tall ? p.trim() : p.pillar());
+                                set(level, m.offset(a, y, b), y == 1 || y == tall ? p.trim() : column(plan.line));
+                                set(level, m.offset(b, y, a), y == 1 || y == tall ? p.trim() : column(plan.line));
                             }
                         }
                     }
@@ -1335,7 +1381,7 @@ public final class Passages {
                     case -1 -> { }
                     case 0 -> {
                         for (int[] k : CORNERS) {
-                            for (int y = 1; y <= tall; y++) set(level, m.offset(k[0], y, k[1]), p.pillar());
+                            for (int y = 1; y <= tall; y++) set(level, m.offset(k[0], y, k[1]), column(plan.line));
                         }
                     }
                     case 1 -> {

@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "key": {
+    "S": "minecraft:sandstone",
+    "P": "minecraft:prismarine_shard"
+  },
+  "pattern": [
+    "SP",
+    "PS"
+  ],
+  "result": {
+    "id": "realms_of_chaos:tide_brick",
+    "count": 4
+  }
+}

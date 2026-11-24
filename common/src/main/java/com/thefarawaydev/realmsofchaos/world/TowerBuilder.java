@@ -17,7 +17,7 @@ import net.minecraft.world.level.block.state.BlockState;
  * solid stands inside the fight ring, the entrance and exit corridors are flat, and the whole floor is enclosed.
  */
 public final class TowerBuilder {
-    public static final int LAYOUT_VERSION = 7;
+    public static final int LAYOUT_VERSION = 8;
 
     public enum Layout { FLAT, MOUNDS, PILLARS, PIT, DAIS, WAVES, MOAT, TERRACES, SPLIT, ZIGGURAT, SUMMIT }
 
@@ -211,6 +211,9 @@ public final class TowerBuilder {
                             if (face) b = head ? Mason.stair(wallStone.stairs(), out, true) : Blocks.AIR.defaultBlockState();
                             else if (!head) b = p.glass().defaultBlockState();
                         }
+                        // the face of the wall: a dado of the tower's panels, its brick between the windows
+                        if (!summit && face && h >= 2 && h <= 4) b = Passages.wallPanel(line).defaultBlockState();
+                        if (!summit && face && h >= 6 && h <= 11 && !window) b = Passages.brick(line).defaultBlockState();
                         if (!summit && face && h == 3 && Math.floorMod(x * 7 + z * 13, 9) == 0) b = p.light().defaultBlockState();
                         if (summit && face && h == 4) b = Mason.stair(wallStone.stairs(), out, true);
                         level.setBlock(pos.set(x, y, z), b, 2);
@@ -265,12 +268,22 @@ public final class TowerBuilder {
                         if (line == Line.ZEUS) set(level, px, y0 + 5, pz, Blocks.END_ROD);
                     }
                 } else {
-                    for (int y = 1; y <= Tower.ROOM_HEIGHT; y++) set(level, px, y0 + y, pz, y == 8 ? p.light() : p.pillar());
+                    for (int y = 1; y <= Tower.ROOM_HEIGHT; y++) set(level, px, y0 + y, pz, y == 8 ? p.light() : Passages.column(line));
                 }
             }
         }
 
         decorate(level, line, floor, layout, p);
+        // the walkway is paved in the tower's floor panels, a frame round the whole ring of them
+        int wr = (int) Math.ceil(Tower.WALL_INNER);
+        for (int x = -wr; x <= wr; x++) {
+            for (int z = -wr; z <= wr; z++) {
+                double r = Math.sqrt(x * x + z * z);
+                if (r < Tower.FIGHT_RADIUS + 0.5 || r >= 20 || (x == 0 && Math.abs(z) >= 13)) continue;
+                BlockPos at = new BlockPos(x, y0, z);
+                if (level.getBlockState(at).is(p.top()) || level.getBlockState(at).is(p.topAlt())) set(level, x, y0, z, Passages.floorPanel(line));
+            }
+        }
 
         // ---- altar on a small dais in the entrance corridor
         BlockPos altar = Tower.altarPos(floor);
@@ -288,6 +301,7 @@ public final class TowerBuilder {
         // ---- gates: home to the hub on the south side, up to the next floor on the north side
         gate(level, 0, y0, 19, p, ModContent.GATE_HUB.get());
         if (!summit) gate(level, 0, y0, -19, p, ModContent.GATE_ASCEND.get());
+        com.thefarawaydev.realmsofchaos.block.ConnectedBlock.settle(level, new BlockPos(-ri, y0 - 1, -ri), new BlockPos(ri, y0 + Tower.ROOM_HEIGHT + 1, ri));
     }
 
     /** The paving block a column of the fight ring has under the given height map. */
@@ -414,7 +428,7 @@ public final class TowerBuilder {
             BlockPos foot = new BlockPos(x, y0, z);
             for (int y = y0 + 1; y < roofY; y++) {
                 int h = y - y0;
-                set(level, x, y, z, (h == 1 || h == Tower.ROOM_HEIGHT - 3 || h == Tower.ROOM_HEIGHT) ? p.trim() : h == 6 ? p.light() : p.pillar());
+                set(level, x, y, z, (h == 1 || h == Tower.ROOM_HEIGHT - 3 || h == Tower.ROOM_HEIGHT) ? p.trim() : Passages.column(line));
             }
             for (Direction d : Direction.Plane.HORIZONTAL) {
                 BlockPos base = foot.above(1).relative(d), head = foot.above(Tower.ROOM_HEIGHT - 4).relative(d);

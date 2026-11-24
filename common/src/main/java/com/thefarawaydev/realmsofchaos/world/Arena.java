@@ -98,6 +98,9 @@ public final class Arena {
             // inside the fight ring the paving follows the floor's current shape; outside it nothing ever moves
             level.setBlock(pos, terrain ? TowerBuilder.surfaceAt(line, floor, pos.getX(), pos.getZ(), heights).defaultBlockState() : entry.getValue(), 2);
         }
+        // (connecting panels are joined again to whichever neighbours came back with them)
+        int r = Tower.WALL_INNER;
+        com.thefarawaydev.realmsofchaos.block.ConnectedBlock.settle(level, new BlockPos(-r, y0 - 1, -r), new BlockPos(r, y0 + 3, r));
         record.clear();
         ProgressData.get(level.getServer()).unmarkBuilt(scorchKey(line, floor));
     }

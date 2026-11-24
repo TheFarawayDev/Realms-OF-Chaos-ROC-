@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "key": {
+    "P": "minecraft:prismarine_bricks",
+    "C": "minecraft:brain_coral_block"
+  },
+  "pattern": [
+    "P",
+    "C",
+    "P"
+  ],
+  "result": {
+    "id": "realms_of_chaos:coral_column",
+    "count": 3
+  }
+}

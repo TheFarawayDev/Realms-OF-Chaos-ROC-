@@ -17,6 +17,15 @@
     "realms_of_chaos:underworld_panel",
     "realms_of_chaos:sky_relief",
     "realms_of_chaos:sea_relief",
-    "realms_of_chaos:shade_relief"
+    "realms_of_chaos:shade_relief",
+    "realms_of_chaos:marble_column",
+    "realms_of_chaos:sunstone_panel",
+    "realms_of_chaos:storm_brick",
+    "realms_of_chaos:coral_column",
+    "realms_of_chaos:pearl_panel",
+    "realms_of_chaos:tide_brick",
+    "realms_of_chaos:bone_column",
+    "realms_of_chaos:ember_panel",
+    "realms_of_chaos:ash_brick"
   ]
 }

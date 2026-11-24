@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "key": {
+    "T": "realms_of_chaos:abyssal_tile",
+    "N": "minecraft:nautilus_shell"
+  },
+  "pattern": [
+    "TTT",
+    "TNT",
+    "TTT"
+  ],
+  "result": {
+    "id": "realms_of_chaos:pearl_panel",
+    "count": 8
+  }
+}

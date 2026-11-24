@@ -51,6 +51,13 @@ The current build is an **Alpha**.
   panel with a single frame round its outside. They face the statues' pedestals, the entablatures of the Sea and
   Shade gates and the rim of the hub's pool; the rotunda is floored in mosaic and tiles, the ways in Olympian
   Tiles, Abyssal Tile and Underworld Brick. (`art/renders/blocks-16.png`, `connected-panel-wall.png`)
+* **Each tower's own stone, connecting.** Nine more blocks, three to a tower: a **column** (Marble, Coral, Bone)
+  that shows its moulded base and capital only at the ends of a run, a fluted shaft between; a **floor panel**
+  (Sunstone, Pearl, Ember) that frames a whole run of itself as one; and a **brick** (Storm, Tide, Ash). Every
+  tower floor now has its columns of its tower's column, a dado of its wall panels round the wall, its brick
+  between the windows, and its walkway paved in its floor panels with one frame round the whole ring; every
+  passage room of the tower has its columns in the tower's column and, in the tall rooms, its brick above the
+  band. All craftable and dug with a pickaxe. (`art/renders/tower-stone*.png`)
 * **Reliefs.** The Relief of the Sky, of the Sea and of the Shades - a thunderbolt under clouds, a trident over the
   waves, a skull over a bident and flames - carved into the walls of every passage room either side of the middle
   of each wall, and under every other window of the tower floors. (`art/renders/passage-reliefs.png`,

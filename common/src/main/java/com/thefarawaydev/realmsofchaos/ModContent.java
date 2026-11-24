@@ -95,6 +95,10 @@ public final class ModContent {
             OLYMPIAN_TILES = new Ref<>(), CHAOS_MOSAIC = new Ref<>(), OLYMPIAN_PANEL = new Ref<>(), ABYSSAL_PANEL = new Ref<>(), UNDERWORLD_PANEL = new Ref<>();
     public static final Ref<Block> SPIKE_PLATE = new Ref<>(), SPIKE_PLATE_DARK = new Ref<>(), TRAP_SPIKES = new Ref<>(), FLAME_VENT = new Ref<>(), GAS_VENT = new Ref<>(),
             SKY_RELIEF = new Ref<>(), SEA_RELIEF = new Ref<>(), SHADE_RELIEF = new Ref<>();
+    /** Each tower's own stone: a connecting column, a connecting floor panel, a brick. */
+    public static final Ref<Block> MARBLE_COLUMN = new Ref<>(), SUNSTONE_PANEL = new Ref<>(), STORM_BRICK = new Ref<>(),
+            CORAL_COLUMN = new Ref<>(), PEARL_PANEL = new Ref<>(), TIDE_BRICK = new Ref<>(),
+            BONE_COLUMN = new Ref<>(), EMBER_PANEL = new Ref<>(), ASH_BRICK = new Ref<>();
     public static final Ref<Block> TOWER_BRAZIER = new Ref<>();
 
     public static final List<Def<Block>> BLOCK_DEFS = new ArrayList<>();
@@ -245,6 +249,16 @@ public final class ModContent {
         block("sky_relief", SKY_RELIEF, key -> new Block(decor(key).mapColor(MapColor.QUARTZ)));
         block("sea_relief", SEA_RELIEF, key -> new Block(decor(key).mapColor(MapColor.WARPED_WART_BLOCK)));
         block("shade_relief", SHADE_RELIEF, key -> new Block(decor(key).mapColor(MapColor.COLOR_BLACK)));
+        // each tower's own stone; columns show a base and a capital only at the ends of a run, panels one frame round a run
+        block("marble_column", MARBLE_COLUMN, key -> new com.thefarawaydev.realmsofchaos.block.ConnectedBlock(decor(key).mapColor(MapColor.QUARTZ)));
+        block("sunstone_panel", SUNSTONE_PANEL, key -> new com.thefarawaydev.realmsofchaos.block.ConnectedBlock(decor(key).mapColor(MapColor.SAND).lightLevel(s -> 4)));
+        block("storm_brick", STORM_BRICK, key -> new Block(decor(key).mapColor(MapColor.QUARTZ)));
+        block("coral_column", CORAL_COLUMN, key -> new com.thefarawaydev.realmsofchaos.block.ConnectedBlock(decor(key).mapColor(MapColor.WARPED_WART_BLOCK)));
+        block("pearl_panel", PEARL_PANEL, key -> new com.thefarawaydev.realmsofchaos.block.ConnectedBlock(decor(key).mapColor(MapColor.SNOW)));
+        block("tide_brick", TIDE_BRICK, key -> new Block(decor(key).mapColor(MapColor.WARPED_WART_BLOCK)));
+        block("bone_column", BONE_COLUMN, key -> new com.thefarawaydev.realmsofchaos.block.ConnectedBlock(decor(key).mapColor(MapColor.SAND)));
+        block("ember_panel", EMBER_PANEL, key -> new com.thefarawaydev.realmsofchaos.block.ConnectedBlock(decor(key).mapColor(MapColor.COLOR_BLACK).lightLevel(s -> 5)));
+        block("ash_brick", ASH_BRICK, key -> new Block(decor(key).mapColor(MapColor.SAND)));
 
         // items: codex, compass, 45 god weapons (ordered by line, rank 1 -> 15), then the block items
         item("chaos_codex", CHAOS_CODEX, key -> new CodexItem(new Item.Properties().setId(key).stacksTo(1)));

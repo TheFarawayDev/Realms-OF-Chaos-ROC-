@@ -1,0 +1,7 @@
+{
+  "parent": "minecraft:block/cube_column",
+  "textures": {
+    "end": "realms_of_chaos:block/marble_column_end",
+    "side": "realms_of_chaos:block/marble_column_bottom"
+  }
+}

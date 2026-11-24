@@ -800,6 +800,15 @@ def gen_lang():
         "block.realms_of_chaos.sky_relief": "Relief of the Sky",
         "block.realms_of_chaos.sea_relief": "Relief of the Sea",
         "block.realms_of_chaos.shade_relief": "Relief of the Shades",
+        "block.realms_of_chaos.marble_column": "Marble Column",
+        "block.realms_of_chaos.sunstone_panel": "Sunstone Panel",
+        "block.realms_of_chaos.storm_brick": "Storm Brick",
+        "block.realms_of_chaos.coral_column": "Coral Column",
+        "block.realms_of_chaos.pearl_panel": "Pearl Panel",
+        "block.realms_of_chaos.tide_brick": "Tide Brick",
+        "block.realms_of_chaos.bone_column": "Bone Column",
+        "block.realms_of_chaos.ember_panel": "Ember Panel",
+        "block.realms_of_chaos.ash_brick": "Ash Brick",
         "block.realms_of_chaos.beam_mirror": "Beam Mirror",
         "block.realms_of_chaos.beam_emitter": "Beam Emitter",
         "block.realms_of_chaos.beam_receiver": "Beam Receiver",
@@ -1873,7 +1882,8 @@ FIELD_MODELS = {
 FIELD_DROPS = ["relay_core", "signal_jammer", "waygate_obelisk"]
 # the realms' own building stone: dug by pickaxe, drops itself
 DECOR = ["olympian_marble", "olympian_marble_pillar", "gilded_frieze", "abyssal_tile", "underworld_brick", "chaos_lamp",
-         "olympian_tiles", "chaos_mosaic", "olympian_panel", "abyssal_panel", "underworld_panel", "sky_relief", "sea_relief", "shade_relief"]
+         "olympian_tiles", "chaos_mosaic", "olympian_panel", "abyssal_panel", "underworld_panel", "sky_relief", "sea_relief", "shade_relief",
+         "marble_column", "sunstone_panel", "storm_brick", "coral_column", "pearl_panel", "tide_brick", "bone_column", "ember_panel", "ash_brick"]
 FIELD_DROPS = FIELD_DROPS + DECOR
 
 # The 22 Major Arcana: (id, numeral, name, what the card does, 8x8 symbol (# ink, + colour), colour)

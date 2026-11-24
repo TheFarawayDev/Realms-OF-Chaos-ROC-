@@ -593,6 +593,7 @@ def run(assets, data=None):
         gen_decor(assets, data)
         gen_hi_decor(assets, data)
         gen_traps(assets, data)
+        gen_tower_stone(assets, data)
 
 
 # ---- high-resolution building stone: 64x64, with connecting panels ---------------------------------------------------
@@ -1000,3 +1001,114 @@ def gen_traps(assets, data):
         cube(assets, name)
         wj(os.path.join(data, f"loot_table/blocks/{name}.json"), {"type": "minecraft:block", "pools": [{"rolls": 1, "entries": [{"type": "minecraft:item", "name": f"{MOD}:{name}"}],
                                                                                                      "conditions": [{"condition": "minecraft:survives_explosion"}]}]})
+
+
+# ---- each tower's own connecting stone: a column, a floor panel, a brick ---------------------------------------------
+
+TOWER_STONE = {
+    # tower: (column, panel, brick, base, light, dark, accent)
+    "zeus": ("marble_column", "sunstone_panel", "storm_brick", (232, 228, 220), (252, 250, 244), (160, 152, 142), GOLD),
+    "poseidon": ("coral_column", "pearl_panel", "tide_brick", (92, 168, 160), (170, 226, 214), (36, 92, 92), (236, 176, 160)),
+    "hades": ("bone_column", "ember_panel", "ash_brick", (206, 198, 178), (236, 230, 214), (120, 110, 96), (190, 120, 240)),
+}
+TOWER_BLOCKS = [b for t in TOWER_STONE.values() for b in t[:3]]
+
+
+def column_side(kind, base, light, dark, accent, g):
+    """A column's side: fluted shaft; a moulded base where the run starts, a capital where it ends.
+    kind: single, bottom, middle, top."""
+    def fn(x, y):
+        k = x % 4
+        c = shade(base, g[y][x] * {0: 0.78, 1: 1.1, 2: 1.0, 3: 0.9}[k])
+        has_cap = kind in ("single", "top")
+        has_base = kind in ("single", "bottom")
+        if has_cap and y <= 3:
+            c = [shade(dark, 0.8), light, accent, shade(base, 0.85)][y]
+            if y == 2 and x % 3 == 1: c = mix(accent, (255, 255, 255), 0.4)       # beads in the necking
+        if has_base and y >= 12:
+            c = [shade(base, 0.85), light, base, shade(dark, 0.8)][y - 12]
+        return c
+    return fn
+
+
+def connected_column(assets, name, base, light, dark, accent):
+    T = os.path.join(assets, "textures/block")
+    g = grain(len(name) * 7, 0.04)
+    for kind in ("single", "bottom", "middle", "top"):
+        paint_hi(column_side(kind, base, light, dark, accent, g)).save(os.path.join(T, f"{name}_{kind}.png"))
+
+    def end(x, y):
+        r = math.hypot(x - 7.5, y - 7.5)
+        c = shade(base, g[y][x])
+        if 5.6 < r < 6.6: c = shade(dark, 1.0)
+        if r < 2.0: c = accent
+        return c
+    paint_hi(end).save(os.path.join(T, f"{name}_end.png"))
+    dirs = ["down", "east", "north", "south", "up", "west"]
+    variants = {}
+    for bits in range(64):
+        j = {d: bool(bits >> i & 1) for i, d in enumerate(dirs)}
+        kind = "middle" if j["up"] and j["down"] else "bottom" if j["up"] else "top" if j["down"] else "single"
+        model = f"{name}_{kind}"
+        variants[",".join(f"{d}={'true' if j[d] else 'false'}" for d in dirs)] = {"model": f"{MOD}:block/{model}"}
+    for kind in ("single", "bottom", "middle", "top"):
+        wj(os.path.join(assets, f"models/block/{name}_{kind}.json"),
+           {"parent": "minecraft:block/cube_column", "textures": {"end": f"{MOD}:block/{name}_end", "side": f"{MOD}:block/{name}_{kind}"}})
+    wj(os.path.join(assets, f"blockstates/{name}.json"), {"variants": variants})
+    wj(os.path.join(assets, f"models/block/{name}.json"), {"parent": f"{MOD}:block/{name}_single"})
+    wj(os.path.join(assets, f"items/{name}.json"), {"model": {"type": "minecraft:model", "model": f"{MOD}:block/{name}"}})
+
+
+def gen_tower_stone(assets, data):
+    T = os.path.join(assets, "textures/block")
+    for tower, (col, panel, brick, base, light, dark, accent) in TOWER_STONE.items():
+        connected_column(assets, col, base, light, dark, accent)
+        g = grain(len(tower) * 13, 0.045)
+        # the floor panel's field: one look per tower, tiling seamlessly from block to block
+        if tower == "zeus":
+            # sunstone: warm cream, a fine lattice of gold rays
+            field = lambda x, y, g=g: GOLD if (x + y) % 8 == 0 or (x - y) % 8 == 0 and (x + y) % 2 == 0 else shade((240, 226, 190), g[y][x])
+            frame = ((226, 212, 180), (250, 244, 226), (150, 130, 90), GOLD)
+        elif tower == "poseidon":
+            # pearl: soft bands of mother-of-pearl
+            def field(x, y, g=g):
+                t = 0.5 + 0.5 * math.sin((x * 0.6 + y * 0.9) + math.sin(y * 0.7) * 1.4)
+                return shade(mix((220, 236, 240), (240, 210, 226), t) if t > 0.5 else mix((176, 226, 222), (220, 236, 240), t * 2), g[y][x])
+            frame = ((190, 200, 210), (236, 240, 248), (110, 120, 134), (150, 220, 230))
+        else:
+            # ember: black glass with glowing cracks running through it
+            def field(x, y, g=g):
+                crack = (x * 3 + y * 5 + (x * y) % 7) % 13 == 0 or (x + 2 * y) % 11 == 0 and x % 3 == 0
+                return (255, 130, 50) if crack and (x + y) % 2 else (150, 50, 30) if crack else shade((34, 28, 40), g[y][x])
+            frame = ((70, 56, 50), (130, 104, 70), (24, 18, 22), (220, 160, 70))
+        connected(assets, panel, field, *frame)
+        # the brick: laid in courses, each tower's own
+        def brick_fn(x, y, base=base, light=light, dark=dark, accent=accent, g=g, tower=tower):
+            row = y // 4
+            bx, by = (x + (4 if row % 2 else 0)) % 8, y % 4
+            if by == 3 or bx == 7:
+                if tower == "zeus" and (x * 3 + y) % 9 == 0: return GOLD                        # gold in the joints
+                if tower == "hades" and (x * 5 + y) % 7 == 0: return (200, 60, 40)
+                return shade(dark, 0.8)
+            c = shade(base, g[y][x] * (0.92 + 0.08 * ((x // 8 + row) % 2)))
+            if by == 0 or bx == 0: c = light
+            return c
+        paint_hi(brick_fn).save(os.path.join(T, brick + ".png"))
+        cube(assets, brick)
+    recipes = {
+        "marble_column": ({"M": f"{MOD}:olympian_marble_pillar"}, ["M", "M"], 2),
+        "sunstone_panel": ({"M": f"{MOD}:olympian_marble", "G": "minecraft:glowstone_dust"}, ["MGM", "GMG", "MGM"], 5),
+        "storm_brick": ({"S": "minecraft:stone_bricks", "G": "minecraft:gold_nugget"}, ["SS", "SG"], 3),
+        "coral_column": ({"P": "minecraft:prismarine_bricks", "C": "minecraft:brain_coral_block"}, ["P", "C", "P"], 3),
+        "pearl_panel": ({"T": f"{MOD}:abyssal_tile", "N": "minecraft:nautilus_shell"}, ["TTT", "TNT", "TTT"], 8),
+        "tide_brick": ({"S": "minecraft:sandstone", "P": "minecraft:prismarine_shard"}, ["SP", "PS"], 4),
+        "bone_column": ({"B": "minecraft:bone_block"}, ["B", "B"], 2),
+        "ember_panel": ({"O": "minecraft:obsidian", "M": "minecraft:magma_block"}, ["OMO", "MOM", "OMO"], 5),
+        "ash_brick": ({"B": "minecraft:polished_blackstone_bricks", "A": "minecraft:bone_meal"}, ["BB", "BA"], 3),
+    }
+    for rid, (key_, pattern_, count) in recipes.items():
+        wj(os.path.join(data, f"recipe/{rid}.json"), {"type": "minecraft:crafting_shaped", "category": "building", "key": key_, "pattern": pattern_,
+                                                      "result": {"id": f"{MOD}:{rid}", "count": count}})
+    for b in TOWER_BLOCKS:
+        wj(os.path.join(data, f"loot_table/blocks/{b}.json"), {"type": "minecraft:block", "pools": [{"rolls": 1, "entries": [{"type": "minecraft:item", "name": f"{MOD}:{b}"}],
+                                                                                                  "conditions": [{"condition": "minecraft:survives_explosion"}]}]})

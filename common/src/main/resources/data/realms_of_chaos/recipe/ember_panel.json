@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "key": {
+    "O": "minecraft:obsidian",
+    "M": "minecraft:magma_block"
+  },
+  "pattern": [
+    "OMO",
+    "MOM",
+    "OMO"
+  ],
+  "result": {
+    "id": "realms_of_chaos:ember_panel",
+    "count": 5
+  }
+}
