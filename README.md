@@ -16,6 +16,17 @@ The current build is an **Alpha**.
 
 ## What's in 1.2.0
 
+* **The middle of the hub is built as a place.**
+  * A **rotunda** stands over the spawn: eight marble columns with bases and capitals, a gilded entablature, and a
+    dome of verdigris copper with a gold lantern at its crown and chandeliers hung under it. The Oracle's Flame
+    and the Heart stand in its openings.
+  * The **Bounty Board** is a real notice board: nine boards of notices, three by three, in a dark oak frame under
+    a gabled roof, lanterns under the eaves, a barrel, a lectern and a shelf of scrolls beside it. Every one of the
+    nine is the board itself, so it opens from wherever you click it. (`art/renders/hub-bounty-board.png`)
+  * Each **Forge of Chaos** is a smithy: a bank of ten forge mouths two high on the corner facing the plaza, every
+    one of them a Forge of Chaos, under a hood; a chimney rising twenty blocks with smoke at its top; a hipped
+    roof round it on posts; an anvil, a grindstone and a smithing table; and a quenching trough fed by the canal.
+    (`art/renders/hub-forge.png`, `hub-centre*.png`)
 * **The hub looks out on the gods and their towers.** Beyond each tower's gate, outside the plaza's wall, a
   colossus of the tower's god stands on a pedestal on its own floating island, facing the plaza and rising over the
   gate: **Zeus** in marble with a golden thunderbolt raised, **Poseidon** in prismarine with a golden trident,

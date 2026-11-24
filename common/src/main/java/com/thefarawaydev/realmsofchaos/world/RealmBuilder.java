@@ -18,7 +18,7 @@ public final class RealmBuilder {
     public static final int Y = 64;
     private static final int HUB_RADIUS = 26;
     /** The hub has its own design number, so it can be rebuilt without rebuilding the towers. */
-    public static final int HUB_VERSION = 7;
+    public static final int HUB_VERSION = 9;
     /** The Oracle's Flame: just north of where arrivals appear, on the way to the gate of Zeus. */
     public static final BlockPos ORACLE = new BlockPos(0, Y + 1, -5);
     /** The Heart of the Hub stands south of the middle, facing the Oracle; the Bounty Board north-east of it. */
@@ -251,6 +251,8 @@ public final class RealmBuilder {
                 for (int dy = 1; dy <= 4; dy++) set(level, plinth.getX(), plinth.getY() + dy, plinth.getZ(), Blocks.AIR);
             }
         }
+        // the middle built as a place: a rotunda over the spawn, a real notice board, two smithies for the forges
+        HubCentre.build(level);
         // what the hub looks out on: the gods' statues beyond their gates, their towers far off behind them
         HubVista.build(level);
         makeSafe(level, 0.5, Y + 1, 0.5);

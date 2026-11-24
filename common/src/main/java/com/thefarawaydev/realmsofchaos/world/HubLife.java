@@ -99,7 +99,7 @@ public final class HubLife {
             echo(level, Gods.get(line, Line.RANKS), plinths[0], facing(line));      // the first god of the tower
             echo(level, Gods.get(line, 1), plinths[1], facing(line));               // and its king
         }
-        double[][] pilgrims = {{6.5, -6.5}, {-6.5, -6.5}, {3.5, 8.5}, {-3.5, 8.5}};
+        double[][] pilgrims = {{6.5, -4.5}, {-6.5, -6.5}, {3.5, 8.5}, {-3.5, 8.5}};      // (the first reads the bounty board)
         for (int i = 0; i < PILGRIMS; i++) resident(level, EntityTypes.VILLAGER, pilgrims[i][0], Y + 1, pilgrims[i][1], "pilgrim");
         double[][] cats = {{4.5, -9.5}, {-4.5, -9.5}, {9.5, 3.5}};
         for (int i = 0; i < CATS; i++) resident(level, EntityTypes.CAT, cats[i][0], Y + 1, cats[i][1], null);

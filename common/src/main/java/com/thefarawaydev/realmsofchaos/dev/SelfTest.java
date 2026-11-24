@@ -427,6 +427,15 @@ public final class SelfTest {
                         line + ": and a model of its tower, from its island to its crown: " + shell);
             }
             check(solid(level, new BlockPos(0, 50, 0)), "the plaza is the top of an island of rock");
+            int boards = 0;
+            for (int dx = -1; dx <= 1; dx++) for (int y = 1; y <= 3; y++) if (level.getBlockState(RealmBuilder.BOUNTIES.offset(dx, y - 1, 0)).is(ModContent.BOUNTY_BOARD.get())) boards++;
+            check(boards == 9, "the bounty board is nine boards in a frame, each of them the board: " + boards);
+            for (int sx = -1; sx <= 1; sx += 2) {
+                for (BlockPos m : com.thefarawaydev.realmsofchaos.world.HubCentre.mouths(sx)) check(level.getBlockState(m).is(ModContent.CHAOS_FORGE.get()), "a forge's bank of mouths: " + m);
+                check(solid(level, new BlockPos(sx * 7, 64 + 18, 6)), "and its chimney stands tall");
+            }
+            for (BlockPos col : com.thefarawaydev.realmsofchaos.world.HubCentre.columns()) check(solid(level, col.above(3)), "a column of the rotunda at " + col);
+            check(solid(level, new BlockPos(0, 64 + 9, 0)) && level.getBlockState(new BlockPos(0, 67, 0)).isAir(), "a dome over the spawn, and room under it");
             check(level.getBlockState(new BlockPos(HubLife.GARDEN, 65, HubLife.GARDEN)).is(Blocks.CHERRY_LOG)
                     && level.getBlockState(new BlockPos(-HubLife.GARDEN, 69, -HubLife.GARDEN)).is(Blocks.CHERRY_LEAVES), "garden trees");
             // the Heart of the Hub and the Bounty Board stand in the plaza, can be walked up to, and open their screens
