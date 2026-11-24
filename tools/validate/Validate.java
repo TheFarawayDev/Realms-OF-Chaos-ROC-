@@ -78,7 +78,7 @@ public class Validate {
         @SuppressWarnings("unchecked") EntityType<com.thefarawaydev.realmsofchaos.entity.GodBoss> bt = (EntityType<com.thefarawaydev.realmsofchaos.entity.GodBoss>) boss;
         ModContent.GOD_BOSS.bind(() -> bt);
         check(boss != null, "boss type");
-        check(ModContent.tabItems().size() == 3 + 45 + 12 + 6 + 1 + 22 + 4 + 112 + 8, "tab item count " + ModContent.tabItems().size());
+        check(ModContent.tabItems().size() == 3 + 45 + 12 + 6 + 1 + 22 + 4 + 129 + 8, "tab item count " + ModContent.tabItems().size());
 
         // 3. dimension types + dimensions parse with vanilla codecs
         HolderLookup.Provider lookup = VanillaRegistries.createWorldLookup();
@@ -188,7 +188,8 @@ public class Validate {
             }
             var textures = json.has("textures") ? json.getAsJsonObject("textures") : new com.google.gson.JsonObject();
             for (var entry : textures.entrySet()) {
-                String ref = entry.getValue().getAsString();
+                // (a texture may be named outright, or as {"sprite": ..., "force_translucent": ...} as the game's own glass does)
+                String ref = entry.getValue().isJsonObject() ? entry.getValue().getAsJsonObject().get("sprite").getAsString() : entry.getValue().getAsString();
                 if (!ref.startsWith("realms_of_chaos:")) continue;
                 check(Files.exists(res.resolve("assets/realms_of_chaos/textures/" + ref.substring("realms_of_chaos:".length()) + ".png")),
                         "block model " + d.id() + " names a missing texture " + ref);

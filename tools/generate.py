@@ -913,6 +913,27 @@ def gen_lang():
         "block.realms_of_chaos.war_drum": "War Drum",
         "block.realms_of_chaos.war_standard": "War Standard",
         "block.realms_of_chaos.training_dummy": "Training Dummy",
+        "block.realms_of_chaos.moving_dummy": "Sparring Dummy",
+        "block.realms_of_chaos.chair": "Chair",
+        "block.realms_of_chaos.table": "Table",
+        "block.realms_of_chaos.bench": "Bench",
+        "block.realms_of_chaos.dresser": "Dresser",
+        "block.realms_of_chaos.bunk_bed": "Bunk Bed",
+        "block.realms_of_chaos.garrison_door": "Garrison Door",
+        "block.realms_of_chaos.garrison_trapdoor": "Garrison Trapdoor",
+        "block.realms_of_chaos.verdigris_door": "Verdigris Door",
+        "block.realms_of_chaos.verdigris_trapdoor": "Verdigris Trapdoor",
+        "block.realms_of_chaos.ivory_door": "Ivory Door",
+        "block.realms_of_chaos.ivory_trapdoor": "Ivory Trapdoor",
+        "block.realms_of_chaos.reinforced_glass": "Reinforced Glass",
+        "block.realms_of_chaos.frosted_glass": "Frosted Glass",
+        "block.realms_of_chaos.smart_glass": "Smart Glass",
+        "block.realms_of_chaos.brittle_glass": "Brittle Glass",
+        "block.realms_of_chaos.one_way_glass": "One-Way Glass",
+        "hud.realms_of_chaos.bunk": "A soldier's bunk - nobody sleeps in the passages",
+        "hud.realms_of_chaos.dummy.hit": "Hit %s  -  %s in a row",
+        "hud.realms_of_chaos.dummy.riposte": "  -  riposte!",
+        "hud.realms_of_chaos.dummy.momentum": "  -  momentum %s",
         "menu.realms_of_chaos.passage.kind.observatory": "Observatory",
         "menu.realms_of_chaos.passage.kind.armory": "Armoury",
         "menu.realms_of_chaos.passage.kind.baths": "Baths",
@@ -2002,9 +2023,11 @@ DECOR = ["olympian_marble", "olympian_marble_pillar", "gilded_frieze", "abyssal_
          "cloudstone", "cloud_tile", "trench_stone", "nacre_tile", "tartarus_stone", "throne_tile",
          "portal_frame_sky", "portal_frame_sea", "portal_frame_shade", "portal_frame_hub", "arrival_sigil",
          "bronze_trapdoor", "sky_trapdoor", "shade_trapdoor",
-         "arena_sand", "beast_gate", "war_drum", "war_standard", "training_dummy"] + [f"{b}_{k}" for b in ("olympian_marble", "cloudstone", "trench_stone", "tartarus_stone", "storm_brick", "tide_brick", "ash_brick", "underworld_brick") for k in ("stairs", "slab")]
-PICKAXE_ONLY = ["bronze_door", "sky_door", "shade_door"]
-AXE_ONLY = ["sea_door", "sea_trapdoor"]
+         "arena_sand", "beast_gate", "war_drum", "war_standard",
+         "reinforced_glass", "frosted_glass", "smart_glass", "brittle_glass", "one_way_glass"] + [f"{b}_{k}" for b in ("olympian_marble", "cloudstone", "trench_stone", "tartarus_stone", "storm_brick", "tide_brick", "ash_brick", "underworld_brick") for k in ("stairs", "slab")]
+PICKAXE_ONLY = ["bronze_door", "sky_door", "shade_door", "verdigris_door", "verdigris_trapdoor"]
+AXE_ONLY = ["sea_door", "sea_trapdoor", "garrison_door", "garrison_trapdoor", "ivory_door", "ivory_trapdoor",
+            "training_dummy", "moving_dummy", "chair", "table", "bench", "dresser", "bunk_bed"]
 FIELD_DROPS = FIELD_DROPS + DECOR
 
 # The 22 Major Arcana: (id, numeral, name, what the card does, 8x8 symbol (# ink, + colour), colour)

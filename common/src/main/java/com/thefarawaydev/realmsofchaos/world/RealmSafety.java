@@ -39,6 +39,7 @@ public final class RealmSafety {
         Rooms.tick(server);
         Snares.tick(server);
         Combat.tick(server);
+        Seats.tick(server);
         Passages.tick(server);
         Hazards.tick(server);
         Onslaughts.tick(server);

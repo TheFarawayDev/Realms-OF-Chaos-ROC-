@@ -1,0 +1,7 @@
+{
+  "parent": "minecraft:block/door_top_right_open",
+  "textures": {
+    "bottom": "realms_of_chaos:block/garrison_door_bottom",
+    "top": "realms_of_chaos:block/garrison_door_top"
+  }
+}

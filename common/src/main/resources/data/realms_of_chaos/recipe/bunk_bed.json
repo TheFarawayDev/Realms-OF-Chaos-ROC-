@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "key": {
+    "B": "#minecraft:beds",
+    "S": "minecraft:stick"
+  },
+  "pattern": [
+    "SBS",
+    "SBS"
+  ],
+  "result": {
+    "id": "realms_of_chaos:bunk_bed",
+    "count": 1
+  }
+}

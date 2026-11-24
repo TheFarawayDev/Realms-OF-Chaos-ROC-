@@ -1,0 +1,177 @@
+{
+  "parent": "minecraft:block/block",
+  "textures": {
+    "particle": "realms_of_chaos:block/dummy_straw",
+    "straw": "realms_of_chaos:block/dummy_straw",
+    "target": "realms_of_chaos:block/dummy_target",
+    "burlap": "realms_of_chaos:block/dummy_burlap",
+    "face": "realms_of_chaos:block/dummy_face",
+    "rope": "realms_of_chaos:block/dummy_rope",
+    "pole": "realms_of_chaos:block/standard_pole",
+    "bronze": "realms_of_chaos:block/dummy_bronze",
+    "crest": "realms_of_chaos:block/dummy_crest",
+    "sledge": "realms_of_chaos:block/dummy_sledge"
+  },
+  "elements": [
+    {
+      "from": [
+        7,
+        0,
+        7
+      ],
+      "to": [
+        9,
+        3,
+        9
+      ],
+      "faces": {
+        "north": {
+          "texture": "#pole"
+        },
+        "south": {
+          "texture": "#pole"
+        },
+        "east": {
+          "texture": "#pole"
+        },
+        "west": {
+          "texture": "#pole"
+        },
+        "up": {
+          "texture": "#pole"
+        },
+        "down": {
+          "texture": "#pole"
+        }
+      }
+    },
+    {
+      "from": [
+        3.5,
+        3,
+        5
+      ],
+      "to": [
+        12.5,
+        12,
+        11
+      ],
+      "faces": {
+        "north": {
+          "texture": "#target"
+        },
+        "south": {
+          "texture": "#straw"
+        },
+        "east": {
+          "texture": "#straw"
+        },
+        "west": {
+          "texture": "#straw"
+        },
+        "up": {
+          "texture": "#straw"
+        },
+        "down": {
+          "texture": "#straw"
+        }
+      }
+    },
+    {
+      "from": [
+        3.4,
+        5,
+        4.9
+      ],
+      "to": [
+        12.6,
+        5.75,
+        11.1
+      ],
+      "faces": {
+        "north": {
+          "texture": "#rope"
+        },
+        "south": {
+          "texture": "#rope"
+        },
+        "east": {
+          "texture": "#rope"
+        },
+        "west": {
+          "texture": "#rope"
+        },
+        "up": {
+          "texture": "#rope"
+        },
+        "down": {
+          "texture": "#rope"
+        }
+      }
+    },
+    {
+      "from": [
+        0,
+        9.5,
+        7.25
+      ],
+      "to": [
+        16,
+        11,
+        8.75
+      ],
+      "faces": {
+        "north": {
+          "texture": "#pole"
+        },
+        "south": {
+          "texture": "#pole"
+        },
+        "east": {
+          "texture": "#pole"
+        },
+        "west": {
+          "texture": "#pole"
+        },
+        "up": {
+          "texture": "#pole"
+        },
+        "down": {
+          "texture": "#pole"
+        }
+      }
+    },
+    {
+      "from": [
+        5,
+        12,
+        6
+      ],
+      "to": [
+        11,
+        16,
+        10
+      ],
+      "faces": {
+        "north": {
+          "texture": "#face"
+        },
+        "south": {
+          "texture": "#burlap"
+        },
+        "east": {
+          "texture": "#burlap"
+        },
+        "west": {
+          "texture": "#burlap"
+        },
+        "up": {
+          "texture": "#burlap"
+        },
+        "down": {
+          "texture": "#burlap"
+        }
+      }
+    }
+  ]
+}

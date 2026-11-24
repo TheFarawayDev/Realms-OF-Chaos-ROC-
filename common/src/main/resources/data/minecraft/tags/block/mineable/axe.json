@@ -2,6 +2,17 @@
   "replace": false,
   "values": [
     "realms_of_chaos:sea_door",
-    "realms_of_chaos:sea_trapdoor"
+    "realms_of_chaos:sea_trapdoor",
+    "realms_of_chaos:garrison_door",
+    "realms_of_chaos:garrison_trapdoor",
+    "realms_of_chaos:ivory_door",
+    "realms_of_chaos:ivory_trapdoor",
+    "realms_of_chaos:training_dummy",
+    "realms_of_chaos:moving_dummy",
+    "realms_of_chaos:chair",
+    "realms_of_chaos:table",
+    "realms_of_chaos:bench",
+    "realms_of_chaos:dresser",
+    "realms_of_chaos:bunk_bed"
   ]
 }

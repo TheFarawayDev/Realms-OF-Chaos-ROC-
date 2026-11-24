@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "key": {
+    "D": "realms_of_chaos:training_dummy",
+    "M": "minecraft:minecart"
+  },
+  "pattern": [
+    "D",
+    "M"
+  ],
+  "result": {
+    "id": "realms_of_chaos:moving_dummy",
+    "count": 1
+  }
+}

@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "key": {
+    "P": "#minecraft:planks",
+    "S": "minecraft:stick",
+    "W": "#minecraft:wool"
+  },
+  "pattern": [
+    "S  ",
+    "SWS",
+    "P P"
+  ],
+  "result": {
+    "id": "realms_of_chaos:chair",
+    "count": 2
+  }
+}

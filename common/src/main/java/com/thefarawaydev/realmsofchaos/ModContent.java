@@ -108,6 +108,11 @@ public final class ModContent {
             TARTARUS_STONE = new Ref<>(), THRONE_TILE = new Ref<>(), PORTAL_FRAME_SKY = new Ref<>(), PORTAL_FRAME_SEA = new Ref<>(),
             PORTAL_FRAME_SHADE = new Ref<>(), PORTAL_FRAME_HUB = new Ref<>(), ARRIVAL_SIGIL = new Ref<>();
     public static final Ref<Block> TOWER_BRAZIER = new Ref<>();
+    /** Sparring dummies, the barracks' furniture, three more doors, and the mod's glass. */
+    public static final Ref<Block> MOVING_DUMMY = new Ref<>(), CHAIR = new Ref<>(), TABLE = new Ref<>(), BENCH = new Ref<>(), DRESSER = new Ref<>(),
+            BUNK_BED = new Ref<>(), GARRISON_DOOR = new Ref<>(), GARRISON_TRAPDOOR = new Ref<>(), VERDIGRIS_DOOR = new Ref<>(), VERDIGRIS_TRAPDOOR = new Ref<>(),
+            IVORY_DOOR = new Ref<>(), IVORY_TRAPDOOR = new Ref<>(), REINFORCED_GLASS = new Ref<>(), FROSTED_GLASS = new Ref<>(), SMART_GLASS = new Ref<>(),
+            BRITTLE_GLASS = new Ref<>(), ONE_WAY_GLASS = new Ref<>();
     /** The fittings of the proving grounds and barracks. */
     public static final Ref<Block> ARENA_SAND = new Ref<>(), WAR_DRUM = new Ref<>(), WAR_STANDARD = new Ref<>(), BEAST_GATE = new Ref<>(),
             TRAINING_DUMMY = new Ref<>();
@@ -300,7 +305,21 @@ public final class ModContent {
         block("war_drum", WAR_DRUM, key -> new com.thefarawaydev.realmsofchaos.block.WarDrumBlock(decor(key).mapColor(MapColor.COLOR_RED).sound(SoundType.WOOD).strength(1.5F).noOcclusion()));
         block("war_standard", WAR_STANDARD, key -> new com.thefarawaydev.realmsofchaos.block.WarStandardBlock(decor(key).mapColor(MapColor.COLOR_RED).sound(SoundType.WOOD).strength(1.0F).noOcclusion()));
         block("beast_gate", BEAST_GATE, key -> new Block(decor(key).mapColor(MapColor.METAL).sound(SoundType.METAL).strength(5.0F)));
-        block("training_dummy", TRAINING_DUMMY, key -> new com.thefarawaydev.realmsofchaos.block.TrainingDummyBlock(decor(key).mapColor(MapColor.WOOD).sound(SoundType.WOOD).strength(1.0F).noOcclusion()));
+        block("training_dummy", TRAINING_DUMMY, key -> new com.thefarawaydev.realmsofchaos.block.TrainingDummyBlock(furniture(key).strength(1.0F)));
+        block("moving_dummy", MOVING_DUMMY, key -> new com.thefarawaydev.realmsofchaos.block.MovingDummyBlock(furniture(key).strength(1.0F)));
+        block("chair", CHAIR, key -> new com.thefarawaydev.realmsofchaos.block.Furniture.Chair(furniture(key)));
+        block("table", TABLE, key -> new com.thefarawaydev.realmsofchaos.block.Furniture.Table(furniture(key)));
+        block("bench", BENCH, key -> new com.thefarawaydev.realmsofchaos.block.Furniture.Bench(furniture(key)));
+        block("dresser", DRESSER, key -> new com.thefarawaydev.realmsofchaos.block.Furniture.Dresser(furniture(key)));
+        block("bunk_bed", BUNK_BED, key -> new com.thefarawaydev.realmsofchaos.block.Furniture.BunkBed(furniture(key)));
+        door("garrison", GARRISON_DOOR, GARRISON_TRAPDOOR, net.minecraft.world.level.block.state.properties.BlockSetType.DARK_OAK, MapColor.COLOR_BROWN);
+        door("verdigris", VERDIGRIS_DOOR, VERDIGRIS_TRAPDOOR, net.minecraft.world.level.block.state.properties.BlockSetType.COPPER, MapColor.WARPED_STEM);
+        door("ivory", IVORY_DOOR, IVORY_TRAPDOOR, net.minecraft.world.level.block.state.properties.BlockSetType.BIRCH, MapColor.SNOW);
+        block("reinforced_glass", REINFORCED_GLASS, key -> new com.thefarawaydev.realmsofchaos.block.Glass.Pane(glass(key).strength(5.0F, 9.0F).requiresCorrectToolForDrops()));
+        block("frosted_glass", FROSTED_GLASS, key -> new com.thefarawaydev.realmsofchaos.block.Glass.Pane(glass(key)));
+        block("smart_glass", SMART_GLASS, key -> new com.thefarawaydev.realmsofchaos.block.Glass.Smart(glass(key)));
+        block("brittle_glass", BRITTLE_GLASS, key -> new com.thefarawaydev.realmsofchaos.block.Glass.Brittle(glass(key).strength(0.2F)));
+        block("one_way_glass", ONE_WAY_GLASS, key -> new com.thefarawaydev.realmsofchaos.block.Glass.OneWay(glass(key)));
         block("arrival_sigil", ARRIVAL_SIGIL, key -> new Block(decor(key).mapColor(MapColor.COLOR_PURPLE).lightLevel(s -> 10)));
         block("bronze_door", BRONZE_DOOR, key -> new net.minecraft.world.level.block.DoorBlock(net.minecraft.world.level.block.state.properties.BlockSetType.COPPER,
                 BlockBehaviour.Properties.of().setId(key).mapColor(MapColor.COLOR_ORANGE).strength(3.0F).requiresCorrectToolForDrops().noOcclusion()));
@@ -415,6 +434,18 @@ public final class ModContent {
                 BlockBehaviour.Properties.of().setId(key).mapColor(color).strength(3.0F).noOcclusion()));
         block(id + "_trapdoor", trapdoor, key -> new net.minecraft.world.level.block.TrapDoorBlock(set,
                 BlockBehaviour.Properties.of().setId(key).mapColor(color).strength(3.0F).noOcclusion()));
+    }
+
+    /** Furniture: wood, broken by hand or quicker with an axe, see-through where it is not solid. */
+    private static BlockBehaviour.Properties furniture(ResourceKey<Block> key) {
+        return BlockBehaviour.Properties.of().setId(key).mapColor(MapColor.WOOD).strength(1.5F).sound(SoundType.WOOD).noOcclusion();
+    }
+
+    /** Glass: broken quickly, lets light through, does not hide what is beside it. */
+    private static BlockBehaviour.Properties glass(ResourceKey<Block> key) {
+        return BlockBehaviour.Properties.of().setId(key).strength(0.6F).sound(SoundType.GLASS).noOcclusion()
+                .isValidSpawn((state, getter, pos, type) -> false).isRedstoneConductor((state, getter, pos) -> false)
+                .isSuffocating((state, getter, pos) -> false);
     }
 
     /** Building stone: as hard as stone, dug with a pickaxe. */

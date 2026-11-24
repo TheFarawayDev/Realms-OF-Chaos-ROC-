@@ -603,6 +603,7 @@ def run(assets, data=None):
         gen_cuts(assets, data)
         gen_doors2(assets, data)
         gen_combat(assets, data)
+        gen_furnish2(assets, data)
         for floor in ("sunstone_panel", "pearl_panel", "ember_panel", "sky_mosaic", "sea_mosaic", "shade_mosaic"):
             connected_breaks(assets, floor)
 
@@ -1858,6 +1859,9 @@ def gen_doors(assets, data):
 # ---- doors: a proper panelled leaf, one for each tower and the bronze one --------------------------------------------------
 
 EMBLEMS = {
+    "shield": [".######.", "#++##++#", "#++##++#", "########", "#++##++#", ".#+##+#.", "..#++#..", "...##..."],
+    "laurel": ["#......#", "##....##", ".#....#.", "##....##", ".##..##.", "..####..", "...##...", "..#..#.."],
+    "star": ["...##...", "...##...", "########", ".######.", "..####..", ".##..##.", "##....##", "........"],
     "sun": ["..#..#..", "...##...", "#.####.#", ".######.", ".######.", "#.####.#", "...##...", "..#..#.."],
     "bolt": ["....##..", "...##...", "..##....", ".######.", "....##..", "...##...", "..##....", ".##....."],
     "trident": ["#..##..#", "#..##..#", "#..##..#", "########", "...##...", "...##...", "...##...", "...##..."],
@@ -1870,6 +1874,9 @@ DOOR_SPECS = {
     "sky": ((236, 232, 222), (168, 160, 148), GOLD, GOLD_HI, (240, 196, 60), "bolt", "stone"),
     "sea": ((54, 104, 108), (24, 54, 60), (130, 200, 190), (236, 236, 226), (150, 230, 220), "trident", "planks"),
     "shade": ((52, 40, 52), (22, 16, 24), (110, 96, 110), (190, 120, 240), (200, 140, 255), "skull", "planks"),
+    "garrison": ((92, 62, 38), (40, 28, 20), (118, 120, 128), (178, 182, 190), (200, 60, 50), "shield", "planks"),
+    "verdigris": ((88, 160, 132), (46, 98, 80), (176, 116, 62), GOLD_HI, (226, 190, 110), "laurel", "metal"),
+    "ivory": ((236, 228, 206), (186, 170, 140), GOLD, GOLD_HI, (190, 150, 60), "star", "stone"),
 }
 
 
@@ -1977,7 +1984,9 @@ def gen_doors2(assets, data):
         wj(os.path.join(assets, f"models/block/{trapdoor}.json"), {"parent": f"{MOD}:block/{trapdoor}_bottom"})
         wj(os.path.join(assets, f"items/{trapdoor}.json"), {"model": {"type": "minecraft:model", "model": f"{MOD}:block/{trapdoor}_bottom"}})
         mat = {"bronze": ("minecraft:copper_ingot", "minecraft:gold_nugget"), "sky": (f"{MOD}:olympian_marble", "minecraft:gold_nugget"),
-               "sea": ("minecraft:dark_oak_planks", "minecraft:prismarine_shard"), "shade": ("minecraft:crimson_planks", "minecraft:amethyst_shard")}[key]
+               "sea": ("minecraft:dark_oak_planks", "minecraft:prismarine_shard"), "shade": ("minecraft:crimson_planks", "minecraft:amethyst_shard"),
+               "garrison": ("minecraft:dark_oak_planks", "minecraft:iron_nugget"), "verdigris": ("minecraft:oxidized_copper", "minecraft:gold_nugget"),
+               "ivory": ("minecraft:bone_block", "minecraft:gold_nugget")}[key]
         wj(os.path.join(data, f"recipe/{door}.json"), {"type": "minecraft:crafting_shaped", "category": "redstone", "key": {"C": mat[0], "G": mat[1]},
                                                        "pattern": ["CC", "CG", "CC"], "result": {"id": f"{MOD}:{door}", "count": 3}})
         wj(os.path.join(data, f"recipe/{trapdoor}.json"), {"type": "minecraft:crafting_shaped", "category": "redstone", "key": {"C": mat[0], "G": mat[1]},
@@ -2179,3 +2188,329 @@ def gen_combat(assets, data):
     for rid, (key_, pattern_, count) in recipes.items():
         wj(os.path.join(data, f"recipe/{rid}.json"), {"type": "minecraft:crafting_shaped", "category": "building", "key": key_, "pattern": pattern_,
                                                       "result": {"id": f"{MOD}:{rid}", "count": count}})
+
+
+# ---- dummies of every height, sparring dummies, the barracks' furniture, and the mod's glass -------------------------
+
+FURNISH2 = ["moving_dummy", "chair", "table", "bench", "dresser", "bunk_bed"]
+GLASS = ["reinforced_glass", "frosted_glass", "smart_glass", "brittle_glass", "one_way_glass"]
+
+
+def _mp_variants(assets, name, base_states, entries):
+    wj(os.path.join(assets, f"blockstates/{name}.json"), {"variants": entries})
+
+
+def gen_furnish2(assets, data):
+    T = os.path.join(assets, "textures/block")
+    M = os.path.join(assets, "models/block")
+    t = lambda n: f"{MOD}:block/{n}"
+    g = grain(151, 0.05)
+    rot = {"north": 0, "east": 90, "south": 180, "west": 270}
+
+    def save(name, fn):
+        paint_hi(fn).save(os.path.join(T, name + ".png"))
+
+    # ---- woods and cloths
+    oak = (112, 76, 46)
+    save("furniture_oak", lambda x, y: shade(oak, g[y][x] * (0.84 if y % 4 == 3 else 1.06 if y % 4 == 0 else 1.0)))
+    save("furniture_oak_end", lambda x, y: shade(oak, g[y][x] * (0.8 if int(math.hypot(x - 7.5, y - 7.5)) % 3 == 0 else 1.0)))
+    save("furniture_dark", lambda x, y: shade((66, 44, 28), g[y][x] * (0.84 if x % 4 == 3 else 1.0)))
+    save("chair_cushion", lambda x, y: shade((150, 40, 36), (1.1 if (x + y) % 4 == 0 else 1.0) * (0.85 if x in (0, 15) or y in (0, 15) else 1.0)))
+    save("bunk_mattress", lambda x, y: shade((226, 218, 196), 0.92 if x % 5 == 0 or y % 5 == 0 else 1.0))
+    save("bunk_blanket", lambda x, y: (60, 70, 120) if y % 6 in (2, 3) else shade((150, 36, 34), g[y][x]))
+    save("bunk_pillow", lambda x, y: shade((240, 236, 226), 0.9 if x in (0, 15) or y in (0, 15) else 1.0))
+    save("dummy_bronze", lambda x, y: shade((176, 110, 50), g[y][x] * (1.25 if (x + y) % 6 == 0 else 1.0)))
+    save("dummy_crest", lambda x, y: shade((190, 30, 30), 1.15 if y % 3 == 0 else 1.0))
+    save("dummy_sledge", lambda x, y: shade((84, 58, 36), g[y][x] * (0.8 if x % 5 == 4 else 1.0)))
+
+    def drawer_front(right):
+        def fn(x, y):
+            c = shade(oak, g[y][x])
+            # (the outer frame on the half's own outside edge; the two halves meet in a plain joint)
+            outer = x == (15 if right else 0)
+            if outer or y in (0, 15): return shade((66, 44, 28), 1.0)
+            if x == (0 if right else 15): return shade(oak, 0.8)
+            # three drawers, each with a shadowed lower edge and a brass pull in the middle
+            if y in (5, 10): return shade((66, 44, 28), 0.9)
+            if y in (4, 9, 14): return shade(oak, 0.8)
+            if y in (1, 6, 11): return shade(oak, 1.18)
+            row = y // 5
+            px = 3 if right else 12
+            if x in (px - 1, px, px + 1) and y in (2 + 5 * row, 3 + 5 * row): return GOLD_HI if x == px else GOLD
+            return c
+        return fn
+    save("dresser_front", drawer_front(False))
+    save("dresser_front_r", drawer_front(True))
+    save("dresser_inside", lambda x, y: (40, 26, 18) if (x in (0, 15) or y in (0, 15)) else (220, 210, 190) if (x // 3 + y // 3) % 2 else (180, 60, 50))
+
+    # ---- training dummies: one block, or a post, a body and a head up to three high
+    tx = {"particle": t("dummy_straw"), "straw": t("dummy_straw"), "target": t("dummy_target"), "burlap": t("dummy_burlap"), "face": t("dummy_face"),
+          "rope": t("dummy_rope"), "pole": t("standard_pole"), "bronze": t("dummy_bronze"), "crest": t("dummy_crest"), "sledge": t("dummy_sledge")}
+    foot_base = [_el((4, 0, 4), (12, 1, 12), _all("pole")), _el((1, 0, 7), (15, 1.5, 9), _all("pole")), _el((7, 0, 1), (9, 1.5, 15), _all("pole"))]
+    helm = lambda y0, x0=4.5, x1=11.5, z0=5, z1=11: [_el((x0 - 0.5, y0, z0 - 0.5), (x1 + 0.5, y0 + 3, z1 + 0.5), _all("bronze")),
+                                                       _el((7.5, y0 + 3, z0), (8.5, y0 + 5, z1 + 1), _all("crest"))]
+    parts = {
+        "single": foot_base + [_el((7, 1, 7), (9, 5, 9), _all("pole")),
+                               _el((4, 5, 5.5), (12, 12, 10.5), _all("straw", north="target")),
+                               _el((3.9, 7, 5.4), (12.1, 7.75, 10.6), _all("rope")),
+                               _el((0.5, 9.5, 7.25), (15.5, 10.5, 8.75), _all("pole")),
+                               _el((5.5, 12, 6), (10.5, 16, 10), _all("burlap", north="face"))],
+        "foot": foot_base + [_el((7, 1, 7), (9, 16, 9), _all("pole")),
+                             _el((6.5, 6, 6.5), (9.5, 7, 9.5), _all("rope"))],
+        "upper": [_el((7, 0, 7), (9, 3, 9), _all("pole")),
+                  _el((3.5, 3, 5), (12.5, 12, 11), _all("straw", north="target")),
+                  _el((3.4, 5, 4.9), (12.6, 5.75, 11.1), _all("rope")),
+                  _el((0, 9.5, 7.25), (16, 11, 8.75), _all("pole")),
+                  _el((5, 12, 6), (11, 16, 10), _all("burlap", north="face"))],
+        "torso": [_el((7, 0, 7), (9, 2, 9), _all("pole")),
+                  _el((2.5, 2, 4), (13.5, 16, 12), _all("straw", north="target")),
+                  _el((2.4, 6, 3.9), (13.6, 6.75, 12.1), _all("rope")),
+                  _el((2.4, 12, 3.9), (13.6, 12.75, 12.1), _all("rope")),
+                  _el((-2, 12.5, 7), (18, 14, 9), _all("pole")),
+                  # a practice shield strapped to its left arm
+                  _el((14.5, 6, 3.5), (15.5, 14, 12.5), _all("pole", west="sledge", east="sledge"))],
+        "head": [_el((7, 0, 7), (9, 2, 9), _all("pole")),
+                 _el((4.5, 2, 5), (11.5, 10, 11), _all("burlap", north="face"))] + helm(8),
+    }
+    for part, els in parts.items():
+        wj(os.path.join(M, f"training_dummy_{part}.json"), {"parent": "minecraft:block/block", "textures": tx, "elements": els})
+    wj(os.path.join(M, "training_dummy.json"), {"parent": f"{MOD}:block/training_dummy_single"})
+    wj(os.path.join(assets, "blockstates/training_dummy.json"),
+       {"variants": {f"facing={f},part={p}": {"model": f"{MOD}:block/training_dummy_{p}", "y": r} for f, r in rot.items() for p in parts}})
+    wj(os.path.join(assets, "items/training_dummy.json"), {"model": {"type": "minecraft:model", "model": f"{MOD}:block/training_dummy_single"}})
+
+    # the sparring dummy rides a sledge with runners
+    sledge = [_el((1, 0, 2), (15, 1, 4), _all("pole")), _el((1, 0, 12), (15, 1, 14), _all("pole")), _el((2, 1, 2), (14, 2.5, 14), _all("sledge")),
+              _el((7, 2.5, 7), (9, 5, 9), _all("pole")),
+              _el((4, 5, 5.5), (12, 12, 10.5), _all("straw", north="target")),
+              _el((3.9, 8, 5.4), (12.1, 8.75, 10.6), _all("crest")),
+              _el((0.5, 10, 7.25), (15.5, 11, 8.75), _all("pole")),
+              _el((5.5, 12, 6), (10.5, 15.5, 10), _all("burlap", north="face"))]
+    wj(os.path.join(M, "moving_dummy.json"), {"parent": "minecraft:block/block", "textures": tx, "elements": sledge})
+    wj(os.path.join(assets, "blockstates/moving_dummy.json"), {"variants": {f"facing={f}": {"model": f"{MOD}:block/moving_dummy", "y": (r + 90) % 360} for f, r in rot.items()}})
+    wj(os.path.join(assets, "items/moving_dummy.json"), {"model": {"type": "minecraft:model", "model": f"{MOD}:block/moving_dummy"}})
+
+    # ---- the chair: four legs, a cushioned seat, a back of two posts and three slats
+    ftx = {"particle": t("furniture_oak"), "oak": t("furniture_oak"), "end": t("furniture_oak_end"), "dark": t("furniture_dark"), "cushion": t("chair_cushion"),
+           "front": t("dresser_front"), "front_r": t("dresser_front_r"), "inside": t("dresser_inside"), "mattress": t("bunk_mattress"),
+           "blanket": t("bunk_blanket"), "pillow": t("bunk_pillow")}
+    chair = [_el((2, 0, 2), (4, 8, 4), _all("dark")), _el((12, 0, 2), (14, 8, 4), _all("dark")), _el((2, 0, 12), (4, 8, 12 + 2), _all("dark")),
+             _el((12, 0, 12), (14, 8, 14), _all("dark")),
+             _el((1.5, 8, 1.5), (14.5, 9.5, 14.5), _all("oak", up="end")), _el((2.5, 9.5, 2.5), (13.5, 10.5, 12), _all("cushion")),
+             _el((2, 9.5, 12.5), (4, 22, 14.5), _all("dark")), _el((12, 9.5, 12.5), (14, 22, 14.5), _all("dark")),
+             _el((4, 12, 13), (12, 13.5, 14), _all("oak")), _el((4, 16, 13), (12, 17.5, 14), _all("oak")), _el((3, 20, 12.75), (13, 22, 14.25), _all("oak"))]
+    wj(os.path.join(M, "chair.json"), {"parent": "minecraft:block/block", "textures": ftx, "elements": chair})
+    wj(os.path.join(assets, "blockstates/chair.json"), {"variants": {f"facing={f}": {"model": f"{MOD}:block/chair", "y": r} for f, r in rot.items()}})
+    wj(os.path.join(assets, "items/chair.json"), {"model": {"type": "minecraft:model", "model": f"{MOD}:block/chair"}})
+
+    # ---- tables and benches: a top always, legs only at the corners of the whole, an apron where nothing joins
+    def joining(name, top, leg_h, apron):
+        wj(os.path.join(M, f"{name}_top.json"), {"parent": "minecraft:block/block", "textures": ftx, "elements": [_el((0, top[0], 0), (16, top[1], 16), _all("oak", up="oak"))]})
+        corners = {("north", "west"): (1, 1), ("north", "east"): (12, 1), ("south", "west"): (1, 12), ("south", "east"): (12, 12)}
+        multipart = [{"apply": {"model": f"{MOD}:block/{name}_top"}}]
+        for (a, b), (x0, z0) in corners.items():
+            leg = f"{name}_leg_{a}_{b}"
+            wj(os.path.join(M, f"{leg}.json"), {"parent": "minecraft:block/block", "textures": ftx, "elements": [_el((x0, 0, z0), (x0 + 3, leg_h, z0 + 3), _all("dark"))]})
+            multipart.append({"when": {a: "false", b: "false"}, "apply": {"model": f"{MOD}:block/{leg}"}})
+        for side, box in (("north", ((0, apron[0], 0.5), (16, apron[1], 1.5))), ("south", ((0, apron[0], 14.5), (16, apron[1], 15.5))),
+                          ("west", ((0.5, apron[0], 0), (1.5, apron[1], 16))), ("east", ((14.5, apron[0], 0), (15.5, apron[1], 16)))):
+            ap = f"{name}_apron_{side}"
+            wj(os.path.join(M, f"{ap}.json"), {"parent": "minecraft:block/block", "textures": ftx, "elements": [_el(box[0], box[1], _all("dark"))]})
+            multipart.append({"when": {side: "false"}, "apply": {"model": f"{MOD}:block/{ap}"}})
+        wj(os.path.join(assets, f"blockstates/{name}.json"), {"multipart": multipart})
+        item = [_el((0, top[0], 0), (16, top[1], 16), _all("oak"))] + [_el((x0, 0, z0), (x0 + 3, leg_h, z0 + 3), _all("dark")) for x0, z0 in corners.values()]
+        wj(os.path.join(M, f"{name}.json"), {"parent": "minecraft:block/block", "textures": ftx, "elements": item})
+        wj(os.path.join(assets, f"items/{name}.json"), {"model": {"type": "minecraft:model", "model": f"{MOD}:block/{name}"}})
+    joining("table", (13, 16), 13, (11, 13))
+    joining("bench", (6, 8), 6, (4.5, 6))
+
+    # ---- the dresser: two halves, three drawers in each, the middle one pulled out when open
+    def dresser(right, open_):
+        front = "front_r" if right else "front"
+        els = [_el((0, 0, 1), (16, 14, 16), _all("oak", north=front)), _el((-0.0, 14, 0.5), (16, 15.5, 16), _all("dark")),
+               _el((1 if not right else 0, 0, 0.5), (16 if not right else 15, 1, 1), _all("dark"))]
+        if open_:
+            els += [_el((1.5, 5.5, -4), (14.5, 9.5, 1), _all("oak", north=front, up="inside")), _el((2.5, 9.5, -3), (13.5, 10, 0), _all("inside"))]
+        return els
+    for right in (False, True):
+        for open_ in (False, True):
+            n = "dresser_" + ("right" if right else "left") + ("_open" if open_ else "")
+            wj(os.path.join(M, f"{n}.json"), {"parent": "minecraft:block/block", "textures": ftx, "elements": dresser(right, open_)})
+    wj(os.path.join(assets, "blockstates/dresser.json"),
+       {"variants": {f"facing={f},open={'true' if o else 'false'},right={'true' if r_ else 'false'}":
+                     {"model": f"{MOD}:block/dresser_{'right' if r_ else 'left'}{'_open' if o else ''}", "y": r}
+                     for f, r in rot.items() for o in (False, True) for r_ in (False, True)}})
+    wj(os.path.join(M, "dresser.json"), {"parent": f"{MOD}:block/dresser_left"})
+    wj(os.path.join(assets, "items/dresser.json"), {"model": {"type": "minecraft:model", "model": f"{MOD}:block/dresser_left"}})
+
+    # ---- the bunk bed (drawn with its head to the north)
+    def bunk(head, upper):
+        posts_z = (0, 2) if head else (14, 16)
+        els = []
+        for x0 in (0, 14):
+            els.append(_el((x0, 0, posts_z[0]), (x0 + 2, 16, posts_z[1]), _all("dark", up="end")))
+        if not upper:
+            els += [_el((1, 2, 0), (15, 3, 16), _all("oak")), _el((1.5, 3, 0), (14.5, 6, 16), _all("mattress"))]
+            els += [_el((1.5, 6, 0 if not head else 4), (14.5, 6.5, 16 if not head else 16), _all("blanket"))] if not head else [_el((1.5, 6, 5), (14.5, 6.5, 16), _all("blanket"))]
+            els += [_el((0, 1, posts_z[0]), (16, 3, posts_z[1]), _all("dark"))]
+            if head: els += [_el((3, 6, 0.5), (13, 8, 4.5), _all("pillow")), _el((2, 3, 0), (14, 12, 1.5), _all("oak"))]
+        else:
+            els += [_el((1, 0, 0), (15, 1.5, 16), _all("oak")), _el((1.5, 1.5, 0), (14.5, 4, 16), _all("mattress"))]
+            els += [_el((1.5, 4, 5 if head else 0), (14.5, 4.5, 16), _all("blanket"))]
+            els += [_el((0, 7, 0), (1, 8.5, 16), _all("dark")), _el((0, 13, posts_z[0]), (16, 15, posts_z[1]), _all("dark"))]
+            if head: els += [_el((3, 4, 0.5), (13, 6, 4.5), _all("pillow"))]
+        if not head:
+            # the ladder up the foot, on its east side
+            els += [_el((15, 0, 15.5), (16, 16, 16), _all("oak"))] if False else []
+            for y in (2, 6, 10, 14):
+                els.append(_el((2, y, 15.25), (14, y + 1, 16), _all("oak")))
+        return els
+    for head in (False, True):
+        for upper in (False, True):
+            n = f"bunk_bed_{'upper' if upper else 'lower'}_{'head' if head else 'foot'}"
+            wj(os.path.join(M, f"{n}.json"), {"parent": "minecraft:block/block", "textures": ftx, "elements": bunk(head, upper)})
+    wj(os.path.join(assets, "blockstates/bunk_bed.json"),
+       {"variants": {f"facing={f},head={'true' if h else 'false'},upper={'true' if u else 'false'}":
+                     {"model": f"{MOD}:block/bunk_bed_{'upper' if u else 'lower'}_{'head' if h else 'foot'}", "y": r}
+                     for f, r in rot.items() for h in (False, True) for u in (False, True)}})
+    wj(os.path.join(M, "bunk_bed.json"), {"parent": f"{MOD}:block/bunk_bed_lower_foot"})
+    wj(os.path.join(assets, "items/bunk_bed.json"), {"model": {"type": "minecraft:model", "model": f"{MOD}:block/bunk_bed_lower_head"}})
+
+    # ---- glass that connects: thin frames round the outside of a whole window, see-through within
+    def glass_face(inner, frame, width, mask):
+        up, down, left, right = mask & 1, mask & 2, mask & 4, mask & 8
+
+        def fn(x, y):
+            d = []
+            if not up: d.append(y)
+            if not down: d.append(15 - y)
+            if not left: d.append(x)
+            if not right: d.append(15 - x)
+            near = min(d) if d else 99
+            if near < width: return frame(x, y, near)
+            return inner(x, y)
+        return fn
+
+    def glass_set(name, inner, frame, width):
+        for mask in range(16):
+            paint_hi(glass_face(inner, frame, width, mask)).save(os.path.join(T, f"{name}_{mask}.png"))
+
+    def glass_models(name, tex_prefix, model_prefix):
+        dirs = ["down", "east", "north", "south", "up", "west"]
+        out = {}
+        for bits in range(64):
+            j = {d: bool(bits >> i & 1) for i, d in enumerate(dirs)}
+            tex, faces = {"particle": {"sprite": t(f"{tex_prefix}_0"), "force_translucent": True}}, {}
+            for face, (u, dn, l, r) in SIDE_EDGES_C.items():
+                m = (1 if j[u] else 0) | (2 if j[dn] else 0) | (4 if j[l] else 0) | (8 if j[r] else 0)
+                tex[face] = {"sprite": t(f"{tex_prefix}_{m}"), "force_translucent": True}
+            tex["up"] = {"sprite": t(f"{tex_prefix}_{(1 if j['north'] else 0) | (2 if j['south'] else 0) | (4 if j['west'] else 0) | (8 if j['east'] else 0)}"), "force_translucent": True}
+            tex["down"] = {"sprite": t(f"{tex_prefix}_{(1 if j['south'] else 0) | (2 if j['north'] else 0) | (4 if j['west'] else 0) | (8 if j['east'] else 0)}"), "force_translucent": True}
+            for face in ("north", "south", "east", "west", "up", "down"):
+                faces[face] = {"uv": [0, 0, 16, 16], "texture": f"#{face}", "cullface": face}
+            model = model_prefix + "_" + "".join(d[0] if j[d] else "_" for d in dirs)
+            wj(os.path.join(M, f"{model}.json"), {"parent": "minecraft:block/block", "ambientocclusion": False, "textures": tex,
+                                                  "elements": [{"from": [0, 0, 0], "to": [16, 16, 16], "faces": faces}]})
+            out[",".join(f"{d}={'true' if j[d] else 'false'}" for d in dirs)] = {"model": f"{MOD}:block/{model}"}
+        return out
+
+    def glass_item(name, model):
+        wj(os.path.join(M, f"{name}.json"), {"parent": f"{MOD}:block/{model}_" + "______"})
+        wj(os.path.join(assets, f"items/{name}.json"), {"model": {"type": "minecraft:model", "model": f"{MOD}:block/{name}"}})
+
+    clear = (0, 0, 0, 0)
+
+    def glint(x, y):
+        # a few streaks of light across clear glass
+        if (x - y) in (3, 4) and 4 <= x <= 9: return (255, 255, 255, 110)
+        if (x - y) == -6 and 9 <= x <= 12: return (255, 255, 255, 80)
+        return clear
+
+    bronze_frame = lambda x, y, d: (shade((176, 110, 50), 0.6) + (255,)) if d == 0 else ((226, 160, 86, 255) if (x + y) % 5 else GOLD_HI + (255,))
+    glass_set("reinforced_glass", glint, bronze_frame, 2)
+    wj(os.path.join(assets, "blockstates/reinforced_glass.json"), {"variants": glass_models("reinforced_glass", "reinforced_glass", "reinforced_glass")})
+    glass_item("reinforced_glass", "reinforced_glass")
+
+    frost = random.Random(161)
+    flakes = {(frost.randrange(16), frost.randrange(16)) for _ in range(22)}
+    glass_set("frosted_glass", lambda x, y: (255, 255, 255, 230) if (x, y) in flakes else (236, 244, 250, 150 + (10 if (x * 3 + y) % 5 == 0 else 0)),
+              lambda x, y, d: (200, 210, 220, 255), 1)
+    wj(os.path.join(assets, "blockstates/frosted_glass.json"), {"variants": glass_models("frosted_glass", "frosted_glass", "frosted_glass")})
+    glass_item("frosted_glass", "frosted_glass")
+
+    graphite = lambda x, y, d: (52, 56, 66, 255) if d == 0 else (96, 102, 116, 255)
+    glass_set("smart_glass_clear", lambda x, y: (120, 220, 255, 255) if (x, y) == (13, 2) else glint(x, y), graphite, 1)
+    glass_set("smart_glass", lambda x, y: (255, 170, 60, 255) if (x, y) == (13, 2) else shade((40, 46, 60), 0.9 + 0.1 * math.sin((x + y) * 0.5)) + (235,), graphite, 1)
+    states = {}
+    for clr, prefix in ((False, "smart_glass"), (True, "smart_glass_clear")):
+        for k, v in glass_models("smart_glass", prefix, prefix).items():
+            states[f"clear={'true' if clr else 'false'}," + k] = v
+    wj(os.path.join(assets, "blockstates/smart_glass.json"), {"variants": states})
+    glass_item("smart_glass", "smart_glass")
+
+    def cracks(x, y):
+        if (x * 2 + y) % 13 == 0 and 2 < x < 14 and 2 < y < 14: return (255, 250, 230, 170)
+        if (x + 2 * y) % 17 == 0 and x > 6: return (255, 250, 230, 130)
+        return glint(x, y)
+    glass_set("brittle_glass", cracks, lambda x, y, d: shade((214, 190, 130), 1.1 if (x * y) % 3 else 0.9) + (255,), 1)
+    wj(os.path.join(assets, "blockstates/brittle_glass.json"), {"variants": glass_models("brittle_glass", "brittle_glass", "brittle_glass")})
+    glass_item("brittle_glass", "brittle_glass")
+
+    # one-way glass: a silvered mirror on the side it faces, nothing at all on any other
+    def mirror(x, y):
+        c = mix((150, 166, 184), (226, 236, 246), (x + 15 - y) / 30)
+        if (x + y) % 11 in (0, 1): c = mix(c, (255, 255, 255), 0.45)
+        return c
+    for mask in range(16):
+        paint_hi(framed(mirror, mask, (70, 60, 50), (120, 104, 80), (50, 40, 32), (150, 120, 80), width=1)).save(os.path.join(T, f"one_way_glass_{mask}.png"))
+    face_box = {"north": ((0, 0, 0), (16, 16, 0)), "south": ((0, 0, 16), (16, 16, 16)), "west": ((0, 0, 0), (0, 16, 16)), "east": ((16, 0, 0), (16, 16, 16)),
+                "up": ((0, 16, 0), (16, 16, 16)), "down": ((0, 0, 0), (16, 0, 16))}
+    dirs = ["down", "east", "north", "south", "up", "west"]
+    one_way = {}
+    for facing, (a, b) in face_box.items():
+        for bits in range(64):
+            j = {d: bool(bits >> i & 1) for i, d in enumerate(dirs)}
+            if facing in SIDE_EDGES_C:
+                u, dn, l, r = SIDE_EDGES_C[facing]
+                m = (1 if j[u] else 0) | (2 if j[dn] else 0) | (4 if j[l] else 0) | (8 if j[r] else 0)
+            elif facing == "up":
+                m = (1 if j["north"] else 0) | (2 if j["south"] else 0) | (4 if j["west"] else 0) | (8 if j["east"] else 0)
+            else:
+                m = (1 if j["south"] else 0) | (2 if j["north"] else 0) | (4 if j["west"] else 0) | (8 if j["east"] else 0)
+            model = f"one_way_glass_{facing}_{m}"
+            if bits == 0 or not os.path.exists(os.path.join(M, f"{model}.json")):
+                wj(os.path.join(M, f"{model}.json"), {"parent": "minecraft:block/block", "ambientocclusion": False,
+                                                      "textures": {"particle": t(f"one_way_glass_{m}"), "f": t(f"one_way_glass_{m}")},
+                                                      "elements": [{"from": list(a), "to": list(b), "faces": {facing: {"uv": [0, 0, 16, 16], "texture": "#f", "cullface": facing}}}]})
+            one_way[f"facing={facing}," + ",".join(f"{d}={'true' if j[d] else 'false'}" for d in dirs)] = {"model": f"{MOD}:block/{model}"}
+    wj(os.path.join(assets, "blockstates/one_way_glass.json"), {"variants": one_way})
+    wj(os.path.join(M, "one_way_glass.json"), {"parent": "minecraft:block/cube_all", "textures": {"all": t("one_way_glass_0")}})
+    wj(os.path.join(assets, "items/one_way_glass.json"), {"model": {"type": "minecraft:model", "model": f"{MOD}:block/one_way_glass"}})
+
+    # ---- recipes and loot
+    recipes = {
+        "moving_dummy": ({"D": f"{MOD}:training_dummy", "M": "minecraft:minecart"}, ["D", "M"], 1),
+        "chair": ({"P": "#minecraft:planks", "S": "minecraft:stick", "W": "#minecraft:wool"}, ["S  ", "SWS", "P P"], 2),
+        "table": ({"P": "#minecraft:planks", "S": "minecraft:stick"}, ["PPP", "S S", "S S"], 2),
+        "bench": ({"P": "#minecraft:planks", "S": "minecraft:stick"}, ["PPP", "S S"], 3),
+        "dresser": ({"P": "#minecraft:planks", "C": "minecraft:chest", "G": "minecraft:gold_nugget"}, ["PGP", "PCP", "PGP"], 1),
+        "bunk_bed": ({"B": "#minecraft:beds", "S": "minecraft:stick"}, ["SBS", "SBS"], 1),
+        "reinforced_glass": ({"G": "minecraft:glass", "C": "minecraft:copper_ingot"}, ["CGC", "GCG", "CGC"], 4),
+        "frosted_glass": ({"G": "minecraft:glass", "W": "minecraft:white_dye"}, ["GGG", "GWG", "GGG"], 8),
+        "smart_glass": ({"G": "minecraft:glass", "Q": "minecraft:quartz", "R": "minecraft:redstone"}, ["GQG", "QRQ", "GQG"], 4),
+        "brittle_glass": ({"G": "minecraft:glass", "S": "#minecraft:sand"}, ["SG", "GS"], 2),
+        "one_way_glass": ({"G": "minecraft:glass", "N": "minecraft:iron_nugget"}, ["GGG", "NNN"], 3),
+    }
+    for rid, (key_, pattern_, count) in recipes.items():
+        wj(os.path.join(data, f"recipe/{rid}.json"), {"type": "minecraft:crafting_shaped", "category": "building", "key": key_, "pattern": pattern_,
+                                                      "result": {"id": f"{MOD}:{rid}", "count": count}})
+
+    def loot(b, props=None):
+        cond = [{"condition": "minecraft:survives_explosion"}]
+        if props: cond.insert(0, {"condition": "minecraft:block_state_property", "block": f"{MOD}:{b}", "properties": props})
+        wj(os.path.join(data, f"loot_table/blocks/{b}.json"), {"type": "minecraft:block", "pools": [{"rolls": 1, "entries": [{"type": "minecraft:item", "name": f"{MOD}:{b}"}],
+                                                                                                  "conditions": cond}]})
+    for b in ("training_dummy", "moving_dummy", "chair", "table", "bench"):
+        loot(b)
+    loot("dresser", {"right": "false"})
+    loot("bunk_bed", {"head": "false", "upper": "false"})

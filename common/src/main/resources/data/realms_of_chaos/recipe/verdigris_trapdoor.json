@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "redstone",
+  "key": {
+    "C": "minecraft:oxidized_copper",
+    "G": "minecraft:gold_nugget"
+  },
+  "pattern": [
+    "CC",
+    "CG"
+  ],
+  "result": {
+    "id": "realms_of_chaos:verdigris_trapdoor",
+    "count": 2
+  }
+}

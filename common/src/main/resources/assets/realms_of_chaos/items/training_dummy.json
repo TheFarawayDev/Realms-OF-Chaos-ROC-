@@ -1,6 +1,6 @@
 {
   "model": {
     "type": "minecraft:model",
-    "model": "realms_of_chaos:block/training_dummy"
+    "model": "realms_of_chaos:block/training_dummy_single"
   }
 }

@@ -1,0 +1,20 @@
+{
+  "variants": {
+    "facing=north": {
+      "model": "realms_of_chaos:block/moving_dummy",
+      "y": 90
+    },
+    "facing=east": {
+      "model": "realms_of_chaos:block/moving_dummy",
+      "y": 180
+    },
+    "facing=south": {
+      "model": "realms_of_chaos:block/moving_dummy",
+      "y": 270
+    },
+    "facing=west": {
+      "model": "realms_of_chaos:block/moving_dummy",
+      "y": 0
+    }
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "key": {
+    "G": "minecraft:glass",
+    "S": "#minecraft:sand"
+  },
+  "pattern": [
+    "SG",
+    "GS"
+  ],
+  "result": {
+    "id": "realms_of_chaos:brittle_glass",
+    "count": 2
+  }
+}

@@ -69,6 +69,34 @@ The current build is an **Alpha**.
   (white marble and gold, a thunderbolt), the **Door of the Sea** (dark sea-wood, a trident) and the **Door of the
   Shades** (black wood with violet light, a skull), each with its trapdoor. All open by hand and are craftable.
   (`art/renders/door-textures.png`, `door-items.png`, `doors-placed.png`)
+* **Training dummies, polished.** Set a dummy on another and they become one taller dummy - a post on its foot,
+  then a body, then a head in a crested bronze helm - one, two or three blocks high. Strike one and it says what the
+  blow was worth (the hand's strength and how drawn back the swing was, half again for a riposte, more for momentum)
+  and how many blows you have landed in a row. Right-click it for the parry and dodge lesson. Craftable as before,
+  and broken by hand.
+* **Sparring Dummy.** A dummy on a sledge (a dummy over a minecart to craft) that slides to and fro along the floor
+  while anyone is near - a block at a time, gliding the way a piston moves a block - and turns back where its way is
+  blocked or its floor changes: a strip of one floor is its track. (`art/renders/sparring-dummy.png`)
+* **Barracks furniture, all craftable.** A **Chair** (sit on it: right-click; you face the way it does), a **Bench**
+  (sit anywhere along it), a **Table** (tables side by side join into one long table, legs only at its corners), a
+  **Dresser** two blocks wide whose drawers slide open, and a **Bunk Bed** two long and two high with a ladder up
+  its foot, put down and taken up as one piece.
+* **Barracks rebuilt with it.** Two quarters of bunk beds with footlockers and a dresser; a mess with a table,
+  chairs drawn up on both sides, a candle and a bench along the wall; and a drill yard of dummies one, two and three
+  high, racks of arms and a sparring dummy on its boards. Barracks are entered through Garrison Doors.
+  (`art/renders/barracks-mess.png`, `barracks-bunks.png`, `barracks-drill.png`)
+* **Three more doors** with their trapdoors: the **Garrison Door** (dark oak, iron bands, a shield), the **Verdigris
+  Door** (green copper, a laurel) and the **Ivory Door** (bone white and gold, a star). (`art/renders/doors-new.png`)
+* **Five kinds of glass, all connecting** - a run of any of them is one window with a single frame round its
+  outside - and all craftable. (`art/renders/glass-kinds.png`)
+  * **Reinforced Glass** - clear, framed in bronze, as hard to break as stone.
+  * **Frosted Glass** - milky: light comes through, faces do not.
+  * **Smart Glass** - shaded dark until it has a redstone signal, then clear; one signal anywhere on a window clears
+    the whole window at once. (`art/renders/smart-glass-clear.png`)
+  * **One-Way Glass** - a silvered mirror from the side it faces, nothing at all from behind: you see out, nobody
+    sees in. Set it down and the mirror faces away from you. (`art/renders/one-way-glass-behind.png`)
+  * **Brittle Glass** - struck by an arrow, a snowball, a trident, anything shot or thrown, the whole window it
+    belongs to lets go and comes down like sand, landing as glass again. (`art/renders/brittle-glass-falling.png`)
 * **Twelve new sentinels with attacks of their own** - four to a tower, seventy-five kinds in all. Every one of
   these attacks is telegraphed and can be parried or dodged. (`art/renders/new-sentinels.png`)
   * **Duelists** (Storm Duelist, Coral Duelist, Grave Fencer): a guard glints on the blade when it is up, and the

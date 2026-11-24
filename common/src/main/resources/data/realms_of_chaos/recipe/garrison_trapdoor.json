@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "redstone",
+  "key": {
+    "C": "minecraft:dark_oak_planks",
+    "G": "minecraft:iron_nugget"
+  },
+  "pattern": [
+    "CC",
+    "CG"
+  ],
+  "result": {
+    "id": "realms_of_chaos:garrison_trapdoor",
+    "count": 2
+  }
+}

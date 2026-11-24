@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "key": {
+    "G": "minecraft:glass",
+    "C": "minecraft:copper_ingot"
+  },
+  "pattern": [
+    "CGC",
+    "GCG",
+    "CGC"
+  ],
+  "result": {
+    "id": "realms_of_chaos:reinforced_glass",
+    "count": 4
+  }
+}

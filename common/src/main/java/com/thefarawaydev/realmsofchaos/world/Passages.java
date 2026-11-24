@@ -966,6 +966,7 @@ public final class Passages {
         steps.add(() -> {
             com.thefarawaydev.realmsofchaos.block.ConnectedBlock.settle(level, o.offset(-1, -2, -1), o.offset(w, LEVEL_PITCH - 3, w));
             com.thefarawaydev.realmsofchaos.block.WeaponRackBlock.settle(level, o.offset(-1, -2, -1), o.offset(w, LEVEL_PITCH - 3, w));
+            com.thefarawaydev.realmsofchaos.block.Furniture.Joining.settle(level, o.offset(-1, -2, -1), o.offset(w, LEVEL_PITCH - 3, w));
         });
         return steps;
     }
@@ -1159,6 +1160,7 @@ public final class Passages {
     /** The doors a room is entered by: bronze for the working rooms, the tower's own for the rest. */
     static Block door(Plan plan, Kind kind) {
         if (kind == Kind.STORE || kind == Kind.ARMORY) return ModContent.BRONZE_DOOR.get();
+        if (kind == Kind.BARRACKS) return ModContent.GARRISON_DOOR.get();
         return switch (plan.line) {
             case ZEUS -> ModContent.SKY_DOOR.get();
             case POSEIDON -> ModContent.SEA_DOOR.get();
@@ -1178,7 +1180,7 @@ public final class Passages {
     /** The rooms entered through a pair of doors. */
     static boolean entrance(Kind kind) {
         return kind == Kind.STORE || kind == Kind.ARMORY || kind == Kind.LIBRARY || kind == Kind.SANCTUM || kind == Kind.OBSERVATORY
-                || kind == Kind.SHRINE || kind == Kind.BATHS;
+                || kind == Kind.SHRINE || kind == Kind.BATHS || kind == Kind.BARRACKS;
     }
 
     /** A pair of bronze doors either side of a corridor's middle line, {@code d} along it, open against the walls. */
@@ -1715,69 +1717,88 @@ public final class Passages {
     }
 
     /**
-     * A barracks: two quarters of bedrolls laid head to the wall, a footlocker at each foot and a rack of arms over
-     * each head; two quarters for drill, with training dummies set facing in, racks along the walls and a barrel of
-     * practice blades. Its soldiers are awake when anyone walks in.
+     * A barracks: two quarters of bunk beds, head to the wall, a footlocker at each foot and a dresser against the far
+     * wall; a mess with a table, chairs drawn up to it and a bench along the wall; and a drill yard of training dummies
+     * one, two and three blocks tall, racks of arms on the walls, and a sparring dummy sliding to and fro on its
+     * boards. It is entered through garrison doors, and its soldiers are awake.
      */
     private static void buildBarracks(ServerLevel level, Plan plan, Cell c, TowerBuilder.Palette p, Random random) {
         BlockPos m = plan.centre(c);
         int far = plan.half(c);
-        Block bedroll = Blocks.CARPET.pick(plan.line == Line.ZEUS ? net.minecraft.world.item.DyeColor.BLUE
-                : plan.line == Line.POSEIDON ? net.minecraft.world.item.DyeColor.CYAN : net.minecraft.world.item.DyeColor.RED);
-        Block pillow = Blocks.CARPET.pick(net.minecraft.world.item.DyeColor.WHITE);
         com.thefarawaydev.realmsofchaos.block.WeaponRackBlock racks = (com.thefarawaydev.realmsofchaos.block.WeaponRackBlock) ModContent.WEAPON_RACK.get();
         int[][] quarters = {{1, 1}, {-1, -1}, {1, -1}, {-1, 1}};
+        // which quarter is which: bunks, a mess, the drill yard, more bunks
+        int[] use = {0, 1, 2, 0};
         for (int i = 0; i < quarters.length; i++) {
             int sx = quarters[i][0], sz = quarters[i][1];
             net.minecraft.core.Direction inX = sx > 0 ? net.minecraft.core.Direction.WEST : net.minecraft.core.Direction.EAST;
             net.minecraft.core.Direction inZ = sz > 0 ? net.minecraft.core.Direction.NORTH : net.minecraft.core.Direction.SOUTH;
-            // the floor of the quarter in boards
             for (int u = 2; u <= far; u++) for (int v = 2; v <= far; v++) if (!cut(plan, c, sx * u, sz * v)) set(level, m.offset(sx * u, 0, sz * v), Blocks.SPRUCE_PLANKS);
-            if (i < 2) {
-                // bunk beds, head to the x wall, every other row: a bedroll on the floor, a frame of boards over it
-                // and a second bedroll on that, a footlocker at the foot
-                for (int v = 2; v <= far; v += 2) {
-                    if (cut(plan, c, sx * far, sz * v)) continue;
-                    for (int u = far - 1; u <= far; u++) {
-                        BlockPos at = m.offset(sx * u, 0, sz * v);
-                        set(level, at.above(), u == far ? pillow : bedroll);
-                        level.setBlock(at.above(2), Mason.slab(Blocks.SPRUCE_SLAB, true), 2);
-                        set(level, at.above(3), u == far ? pillow : bedroll);
+            switch (use[i]) {
+                case 0 -> {
+                    // bunk beds, head to the x wall, every other row; a footlocker at each foot
+                    for (int v = 2; v + 1 <= far; v += 2) {
+                        if (cut(plan, c, sx * far, sz * v)) continue;
+                        com.thefarawaydev.realmsofchaos.block.Furniture.BunkBed.build(level, m.offset(sx * (far - 1), 1, sz * v), inX.getOpposite(), ModContent.BUNK_BED.get());
+                        if (far - 2 >= 2) footlocker(level, m.offset(sx * (far - 2), 1, sz * v), inX, random);
                     }
-                    if (far - 2 >= 2) {
-                        BlockPos locker = m.offset(sx * (far - 2), 1, sz * v);
-                        level.setBlock(locker, Blocks.CHEST.defaultBlockState().setValue(net.minecraft.world.level.block.ChestBlock.FACING, inX), 2);
-                        // (a soldier's kit: a few arrows, a loaf, now and then a bandage of honey)
-                        if (level.getBlockEntity(locker) instanceof net.minecraft.world.level.block.entity.ChestBlockEntity kit) {
-                            kit.setItem(random.nextInt(9), new ItemStack(Items.ARROW, 3 + random.nextInt(6)));
-                            kit.setItem(9 + random.nextInt(9), new ItemStack(Items.BREAD, 1 + random.nextInt(2)));
-                            if (random.nextFloat() < 0.3F) kit.setItem(18 + random.nextInt(9), new ItemStack(Items.HONEY_BOTTLE));
-                        }
+                    // a dresser against the far wall, and a light let into the wall between the bunks
+                    dresser(level, m, sx, sz, far, inZ);
+                    if (!cut(plan, c, sx * far, sz * 3)) set(level, m.offset(sx * (far + 1), 3, sz * 3), p.light());
+                }
+                case 1 -> {
+                    // the mess: a table two long, chairs drawn up on both sides, a candle on it, a bench along the wall
+                    for (int u = 3; u <= 4; u++) {
+                        set(level, m.offset(sx * u, 1, sz * 3), ModContent.TABLE.get());
+                        level.setBlock(m.offset(sx * u, 1, sz * 2), ModContent.CHAIR.get().defaultBlockState()
+                                .setValue(com.thefarawaydev.realmsofchaos.block.Furniture.FACING, inZ.getOpposite()), 2);
+                        level.setBlock(m.offset(sx * u, 1, sz * 4), ModContent.CHAIR.get().defaultBlockState()
+                                .setValue(com.thefarawaydev.realmsofchaos.block.Furniture.FACING, inZ), 2);
                     }
+                    level.setBlock(m.offset(sx * 3, 2, sz * 3), Blocks.CANDLE.defaultBlockState().setValue(net.minecraft.world.level.block.CandleBlock.LIT, true)
+                            .setValue(net.minecraft.world.level.block.CandleBlock.CANDLES, 3), 2);
+                    for (int v = 2; v <= far - 1; v++) if (!cut(plan, c, sx * far, sz * v)) set(level, m.offset(sx * far, 1, sz * v), ModContent.BENCH.get());
+                    dresser(level, m, sx, sz, far, inZ);
+                    if (!cut(plan, c, sx * far, sz * far)) set(level, m.offset(sx * far, 1, sz * far), Blocks.BARREL);
                 }
-                // arms racked on the far wall
-                for (int u = 2; u <= far - 2; u++) if (!cut(plan, c, sx * u, sz * far)) level.setBlock(m.offset(sx * u, 2, sz * far), racks.facing(inZ), 2);
-                // a light let into the wall between them
-                if (!cut(plan, c, sx * far, sz * 3)) set(level, m.offset(sx * (far + 1), 3, sz * 3), p.light());
-            } else {
-                // drill: two dummies facing the middle, racks along both walls, a barrel of blades in the corner
-                int a = Math.min(3, far - 1);
-                level.setBlock(m.offset(sx * a, 1, sz * 2), ModContent.TRAINING_DUMMY.get().defaultBlockState()
-                        .setValue(com.thefarawaydev.realmsofchaos.block.TrainingDummyBlock.FACING, inX), 2);
-                level.setBlock(m.offset(sx * 2, 1, sz * a), ModContent.TRAINING_DUMMY.get().defaultBlockState()
-                        .setValue(com.thefarawaydev.realmsofchaos.block.TrainingDummyBlock.FACING, inZ), 2);
-                for (int d = 2; d < far; d++) {
-                    if (!cut(plan, c, sx * far, sz * d)) level.setBlock(m.offset(sx * far, 2, sz * d), racks.facing(inX), 2);
-                    if (!cut(plan, c, sx * d, sz * far)) level.setBlock(m.offset(sx * d, 2, sz * far), racks.facing(inZ), 2);
-                }
-                if (!cut(plan, c, sx * far, sz * far)) {
-                    set(level, m.offset(sx * far, 1, sz * far), Blocks.BARREL);
-                    set(level, m.offset(sx * far, 2, sz * far), ModContent.WAR_STANDARD.get());
+                default -> {
+                    // the drill yard: dummies of three heights facing in, a sparring dummy on its boards, racks on both walls
+                    com.thefarawaydev.realmsofchaos.block.TrainingDummyBlock.build(level, m.offset(sx * 2, 1, sz * 2), inX, 3, ModContent.TRAINING_DUMMY.get());
+                    com.thefarawaydev.realmsofchaos.block.TrainingDummyBlock.build(level, m.offset(sx * 4, 1, sz * 2), inX, 1, ModContent.TRAINING_DUMMY.get());
+                    com.thefarawaydev.realmsofchaos.block.TrainingDummyBlock.build(level, m.offset(sx * 2, 1, sz * 4), inZ, 2, ModContent.TRAINING_DUMMY.get());
+                    level.setBlock(m.offset(sx * 3, 1, sz * 3), ModContent.MOVING_DUMMY.get().defaultBlockState()
+                            .setValue(com.thefarawaydev.realmsofchaos.block.MovingDummyBlock.FACING, inX.getOpposite()), 3);
+                    for (int d = 2; d < far; d++) {
+                        if (!cut(plan, c, sx * far, sz * d)) level.setBlock(m.offset(sx * far, 2, sz * d), racks.facing(inX), 2);
+                        if (!cut(plan, c, sx * d, sz * far)) level.setBlock(m.offset(sx * d, 2, sz * far), racks.facing(inZ), 2);
+                    }
+                    if (!cut(plan, c, sx * far, sz * far)) {
+                        set(level, m.offset(sx * far, 1, sz * far), Blocks.BARREL);
+                        set(level, m.offset(sx * far, 2, sz * far), ModContent.WAR_STANDARD.get());
+                    }
                 }
             }
         }
         // and where the lanes cross, the tower's inlay
         for (int dx = -1; dx <= 1; dx++) for (int dz = -1; dz <= 1; dz++) set(level, m.offset(dx, 0, dz), p.inlay());
+    }
+
+    /** A soldier's footlocker: a chest with a few arrows, a loaf, now and then a bottle of honey. */
+    private static void footlocker(ServerLevel level, BlockPos at, net.minecraft.core.Direction facing, Random random) {
+        level.setBlock(at, Blocks.CHEST.defaultBlockState().setValue(net.minecraft.world.level.block.ChestBlock.FACING, facing), 2);
+        if (level.getBlockEntity(at) instanceof net.minecraft.world.level.block.entity.ChestBlockEntity kit) {
+            kit.setItem(random.nextInt(9), new ItemStack(Items.ARROW, 3 + random.nextInt(6)));
+            kit.setItem(9 + random.nextInt(9), new ItemStack(Items.BREAD, 1 + random.nextInt(2)));
+            if (random.nextFloat() < 0.3F) kit.setItem(18 + random.nextInt(9), new ItemStack(Items.HONEY_BOTTLE));
+        }
+    }
+
+    /** A dresser against a barracks quarter's far z wall, both halves inside the quarter. */
+    private static void dresser(ServerLevel level, BlockPos m, int sx, int sz, int far, net.minecraft.core.Direction inZ) {
+        int along = inZ.getCounterClockWise().getStepX();
+        int lx = sx * 2;
+        if (Math.abs(lx + along) < 2 || Math.abs(lx + along) > far - 1) lx = sx * 3;
+        com.thefarawaydev.realmsofchaos.block.Furniture.Dresser.build(level, m.offset(lx, 1, sz * far), inZ, ModContent.DRESSER.get());
     }
 
     /**

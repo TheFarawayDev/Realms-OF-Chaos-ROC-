@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "key": {
+    "P": "#minecraft:planks",
+    "C": "minecraft:chest",
+    "G": "minecraft:gold_nugget"
+  },
+  "pattern": [
+    "PGP",
+    "PCP",
+    "PGP"
+  ],
+  "result": {
+    "id": "realms_of_chaos:dresser",
+    "count": 1
+  }
+}

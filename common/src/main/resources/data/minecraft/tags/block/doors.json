@@ -4,6 +4,9 @@
     "realms_of_chaos:bronze_door",
     "realms_of_chaos:sky_door",
     "realms_of_chaos:sea_door",
-    "realms_of_chaos:shade_door"
+    "realms_of_chaos:shade_door",
+    "realms_of_chaos:garrison_door",
+    "realms_of_chaos:verdigris_door",
+    "realms_of_chaos:ivory_door"
   ]
 }

@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "key": {
+    "G": "minecraft:glass",
+    "N": "minecraft:iron_nugget"
+  },
+  "pattern": [
+    "GGG",
+    "NNN"
+  ],
+  "result": {
+    "id": "realms_of_chaos:one_way_glass",
+    "count": 3
+  }
+}

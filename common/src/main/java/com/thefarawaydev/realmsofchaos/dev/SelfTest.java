@@ -6223,13 +6223,24 @@ public final class SelfTest {
                 Passages.build(level, barracksPlan);
                 Passages.rearm(level, barracksPlan);
                 BlockPos b = barracksPlan.centre(bunks);
-                int dummies = 0, racks = 0;
+                int dummies = 0, racks = 0, bunkBeds = 0, dressers = 0, chairs = 0, sparring = 0;
                 int bf = barracksPlan.half(bunks);
+                java.util.Set<com.thefarawaydev.realmsofchaos.block.TrainingDummyBlock.Part> parts = new java.util.HashSet<>();
                 for (BlockPos at : BlockPos.betweenClosed(b.offset(-bf, 1, -bf), b.offset(bf, 3, bf))) {
-                    if (level.getBlockState(at).is(ModContent.TRAINING_DUMMY.get())) dummies++;
-                    if (level.getBlockState(at).is(ModContent.WEAPON_RACK.get())) racks++;
+                    net.minecraft.world.level.block.state.BlockState here = level.getBlockState(at);
+                    if (here.is(ModContent.TRAINING_DUMMY.get())) {
+                        dummies++;
+                        parts.add(here.getValue(com.thefarawaydev.realmsofchaos.block.TrainingDummyBlock.PART));
+                    }
+                    if (here.is(ModContent.WEAPON_RACK.get())) racks++;
+                    if (here.is(ModContent.BUNK_BED.get())) bunkBeds++;
+                    if (here.is(ModContent.DRESSER.get())) dressers++;
+                    if (here.is(ModContent.CHAIR.get())) chairs++;
+                    if (here.is(ModContent.MOVING_DUMMY.get())) sparring++;
                 }
-                check(dummies == 4 && racks >= 8, "a barracks has its training dummies and racks of arms: " + dummies + " / " + racks);
+                check(dummies == 6 && parts.size() == 5 && racks >= 6, "a barracks has training dummies one, two and three high, and racks of arms: " + dummies + " / " + parts + " / " + racks);
+                check(bunkBeds == 16 && dressers == 6 && chairs == 4 && sparring == 1, "bunk beds, dressers, a mess with its chairs, a sparring dummy: "
+                        + bunkBeds + " / " + dressers + " / " + chairs + " / " + sparring);
                 for (int dx = -1; dx <= 1; dx++) for (int y = 1; y <= 3; y++) {
                     check(level.getBlockState(b.offset(dx, y, bf)).isAir() && level.getBlockState(b.offset(bf, y, dx)).isAir(), "and its lanes are clear");
                 }
@@ -6420,6 +6431,124 @@ public final class SelfTest {
                 check(level.getBlockState(doorway).isAir(), "with nobody left inside, the bars lift");
             } finally {
                 for (Passages.Plan plan : built) Passages.rearm(level, plan);
+                hero.remove(net.minecraft.world.entity.Entity.RemovalReason.DISCARDED);
+            }
+        });
+
+        step("dummies stack one to three high and slide; furniture joins, opens and seats; glass connects, switches and falls", () -> {
+            ServerPlayer hero = fakePlayer(server, level, "RocCarpenter");
+            level.addNewPlayer(hero);
+            int gy = level.getHeight(net.minecraft.world.level.levelgen.Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, 40, 40) + 3;
+            BlockPos o = new BlockPos(40, gy, 40);
+            BlockPos.betweenClosed(o.offset(-2, -1, -2), o.offset(14, 6, 14)).forEach(at -> level.setBlock(at, at.getY() == o.getY() - 1 ? Blocks.STONE.defaultBlockState() : Blocks.AIR.defaultBlockState(), 2));
+            try {
+                // ---- a dummy grows as dummies are set on it, and shrinks as they come off
+                var dummy = (com.thefarawaydev.realmsofchaos.block.TrainingDummyBlock) ModContent.TRAINING_DUMMY.get();
+                var PART = com.thefarawaydev.realmsofchaos.block.TrainingDummyBlock.PART;
+                for (int i = 0; i < 3; i++) level.setBlock(o.above(i), dummy.stacked(level, o.above(i), dummy.defaultBlockState()), 3);
+                check(level.getBlockState(o).getValue(PART) == com.thefarawaydev.realmsofchaos.block.TrainingDummyBlock.Part.FOOT
+                        && level.getBlockState(o.above()).getValue(PART) == com.thefarawaydev.realmsofchaos.block.TrainingDummyBlock.Part.TORSO
+                        && level.getBlockState(o.above(2)).getValue(PART) == com.thefarawaydev.realmsofchaos.block.TrainingDummyBlock.Part.HEAD, "three dummies set one on another make one dummy three high");
+                level.setBlock(o.above(2), Blocks.AIR.defaultBlockState(), 3);
+                check(level.getBlockState(o.above()).getValue(PART) == com.thefarawaydev.realmsofchaos.block.TrainingDummyBlock.Part.UPPER, "take its head off and it is two high");
+                level.destroyBlock(o, true);
+                check(level.getBlockState(o.above()).isAir(), "take its foot away and the rest comes down");
+                hero.setPos(o.getX() + 0.5, o.getY(), o.getZ() + 2.5);
+                level.setBlock(o, dummy.defaultBlockState(), 3);
+                hero.resetAttackStrengthTicker();
+                float worth = com.thefarawaydev.realmsofchaos.block.TrainingDummyBlock.struck(level, o, hero);
+                com.thefarawaydev.realmsofchaos.block.TrainingDummyBlock.struck(level, o, hero);
+                check(worth >= 0.0F && com.thefarawaydev.realmsofchaos.block.TrainingDummyBlock.combo(hero) == 2, "a dummy counts the blows landed on it in a row");
+                level.setBlock(o, Blocks.AIR.defaultBlockState(), 3);
+
+                // ---- the sparring dummy keeps to its boards
+                BlockPos track = o.offset(0, 0, 6);
+                for (int x = 0; x < 3; x++) level.setBlock(track.offset(x, -1, 0), Blocks.SPRUCE_PLANKS.defaultBlockState(), 2);
+                net.minecraft.world.level.block.state.BlockState sled = ModContent.MOVING_DUMMY.get().defaultBlockState()
+                        .setValue(com.thefarawaydev.realmsofchaos.block.MovingDummyBlock.FACING, net.minecraft.core.Direction.EAST);
+                level.setBlock(track, sled, 2);
+                check(!com.thefarawaydev.realmsofchaos.block.MovingDummyBlock.canSlide(level, track, net.minecraft.core.Direction.WEST)
+                        && com.thefarawaydev.realmsofchaos.block.MovingDummyBlock.canSlide(level, track, net.minecraft.core.Direction.EAST), "it slides only over the floor it stands on");
+                BlockPos to = com.thefarawaydev.realmsofchaos.block.MovingDummyBlock.step(level, track, sled);
+                check(to.equals(track.east()) && level.getBlockState(track).isAir() && level.getBlockState(to).is(Blocks.MOVING_PISTON), "it glides one block along");
+                advance(server, 4);
+                if (level.getBlockEntity(to) instanceof net.minecraft.world.level.block.piston.PistonMovingBlockEntity glide) glide.finalTick();
+                check(level.getBlockState(to).is(ModContent.MOVING_DUMMY.get()), "and stands there");
+                level.setBlock(to.east(), level.getBlockState(to), 2);
+                level.setBlock(to, Blocks.AIR.defaultBlockState(), 2);
+                BlockPos end = to.east();
+                BlockPos back = com.thefarawaydev.realmsofchaos.block.MovingDummyBlock.step(level, end, level.getBlockState(end));
+                check(back.equals(end.west()), "at the end of its boards it turns back");
+                level.setBlock(back, Blocks.AIR.defaultBlockState(), 2);
+
+                // ---- furniture
+                BlockPos f = o.offset(6, 0, 0);
+                level.setBlock(f, ModContent.CHAIR.get().defaultBlockState(), 3);
+                hero.setPos(f.getX() + 0.5, f.getY(), f.getZ() + 1.5);
+                check(com.thefarawaydev.realmsofchaos.world.Seats.sit(level, f, 0.55, hero) && hero.isPassenger(), "a chair can be sat on");
+                check(!com.thefarawaydev.realmsofchaos.world.Seats.sit(level, f, 0.55, hero), "(one at a time)");
+                level.setBlock(f, Blocks.AIR.defaultBlockState(), 3);
+                com.thefarawaydev.realmsofchaos.world.Seats.sweep();
+                check(!hero.isPassenger(), "and its seat goes when the chair does");
+                var table = (com.thefarawaydev.realmsofchaos.block.Furniture.Table) ModContent.TABLE.get();
+                level.setBlock(f.offset(0, 0, 2), table.defaultBlockState(), 3);
+                level.setBlock(f.offset(1, 0, 2), table.joined(level, f.offset(1, 0, 2), table.defaultBlockState()), 3);
+                check(level.getBlockState(f.offset(0, 0, 2)).getValue(com.thefarawaydev.realmsofchaos.block.Furniture.Joining.EAST)
+                        && level.getBlockState(f.offset(1, 0, 2)).getValue(com.thefarawaydev.realmsofchaos.block.Furniture.Joining.WEST), "tables set side by side join into one");
+                com.thefarawaydev.realmsofchaos.block.Furniture.Dresser.build(level, f.offset(0, 0, 5), net.minecraft.core.Direction.NORTH, ModContent.DRESSER.get());
+                BlockPos right = f.offset(-1, 0, 5);
+                check(level.getBlockState(right).is(ModContent.DRESSER.get()) && level.getBlockState(right).getValue(com.thefarawaydev.realmsofchaos.block.Furniture.Dresser.RIGHT),
+                        "a dresser is two blocks wide");
+                level.getBlockState(f.offset(0, 0, 5)).useWithoutItem(level, hero, new BlockHitResult(Vec3.atCenterOf(f.offset(0, 0, 5)), Direction.NORTH, f.offset(0, 0, 5), false));
+                check(level.getBlockState(right).getValue(com.thefarawaydev.realmsofchaos.block.Furniture.Dresser.OPEN), "its drawers open together");
+                level.destroyBlock(f.offset(0, 0, 5), false);
+                check(level.getBlockState(right).isAir(), "and it goes as one");
+                com.thefarawaydev.realmsofchaos.block.Furniture.BunkBed.build(level, f.offset(3, 0, 8), net.minecraft.core.Direction.NORTH, ModContent.BUNK_BED.get());
+                int pieces = 0;
+                for (BlockPos at : com.thefarawaydev.realmsofchaos.block.Furniture.BunkBed.pieces(f.offset(3, 0, 8), net.minecraft.core.Direction.NORTH)) if (level.getBlockState(at).is(ModContent.BUNK_BED.get())) pieces++;
+                check(pieces == 4, "a bunk bed is two long and two high");
+                level.destroyBlock(f.offset(3, 1, 7), false);
+                pieces = 0;
+                for (BlockPos at : com.thefarawaydev.realmsofchaos.block.Furniture.BunkBed.pieces(f.offset(3, 0, 8), net.minecraft.core.Direction.NORTH)) if (level.getBlockState(at).is(ModContent.BUNK_BED.get())) pieces++;
+                check(pieces == 0, "and it goes as one: " + pieces);
+
+                // ---- glass
+                BlockPos w = o.offset(0, 0, 10);
+                var smart = (com.thefarawaydev.realmsofchaos.block.Glass.Smart) ModContent.SMART_GLASS.get();
+                for (int x = 0; x < 3; x++) level.setBlock(w.offset(x, 1, 0), smart.joined(level, w.offset(x, 1, 0), smart.defaultBlockState()), 3);
+                com.thefarawaydev.realmsofchaos.block.ConnectedBlock.settle(level, w.offset(0, 1, 0), w.offset(2, 1, 0));
+                check(level.getBlockState(w.offset(1, 1, 0)).getValue(com.thefarawaydev.realmsofchaos.block.ConnectedBlock.EAST) && level.getBlockState(w.offset(1, 1, 0)).getValue(com.thefarawaydev.realmsofchaos.block.ConnectedBlock.WEST)
+                        && !level.getBlockState(w.offset(0, 1, 0)).getValue(com.thefarawaydev.realmsofchaos.block.Glass.Smart.CLEAR), "smart glass connects, and starts shaded");
+                level.setBlock(w.offset(-1, 1, 0), Blocks.REDSTONE_BLOCK.defaultBlockState(), 3);
+                boolean allClear = true;
+                for (int x = 0; x < 3; x++) allClear &= level.getBlockState(w.offset(x, 1, 0)).getValue(com.thefarawaydev.realmsofchaos.block.Glass.Smart.CLEAR);
+                check(allClear, "a signal at one end clears the whole window");
+                level.setBlock(w.offset(-1, 1, 0), Blocks.AIR.defaultBlockState(), 3);
+                check(!level.getBlockState(w.offset(2, 1, 0)).getValue(com.thefarawaydev.realmsofchaos.block.Glass.Smart.CLEAR), "and it shades again when the signal goes");
+                var brittle = (com.thefarawaydev.realmsofchaos.block.Glass.Brittle) ModContent.BRITTLE_GLASS.get();
+                BlockPos hang = w.offset(5, 3, 0);
+                for (int x = 0; x < 2; x++) for (int y = 0; y < 2; y++) level.setBlock(hang.offset(x, y, 0), brittle.defaultBlockState(), 3);
+                net.minecraft.world.entity.projectile.arrow.Arrow arrow = new net.minecraft.world.entity.projectile.arrow.Arrow(level, hero, new net.minecraft.world.item.ItemStack(net.minecraft.world.item.Items.ARROW), null);
+                level.getBlockState(hang).onProjectileHit(level, level.getBlockState(hang), new BlockHitResult(Vec3.atCenterOf(hang), Direction.SOUTH, hang, false), arrow);
+                int falling = level.getEntitiesOfClass(net.minecraft.world.entity.item.FallingBlockEntity.class, new AABB(hang).inflate(3), e -> e.getBlockState().is(brittle)).size();
+                check(falling == 4 && level.getBlockState(hang.above()).isAir(), "brittle glass struck by an arrow: the whole window comes down like sand: " + falling);
+                for (var e : level.getEntitiesOfClass(net.minecraft.world.entity.item.FallingBlockEntity.class, new AABB(hang).inflate(6), e -> true)) e.discard();
+                var oneWay = (com.thefarawaydev.realmsofchaos.block.Glass.OneWay) ModContent.ONE_WAY_GLASS.get();
+                BlockPos ow = w.offset(0, 1, 3);
+                net.minecraft.world.level.block.state.BlockState north = oneWay.defaultBlockState().setValue(com.thefarawaydev.realmsofchaos.block.Glass.OneWay.FACING, Direction.NORTH);
+                level.setBlock(ow, north, 3);
+                level.setBlock(ow.east(), oneWay.joined(level, ow.east(), north), 3);
+                level.setBlock(ow.west(), oneWay.joined(level, ow.west(), north.setValue(com.thefarawaydev.realmsofchaos.block.Glass.OneWay.FACING, Direction.SOUTH)), 3);
+                check(level.getBlockState(ow).getValue(com.thefarawaydev.realmsofchaos.block.ConnectedBlock.EAST) && !level.getBlockState(ow).getValue(com.thefarawaydev.realmsofchaos.block.ConnectedBlock.WEST),
+                        "one-way glass joins only to its own kind facing the same way");
+                check(level.getBlockState(ow).getVisualShape(level, ow, net.minecraft.world.phys.shapes.CollisionContext.empty()).isEmpty()
+                        && !level.getBlockState(ow).canOcclude(), "and hides nothing behind it");
+                // ---- three more doors
+                for (net.minecraft.world.level.block.Block door : List.of(ModContent.GARRISON_DOOR.get(), ModContent.VERDIGRIS_DOOR.get(), ModContent.IVORY_DOOR.get())) {
+                    check(door instanceof net.minecraft.world.level.block.DoorBlock d && d.type().canOpenByHand(), door + ": a door, opened by hand");
+                }
+            } finally {
+                hero.stopRiding();
                 hero.remove(net.minecraft.world.entity.Entity.RemovalReason.DISCARDED);
             }
         });

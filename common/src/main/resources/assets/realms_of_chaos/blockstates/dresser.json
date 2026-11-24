@@ -1,0 +1,68 @@
+{
+  "variants": {
+    "facing=north,open=false,right=false": {
+      "model": "realms_of_chaos:block/dresser_left",
+      "y": 0
+    },
+    "facing=north,open=false,right=true": {
+      "model": "realms_of_chaos:block/dresser_right",
+      "y": 0
+    },
+    "facing=north,open=true,right=false": {
+      "model": "realms_of_chaos:block/dresser_left_open",
+      "y": 0
+    },
+    "facing=north,open=true,right=true": {
+      "model": "realms_of_chaos:block/dresser_right_open",
+      "y": 0
+    },
+    "facing=east,open=false,right=false": {
+      "model": "realms_of_chaos:block/dresser_left",
+      "y": 90
+    },
+    "facing=east,open=false,right=true": {
+      "model": "realms_of_chaos:block/dresser_right",
+      "y": 90
+    },
+    "facing=east,open=true,right=false": {
+      "model": "realms_of_chaos:block/dresser_left_open",
+      "y": 90
+    },
+    "facing=east,open=true,right=true": {
+      "model": "realms_of_chaos:block/dresser_right_open",
+      "y": 90
+    },
+    "facing=south,open=false,right=false": {
+      "model": "realms_of_chaos:block/dresser_left",
+      "y": 180
+    },
+    "facing=south,open=false,right=true": {
+      "model": "realms_of_chaos:block/dresser_right",
+      "y": 180
+    },
+    "facing=south,open=true,right=false": {
+      "model": "realms_of_chaos:block/dresser_left_open",
+      "y": 180
+    },
+    "facing=south,open=true,right=true": {
+      "model": "realms_of_chaos:block/dresser_right_open",
+      "y": 180
+    },
+    "facing=west,open=false,right=false": {
+      "model": "realms_of_chaos:block/dresser_left",
+      "y": 270
+    },
+    "facing=west,open=false,right=true": {
+      "model": "realms_of_chaos:block/dresser_right",
+      "y": 270
+    },
+    "facing=west,open=true,right=false": {
+      "model": "realms_of_chaos:block/dresser_left_open",
+      "y": 270
+    },
+    "facing=west,open=true,right=true": {
+      "model": "realms_of_chaos:block/dresser_right_open",
+      "y": 270
+    }
+  }
+}

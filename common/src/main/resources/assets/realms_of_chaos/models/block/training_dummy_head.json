@@ -1,0 +1,145 @@
+{
+  "parent": "minecraft:block/block",
+  "textures": {
+    "particle": "realms_of_chaos:block/dummy_straw",
+    "straw": "realms_of_chaos:block/dummy_straw",
+    "target": "realms_of_chaos:block/dummy_target",
+    "burlap": "realms_of_chaos:block/dummy_burlap",
+    "face": "realms_of_chaos:block/dummy_face",
+    "rope": "realms_of_chaos:block/dummy_rope",
+    "pole": "realms_of_chaos:block/standard_pole",
+    "bronze": "realms_of_chaos:block/dummy_bronze",
+    "crest": "realms_of_chaos:block/dummy_crest",
+    "sledge": "realms_of_chaos:block/dummy_sledge"
+  },
+  "elements": [
+    {
+      "from": [
+        7,
+        0,
+        7
+      ],
+      "to": [
+        9,
+        2,
+        9
+      ],
+      "faces": {
+        "north": {
+          "texture": "#pole"
+        },
+        "south": {
+          "texture": "#pole"
+        },
+        "east": {
+          "texture": "#pole"
+        },
+        "west": {
+          "texture": "#pole"
+        },
+        "up": {
+          "texture": "#pole"
+        },
+        "down": {
+          "texture": "#pole"
+        }
+      }
+    },
+    {
+      "from": [
+        4.5,
+        2,
+        5
+      ],
+      "to": [
+        11.5,
+        10,
+        11
+      ],
+      "faces": {
+        "north": {
+          "texture": "#face"
+        },
+        "south": {
+          "texture": "#burlap"
+        },
+        "east": {
+          "texture": "#burlap"
+        },
+        "west": {
+          "texture": "#burlap"
+        },
+        "up": {
+          "texture": "#burlap"
+        },
+        "down": {
+          "texture": "#burlap"
+        }
+      }
+    },
+    {
+      "from": [
+        4.0,
+        8,
+        4.5
+      ],
+      "to": [
+        12.0,
+        11,
+        11.5
+      ],
+      "faces": {
+        "north": {
+          "texture": "#bronze"
+        },
+        "south": {
+          "texture": "#bronze"
+        },
+        "east": {
+          "texture": "#bronze"
+        },
+        "west": {
+          "texture": "#bronze"
+        },
+        "up": {
+          "texture": "#bronze"
+        },
+        "down": {
+          "texture": "#bronze"
+        }
+      }
+    },
+    {
+      "from": [
+        7.5,
+        11,
+        5
+      ],
+      "to": [
+        8.5,
+        13,
+        12
+      ],
+      "faces": {
+        "north": {
+          "texture": "#crest"
+        },
+        "south": {
+          "texture": "#crest"
+        },
+        "east": {
+          "texture": "#crest"
+        },
+        "west": {
+          "texture": "#crest"
+        },
+        "up": {
+          "texture": "#crest"
+        },
+        "down": {
+          "texture": "#crest"
+        }
+      }
+    }
+  ]
+}

@@ -1,19 +1,83 @@
 {
   "variants": {
-    "facing=north": {
-      "model": "realms_of_chaos:block/training_dummy",
+    "facing=north,part=single": {
+      "model": "realms_of_chaos:block/training_dummy_single",
       "y": 0
     },
-    "facing=east": {
-      "model": "realms_of_chaos:block/training_dummy",
+    "facing=north,part=foot": {
+      "model": "realms_of_chaos:block/training_dummy_foot",
+      "y": 0
+    },
+    "facing=north,part=upper": {
+      "model": "realms_of_chaos:block/training_dummy_upper",
+      "y": 0
+    },
+    "facing=north,part=torso": {
+      "model": "realms_of_chaos:block/training_dummy_torso",
+      "y": 0
+    },
+    "facing=north,part=head": {
+      "model": "realms_of_chaos:block/training_dummy_head",
+      "y": 0
+    },
+    "facing=east,part=single": {
+      "model": "realms_of_chaos:block/training_dummy_single",
       "y": 90
     },
-    "facing=south": {
-      "model": "realms_of_chaos:block/training_dummy",
+    "facing=east,part=foot": {
+      "model": "realms_of_chaos:block/training_dummy_foot",
+      "y": 90
+    },
+    "facing=east,part=upper": {
+      "model": "realms_of_chaos:block/training_dummy_upper",
+      "y": 90
+    },
+    "facing=east,part=torso": {
+      "model": "realms_of_chaos:block/training_dummy_torso",
+      "y": 90
+    },
+    "facing=east,part=head": {
+      "model": "realms_of_chaos:block/training_dummy_head",
+      "y": 90
+    },
+    "facing=south,part=single": {
+      "model": "realms_of_chaos:block/training_dummy_single",
       "y": 180
     },
-    "facing=west": {
-      "model": "realms_of_chaos:block/training_dummy",
+    "facing=south,part=foot": {
+      "model": "realms_of_chaos:block/training_dummy_foot",
+      "y": 180
+    },
+    "facing=south,part=upper": {
+      "model": "realms_of_chaos:block/training_dummy_upper",
+      "y": 180
+    },
+    "facing=south,part=torso": {
+      "model": "realms_of_chaos:block/training_dummy_torso",
+      "y": 180
+    },
+    "facing=south,part=head": {
+      "model": "realms_of_chaos:block/training_dummy_head",
+      "y": 180
+    },
+    "facing=west,part=single": {
+      "model": "realms_of_chaos:block/training_dummy_single",
+      "y": 270
+    },
+    "facing=west,part=foot": {
+      "model": "realms_of_chaos:block/training_dummy_foot",
+      "y": 270
+    },
+    "facing=west,part=upper": {
+      "model": "realms_of_chaos:block/training_dummy_upper",
+      "y": 270
+    },
+    "facing=west,part=torso": {
+      "model": "realms_of_chaos:block/training_dummy_torso",
+      "y": 270
+    },
+    "facing=west,part=head": {
+      "model": "realms_of_chaos:block/training_dummy_head",
       "y": 270
     }
   }

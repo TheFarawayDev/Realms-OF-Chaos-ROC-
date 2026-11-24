@@ -1,0 +1,68 @@
+{
+  "variants": {
+    "facing=north,head=false,upper=false": {
+      "model": "realms_of_chaos:block/bunk_bed_lower_foot",
+      "y": 0
+    },
+    "facing=north,head=false,upper=true": {
+      "model": "realms_of_chaos:block/bunk_bed_upper_foot",
+      "y": 0
+    },
+    "facing=north,head=true,upper=false": {
+      "model": "realms_of_chaos:block/bunk_bed_lower_head",
+      "y": 0
+    },
+    "facing=north,head=true,upper=true": {
+      "model": "realms_of_chaos:block/bunk_bed_upper_head",
+      "y": 0
+    },
+    "facing=east,head=false,upper=false": {
+      "model": "realms_of_chaos:block/bunk_bed_lower_foot",
+      "y": 90
+    },
+    "facing=east,head=false,upper=true": {
+      "model": "realms_of_chaos:block/bunk_bed_upper_foot",
+      "y": 90
+    },
+    "facing=east,head=true,upper=false": {
+      "model": "realms_of_chaos:block/bunk_bed_lower_head",
+      "y": 90
+    },
+    "facing=east,head=true,upper=true": {
+      "model": "realms_of_chaos:block/bunk_bed_upper_head",
+      "y": 90
+    },
+    "facing=south,head=false,upper=false": {
+      "model": "realms_of_chaos:block/bunk_bed_lower_foot",
+      "y": 180
+    },
+    "facing=south,head=false,upper=true": {
+      "model": "realms_of_chaos:block/bunk_bed_upper_foot",
+      "y": 180
+    },
+    "facing=south,head=true,upper=false": {
+      "model": "realms_of_chaos:block/bunk_bed_lower_head",
+      "y": 180
+    },
+    "facing=south,head=true,upper=true": {
+      "model": "realms_of_chaos:block/bunk_bed_upper_head",
+      "y": 180
+    },
+    "facing=west,head=false,upper=false": {
+      "model": "realms_of_chaos:block/bunk_bed_lower_foot",
+      "y": 270
+    },
+    "facing=west,head=false,upper=true": {
+      "model": "realms_of_chaos:block/bunk_bed_upper_foot",
+      "y": 270
+    },
+    "facing=west,head=true,upper=false": {
+      "model": "realms_of_chaos:block/bunk_bed_lower_head",
+      "y": 270
+    },
+    "facing=west,head=true,upper=true": {
+      "model": "realms_of_chaos:block/bunk_bed_upper_head",
+      "y": 270
+    }
+  }
+}
