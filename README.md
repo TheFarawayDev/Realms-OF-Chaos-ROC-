@@ -91,7 +91,9 @@ The current build is an **Alpha**.
   and nothing between its blocks - and all craftable. All 16x16.
   * **Reinforced Glass** - clear, framed in two pixels of bronze with rivets at the corners, as hard as stone.
   * **Frosted Glass** - milky white with crystals of frost in it: light comes through, nothing else.
-  * **One-Way Glass** - a solid pane of untinted, silvered glass from the side it faces; from behind, nothing at all.
+  * **One-Way Glass** - a solid pane of untinted, silvered glass from the side it faces; from behind, the same pewter
+    frame round the window with nothing inside it, and along its edges the frame's own side - so it has a border
+    seen from every side, and only from behind is it open. (`art/renders/one-way-glass-all-sides.png`)
     Set it down and its face is turned towards you, so a floor laid from above looks solid from above and is open
     sky from below. Where a run of it steps - round a curved wall - the sides of the steps are drawn as well, so no
     gap shows from the front. (`art/renders/one-way-floor-both-sides.png`, `one-way-window-both-sides.png`,
