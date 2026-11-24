@@ -1,7 +1,72 @@
 {
   "variants": {
-    "": {
-      "model": "realms_of_chaos:block/asphodel_bed"
-    }
+    "": [
+      {
+        "model": "realms_of_chaos:block/asphodel_bed",
+        "weight": 3
+      },
+      {
+        "model": "realms_of_chaos:block/asphodel_bed",
+        "weight": 3,
+        "y": 90,
+        "x": 0
+      },
+      {
+        "model": "realms_of_chaos:block/asphodel_bed",
+        "weight": 3,
+        "y": 180,
+        "x": 0
+      },
+      {
+        "model": "realms_of_chaos:block/asphodel_bed",
+        "weight": 3,
+        "y": 270,
+        "x": 0
+      },
+      {
+        "model": "realms_of_chaos:block/asphodel_bed_v1",
+        "weight": 2
+      },
+      {
+        "model": "realms_of_chaos:block/asphodel_bed_v1",
+        "weight": 2,
+        "y": 90,
+        "x": 0
+      },
+      {
+        "model": "realms_of_chaos:block/asphodel_bed_v1",
+        "weight": 2,
+        "y": 180,
+        "x": 0
+      },
+      {
+        "model": "realms_of_chaos:block/asphodel_bed_v1",
+        "weight": 2,
+        "y": 270,
+        "x": 0
+      },
+      {
+        "model": "realms_of_chaos:block/asphodel_bed_v2",
+        "weight": 3
+      },
+      {
+        "model": "realms_of_chaos:block/asphodel_bed_v2",
+        "weight": 3,
+        "y": 90,
+        "x": 0
+      },
+      {
+        "model": "realms_of_chaos:block/asphodel_bed_v2",
+        "weight": 3,
+        "y": 180,
+        "x": 0
+      },
+      {
+        "model": "realms_of_chaos:block/asphodel_bed_v2",
+        "weight": 3,
+        "y": 270,
+        "x": 0
+      }
+    ]
   }
 }

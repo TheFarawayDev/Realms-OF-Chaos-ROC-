@@ -1,7 +1,94 @@
 {
   "variants": {
-    "": {
-      "model": "realms_of_chaos:block/star_vault"
-    }
+    "": [
+      {
+        "model": "realms_of_chaos:block/star_vault",
+        "weight": 4
+      },
+      {
+        "model": "realms_of_chaos:block/star_vault",
+        "weight": 4,
+        "y": 90,
+        "x": 0
+      },
+      {
+        "model": "realms_of_chaos:block/star_vault",
+        "weight": 4,
+        "y": 180,
+        "x": 0
+      },
+      {
+        "model": "realms_of_chaos:block/star_vault",
+        "weight": 4,
+        "y": 270,
+        "x": 0
+      },
+      {
+        "model": "realms_of_chaos:block/star_vault_v1",
+        "weight": 4
+      },
+      {
+        "model": "realms_of_chaos:block/star_vault_v1",
+        "weight": 4,
+        "y": 90,
+        "x": 0
+      },
+      {
+        "model": "realms_of_chaos:block/star_vault_v1",
+        "weight": 4,
+        "y": 180,
+        "x": 0
+      },
+      {
+        "model": "realms_of_chaos:block/star_vault_v1",
+        "weight": 4,
+        "y": 270,
+        "x": 0
+      },
+      {
+        "model": "realms_of_chaos:block/star_vault_v2",
+        "weight": 4
+      },
+      {
+        "model": "realms_of_chaos:block/star_vault_v2",
+        "weight": 4,
+        "y": 90,
+        "x": 0
+      },
+      {
+        "model": "realms_of_chaos:block/star_vault_v2",
+        "weight": 4,
+        "y": 180,
+        "x": 0
+      },
+      {
+        "model": "realms_of_chaos:block/star_vault_v2",
+        "weight": 4,
+        "y": 270,
+        "x": 0
+      },
+      {
+        "model": "realms_of_chaos:block/star_vault_v3",
+        "weight": 1
+      },
+      {
+        "model": "realms_of_chaos:block/star_vault_v3",
+        "weight": 1,
+        "y": 90,
+        "x": 0
+      },
+      {
+        "model": "realms_of_chaos:block/star_vault_v3",
+        "weight": 1,
+        "y": 180,
+        "x": 0
+      },
+      {
+        "model": "realms_of_chaos:block/star_vault_v3",
+        "weight": 1,
+        "y": 270,
+        "x": 0
+      }
+    ]
   }
 }

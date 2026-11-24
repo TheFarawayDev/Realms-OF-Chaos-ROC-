@@ -1,7 +1,18 @@
 {
   "variants": {
-    "": {
-      "model": "realms_of_chaos:block/bronze_grate"
-    }
+    "": [
+      {
+        "model": "realms_of_chaos:block/bronze_grate",
+        "weight": 4
+      },
+      {
+        "model": "realms_of_chaos:block/bronze_grate_v1",
+        "weight": 2
+      },
+      {
+        "model": "realms_of_chaos:block/bronze_grate_v2",
+        "weight": 1
+      }
+    ]
   }
 }

@@ -595,6 +595,8 @@ def run(assets, data=None):
         gen_traps(assets, data)
         gen_tower_stone(assets, data)
         gen_room_furnishings(assets, data)
+        gen_connected_furniture(assets)
+        gen_variety(assets)
 
 
 # ---- high-resolution building stone: 64x64, with connecting panels ---------------------------------------------------
@@ -1266,3 +1268,145 @@ def gen_room_furnishings(assets, data):
     for b in ROOM_BLOCKS_2:
         wj(os.path.join(data, f"loot_table/blocks/{b}.json"), {"type": "minecraft:block", "pools": [{"rolls": 1, "entries": [{"type": "minecraft:item", "name": f"{MOD}:{b}"}],
                                                                                                   "conditions": [{"condition": "minecraft:survives_explosion"}]}]})
+
+
+# ---- variety: blocks that come in several looks, chosen by the game block by block --------------------------------------
+
+def _load(T, name):
+    return Image.open(os.path.join(T, name + ".png")).convert("RGBA")
+
+
+def _roll(img, dx, dy):
+    """The same seamless pattern, started somewhere else: a different block that still runs on into its neighbours."""
+    out = Image.new("RGBA", img.size)
+    w, h = img.size
+    for y in range(h):
+        for x in range(w):
+            out.putpixel(((x + dx) % w, (y + dy) % h), img.getpixel((x, y)))
+    return out
+
+
+def _crack(img, seed, color, length=6):
+    rnd = random.Random(seed)
+    x, y = rnd.randrange(3, 13), rnd.randrange(3, 13)
+    for _ in range(length):
+        if 0 <= x < 16 and 0 <= y < 16:
+            img.putpixel((x, y), color + (255,))
+        x += rnd.choice((-1, 0, 1))
+        y += 1 if rnd.random() < 0.6 else 0
+    return img
+
+
+def _speckle(img, seed, colors, n, keep=None):
+    rnd = random.Random(seed)
+    for _ in range(n):
+        x, y = rnd.randrange(16), rnd.randrange(16)
+        if keep and not keep(img.getpixel((x, y))):
+            continue
+        img.putpixel((x, y), rnd.choice(colors) + (255,))
+    return img
+
+
+def _patch(img, seed, color, strength, radius=3.5):
+    rnd = random.Random(seed)
+    cx, cy = rnd.uniform(3, 12), rnd.uniform(3, 12)
+    for y in range(16):
+        for x in range(16):
+            d = math.hypot(x - cx, y - cy)
+            if d < radius and (x * 7 + y * 3 + seed) % 3:
+                p = img.getpixel((x, y))
+                img.putpixel((x, y), mix(p[:3], color, strength * (1 - d / radius)) + (255,))
+    return img
+
+
+def _brightness(c):
+    return sum(c[:3]) / 3
+
+
+def variants(assets, name, imgs, weights, parent="minecraft:block/cube_all", turn=False):
+    """Writes a block's looks as variants the game picks among at random for each block placed."""
+    T = os.path.join(assets, "textures/block")
+    entries = []
+    for i, (img, wgt) in enumerate(zip(imgs, weights)):
+        tex = name if i == 0 else f"{name}_v{i}"
+        img.save(os.path.join(T, tex + ".png"))
+        model = name if i == 0 else f"{name}_v{i}"
+        wj(os.path.join(assets, f"models/block/{model}.json"), {"parent": parent, "textures": {"all": f"{MOD}:block/{tex}"}})
+        entries.append({"model": f"{MOD}:block/{model}", "weight": wgt})
+        if turn:
+            for rot in (90, 180, 270):
+                entries.append({"model": f"{MOD}:block/{model}", "weight": wgt, "y": rot, "x": 0})
+    wj(os.path.join(assets, f"blockstates/{name}.json"), {"variants": {"": entries}})
+
+
+def gen_variety(assets):
+    T = os.path.join(assets, "textures/block")
+    dark = lambda c: _brightness(c) < 255
+    # bricks: plain, one cracked, one with a brick of its own (gold-veined, barnacled, ember-lit), one worn
+    for name, special, crackc in (("storm_brick", [GOLD, GOLD_HI], (120, 116, 110)), ("tide_brick", [(236, 226, 200), (200, 170, 150)], (40, 90, 90)),
+                                  ("ash_brick", [(255, 120, 50), (200, 60, 40)], (110, 100, 88)), ("underworld_brick", [(255, 150, 60), (255, 200, 120)], (20, 16, 24))):
+        base = _load(T, name)
+        v1 = _crack(base.copy(), len(name), crackc)
+        v2 = _speckle(base.copy(), len(name) * 3, special, 7)
+        v3 = _patch(base.copy(), len(name) * 5, (60, 60, 60) if name != "tide_brick" else (90, 150, 110), 0.25)
+        variants(assets, name, [base, v1, v2, v3], [6, 2, 2, 2])
+    # tiles and stone: the pattern begun elsewhere, now and then a chip or a stain
+    for name, stain in (("abyssal_tile", (150, 220, 180)), ("olympian_tiles", (200, 190, 170)), ("bath_tile", (180, 200, 214)), ("olympian_marble", (190, 184, 178))):
+        base = _load(T, name)
+        imgs = [base, _patch(base.copy(), 3, stain, 0.35), _crack(base.copy(), 9, shade(stain, 0.7), 4)]
+        if name == "olympian_marble":
+            imgs.append(_roll(base, 5, 9))
+        variants(assets, name, imgs, [5, 2, 2, 3][:len(imgs)])
+    # the star vault: its stars somewhere else each time, and now and then a comet
+    base = _load(T, "star_vault")
+    comet = _roll(base, 7, 3)
+    for k in range(5):
+        comet.putpixel((3 + k, 4 + k // 2), mix((255, 255, 255), (120, 140, 220), k / 5) + (255,))
+    variants(assets, "star_vault", [base, _roll(base, 5, 11), _roll(base, 10, 6), comet], [4, 4, 4, 1], turn=True)
+    # the hedges: leaves turned every way, flowers and berries scattered differently
+    for name, extra in (("laurel_hedge", [(240, 210, 90), (255, 236, 150)]), ("kelp_weave", [(240, 160, 150), (250, 220, 120)]),
+                        ("asphodel_bed", [(230, 224, 240), (250, 250, 255)])):
+        base = _load(T, name)
+        variants(assets, name, [base, _speckle(_roll(base, 6, 3), 41, extra, 6), _roll(base, 11, 9)], [3, 2, 3], turn=True)
+    # the bronze grate: bright, or going green with verdigris
+    base = _load(T, "bronze_grate")
+    green = lambda img, s: _speckle(img, s, [(90, 160, 130), (70, 130, 110)], 18, keep=lambda p: _brightness(p) > 60)
+    variants(assets, "bronze_grate", [base, green(base.copy(), 5), green(green(base.copy(), 6), 7)], [4, 2, 1])
+
+
+# ---- weapon racks and scroll shelves that run on from block to block --------------------------------------------------
+
+def gen_connected_furniture(assets):
+    T = os.path.join(assets, "textures/block")
+    g = grain(97, 0.04)
+    rnd = random.Random(5)
+
+    # the rack: a run of arms hung side by side - spears, swords, shields, axes, in no fixed order
+    def rack_field(x, y):
+        c = shade((84, 56, 34), g[y][x] * (0.9 if x % 5 == 4 else 1.0))
+        if y in (3, 12): c = (60, 40, 26)
+        slot = x // 4
+        kind = (slot * 7 + 3) % 4
+        lx = x % 4
+        if kind == 0 and lx == 1 and 1 <= y <= 14: c = (214, 218, 226) if y <= 3 else (150, 110, 70)          # a spear
+        if kind == 1 and lx in (1, 2) and 3 <= y <= 11: c = (206, 212, 224) if lx == 1 else (160, 166, 180)    # a sword
+        if kind == 1 and y == 11 and lx in (0, 1, 2, 3): c = GOLD
+        if kind == 1 and lx in (1, 2) and y >= 12: c = (100, 60, 40)
+        if kind == 2 and math.hypot(lx - 1.5, y - 7.5) < 2.2: c = (176, 50, 40) if math.hypot(lx - 1.5, y - 7.5) > 1.2 else GOLD   # a shield
+        if kind == 3 and lx == 2 and 2 <= y <= 14: c = (150, 110, 70)                                          # an axe
+        if kind == 3 and lx in (0, 1) and 3 <= y <= 6: c = (190, 196, 206)
+        return c
+    connected(assets, "weapon_rack", rack_field, (84, 56, 34), (120, 84, 52), (46, 30, 18), (150, 110, 60))
+
+    # the scroll shelf: pigeonholes of scrolls, two rows to a block, the case framing a whole wall of them
+    def shelf_field(x, y):
+        cy = y % 8
+        if cy in (0, 7): return (96, 64, 38) if cy == 0 else (70, 46, 28)
+        if x % 4 == 0: return (80, 54, 32)
+        if 2 <= cy <= 5:
+            c = (236, 224, 190) if (x // 4 + y // 8) % 3 else (214, 200, 160)
+            if cy in (3, 4) and x % 2 == 0: c = (170, 150, 120)
+            if cy == 2 and (x * 3 + y) % 7 == 0: c = (190, 50, 40)
+            return c
+        return (40, 28, 18)
+    connected(assets, "scroll_shelf", shelf_field, (96, 64, 38), (130, 92, 58), (56, 36, 22), (150, 118, 70))

@@ -1,7 +1,22 @@
 {
   "variants": {
-    "": {
-      "model": "realms_of_chaos:block/underworld_brick"
-    }
+    "": [
+      {
+        "model": "realms_of_chaos:block/underworld_brick",
+        "weight": 6
+      },
+      {
+        "model": "realms_of_chaos:block/underworld_brick_v1",
+        "weight": 2
+      },
+      {
+        "model": "realms_of_chaos:block/underworld_brick_v2",
+        "weight": 2
+      },
+      {
+        "model": "realms_of_chaos:block/underworld_brick_v3",
+        "weight": 2
+      }
+    ]
   }
 }

@@ -70,7 +70,7 @@ public final class Passages {
     public static final int TALL = 8;
     public static final int MAX_SIZE = 6;
     public static final int X0 = 600, PITCH = 160;
-    public static final int LAYOUT_VERSION = 14;
+    public static final int LAYOUT_VERSION = 15;
     public static final String GUARDIAN_TAG = "realms_of_chaos_guardian";
     private static final String HUD = "hud." + RealmsOfChaos.MOD_ID + ".passage.";
 
@@ -1350,8 +1350,10 @@ public final class Passages {
                     for (int[] k : new int[][]{{d, -far}, {-d, -far}, {d, far}, {-d, far}, {-far, d}, {-far, -d}, {far, d}, {far, -d}}) {
                         if (cut(plan, c, k[0], k[1])) continue;
                         for (int y = 1; y <= shelves; y++) {
-                            set(level, m.offset(k[0], y, k[1]), y == 3 && random.nextFloat() < 0.3F ? Blocks.CHISELED_BOOKSHELF
-                                    : (k[0] + k[1] + y & 1) == 0 ? ModContent.SCROLL_SHELF.get() : Blocks.BOOKSHELF);
+                            // (two walls of books, two of scrolls: a wall of scroll shelves is one case, framed round its outside)
+                            boolean scrolls = Math.abs(k[1]) == far;
+                            set(level, m.offset(k[0], y, k[1]), scrolls ? ModContent.SCROLL_SHELF.get()
+                                    : y == 3 && random.nextFloat() < 0.3F ? Blocks.CHISELED_BOOKSHELF : Blocks.BOOKSHELF);
                         }
                     }
                 }

@@ -58,6 +58,15 @@ The current build is an **Alpha**.
   between the windows, and its walkway paved in its floor panels with one frame round the whole ring; every
   passage room of the tower has its columns in the tower's column and, in the tall rooms, its brick above the
   band. All craftable and dug with a pickaxe. (`art/renders/tower-stone*.png`)
+* **Blocks that vary.** The blocks laid in great runs now come in several looks the game picks between, block by
+  block, so a wall or a floor of them never repeats: the Storm, Tide, Ash and Underworld Bricks (plain, cracked, a
+  brick gold-veined, barnacled or ember-lit, a worn patch), the Abyssal Tile, Olympian Tiles, Bath Tile and Olympian
+  Marble (a stain, a chip, the pattern begun elsewhere), the Star Vault (its stars somewhere else each time, now and
+  then a comet, turned every way), the three hedges (leaves turned, flowers scattered differently) and the Bronze
+  Grate (bright, or going green). Every variant still runs on into its neighbours. (`art/renders/block-variants.png`)
+* **Racks and shelves that connect.** The Weapon Rack and the Scroll Shelf are connecting blocks now: a run of racks
+  is one rack of spears, swords, shields and axes in a single frame, and a wall of scroll shelves one case of
+  pigeonholes. Libraries have two walls of books and two of scrolls. (`art/renders/connected-furniture.png`)
 * **Four new rooms, and twelve more blocks to furnish them.** Passages now have **observatories** (a vault of
   stars overhead, the floor's quarters in the tower's mosaic, celestial globes on bronze stands and lecterns of
   star charts), **armouries** (racks of arms along the walls, bronze grates underfoot, an anvil, a grindstone and a

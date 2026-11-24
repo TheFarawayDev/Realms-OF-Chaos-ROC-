@@ -1,7 +1,22 @@
 {
   "variants": {
-    "": {
-      "model": "realms_of_chaos:block/olympian_marble"
-    }
+    "": [
+      {
+        "model": "realms_of_chaos:block/olympian_marble",
+        "weight": 5
+      },
+      {
+        "model": "realms_of_chaos:block/olympian_marble_v1",
+        "weight": 2
+      },
+      {
+        "model": "realms_of_chaos:block/olympian_marble_v2",
+        "weight": 2
+      },
+      {
+        "model": "realms_of_chaos:block/olympian_marble_v3",
+        "weight": 3
+      }
+    ]
   }
 }

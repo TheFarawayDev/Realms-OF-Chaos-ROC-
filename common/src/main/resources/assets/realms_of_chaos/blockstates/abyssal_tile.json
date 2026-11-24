@@ -1,7 +1,18 @@
 {
   "variants": {
-    "": {
-      "model": "realms_of_chaos:block/abyssal_tile"
-    }
+    "": [
+      {
+        "model": "realms_of_chaos:block/abyssal_tile",
+        "weight": 5
+      },
+      {
+        "model": "realms_of_chaos:block/abyssal_tile_v1",
+        "weight": 2
+      },
+      {
+        "model": "realms_of_chaos:block/abyssal_tile_v2",
+        "weight": 2
+      }
+    ]
   }
 }

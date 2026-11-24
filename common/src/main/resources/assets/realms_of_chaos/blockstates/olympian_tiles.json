@@ -1,7 +1,18 @@
 {
   "variants": {
-    "": {
-      "model": "realms_of_chaos:block/olympian_tiles"
-    }
+    "": [
+      {
+        "model": "realms_of_chaos:block/olympian_tiles",
+        "weight": 5
+      },
+      {
+        "model": "realms_of_chaos:block/olympian_tiles_v1",
+        "weight": 2
+      },
+      {
+        "model": "realms_of_chaos:block/olympian_tiles_v2",
+        "weight": 2
+      }
+    ]
   }
 }

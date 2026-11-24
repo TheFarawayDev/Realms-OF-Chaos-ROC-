@@ -270,8 +270,8 @@ public final class ModContent {
         block("star_vault", STAR_VAULT, key -> new Block(decor(key).mapColor(MapColor.COLOR_BLUE).lightLevel(s -> 6)));
         block("celestial_globe", CELESTIAL_GLOBE, key -> new Block(decor(key).mapColor(MapColor.COLOR_BLUE).noOcclusion().lightLevel(s -> 9).sound(SoundType.METAL)));
         block("bronze_grate", BRONZE_GRATE, key -> new Block(decor(key).mapColor(MapColor.COLOR_ORANGE).sound(SoundType.METAL)));
-        block("weapon_rack", WEAPON_RACK, key -> new Block(decor(key).mapColor(MapColor.WOOD).sound(SoundType.WOOD).strength(2.0F)));
-        block("scroll_shelf", SCROLL_SHELF, key -> new Block(decor(key).mapColor(MapColor.WOOD).sound(SoundType.WOOD).strength(1.5F)));
+        block("weapon_rack", WEAPON_RACK, key -> new com.thefarawaydev.realmsofchaos.block.ConnectedBlock(decor(key).mapColor(MapColor.WOOD).sound(SoundType.WOOD).strength(2.0F)));
+        block("scroll_shelf", SCROLL_SHELF, key -> new com.thefarawaydev.realmsofchaos.block.ConnectedBlock(decor(key).mapColor(MapColor.WOOD).sound(SoundType.WOOD).strength(1.5F)));
         block("bath_tile", BATH_TILE, key -> new Block(decor(key).mapColor(MapColor.SNOW)));
         block("laurel_hedge", LAUREL_HEDGE, key -> new Block(decor(key).mapColor(MapColor.PLANT).sound(SoundType.AZALEA_LEAVES).strength(0.6F)));
         block("kelp_weave", KELP_WEAVE, key -> new Block(decor(key).mapColor(MapColor.PLANT).sound(SoundType.WET_GRASS).strength(0.6F)));
