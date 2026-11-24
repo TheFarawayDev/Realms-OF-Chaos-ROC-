@@ -27,8 +27,9 @@ The current build is an **Alpha**.
   ways to them are seven wide, the canal, the gardens and the echoes' plinths move out with them, two pairs of
   beacons line each way, flowering beds with benches ring the outer plaza, and the empty quarter has a still pool
   with an obelisk in it. The rotunda is larger and the Oracle and the Heart now stand inside it, under the dome.
-  Each tower's god stands as a smaller statue on a plinth just behind its own gate, facing the plaza and rising
-  over the gate; the model towers stand far off behind. Whatever an earlier hub left in the sky is cleared away when it is
+  Each tower's god stands just behind its own gate, facing the plaza and rising over the gate, on a pedestal built
+  as a monument's is: two steps, a die faced with the god's own connecting panels between corner posts with the
+  god's mark lit in its front, a cornice of hanging stairs, a paved top with a lamp at each corner; the model towers stand far off behind. Whatever an earlier hub left in the sky is cleared away when it is
   rebuilt. (`art/renders/hub-larger.png`)
 * **Forges join up.** Forges of Chaos set side by side become one furnace: each block knows which of its
   neighbours are forges and drops its frame along those edges, so a bank of them shows one long grated mouth of
@@ -42,8 +43,14 @@ The current build is an **Alpha**.
   reflects at; the emitter and the receiver are lenses on pedestals; and the beam is drawn as a straight, solid line
   of light with a halo, flashing at each mirror, instead of a scatter of sparks. (`art/renders/blocks-new.png`,
   `beam-mirrors-above.png`)
-* **Six new building blocks**, used in the hub and craftable: Olympian Marble, Olympian Marble Pillar, Gilded Frieze
-  (a gold Greek key), Abyssal Tile, Underworld Brick (embers in its mortar) and the Chaos Lamp.
+* **Eleven building blocks with 64x64 textures**, used across the hub and craftable: Olympian Marble, Olympian
+  Marble Pillar (fluted), Gilded Frieze (a gold Greek key between bead mouldings), Abyssal Tile (carved waves),
+  Underworld Brick (embers in its mortar), the Chaos Lamp, Olympian Tiles (great flags with gold stars where they
+  meet) and the Chaos Mosaic - and three with **connecting textures**: the Olympian, Abyssal and Underworld Panels.
+  Set side by side, panels drop their frames where they meet, so a wall or a floor of them reads as one great
+  panel with a single frame round its outside. They face the statues' pedestals, the entablatures of the Sea and
+  Shade gates and the rim of the hub's pool; the rotunda is floored in mosaic and tiles, the ways in Olympian
+  Tiles, Abyssal Tile and Underworld Brick. (`art/renders/blocks-64.png`, `connected-panel-wall.png`)
 * **The middle of the hub is built as a place.**
   * A **rotunda** stands over the spawn: eight marble columns with bases and capitals, a gilded entablature, and a
     dome of verdigris copper with a gold lantern at its crown and chandeliers hung under it. The Oracle's Flame

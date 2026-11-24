@@ -9,6 +9,11 @@
     "realms_of_chaos:gilded_frieze",
     "realms_of_chaos:abyssal_tile",
     "realms_of_chaos:underworld_brick",
-    "realms_of_chaos:chaos_lamp"
+    "realms_of_chaos:chaos_lamp",
+    "realms_of_chaos:olympian_tiles",
+    "realms_of_chaos:chaos_mosaic",
+    "realms_of_chaos:olympian_panel",
+    "realms_of_chaos:abyssal_panel",
+    "realms_of_chaos:underworld_panel"
   ]
 }

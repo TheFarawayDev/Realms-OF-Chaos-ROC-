@@ -418,7 +418,7 @@ public final class SelfTest {
             }
             for (com.thefarawaydev.realmsofchaos.god.Line line : com.thefarawaydev.realmsofchaos.god.Line.values()) {
                 BlockPos statue = com.thefarawaydev.realmsofchaos.world.HubVista.statueFoot(line), tower = com.thefarawaydev.realmsofchaos.world.HubVista.towerFoot(line);
-                check(solid(level, statue.below()) && solid(level, statue.above(3)) && solid(level, statue.above(10)) && level.getBlockState(statue.above(30)).isAir(),
+                check(solid(level, statue.below()) && solid(level, statue.above(3)) && solid(level, statue.above(10)) && level.getBlockState(statue.above(45)).isAir() && solid(level, statue.below(3)),
                         line + ": a statue of its god stands behind its gate, on a plinth");
                 double out = Math.hypot(statue.getX(), statue.getZ());
                 check(out > RealmBuilder.GATE_OUT + 2 && out < RealmBuilder.HUB_RADIUS - 3 && Math.hypot(tower.getX(), tower.getZ()) > 100,
@@ -439,6 +439,11 @@ public final class SelfTest {
             for (BlockPos col : com.thefarawaydev.realmsofchaos.world.HubCentre.columns()) check(solid(level, col.above(3)), "a column of the rotunda at " + col);
             check(level.getBlockState(com.thefarawaydev.realmsofchaos.world.HubCentre.POOL.offset(1, 0, 1)).is(Blocks.WATER) && solid(level, com.thefarawaydev.realmsofchaos.world.HubCentre.POOL.above(8)),
                     "a still pool in the fourth quarter, an obelisk standing in it");
+            // the pool's rim is a run of connecting panels, joined to each other along it
+            net.minecraft.world.level.block.state.BlockState rim = level.getBlockState(com.thefarawaydev.realmsofchaos.world.HubCentre.POOL.offset(3, 0, 0));
+            check(rim.is(ModContent.OLYMPIAN_PANEL.get()) && rim.getValue(com.thefarawaydev.realmsofchaos.block.ConnectedBlock.NORTH)
+                    && rim.getValue(com.thefarawaydev.realmsofchaos.block.ConnectedBlock.SOUTH) && !rim.getValue(com.thefarawaydev.realmsofchaos.block.ConnectedBlock.EAST),
+                    "connecting panels join their neighbours, and only those: " + rim);
             check(solid(level, new BlockPos(0, 64 + 11, 0)) && level.getBlockState(new BlockPos(0, 67, 0)).isAir(), "a dome over the spawn, and room under it");
             check(level.getBlockState(new BlockPos(HubLife.GARDEN, 65, HubLife.GARDEN)).is(Blocks.CHERRY_LOG)
                     && level.getBlockState(new BlockPos(-HubLife.GARDEN, 69, -HubLife.GARDEN)).is(Blocks.CHERRY_LEAVES), "garden trees");

@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "key": {
+    "B": "realms_of_chaos:underworld_brick",
+    "A": "minecraft:amethyst_shard"
+  },
+  "pattern": [
+    "ABA",
+    "BBB",
+    "ABA"
+  ],
+  "result": {
+    "id": "realms_of_chaos:underworld_panel",
+    "count": 6
+  }
+}

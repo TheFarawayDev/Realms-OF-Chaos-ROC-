@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "key": {
+    "M": "realms_of_chaos:olympian_marble",
+    "A": "minecraft:amethyst_shard",
+    "P": "minecraft:prismarine_shard",
+    "G": "minecraft:gold_nugget"
+  },
+  "pattern": [
+    "MAM",
+    "PGP",
+    "MAM"
+  ],
+  "result": {
+    "id": "realms_of_chaos:chaos_mosaic",
+    "count": 8
+  }
+}

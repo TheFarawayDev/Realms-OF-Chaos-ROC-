@@ -787,6 +787,11 @@ def gen_lang():
         "block.realms_of_chaos.abyssal_tile": "Abyssal Tile",
         "block.realms_of_chaos.underworld_brick": "Underworld Brick",
         "block.realms_of_chaos.chaos_lamp": "Chaos Lamp",
+        "block.realms_of_chaos.olympian_tiles": "Olympian Tiles",
+        "block.realms_of_chaos.chaos_mosaic": "Chaos Mosaic",
+        "block.realms_of_chaos.olympian_panel": "Olympian Panel",
+        "block.realms_of_chaos.abyssal_panel": "Abyssal Panel",
+        "block.realms_of_chaos.underworld_panel": "Underworld Panel",
         "block.realms_of_chaos.beam_mirror": "Beam Mirror",
         "block.realms_of_chaos.beam_emitter": "Beam Emitter",
         "block.realms_of_chaos.beam_receiver": "Beam Receiver",
@@ -1850,7 +1855,8 @@ FIELD_MODELS = {
 # Field blocks a player can break: they drop themselves
 FIELD_DROPS = ["relay_core", "signal_jammer", "waygate_obelisk"]
 # the realms' own building stone: dug by pickaxe, drops itself
-DECOR = ["olympian_marble", "olympian_marble_pillar", "gilded_frieze", "abyssal_tile", "underworld_brick", "chaos_lamp"]
+DECOR = ["olympian_marble", "olympian_marble_pillar", "gilded_frieze", "abyssal_tile", "underworld_brick", "chaos_lamp",
+         "olympian_tiles", "chaos_mosaic", "olympian_panel", "abyssal_panel", "underworld_panel"]
 FIELD_DROPS = FIELD_DROPS + DECOR
 
 # The 22 Major Arcana: (id, numeral, name, what the card does, 8x8 symbol (# ink, + colour), colour)

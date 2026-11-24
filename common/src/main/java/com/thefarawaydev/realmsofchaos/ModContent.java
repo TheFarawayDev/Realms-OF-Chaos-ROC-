@@ -91,7 +91,8 @@ public final class ModContent {
     public static final Ref<Block> ANCIENT_URN = new Ref<>();
     public static final Ref<Block> LORE_TABLET = new Ref<>();
     public static final Ref<Block> OLYMPIAN_MARBLE = new Ref<>(), OLYMPIAN_MARBLE_PILLAR = new Ref<>(), GILDED_FRIEZE = new Ref<>(),
-            ABYSSAL_TILE = new Ref<>(), UNDERWORLD_BRICK = new Ref<>(), CHAOS_LAMP = new Ref<>();
+            ABYSSAL_TILE = new Ref<>(), UNDERWORLD_BRICK = new Ref<>(), CHAOS_LAMP = new Ref<>(),
+            OLYMPIAN_TILES = new Ref<>(), CHAOS_MOSAIC = new Ref<>(), OLYMPIAN_PANEL = new Ref<>(), ABYSSAL_PANEL = new Ref<>(), UNDERWORLD_PANEL = new Ref<>();
     public static final Ref<Block> TOWER_BRAZIER = new Ref<>();
 
     public static final List<Def<Block>> BLOCK_DEFS = new ArrayList<>();
@@ -226,6 +227,12 @@ public final class ModContent {
         block("abyssal_tile", ABYSSAL_TILE, key -> new Block(decor(key).mapColor(MapColor.WARPED_WART_BLOCK)));
         block("underworld_brick", UNDERWORLD_BRICK, key -> new Block(decor(key).mapColor(MapColor.NETHER).lightLevel(s -> 3)));
         block("chaos_lamp", CHAOS_LAMP, key -> new Block(decor(key).mapColor(MapColor.COLOR_PURPLE).lightLevel(s -> 15).sound(SoundType.GLASS).strength(0.6F)));
+        block("olympian_tiles", OLYMPIAN_TILES, key -> new Block(decor(key).mapColor(MapColor.QUARTZ)));
+        block("chaos_mosaic", CHAOS_MOSAIC, key -> new Block(decor(key).mapColor(MapColor.QUARTZ)));
+        // panels with connecting textures: a run of them shows one frame round its outside
+        block("olympian_panel", OLYMPIAN_PANEL, key -> new com.thefarawaydev.realmsofchaos.block.ConnectedBlock(decor(key).mapColor(MapColor.QUARTZ)));
+        block("abyssal_panel", ABYSSAL_PANEL, key -> new com.thefarawaydev.realmsofchaos.block.ConnectedBlock(decor(key).mapColor(MapColor.WARPED_WART_BLOCK)));
+        block("underworld_panel", UNDERWORLD_PANEL, key -> new com.thefarawaydev.realmsofchaos.block.ConnectedBlock(decor(key).mapColor(MapColor.COLOR_BLACK)));
 
         // items: codex, compass, 45 god weapons (ordered by line, rank 1 -> 15), then the block items
         item("chaos_codex", CHAOS_CODEX, key -> new CodexItem(new Item.Properties().setId(key).stacksTo(1)));

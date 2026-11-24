@@ -1,5 +1,6 @@
 package com.thefarawaydev.realmsofchaos.world;
 
+import com.thefarawaydev.realmsofchaos.ModContent;
 import com.thefarawaydev.realmsofchaos.god.Line;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -24,11 +25,11 @@ public final class HubVista {
     /** How far out from the middle of the plaza a statue stands, and a tower. */
     public static final int STATUE_OUT = 60, TOWER_OUT = 125, TOWER_ASIDE = 36;
     /** A statue stands on a pedestal whose top is this far above the plaza. */
-    public static final int STATUE_FOOT = 3;
+    public static final int STATUE_FOOT = 6;
     /** How far behind its gate a statue stands. */
     public static final int STATUE_BEHIND = 6;
     /** Blocks to a unit of the figure. */
-    private static final double SCALE = 0.85;
+    private static final double SCALE = 1.3;
     /** How tall the model of a tower is (fifteen floors of ten), and its radius at the foot. */
     public static final int TOWER_HEIGHT = 150;
     private static final double TOWER_RADIUS = 9.0;
@@ -61,6 +62,8 @@ public final class HubVista {
         underside(level);
         for (Line line : Line.values()) {
             statue(level, line);
+            BlockPos f = statueFoot(line);
+            com.thefarawaydev.realmsofchaos.block.ConnectedBlock.settle(level, f.offset(-8, -6, -8), f.offset(8, 0, 8));
             tower(level, line);
         }
     }
@@ -188,7 +191,7 @@ public final class HubVista {
 
     private static Stones stones(Line line) {
         return switch (line) {
-            case ZEUS -> new Stones(Blocks.SMOOTH_QUARTZ, Blocks.QUARTZ_PILLAR, Blocks.CALCITE, Blocks.POLISHED_DIORITE, Blocks.GOLD_BLOCK,
+            case ZEUS -> new Stones(ModContent.OLYMPIAN_MARBLE.get(), ModContent.OLYMPIAN_MARBLE_PILLAR.get(), Blocks.CALCITE, Blocks.POLISHED_DIORITE, Blocks.GOLD_BLOCK,
                     Blocks.GOLD_BLOCK, Blocks.GOLD_BLOCK, Blocks.GOLD_BLOCK, Blocks.QUARTZ_BRICKS,
                     Blocks.QUARTZ_BRICKS, Blocks.CHISELED_QUARTZ_BLOCK, Blocks.STONE, Blocks.DEEPSLATE, Blocks.MOSS_BLOCK, Blocks.GLOWSTONE);
             case POSEIDON -> new Stones(Blocks.PRISMARINE_BRICKS, Blocks.DARK_PRISMARINE, Blocks.PRISMARINE, Blocks.DARK_PRISMARINE, Blocks.GOLD_BLOCK,
@@ -294,37 +297,69 @@ public final class HubVista {
         return null;
     }
 
+    /** What each god's pedestal is built of: its panels, its corner posts, its top. */
+    private record Pedestal(Block panel, Block post, Block top) {}
+
+    private static Pedestal pedestal(Line line) {
+        return switch (line) {
+            case ZEUS -> new Pedestal(ModContent.OLYMPIAN_PANEL.get(), ModContent.OLYMPIAN_MARBLE_PILLAR.get(), ModContent.OLYMPIAN_TILES.get());
+            case POSEIDON -> new Pedestal(ModContent.ABYSSAL_PANEL.get(), Blocks.DARK_PRISMARINE, ModContent.ABYSSAL_TILE.get());
+            case HADES -> new Pedestal(ModContent.UNDERWORLD_PANEL.get(), Blocks.POLISHED_BASALT, ModContent.UNDERWORLD_BRICK.get());
+        };
+    }
+
     /**
-     * The tower's god in small, standing just behind its gate on a stepped plinth on the plaza's floor, facing the
-     * plaza, so from the middle it is seen rising over the gate.
+     * The tower's god, standing just behind its gate and rising over it, on a pedestal built as a monument's is: two
+     * steps, a die faced with the god's own panels between corner posts and the god's mark lit in its front, a
+     * cornice of hanging stairs, a paved top with a lamp at each corner.
      */
     private static void statue(ServerLevel level, Line line) {
         Stones s = stones(line);
+        Pedestal ped = pedestal(line);
         BlockPos foot = statueFoot(line);
         Direction front = outward(line).getOpposite(), right = front.getClockWise();
         Mason.Stone cut = Mason.of(s.plinth());
-        // the air it stands in is cleared - but not the gate in front of it
-        for (int a = -6; a <= 6; a++) for (int b = -5; b <= STATUE_BEHIND - 2; b++) for (int y = -2; y <= 34; y++) {
+        // the air it stands in is cleared - but not the gate in front of it, nor the plaza's wall behind it
+        for (int a = -12; a <= 12; a++) for (int b = -4; b <= STATUE_BEHIND - 2; b++) for (int y = -5; y <= 40; y++) {
             BlockPos at = foot.relative(right, a).relative(front, b).above(y);
             if (!level.getBlockState(at).isAir()) set(level, at, Blocks.AIR);
         }
-        // the plinth: a stepped base, a die, a moulded top
-        for (int a = -4; a <= 4; a++) {
-            for (int b = -3; b <= 3; b++) {
+        for (int a = -6; a <= 6; a++) {
+            for (int b = -4; b <= 4; b++) {
                 BlockPos at = foot.relative(right, a).relative(front, b);
-                boolean rim = Math.abs(a) == 4 || Math.abs(b) == 3;
-                Direction out = Math.abs(a) == 4 ? (a > 0 ? right : right.getOpposite()) : (b > 0 ? front : front.getOpposite());
-                set(level, at.below(2), rim ? Mason.stair(cut.stairs(), out.getOpposite(), false) : s.plinthTrim().defaultBlockState());
-                if (!rim) set(level, at.below(1), Math.abs(a) == 3 || Math.abs(b) == 2 ? s.plinthTrim() : s.plinth());
+                int ra = Math.abs(a), rb = Math.abs(b);
+                Direction out = ra * 4 >= rb * 6 ? (a > 0 ? right : right.getOpposite()) : (b > 0 ? front : front.getOpposite());
+                // the lower step
+                if (ra == 6 || rb == 4) {
+                    if (!(ra == 6 && rb == 4)) set(level, at.below(5), Mason.stair(cut.stairs(), out.getOpposite(), false));
+                    continue;
+                }
+                set(level, at.below(5), s.plinth());
+                // the upper step
+                if (ra == 5 || rb == 3) {
+                    if (!(ra == 5 && rb == 3)) set(level, at.below(4), Mason.stair(cut.stairs(), out.getOpposite(), false));
+                    set(level, at.below(1), ra == 5 && rb == 3 ? s.plinthTrim().defaultBlockState() : Mason.stair(cut.stairs(), out.getOpposite(), true));   // the cornice
+                    continue;
+                }
+                set(level, at.below(4), s.plinthTrim());
+                // the die: panels on its faces, posts at its corners, solid within
+                boolean corner = ra == 4 && rb == 2, face = ra == 4 || rb == 2;
+                for (int y = 3; y >= 2; y--) set(level, at.below(y), corner ? ped.post() : face ? ped.panel() : s.plinth());
+                // the top
+                set(level, at.below(1), ped.top());
             }
         }
-        // a lamp at each front corner, and the god's mark in the middle of the die's face
-        for (int side = -1; side <= 1; side += 2) set(level, foot.relative(right, side * 3).relative(front, 2), s.light());
-        set(level, foot.relative(front, 3).below(1), s.light());
+        // the god's mark lit in the middle of the die's front, and a lamp at each corner of the top
+        set(level, foot.relative(front, 2).below(3), s.light());
+        set(level, foot.relative(front, 2).below(2), s.trim());
+        for (int a = -1; a <= 1; a += 2) for (int b = -1; b <= 1; b += 2) {
+            set(level, foot.relative(right, a * 4).relative(front, b * 2), s.plinthTrim());
+            set(level, foot.relative(right, a * 4).relative(front, b * 2).above(), s.light());
+        }
         // the figure
-        for (int bx = -6; bx <= 7; bx++) {
-            for (int by = 0; by <= 24; by++) {
-                for (int bz = -3; bz <= 4; bz++) {
+        for (int bx = -10; bx <= 11; bx++) {
+            for (int by = 0; by <= 36; by++) {
+                for (int bz = -5; bz <= 6; bz++) {
                     Part p = part(line, bx / SCALE, by / SCALE, bz / SCALE);
                     if (p == null) continue;
                     set(level, foot.relative(right, bx).relative(front, bz).above(by), s.of(p));

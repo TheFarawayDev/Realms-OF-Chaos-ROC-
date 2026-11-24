@@ -20,7 +20,7 @@ public final class RealmBuilder {
     /** How far out from the middle the four gates stand, and the half-width of the paved ways to them. */
     public static final int GATE_OUT = 28, WAY = 3;
     /** The hub has its own design number, so it can be rebuilt without rebuilding the towers. */
-    public static final int HUB_VERSION = 15;
+    public static final int HUB_VERSION = 16;
     /** The Oracle's Flame: just north of where arrivals appear, on the way to the gate of Zeus. */
     public static final BlockPos ORACLE = new BlockPos(0, Y + 1, -4);
     /** The Heart of the Hub stands south of the middle, facing the Oracle; the Bounty Board north-east of it. */
@@ -163,14 +163,14 @@ public final class RealmBuilder {
             boolean north = z < 0 && Math.abs(x) <= WAY, east = x > 0 && Math.abs(z) <= WAY, west = x < 0 && Math.abs(z) <= WAY;
             boolean south = z > 0 && Math.abs(x) <= WAY;
             int way = GATE_OUT + 1;
-            if (d < 2.5) top = Blocks.CHISELED_STONE_BRICKS;
-            else if (d < 4.5) top = Blocks.GILDED_BLACKSTONE;
-            else if (d < 8.6) top = ((x + z) & 1) == 0 ? ModContent.OLYMPIAN_MARBLE.get() : Blocks.CALCITE;          // the rotunda's floor
+            if (d < 4.5) top = ModContent.CHAOS_MOSAIC.get();
+            else if (d < 5.5) top = Blocks.GOLD_BLOCK;
+            else if (d < 8.6) top = ModContent.OLYMPIAN_TILES.get();          // the rotunda's floor
             else if (d >= 14.5 && d < 15.5) top = Blocks.POLISHED_BLACKSTONE;
             else if (d >= 33.5 && d < 34.5) top = Blocks.POLISHED_BLACKSTONE;
-            else if (north && d < way) top = Math.abs(x) == WAY ? Blocks.GOLD_BLOCK : Math.abs(x) == WAY - 1 ? Blocks.QUARTZ_BRICKS : Blocks.SMOOTH_QUARTZ;
-            else if (east && d < way) top = Math.abs(z) == WAY ? Blocks.SEA_LANTERN : Math.abs(z) == WAY - 1 ? Blocks.DARK_PRISMARINE : Blocks.PRISMARINE_BRICKS;
-            else if (west && d < way) top = Math.abs(z) == WAY ? Blocks.CRYING_OBSIDIAN : Math.abs(z) == WAY - 1 ? Blocks.POLISHED_BLACKSTONE : Blocks.POLISHED_BLACKSTONE_BRICKS;
+            else if (north && d < way) top = Math.abs(x) == WAY ? Blocks.GOLD_BLOCK : Math.abs(x) == WAY - 1 ? Blocks.QUARTZ_BRICKS : ModContent.OLYMPIAN_TILES.get();
+            else if (east && d < way) top = Math.abs(z) == WAY ? Blocks.SEA_LANTERN : Math.abs(z) == WAY - 1 ? Blocks.DARK_PRISMARINE : ModContent.ABYSSAL_TILE.get();
+            else if (west && d < way) top = Math.abs(z) == WAY ? Blocks.CRYING_OBSIDIAN : Math.abs(z) == WAY - 1 ? Blocks.POLISHED_BLACKSTONE : ModContent.UNDERWORLD_BRICK.get();
             else if (south && d < way) top = Math.abs(x) == WAY ? Blocks.VERDANT_FROGLIGHT : Math.abs(x) == WAY - 1 ? Blocks.MOSSY_COBBLESTONE : Blocks.MOSSY_STONE_BRICKS;
             else top = ((x + z) & 1) == 0 ? Blocks.POLISHED_ANDESITE : Blocks.SMOOTH_STONE;
             set(level, x, Y, z, top);
@@ -197,9 +197,9 @@ public final class RealmBuilder {
             set(level, px, Y + 4, pz, Blocks.LANTERN);
         }
         // Zeus (north), Poseidon (east), Hades (west): each gate is a small monument in its god's materials
-        gate(level, 0, -GATE_OUT, true, Blocks.QUARTZ_PILLAR, Blocks.GOLD_BLOCK, Blocks.CHISELED_QUARTZ_BLOCK, ModContent.GATE_ZEUS.get(), Blocks.QUARTZ_BRICKS);
-        gate(level, GATE_OUT, 0, false, Blocks.PRISMARINE_BRICKS, Blocks.DARK_PRISMARINE, Blocks.SEA_LANTERN, ModContent.GATE_POSEIDON.get(), Blocks.PRISMARINE_BRICKS);
-        gate(level, -GATE_OUT, 0, false, Blocks.POLISHED_BLACKSTONE_BRICKS, Blocks.CRYING_OBSIDIAN, Blocks.SHROOMLIGHT, ModContent.GATE_HADES.get(), Blocks.POLISHED_BLACKSTONE_BRICKS);
+        gate(level, 0, -GATE_OUT, true, ModContent.OLYMPIAN_MARBLE_PILLAR.get(), ModContent.GILDED_FRIEZE.get(), Blocks.CHISELED_QUARTZ_BLOCK, ModContent.GATE_ZEUS.get(), Blocks.QUARTZ_BRICKS);
+        gate(level, GATE_OUT, 0, false, Blocks.PRISMARINE_BRICKS, ModContent.ABYSSAL_PANEL.get(), Blocks.SEA_LANTERN, ModContent.GATE_POSEIDON.get(), Blocks.PRISMARINE_BRICKS);
+        gate(level, -GATE_OUT, 0, false, Blocks.POLISHED_BLACKSTONE_BRICKS, ModContent.UNDERWORLD_PANEL.get(), Blocks.SHROOMLIGHT, ModContent.GATE_HADES.get(), Blocks.POLISHED_BLACKSTONE_BRICKS);
         // south: the way out, back to the world you came from
         gate(level, 0, GATE_OUT, true, Blocks.MOSSY_STONE_BRICKS, Blocks.EMERALD_BLOCK, Blocks.VERDANT_FROGLIGHT, ModContent.GATE_LEAVE.get(), Blocks.MOSSY_STONE_BRICKS);
         // flanking beacons in front of each gate
@@ -276,6 +276,8 @@ public final class RealmBuilder {
         HubCentre.build(level);
         // what the hub looks out on: the gods' statues beyond their gates, their towers far off behind them
         HubVista.build(level);
+        // the connecting panels, once everything stands, are joined into runs
+        com.thefarawaydev.realmsofchaos.block.ConnectedBlock.settle(level, new BlockPos(-HUB_RADIUS - 2, Y - 2, -HUB_RADIUS - 2), new BlockPos(HUB_RADIUS + 2, Y + 16, HUB_RADIUS + 2));
         makeSafe(level, 0.5, Y + 1, 0.5);
         HubLife.populate(level);
     }

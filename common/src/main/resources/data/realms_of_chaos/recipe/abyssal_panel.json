@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "key": {
+    "T": "realms_of_chaos:abyssal_tile",
+    "I": "minecraft:iron_nugget"
+  },
+  "pattern": [
+    "ITI",
+    "TTT",
+    "ITI"
+  ],
+  "result": {
+    "id": "realms_of_chaos:abyssal_panel",
+    "count": 6
+  }
+}

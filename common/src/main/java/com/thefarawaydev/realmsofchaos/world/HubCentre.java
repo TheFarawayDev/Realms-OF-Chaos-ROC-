@@ -136,7 +136,7 @@ public final class HubCentre {
                     set(level, px + dx, Y - 1, pz + dz, (dx + dz & 1) == 0 ? Blocks.PRISMARINE_BRICKS : Blocks.SEA_LANTERN);
                     set(level, px + dx, Y, pz + dz, Blocks.WATER);
                 } else if (ring == 3) {
-                    set(level, px + dx, Y, pz + dz, Blocks.QUARTZ_BRICKS);
+                    set(level, px + dx, Y, pz + dz, ModContent.OLYMPIAN_PANEL.get());
                     set(level, px + dx, Y + 1, pz + dz, Math.abs(dx) == 3 && Math.abs(dz) == 3 ? Blocks.CHISELED_QUARTZ_BLOCK.defaultBlockState()
                             : Mason.slab(Blocks.SMOOTH_QUARTZ_SLAB, false));
                 } else if (Math.hypot(px + dx, pz + dz) < RealmBuilder.CANAL_INNER - 0.1) {
