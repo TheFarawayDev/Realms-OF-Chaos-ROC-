@@ -4,6 +4,7 @@ import com.thefarawaydev.realmsofchaos.world.Passages.Cell;
 import com.thefarawaydev.realmsofchaos.world.Passages.Kind;
 import com.thefarawaydev.realmsofchaos.world.Passages.Plan;
 import java.util.HashMap;
+import net.minecraft.world.level.block.state.BlockState;
 import java.util.Map;
 import java.util.UUID;
 import net.minecraft.core.BlockPos;
@@ -119,6 +120,7 @@ public final class Snares {
                 for (Cell c : plan.cells()) {
                     for (int dir = 0; dir < 2; dir++) {
                         if (plan.jets(c, dir) && plan.corridorMiddle(c, dir).distSqr(player.blockPosition()) < 144) jets(level, plan, c, dir, now);
+                        if (plan.pit(c, dir) && plan.corridorMiddle(c, dir).distSqr(player.blockPosition()) < 144) pit(level, plan, c, dir, now);
                     }
                 }
                 continue;
@@ -348,6 +350,89 @@ public final class Snares {
             p.hurtServer(level, level.damageSources().magic(), damage(plan) * 0.4F);
             p.addEffect(new net.minecraft.world.effect.MobEffectInstance(net.minecraft.world.effect.MobEffects.POISON, 60, 0));
         }
+    }
+
+    // ---- corridor pits -------------------------------------------------------------------------------------
+
+    /** How long a pit's lids creak before they drop, and how long they hang open. */
+    public static final int PIT_WARN = 10, PIT_HOLD = 60;
+    private static final Map<String, Long> PIT_SPRING = new HashMap<>(), PIT_OPEN = new HashMap<>();
+
+    private static java.util.List<BlockPos> lids(Plan plan, Cell c, int dir) {
+        BlockPos mid = plan.corridorMiddle(c, dir);
+        java.util.List<BlockPos> out = new java.util.ArrayList<>();
+        for (int a = -1; a <= 1; a++) for (int b = -1; b <= 1; b++) out.add(mid.offset(a, 0, b));
+        return out;
+    }
+
+    private static BlockState lid(boolean open) {
+        return com.thefarawaydev.realmsofchaos.ModContent.BRONZE_TRAPDOOR.get().defaultBlockState()
+                .setValue(net.minecraft.world.level.block.TrapDoorBlock.HALF, net.minecraft.world.level.block.state.properties.Half.TOP)
+                .setValue(net.minecraft.world.level.block.TrapDoorBlock.OPEN, open);
+    }
+
+    /** Digs a corridor's pit: its floor bronze lids over a drop with iron spikes in it. */
+    public static void layPit(ServerLevel level, Plan plan, Cell c, int dir) {
+        for (BlockPos at : lids(plan, c, dir)) {
+            level.setBlock(at, lid(false), 2);
+            level.setBlock(at.below(), spike().defaultBlockState(), 2);
+        }
+    }
+
+    private static void setLids(ServerLevel level, Plan plan, Cell c, int dir, boolean open) {
+        for (BlockPos at : lids(plan, c, dir)) if (level.getBlockState(at).getBlock() instanceof net.minecraft.world.level.block.TrapDoorBlock) level.setBlock(at, lid(open), 2);
+    }
+
+    /** One tick of the pit in the corridor east (dir 0) or south (dir 1) of a room. */
+    public static void pit(ServerLevel level, Plan plan, Cell c, int dir, long now) {
+        String key = key(plan, c) + "/pit" + dir;
+        Long last = TENDED.put(key, now);
+        if (last != null && last == now) return;
+        BlockPos mid = plan.corridorMiddle(c, dir);
+        net.minecraft.world.phys.AABB over = new net.minecraft.world.phys.AABB(mid.getX() - 1, mid.getY() - 1, mid.getZ() - 1, mid.getX() + 2, mid.getY() + 3, mid.getZ() + 2);
+        java.util.List<Player> inside = level.getEntitiesOfClass(Player.class, over, e -> e.isAlive() && !e.isSpectator() && !e.isCreative());
+        Long until = PIT_OPEN.get(key);
+        if (until != null) {
+            // whoever went down is on the spikes
+            if (now % 10 == 0) {
+                for (Player p : inside) {
+                    if (p.getY() >= mid.getY() + 0.5) continue;
+                    p.hurtServer(level, level.damageSources().stalagmite(), damage(plan) * 0.5F);
+                    p.addEffect(new net.minecraft.world.effect.MobEffectInstance(net.minecraft.world.effect.MobEffects.SLOWNESS, 30, 2));
+                }
+            }
+            if (now >= until) {
+                // the lids swing shut: anybody still down there is heaved up onto them first
+                for (Player p : inside) if (p.getY() < mid.getY() + 0.9) p.teleportTo(p.getX(), mid.getY() + 1.05, p.getZ());
+                setLids(level, plan, c, dir, false);
+                level.playSound(null, mid, SoundEvents.COPPER_TRAPDOOR_CLOSE, SoundSource.BLOCKS, 1.0F, 0.6F);
+                PIT_OPEN.remove(key);
+            }
+            return;
+        }
+        Long spring = PIT_SPRING.get(key);
+        if (spring == null) {
+            boolean stood = false;
+            for (Player p : inside) stood |= p.getY() >= mid.getY() + 0.9 && p.getY() < mid.getY() + 1.3;
+            if (stood) {
+                PIT_SPRING.put(key, now + PIT_WARN);
+                level.playSound(null, mid, SoundEvents.COPPER_TRAPDOOR_OPEN, SoundSource.BLOCKS, 0.7F, 0.5F);
+                level.sendParticles(ParticleTypes.CRIT, mid.getX() + 0.5, mid.getY() + 1.05, mid.getZ() + 0.5, 12, 1.0, 0.0, 1.0, 0.0);
+            } else if (inside.isEmpty() && level.getBlockState(mid).getBlock() instanceof net.minecraft.world.level.block.TrapDoorBlock && level.getBlockState(mid).getValue(net.minecraft.world.level.block.TrapDoorBlock.OPEN)) {
+                setLids(level, plan, c, dir, false);                 // (left open by a server that stopped mid-spring)
+            }
+        } else if (now >= spring) {
+            setLids(level, plan, c, dir, true);
+            level.playSound(null, mid, SoundEvents.COPPER_TRAPDOOR_OPEN, SoundSource.BLOCKS, 1.2F, 0.7F);
+            PIT_OPEN.put(key, now + PIT_HOLD);
+            PIT_SPRING.remove(key);
+        }
+    }
+
+    /** Forgets which pits are springing: between tests. */
+    public static void forgetPits() {
+        PIT_SPRING.clear();
+        PIT_OPEN.clear();
     }
 
     // ---- corridor jets -------------------------------------------------------------------------------------

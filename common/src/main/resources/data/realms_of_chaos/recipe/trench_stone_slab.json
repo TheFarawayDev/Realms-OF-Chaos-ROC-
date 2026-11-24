@@ -1,0 +1,14 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "key": {
+    "#": "realms_of_chaos:trench_stone"
+  },
+  "pattern": [
+    "###"
+  ],
+  "result": {
+    "id": "realms_of_chaos:trench_stone_slab",
+    "count": 6
+  }
+}

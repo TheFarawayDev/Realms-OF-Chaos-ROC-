@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "redstone",
+  "key": {
+    "C": "minecraft:copper_ingot",
+    "G": "minecraft:gold_nugget"
+  },
+  "pattern": [
+    "CC",
+    "CG",
+    "CC"
+  ],
+  "result": {
+    "id": "realms_of_chaos:bronze_door",
+    "count": 3
+  }
+}

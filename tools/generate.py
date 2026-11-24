@@ -832,6 +832,24 @@ def gen_lang():
         "block.realms_of_chaos.portal_frame_shade": "Portal Frame of the Shades",
         "block.realms_of_chaos.portal_frame_hub": "Portal Frame of the Hub",
         "block.realms_of_chaos.arrival_sigil": "Arrival Sigil",
+        "block.realms_of_chaos.olympian_marble_stairs": "Olympian Marble Stairs",
+        "block.realms_of_chaos.olympian_marble_slab": "Olympian Marble Slab",
+        "block.realms_of_chaos.cloudstone_stairs": "Cloudstone Stairs",
+        "block.realms_of_chaos.cloudstone_slab": "Cloudstone Slab",
+        "block.realms_of_chaos.trench_stone_stairs": "Trench Stone Stairs",
+        "block.realms_of_chaos.trench_stone_slab": "Trench Stone Slab",
+        "block.realms_of_chaos.tartarus_stone_stairs": "Tartarus Stone Stairs",
+        "block.realms_of_chaos.tartarus_stone_slab": "Tartarus Stone Slab",
+        "block.realms_of_chaos.storm_brick_stairs": "Storm Brick Stairs",
+        "block.realms_of_chaos.storm_brick_slab": "Storm Brick Slab",
+        "block.realms_of_chaos.tide_brick_stairs": "Tide Brick Stairs",
+        "block.realms_of_chaos.tide_brick_slab": "Tide Brick Slab",
+        "block.realms_of_chaos.ash_brick_stairs": "Ash Brick Stairs",
+        "block.realms_of_chaos.ash_brick_slab": "Ash Brick Slab",
+        "block.realms_of_chaos.underworld_brick_stairs": "Underworld Brick Stairs",
+        "block.realms_of_chaos.underworld_brick_slab": "Underworld Brick Slab",
+        "block.realms_of_chaos.bronze_door": "Bronze Door",
+        "block.realms_of_chaos.bronze_trapdoor": "Bronze Trapdoor",
         "hud.realms_of_chaos.passage.room.observatory": "An observatory - a vault of stars",
         "hud.realms_of_chaos.passage.room.armory": "An armoury",
         "hud.realms_of_chaos.passage.room.baths": "Baths",
@@ -1918,7 +1936,9 @@ DECOR = ["olympian_marble", "olympian_marble_pillar", "gilded_frieze", "abyssal_
          "sky_mosaic", "sea_mosaic", "shade_mosaic", "star_vault", "celestial_globe", "bronze_grate", "weapon_rack", "scroll_shelf", "bath_tile",
          "laurel_hedge", "kelp_weave", "asphodel_bed",
          "cloudstone", "cloud_tile", "trench_stone", "nacre_tile", "tartarus_stone", "throne_tile",
-         "portal_frame_sky", "portal_frame_sea", "portal_frame_shade", "portal_frame_hub", "arrival_sigil"]
+         "portal_frame_sky", "portal_frame_sea", "portal_frame_shade", "portal_frame_hub", "arrival_sigil",
+         "bronze_trapdoor"] + [f"{b}_{k}" for b in ("olympian_marble", "cloudstone", "trench_stone", "tartarus_stone", "storm_brick", "tide_brick", "ash_brick", "underworld_brick") for k in ("stairs", "slab")]
+PICKAXE_ONLY = ["bronze_door"]
 FIELD_DROPS = FIELD_DROPS + DECOR
 
 # The 22 Major Arcana: (id, numeral, name, what the card does, 8x8 symbol (# ink, + colour), colour)
@@ -3363,13 +3383,13 @@ def gen_field_data():
     for rid, (key, pattern, category) in recipes.items():
         wj(os.path.join(DATA, f"recipe/{rid}.json"), {"type": "minecraft:crafting_shaped", "category": category, "key": key, "pattern": pattern,
                                                        "result": {"id": f"{MOD}:{rid}"}})
-    for b in FIELD_DROPS:
+    for b in [d for d in FIELD_DROPS if not d.endswith("_slab")]:      # (a slab writes its own: two from a double)
         wj(os.path.join(DATA, f"loot_table/blocks/{b}.json"), {
             "type": "minecraft:block",
             "pools": [{"rolls": 1, "entries": [{"type": "minecraft:item", "name": f"{MOD}:{b}"}],
                        "conditions": [{"condition": "minecraft:survives_explosion"}]}],
         })
-    wj(os.path.join(RES, "data/minecraft/tags/block/mineable/pickaxe.json"), {"replace": False, "values": [f"{MOD}:{b}" for b in FIELD_DROPS]})
+    wj(os.path.join(RES, "data/minecraft/tags/block/mineable/pickaxe.json"), {"replace": False, "values": [f"{MOD}:{b}" for b in FIELD_DROPS + PICKAXE_ONLY]})
 
 def gen_tags():
     """Item tags: realms_of_chaos:relics/<tower> holds the relic weapons won in that tower, and realms_of_chaos:relics

@@ -52,6 +52,7 @@ import com.thefarawaydev.realmsofchaos.world.FloorShifts;
 import com.thefarawaydev.realmsofchaos.world.ProgressData;
 import com.thefarawaydev.realmsofchaos.world.Realm;
 import com.thefarawaydev.realmsofchaos.world.RealmBuilder;
+import com.thefarawaydev.realmsofchaos.world.Mason;
 import com.thefarawaydev.realmsofchaos.world.RealmSafety;
 import com.thefarawaydev.realmsofchaos.world.RocAdvancements;
 import com.thefarawaydev.realmsofchaos.world.Teleports;
@@ -6006,6 +6007,74 @@ public final class SelfTest {
                 check(every.size() == 12, "twelve moves in all, every one of them seen to land: " + every.size());
             } finally {
                 com.thefarawaydev.realmsofchaos.world.Onslaughts.clear();
+                hero.remove(net.minecraft.world.entity.Entity.RemovalReason.DISCARDED);
+            }
+        });
+
+        step("pits under bronze lids in some corridors, double doors into the special rooms, stairs and slabs of the mod's stone", () -> {
+            ServerPlayer hero = fakePlayer(server, level, "RocPitfall");
+            level.addNewPlayer(hero);
+            try {
+                Passages.Plan plan = null;
+                Passages.Cell pitCell = null;
+                int pitDir = 0;
+                for (int index = 1; index <= Passages.COUNT && plan == null; index++) {
+                    for (int stage = 0; stage < Passages.stages(level, Line.HADES, index) && plan == null; stage++) {
+                        Passages.Plan candidate = Passages.plan(level, Line.HADES, index, stage);
+                        for (Passages.Cell c : candidate.cells()) {
+                            for (int dir = 0; dir < 2 && plan == null; dir++) if (candidate.pit(c, dir)) { plan = candidate; pitCell = c; pitDir = dir; }
+                        }
+                    }
+                }
+                check(plan != null, "some corridor in the tower of the Shades has a pit");
+                Passages.build(level, plan);
+                BlockPos mid = plan.corridorMiddle(pitCell, pitDir);
+                check(level.getBlockState(mid).is(ModContent.BRONZE_TRAPDOOR.get()) && !level.getBlockState(mid).getValue(net.minecraft.world.level.block.TrapDoorBlock.OPEN)
+                        && level.getBlockState(mid.below()).is(com.thefarawaydev.realmsofchaos.world.Snares.spike()) && solid(level, mid),
+                        "a pit's floor is shut bronze lids, walked on like any floor, with spikes under them");
+                com.thefarawaydev.realmsofchaos.world.Snares.forgetPits();
+                hero.setHealth(hero.getMaxHealth());
+                hero.setPos(mid.getX() + 0.5, mid.getY() + 1.0, mid.getZ() + 0.5);
+                long t = 900000;
+                com.thefarawaydev.realmsofchaos.world.Snares.pit(level, plan, pitCell, pitDir, t);
+                check(!level.getBlockState(mid).getValue(net.minecraft.world.level.block.TrapDoorBlock.OPEN), "the lids creak first: there is a moment to jump");
+                com.thefarawaydev.realmsofchaos.world.Snares.pit(level, plan, pitCell, pitDir, t + com.thefarawaydev.realmsofchaos.world.Snares.PIT_WARN);
+                check(level.getBlockState(mid).getValue(net.minecraft.world.level.block.TrapDoorBlock.OPEN), "then they drop");
+                hero.setPos(mid.getX() + 0.5, mid.getY() - 1.0, mid.getZ() + 0.5);
+                hero.damageCooldownTime = 0;
+                long hit = (t + com.thefarawaydev.realmsofchaos.world.Snares.PIT_WARN + 10) / 10 * 10;
+                com.thefarawaydev.realmsofchaos.world.Snares.pit(level, plan, pitCell, pitDir, hit);
+                check(hero.getHealth() < hero.getMaxHealth(), "and whoever went down is on the spikes");
+                com.thefarawaydev.realmsofchaos.world.Snares.pit(level, plan, pitCell, pitDir, t + com.thefarawaydev.realmsofchaos.world.Snares.PIT_WARN + com.thefarawaydev.realmsofchaos.world.Snares.PIT_HOLD + 1);
+                check(!level.getBlockState(mid).getValue(net.minecraft.world.level.block.TrapDoorBlock.OPEN) && hero.getY() >= mid.getY() + 1.0,
+                        "a while later the lids shut, and anybody below is heaved up onto them: " + hero.getY());
+
+                // double doors: open, against the walls, the way through between them clear
+                boolean sawDoors = false;
+                for (Passages.Cell c : plan.cells()) {
+                    for (int dir = 0; dir < 2 && !sawDoors; dir++) {
+                        Passages.Cell n = dir == 0 ? new Passages.Cell(c.x() + 1, c.z()) : new Passages.Cell(c.x(), c.z() + 1);
+                        if (n.x() >= plan.size || n.z() >= plan.size || !plan.connected(c, n) || plan.small(c)) continue;
+                        if (!java.util.Set.of(Passages.Kind.STORE, Passages.Kind.ARMORY, Passages.Kind.LIBRARY, Passages.Kind.SANCTUM, Passages.Kind.OBSERVATORY,
+                                Passages.Kind.SHRINE, Passages.Kind.BATHS).contains(plan.kind(c))) continue;
+                        int d = Passages.CORRIDOR_FROM + 1;
+                        BlockPos left = Passages.along(plan, c, dir, d, -1, 1), right = Passages.along(plan, c, dir, d, 1, 1), middle = Passages.along(plan, c, dir, d, 0, 1);
+                        check(level.getBlockState(left).is(ModContent.BRONZE_DOOR.get()) && level.getBlockState(right).is(ModContent.BRONZE_DOOR.get())
+                                && level.getBlockState(left.above()).is(ModContent.BRONZE_DOOR.get())
+                                && level.getBlockState(left).getValue(net.minecraft.world.level.block.DoorBlock.OPEN), "a " + plan.kind(c) + " is entered through a pair of open bronze doors");
+                        check(level.getBlockState(middle).isAir() && level.getBlockState(middle.above()).isAir(), "and the way between them is clear");
+                        var box = level.getBlockState(left).getShape(level, left).bounds();
+                        double across = dir == 0 ? (box.minZ + box.maxZ) / 2 : (box.minX + box.maxX) / 2;
+                        check(across < 0.5, "each leaf lies back against its own wall: " + across);
+                        sawDoors = true;
+                    }
+                }
+                check(sawDoors, "a special room on that level, and its doors");
+                // stairs and slabs cut from the mod's stone, and the builders use them
+                check(Mason.of(ModContent.TARTARUS_STONE.get()).stairs() == ModContent.STAIRS.get("tartarus_stone").get()
+                        && Mason.of(ModContent.CLOUDSTONE.get()).slab() == ModContent.SLABS.get("cloudstone").get(), "the mod's stone is cut with its own stairs and slabs");
+            } finally {
+                com.thefarawaydev.realmsofchaos.world.Snares.forgetPits();
                 hero.remove(net.minecraft.world.entity.Entity.RemovalReason.DISCARDED);
             }
         });

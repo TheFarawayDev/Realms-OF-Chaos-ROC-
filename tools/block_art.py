@@ -600,6 +600,8 @@ def run(assets, data=None):
         gen_weapon_rack(assets)
         gen_upper(assets, data)
         gen_floor_polish(assets)
+        gen_cuts(assets, data)
+        gen_doors(assets, data)
         for floor in ("sunstone_panel", "pearl_panel", "ember_panel", "sky_mosaic", "sea_mosaic", "shade_mosaic"):
             connected_breaks(assets, floor)
 
@@ -1726,3 +1728,127 @@ def connected_breaks(assets, name):
             out.append({"model": f"{MOD}:block/{model_name}_v{v}", "weight": 2})
         state["variants"][key] = out
     wj(path, state)
+
+
+# ---- stairs and slabs of the mod's stone; the bronze door and trapdoor ---------------------------------------------------
+
+CUT_STONES = ["olympian_marble", "cloudstone", "trench_stone", "tartarus_stone", "storm_brick", "tide_brick", "ash_brick", "underworld_brick"]
+DOORS = ["bronze_door", "bronze_trapdoor"]
+
+
+def _template(name):
+    import json as _json
+    with open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "templates", name + ".json")) as f:
+        return _json.load(f)
+
+
+def _retarget(obj, old, new):
+    import json as _json
+    return _json.loads(_json.dumps(obj).replace(old, new))
+
+
+def gen_cuts(assets, data):
+    for b in CUT_STONES:
+        tex = {"bottom": f"{MOD}:block/{b}", "side": f"{MOD}:block/{b}", "top": f"{MOD}:block/{b}"}
+        for suffix, parent in (("_stairs", "stairs"), ("_stairs_inner", "inner_stairs"), ("_stairs_outer", "outer_stairs"),
+                               ("_slab", "slab"), ("_slab_top", "slab_top")):
+            wj(os.path.join(assets, f"models/block/{b}{suffix}.json"), {"parent": f"minecraft:block/{parent}", "textures": tex})
+        stairs = _retarget(_template("stairs"), "minecraft:block/stone_brick_stairs", f"{MOD}:block/{b}_stairs")
+        wj(os.path.join(assets, f"blockstates/{b}_stairs.json"), stairs)
+        slab = _retarget(_template("slab"), "minecraft:block/stone_brick_slab", f"{MOD}:block/{b}_slab")
+        slab = _retarget(slab, "minecraft:block/stone_bricks", f"{MOD}:block/{b}")
+        wj(os.path.join(assets, f"blockstates/{b}_slab.json"), slab)
+        for kind in ("stairs", "slab"):
+            wj(os.path.join(assets, f"items/{b}_{kind}.json"), {"model": {"type": "minecraft:model", "model": f"{MOD}:block/{b}_{kind}"}})
+        wj(os.path.join(data, f"recipe/{b}_stairs.json"), {"type": "minecraft:crafting_shaped", "category": "building", "key": {"#": f"{MOD}:{b}"},
+                                                            "pattern": ["#  ", "## ", "###"], "result": {"id": f"{MOD}:{b}_stairs", "count": 4}})
+        wj(os.path.join(data, f"recipe/{b}_slab.json"), {"type": "minecraft:crafting_shaped", "category": "building", "key": {"#": f"{MOD}:{b}"},
+                                                          "pattern": ["###"], "result": {"id": f"{MOD}:{b}_slab", "count": 6}})
+        wj(os.path.join(data, f"loot_table/blocks/{b}_stairs.json"), {"type": "minecraft:block", "pools": [{"rolls": 1, "entries": [{"type": "minecraft:item", "name": f"{MOD}:{b}_stairs"}],
+                                                                                                         "conditions": [{"condition": "minecraft:survives_explosion"}]}]})
+        wj(os.path.join(data, f"loot_table/blocks/{b}_slab.json"), {"type": "minecraft:block", "pools": [{"rolls": 1, "entries": [{
+            "type": "minecraft:item", "name": f"{MOD}:{b}_slab",
+            "functions": [{"function": "minecraft:set_count", "count": 2, "conditions": [{"condition": "minecraft:block_state_property", "block": f"{MOD}:{b}_slab",
+                                                                                           "properties": {"type": "double"}}]},
+                          {"function": "minecraft:explosion_decay"}]}]}]})
+    wj(os.path.join(RES_DATA_MC(data), "tags/block/stairs.json"), {"replace": False, "values": [f"{MOD}:{b}_stairs" for b in CUT_STONES]})
+    wj(os.path.join(RES_DATA_MC(data), "tags/block/slabs.json"), {"replace": False, "values": [f"{MOD}:{b}_slab" for b in CUT_STONES]})
+    wj(os.path.join(RES_DATA_MC(data), "tags/item/stairs.json"), {"replace": False, "values": [f"{MOD}:{b}_stairs" for b in CUT_STONES]})
+    wj(os.path.join(RES_DATA_MC(data), "tags/item/slabs.json"), {"replace": False, "values": [f"{MOD}:{b}_slab" for b in CUT_STONES]})
+
+
+def RES_DATA_MC(data):
+    return os.path.join(os.path.dirname(data), "minecraft")
+
+
+def gen_doors(assets, data):
+    T = os.path.join(assets, "textures/block")
+    TI = os.path.join(assets, "textures/item")
+    g = grain(121, 0.05)
+    BRONZE, DARK, LIGHT = (176, 110, 50), (96, 56, 24), (226, 160, 86)
+
+    def door_half(top):
+        def fn(x, y):
+            c = shade(BRONZE, g[y][x])
+            if x in (0, 15) or (y == 0 and top) or (y == 15 and not top): return DARK
+            if x in (1, 14): return LIGHT if x == 1 else shade(DARK, 1.2)
+            # two sunk panels, each with a boss: a sun on the upper, a meander band across the lower
+            py0, py1 = (3, 13) if top else (2, 12)
+            if 3 <= x <= 12 and py0 <= y <= py1:
+                c = shade(BRONZE, 0.82 * g[y][x])
+                if x == 3 or y == py0: c = shade(DARK, 1.0)
+                if x == 12 or y == py1: c = LIGHT
+                r = math.hypot(x - 7.5, y - (py0 + py1) / 2)
+                if top and r < 2.4: c = GOLD_HI if r < 1.2 else GOLD
+                if top and 3.2 < r < 4.0 and (x + y) % 2 == 0: c = GOLD
+                if not top and y in (6, 7) and (x + (y - 6) * 2) % 4 < 2: c = GOLD
+            if (x, y) in ((2, 2), (13, 2), (2, 13), (13, 13)): c = GOLD_HI                # studs
+            if not top and x == 12 and y == 1: c = GOLD_HI                                # the handle
+            if top and x == 12 and y == 14: c = GOLD_HI
+            return c
+        return fn
+    paint_hi(door_half(True)).save(os.path.join(T, "bronze_door_top.png"))
+    paint_hi(door_half(False)).save(os.path.join(T, "bronze_door_bottom.png"))
+    # the trapdoor: a studded bronze hatch, a ring to lift it by
+    def hatch(x, y):
+        if x in (0, 15) or y in (0, 15): return DARK
+        if x in (1, 14) or y in (1, 14): return LIGHT if x == 1 or y == 1 else shade(DARK, 1.2)
+        c = shade(BRONZE, g[y][x] * (0.9 if (x // 4 + y // 4) % 2 else 1.0))
+        if x % 4 == 2 and y % 4 == 2: c = GOLD_HI
+        if 6 <= x <= 9 and y in (6, 9) or 6 <= y <= 9 and x in (6, 9): c = (60, 40, 20)
+        return c
+    paint_hi(hatch).save(os.path.join(T, "bronze_trapdoor.png"))
+    # the door as an item
+    item = Image.new("RGBA", (16, 16))
+    top, bottom = _load(T, "bronze_door_top"), _load(T, "bronze_door_bottom")
+    for y in range(16):
+        for x in range(4, 12):
+            src = top if y < 8 else bottom
+            item.putpixel((x, y), src.getpixel((2 + (x - 4) * 12 // 8, (y % 8) * 2)))
+    for y in range(16):
+        item.putpixel((4, y), DARK + (255,)); item.putpixel((11, y), DARK + (255,))
+    item.save(os.path.join(TI, "bronze_door.png"))
+    door = _retarget(_template("door"), "minecraft:block/iron_door", f"{MOD}:block/bronze_door")
+    wj(os.path.join(assets, "blockstates/bronze_door.json"), door)
+    for part in ("bottom_left", "bottom_left_open", "bottom_right", "bottom_right_open", "top_left", "top_left_open", "top_right", "top_right_open"):
+        wj(os.path.join(assets, f"models/block/bronze_door_{part}.json"),
+           {"parent": f"minecraft:block/door_{part}", "textures": {"bottom": f"{MOD}:block/bronze_door_bottom", "top": f"{MOD}:block/bronze_door_top"}})
+    wj(os.path.join(assets, "models/block/bronze_door.json"), {"parent": f"{MOD}:block/bronze_door_bottom_left"})
+    wj(os.path.join(assets, "models/item/bronze_door.json"), {"parent": "minecraft:item/generated", "textures": {"layer0": f"{MOD}:item/bronze_door"}})
+    wj(os.path.join(assets, "items/bronze_door.json"), {"model": {"type": "minecraft:model", "model": f"{MOD}:item/bronze_door"}})
+    trap = _retarget(_template("trapdoor"), "minecraft:block/iron_trapdoor", f"{MOD}:block/bronze_trapdoor")
+    wj(os.path.join(assets, "blockstates/bronze_trapdoor.json"), trap)
+    for part, parent in (("bottom", "template_trapdoor_bottom"), ("top", "template_trapdoor_top"), ("open", "template_trapdoor_open")):
+        wj(os.path.join(assets, f"models/block/bronze_trapdoor_{part}.json"), {"parent": f"minecraft:block/{parent}", "textures": {"texture": f"{MOD}:block/bronze_trapdoor"}})
+    wj(os.path.join(assets, "models/block/bronze_trapdoor.json"), {"parent": f"{MOD}:block/bronze_trapdoor_bottom"})
+    wj(os.path.join(assets, "items/bronze_trapdoor.json"), {"model": {"type": "minecraft:model", "model": f"{MOD}:block/bronze_trapdoor_bottom"}})
+    wj(os.path.join(data, "recipe/bronze_door.json"), {"type": "minecraft:crafting_shaped", "category": "redstone", "key": {"C": "minecraft:copper_ingot", "G": "minecraft:gold_nugget"},
+                                                       "pattern": ["CC", "CG", "CC"], "result": {"id": f"{MOD}:bronze_door", "count": 3}})
+    wj(os.path.join(data, "recipe/bronze_trapdoor.json"), {"type": "minecraft:crafting_shaped", "category": "redstone", "key": {"C": "minecraft:copper_ingot", "G": "minecraft:gold_nugget"},
+                                                           "pattern": ["CC", "CG"], "result": {"id": f"{MOD}:bronze_trapdoor", "count": 2}})
+    wj(os.path.join(data, "loot_table/blocks/bronze_door.json"), {"type": "minecraft:block", "pools": [{"rolls": 1, "entries": [{"type": "minecraft:item", "name": f"{MOD}:bronze_door"}],
+        "conditions": [{"condition": "minecraft:block_state_property", "block": f"{MOD}:bronze_door", "properties": {"half": "lower"}}, {"condition": "minecraft:survives_explosion"}]}]})
+    wj(os.path.join(data, "loot_table/blocks/bronze_trapdoor.json"), {"type": "minecraft:block", "pools": [{"rolls": 1, "entries": [{"type": "minecraft:item", "name": f"{MOD}:bronze_trapdoor"}],
+                                                                                                       "conditions": [{"condition": "minecraft:survives_explosion"}]}]})
+    wj(os.path.join(RES_DATA_MC(data), "tags/block/doors.json"), {"replace": False, "values": [f"{MOD}:bronze_door"]})
+    wj(os.path.join(RES_DATA_MC(data), "tags/block/trapdoors.json"), {"replace": False, "values": [f"{MOD}:bronze_trapdoor"]})

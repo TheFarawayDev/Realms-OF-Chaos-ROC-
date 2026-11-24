@@ -58,6 +58,20 @@ The current build is an **Alpha**.
   between the windows, and its walkway paved in its floor panels with one frame round the whole ring; every
   passage room of the tower has its columns in the tower's column and, in the tall rooms, its brick above the
   band. All craftable and dug with a pickaxe. (`art/renders/tower-stone*.png`)
+* **Stairs and slabs of the mod's stone.** Olympian Marble, Cloudstone, Trench Stone, Tartarus Stone and the Storm,
+  Tide, Ash and Underworld Bricks each have stairs and a slab now - craftable, a double slab dropping two. Every
+  builder in the mod uses them: the cornices, column bases, arches and steps of the upper tower floors and the
+  passages built of these stones are cut from their own stairs and slabs, not from vanilla ones near in colour.
+  (`art/renders/stairs-slabs-doors.png`)
+* **A bronze door and trapdoor.** Bronze leaves with a sun boss and a meander band, studded at the corners; a studded
+  bronze hatch with a ring. Opened by hand, mined with a pickaxe, crafted from copper and gold.
+* **Entrances.** Storerooms, armouries, libraries, sanctums, observatories, shrines and baths are entered through a
+  pair of bronze doors, thrown open against the corridor walls under the arch, the way between them left clear; the
+  storerooms have a cellar hatch in the floor. (`art/renders/entrance-doors.png`)
+* **A new trap: the pit.** Some corridors - more the deeper the level, never beside the room you arrive in, never
+  where there are jets - have their middle floored with nine bronze lids over iron spikes. Step on them and they
+  creak; half a second later they drop. Whoever goes down is on the spikes until the lids swing shut again three
+  seconds later and heave them back up. Jump, or run. (`art/renders/pit-trap.png`)
 * **Rooms furnished as a whole.** An ordinary room's four quarters - the floor between the lanes that run door to
   door - each hold a set piece built of several blocks, the opposite quarter the same, so a room reads as laid out
   rather than strewn with single blocks: a kerbed planter of the tower's hedge, a column of the tower on a stepped

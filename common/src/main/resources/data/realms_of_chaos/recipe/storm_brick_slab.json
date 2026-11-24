@@ -1,0 +1,14 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "key": {
+    "#": "realms_of_chaos:storm_brick"
+  },
+  "pattern": [
+    "###"
+  ],
+  "result": {
+    "id": "realms_of_chaos:storm_brick_slab",
+    "count": 6
+  }
+}

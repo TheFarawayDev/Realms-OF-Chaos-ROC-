@@ -1,0 +1,13 @@
+{
+  "variants": {
+    "type=bottom": {
+      "model": "realms_of_chaos:block/ash_brick_slab"
+    },
+    "type=double": {
+      "model": "realms_of_chaos:block/ash_brick"
+    },
+    "type=top": {
+      "model": "realms_of_chaos:block/ash_brick_slab_top"
+    }
+  }
+}

@@ -1,0 +1,8 @@
+{
+  "parent": "minecraft:block/inner_stairs",
+  "textures": {
+    "bottom": "realms_of_chaos:block/ash_brick",
+    "side": "realms_of_chaos:block/ash_brick",
+    "top": "realms_of_chaos:block/ash_brick"
+  }
+}

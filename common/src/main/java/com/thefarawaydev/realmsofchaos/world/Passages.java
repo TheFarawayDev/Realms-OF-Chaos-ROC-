@@ -70,7 +70,7 @@ public final class Passages {
     public static final int TALL = 8;
     public static final int MAX_SIZE = 6;
     public static final int X0 = 600, PITCH = 160;
-    public static final int LAYOUT_VERSION = 18;
+    public static final int LAYOUT_VERSION = 19;
     public static final String GUARDIAN_TAG = "realms_of_chaos_guardian";
     private static final String HUD = "hud." + RealmsOfChaos.MOD_ID + ".passage.";
 
@@ -644,6 +644,20 @@ public final class Passages {
             return Math.floorMod(h >>> 20, 100) < Math.min(60, 24 + (int) (threat * 3.0));
         }
 
+        /**
+         * Corridors with a pit in them: three by three of bronze trapdoors across the middle, over iron spikes, that
+         * spring open a moment after somebody steps on them. Never where there are jets, never by the arrival room.
+         */
+        public boolean pit(Cell c, int dir) {
+            Cell other = dir == 0 ? new Cell(c.x + 1, c.z) : new Cell(c.x, c.z + 1);
+            if (other.x >= size || other.z >= size || !connected(c, other) || c.equals(start) || other.equals(start)) return false;
+            if (run(c, dir) != RUN_STRAIGHT || jets(c, dir)) return false;
+            long h = seed * 53 + c.x * 15485863L + c.z * 7919L + dir * 104729L;
+            h ^= h >>> 19;
+            h *= 0xD6E8FEB86659FD93L;
+            return Math.floorMod(h >>> 21, 100) < Math.min(40, 16 + (int) (threat * 2.0));
+        }
+
         /** What the vents of a corridor with jets let out: the same in one corridor always, different from corridor to corridor. */
         public int jetKind(Cell c, int dir) {
             long h = seed * 17 + c.x * 104729L + c.z * 15485863L + dir * 7919L;
@@ -919,6 +933,10 @@ public final class Passages {
                         }
                     }
                     wind(level, plan, c, dir, p);
+                    if (plan.pit(c, dir)) Snares.layPit(level, plan, c, dir);
+                    // a special room is entered through double doors of bronze, thrown open against the walls
+                    if (entrance(plan.kind(c))) doors(level, plan, c, dir, CORRIDOR_FROM + 1 - (plan.small(c) ? 1 : 0));
+                    if (entrance(plan.kind(next))) doors(level, plan, c, dir, CORRIDOR_TO - 1 + (plan.small(next) ? 1 : 0));
                 }
             }
         });
@@ -1114,6 +1132,32 @@ public final class Passages {
                     if (Math.abs(d) == 2 || d == 0) set(level, m.offset(k[0], h - 1, k[1]), Math.abs(d) == 2 ? p.light() : p.glass());
                 }
             }
+        }
+    }
+
+    /** The rooms entered through a pair of doors. */
+    static boolean entrance(Kind kind) {
+        return kind == Kind.STORE || kind == Kind.ARMORY || kind == Kind.LIBRARY || kind == Kind.SANCTUM || kind == Kind.OBSERVATORY
+                || kind == Kind.SHRINE || kind == Kind.BATHS;
+    }
+
+    /** A pair of bronze doors either side of a corridor's middle line, {@code d} along it, open against the walls. */
+    static void doors(ServerLevel level, Plan plan, Cell c, int dir, int d) {
+        net.minecraft.core.Direction facing = dir == 0 ? net.minecraft.core.Direction.EAST : net.minecraft.core.Direction.SOUTH;
+        BlockState door = ModContent.BRONZE_DOOR.get().defaultBlockState().setValue(net.minecraft.world.level.block.DoorBlock.FACING, facing)
+                .setValue(net.minecraft.world.level.block.DoorBlock.OPEN, true);
+        for (int k = -1; k <= 1; k += 2) {
+            BlockPos at = along(plan, c, dir, d, k, 1);
+            // the hinge on whichever side lays the open leaf against this side's wall
+            BlockState chosen = door;
+            for (var hinge : net.minecraft.world.level.block.state.properties.DoorHingeSide.values()) {
+                BlockState st = door.setValue(net.minecraft.world.level.block.DoorBlock.HINGE, hinge);
+                var box = st.getShape(level, at).bounds();
+                double across = dir == 0 ? (box.minZ + box.maxZ) / 2 : (box.minX + box.maxX) / 2;
+                if ((across - 0.5) * k > 0) chosen = st;
+            }
+            level.setBlock(at, chosen.setValue(net.minecraft.world.level.block.DoorBlock.HALF, net.minecraft.world.level.block.state.properties.DoubleBlockHalf.LOWER), 2 | 16);
+            level.setBlock(at.above(), chosen.setValue(net.minecraft.world.level.block.DoorBlock.HALF, net.minecraft.world.level.block.state.properties.DoubleBlockHalf.UPPER), 2 | 16);
         }
     }
 

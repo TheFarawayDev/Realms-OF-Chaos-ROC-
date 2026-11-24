@@ -1,0 +1,14 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "key": {
+    "#": "realms_of_chaos:olympian_marble"
+  },
+  "pattern": [
+    "###"
+  ],
+  "result": {
+    "id": "realms_of_chaos:olympian_marble_slab",
+    "count": 6
+  }
+}

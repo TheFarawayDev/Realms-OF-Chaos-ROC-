@@ -49,6 +49,24 @@
     "realms_of_chaos:portal_frame_sea",
     "realms_of_chaos:portal_frame_shade",
     "realms_of_chaos:portal_frame_hub",
-    "realms_of_chaos:arrival_sigil"
+    "realms_of_chaos:arrival_sigil",
+    "realms_of_chaos:bronze_trapdoor",
+    "realms_of_chaos:olympian_marble_stairs",
+    "realms_of_chaos:olympian_marble_slab",
+    "realms_of_chaos:cloudstone_stairs",
+    "realms_of_chaos:cloudstone_slab",
+    "realms_of_chaos:trench_stone_stairs",
+    "realms_of_chaos:trench_stone_slab",
+    "realms_of_chaos:tartarus_stone_stairs",
+    "realms_of_chaos:tartarus_stone_slab",
+    "realms_of_chaos:storm_brick_stairs",
+    "realms_of_chaos:storm_brick_slab",
+    "realms_of_chaos:tide_brick_stairs",
+    "realms_of_chaos:tide_brick_slab",
+    "realms_of_chaos:ash_brick_stairs",
+    "realms_of_chaos:ash_brick_slab",
+    "realms_of_chaos:underworld_brick_stairs",
+    "realms_of_chaos:underworld_brick_slab",
+    "realms_of_chaos:bronze_door"
   ]
 }

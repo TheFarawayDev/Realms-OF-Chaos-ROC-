@@ -1,0 +1,7 @@
+{
+  "parent": "minecraft:block/door_bottom_left_open",
+  "textures": {
+    "bottom": "realms_of_chaos:block/bronze_door_bottom",
+    "top": "realms_of_chaos:block/bronze_door_top"
+  }
+}

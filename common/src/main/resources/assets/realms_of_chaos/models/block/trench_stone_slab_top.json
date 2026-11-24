@@ -1,0 +1,8 @@
+{
+  "parent": "minecraft:block/slab_top",
+  "textures": {
+    "bottom": "realms_of_chaos:block/trench_stone",
+    "side": "realms_of_chaos:block/trench_stone",
+    "top": "realms_of_chaos:block/trench_stone"
+  }
+}

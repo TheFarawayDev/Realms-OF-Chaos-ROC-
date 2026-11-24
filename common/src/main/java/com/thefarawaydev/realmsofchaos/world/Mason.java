@@ -73,14 +73,24 @@ public final class Mason {
 
     private Mason() {}
 
-    /** The mod's own building stone, cut with the vanilla stairs nearest it in colour. */
+    /** The mod's own building stone, cut with its own stairs and slabs (and the vanilla wall nearest it in colour). */
     private static Stone mods(Block block) {
-        if (block == com.thefarawaydev.realmsofchaos.ModContent.OLYMPIAN_MARBLE.get() || block == com.thefarawaydev.realmsofchaos.ModContent.CLOUDSTONE.get())
-            return new Stone(block, Blocks.QUARTZ_STAIRS, Blocks.QUARTZ_SLAB, Blocks.DIORITE_WALL);
-        if (block == com.thefarawaydev.realmsofchaos.ModContent.TRENCH_STONE.get())
-            return new Stone(block, Blocks.DEEPSLATE_TILE_STAIRS, Blocks.DEEPSLATE_TILE_SLAB, Blocks.DEEPSLATE_TILE_WALL);
-        if (block == com.thefarawaydev.realmsofchaos.ModContent.UNDERWORLD_BRICK.get() || block == com.thefarawaydev.realmsofchaos.ModContent.TARTARUS_STONE.get())
-            return new Stone(block, Blocks.POLISHED_BLACKSTONE_BRICK_STAIRS, Blocks.POLISHED_BLACKSTONE_BRICK_SLAB, Blocks.POLISHED_BLACKSTONE_BRICK_WALL);
+        Object[][] own = {
+                {com.thefarawaydev.realmsofchaos.ModContent.OLYMPIAN_MARBLE, "olympian_marble", Blocks.DIORITE_WALL},
+                {com.thefarawaydev.realmsofchaos.ModContent.CLOUDSTONE, "cloudstone", Blocks.DIORITE_WALL},
+                {com.thefarawaydev.realmsofchaos.ModContent.TRENCH_STONE, "trench_stone", Blocks.DEEPSLATE_TILE_WALL},
+                {com.thefarawaydev.realmsofchaos.ModContent.TARTARUS_STONE, "tartarus_stone", Blocks.POLISHED_BLACKSTONE_BRICK_WALL},
+                {com.thefarawaydev.realmsofchaos.ModContent.STORM_BRICK, "storm_brick", Blocks.STONE_BRICK_WALL},
+                {com.thefarawaydev.realmsofchaos.ModContent.TIDE_BRICK, "tide_brick", Blocks.PRISMARINE_WALL},
+                {com.thefarawaydev.realmsofchaos.ModContent.ASH_BRICK, "ash_brick", Blocks.POLISHED_BLACKSTONE_BRICK_WALL},
+                {com.thefarawaydev.realmsofchaos.ModContent.UNDERWORLD_BRICK, "underworld_brick", Blocks.POLISHED_BLACKSTONE_BRICK_WALL}};
+        for (Object[] o : own) {
+            @SuppressWarnings("unchecked")
+            var base = (com.thefarawaydev.realmsofchaos.ModContent.Ref<Block>) o[0];
+            if (block != base.get()) continue;
+            return new Stone(block, com.thefarawaydev.realmsofchaos.ModContent.STAIRS.get((String) o[1]).get(),
+                    com.thefarawaydev.realmsofchaos.ModContent.SLABS.get((String) o[1]).get(), (Block) o[2]);
+        }
         return null;
     }
 

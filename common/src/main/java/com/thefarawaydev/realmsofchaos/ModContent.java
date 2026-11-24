@@ -119,6 +119,9 @@ public final class ModContent {
     /** The eight pieces of the panoply, by id. */
     public static final Map<String, Ref<Item>> PANOPLY = new java.util.LinkedHashMap<>();
     public static final Map<String, Ref<Item>> BLOCK_ITEMS = new HashMap<>();
+    /** The stairs and slabs cut from the mod's stone, by the stone's id. */
+    public static final Map<String, Ref<Block>> STAIRS = new java.util.LinkedHashMap<>(), SLABS = new java.util.LinkedHashMap<>();
+    public static final Ref<Block> BRONZE_DOOR = new Ref<>(), BRONZE_TRAPDOOR = new Ref<>();
     public static final Ref<Item> TAROT_DECK = new Ref<>();
     public static final Map<Tarot, Ref<Item>> TAROT = new HashMap<>();
     public static final Map<VoodooDollItem.Pin, Ref<Item>> DOLLS = new HashMap<>();
@@ -290,7 +293,30 @@ public final class ModContent {
         block("portal_frame_shade", PORTAL_FRAME_SHADE, key -> new com.thefarawaydev.realmsofchaos.block.ConnectedBlock(decor(key).mapColor(MapColor.COLOR_PURPLE).lightLevel(s -> 7)));
         block("portal_frame_hub", PORTAL_FRAME_HUB, key -> new com.thefarawaydev.realmsofchaos.block.ConnectedBlock(decor(key).mapColor(MapColor.COLOR_GRAY).lightLevel(s -> 7)));
         block("arrival_sigil", ARRIVAL_SIGIL, key -> new Block(decor(key).mapColor(MapColor.COLOR_PURPLE).lightLevel(s -> 10)));
+        block("bronze_door", BRONZE_DOOR, key -> new net.minecraft.world.level.block.DoorBlock(net.minecraft.world.level.block.state.properties.BlockSetType.COPPER,
+                BlockBehaviour.Properties.of().setId(key).mapColor(MapColor.COLOR_ORANGE).strength(3.0F).requiresCorrectToolForDrops().noOcclusion()));
+        block("bronze_trapdoor", BRONZE_TRAPDOOR, key -> new net.minecraft.world.level.block.TrapDoorBlock(net.minecraft.world.level.block.state.properties.BlockSetType.COPPER,
+                BlockBehaviour.Properties.of().setId(key).mapColor(MapColor.COLOR_ORANGE).strength(3.0F).requiresCorrectToolForDrops().noOcclusion()));
         block("asphodel_bed", ASPHODEL_BED, key -> new Block(decor(key).mapColor(MapColor.COLOR_LIGHT_GRAY).sound(SoundType.AZALEA_LEAVES).strength(0.6F)));
+
+        // stairs and slabs of the mod's stone (after the stone itself: a stair is cut from its block's state)
+        Map<String, Ref<Block>> stones = new java.util.LinkedHashMap<>();
+        stones.put("olympian_marble", OLYMPIAN_MARBLE);
+        stones.put("cloudstone", CLOUDSTONE);
+        stones.put("trench_stone", TRENCH_STONE);
+        stones.put("tartarus_stone", TARTARUS_STONE);
+        stones.put("storm_brick", STORM_BRICK);
+        stones.put("tide_brick", TIDE_BRICK);
+        stones.put("ash_brick", ASH_BRICK);
+        stones.put("underworld_brick", UNDERWORLD_BRICK);
+        for (Map.Entry<String, Ref<Block>> stone : stones.entrySet()) {
+            Ref<Block> stairs = new Ref<>(), slab = new Ref<>();
+            STAIRS.put(stone.getKey(), stairs);
+            SLABS.put(stone.getKey(), slab);
+            Ref<Block> base = stone.getValue();
+            block(stone.getKey() + "_stairs", stairs, key -> new net.minecraft.world.level.block.StairBlock(base.get().defaultBlockState(), decor(key)));
+            block(stone.getKey() + "_slab", slab, key -> new net.minecraft.world.level.block.SlabBlock(decor(key)));
+        }
 
         // items: codex, compass, 45 god weapons (ordered by line, rank 1 -> 15), then the block items
         item("chaos_codex", CHAOS_CODEX, key -> new CodexItem(new Item.Properties().setId(key).stacksTo(1)));

@@ -159,6 +159,9 @@ final class Furnish {
                         .setValue(com.thefarawaydev.realmsofchaos.block.BrazierBlock.TOWER, plan.line.ordinal()), 2);
             }
             case STORE -> {
+                // a cellar hatch in the floor of the store, shut
+                if (open.test(0, 0)) put(level, at.apply(0, 0).above(), ModContent.BRONZE_TRAPDOOR.get().defaultBlockState()
+                        .setValue(net.minecraft.world.level.block.TrapDoorBlock.HALF, net.minecraft.world.level.block.state.properties.Half.BOTTOM));
                 // a store against the walls: barrels stacked, the jars the tower kept its oil in, a sack or two
                 for (int u = 0; u < size; u++) for (int v = 0; v < size; v++) {
                     if (!open.test(u, v)) continue;
