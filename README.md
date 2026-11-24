@@ -27,8 +27,8 @@ The current build is an **Alpha**.
   ways to them are seven wide, the canal, the gardens and the echoes' plinths move out with them, two pairs of
   beacons line each way, flowering beds with benches ring the outer plaza, and the empty quarter has a still pool
   with an obelisk in it. The rotunda is larger and the Oracle and the Heart now stand inside it, under the dome.
-  Each tower's god now stands on top of its own gate, on an attic raised over the entablature, facing the plaza;
-  the model towers stand far off behind. Whatever an earlier hub left in the sky is cleared away when it is
+  Each tower's god stands as a smaller statue on a plinth just behind its own gate, facing the plaza and rising
+  over the gate; the model towers stand far off behind. Whatever an earlier hub left in the sky is cleared away when it is
   rebuilt. (`art/renders/hub-larger.png`)
 * **Forges join up.** Forges of Chaos set side by side become one furnace: each block knows which of its
   neighbours are forges and drops its frame along those edges, so a bank of them shows one long grated mouth of

@@ -20,7 +20,7 @@ public final class RealmBuilder {
     /** How far out from the middle the four gates stand, and the half-width of the paved ways to them. */
     public static final int GATE_OUT = 28, WAY = 3;
     /** The hub has its own design number, so it can be rebuilt without rebuilding the towers. */
-    public static final int HUB_VERSION = 14;
+    public static final int HUB_VERSION = 15;
     /** The Oracle's Flame: just north of where arrivals appear, on the way to the gate of Zeus. */
     public static final BlockPos ORACLE = new BlockPos(0, Y + 1, -4);
     /** The Heart of the Hub stands south of the middle, facing the Oracle; the Bounty Board north-east of it. */

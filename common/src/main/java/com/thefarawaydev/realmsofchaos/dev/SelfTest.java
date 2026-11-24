@@ -418,10 +418,11 @@ public final class SelfTest {
             }
             for (com.thefarawaydev.realmsofchaos.god.Line line : com.thefarawaydev.realmsofchaos.god.Line.values()) {
                 BlockPos statue = com.thefarawaydev.realmsofchaos.world.HubVista.statueFoot(line), tower = com.thefarawaydev.realmsofchaos.world.HubVista.towerFoot(line);
-                check(solid(level, statue.below()) && solid(level, statue.above(4)) && solid(level, statue.above(14)) && level.getBlockState(statue.above(40)).isAir(),
-                        line + ": a statue of its god stands on top of its gate");
-                check(statue.getY() > 64 + 8 && Math.abs(Math.hypot(statue.getX(), statue.getZ()) - RealmBuilder.GATE_OUT) < 1 && Math.hypot(tower.getX(), tower.getZ()) > 100,
-                        line + ": over the gate itself, the tower far off");
+                check(solid(level, statue.below()) && solid(level, statue.above(3)) && solid(level, statue.above(10)) && level.getBlockState(statue.above(30)).isAir(),
+                        line + ": a statue of its god stands behind its gate, on a plinth");
+                double out = Math.hypot(statue.getX(), statue.getZ());
+                check(out > RealmBuilder.GATE_OUT + 2 && out < RealmBuilder.HUB_RADIUS - 3 && Math.hypot(tower.getX(), tower.getZ()) > 100,
+                        line + ": inside the plaza's wall, just behind the gate; the tower far off");
                 int shell = 0;
                 for (int a = -10; a <= 10; a++) for (int b = -10; b <= 10; b++) if (solid(level, tower.offset(a, 75, b))) shell++;
                 check(shell > 40 && solid(level, tower.below()) && solid(level, tower.above(com.thefarawaydev.realmsofchaos.world.HubVista.TOWER_HEIGHT + 5)),

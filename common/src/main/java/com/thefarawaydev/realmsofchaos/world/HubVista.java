@@ -24,9 +24,11 @@ public final class HubVista {
     /** How far out from the middle of the plaza a statue stands, and a tower. */
     public static final int STATUE_OUT = 60, TOWER_OUT = 125, TOWER_ASIDE = 36;
     /** A statue stands on a pedestal whose top is this far above the plaza. */
-    public static final int STATUE_FOOT = 9;
+    public static final int STATUE_FOOT = 3;
+    /** How far behind its gate a statue stands. */
+    public static final int STATUE_BEHIND = 6;
     /** Blocks to a unit of the figure. */
-    private static final double SCALE = 1.2;
+    private static final double SCALE = 0.85;
     /** How tall the model of a tower is (fifteen floors of ten), and its radius at the foot. */
     public static final int TOWER_HEIGHT = 150;
     private static final double TOWER_RADIUS = 9.0;
@@ -46,7 +48,7 @@ public final class HubVista {
 
     /** Where a god's statue stands: the middle of the top of its pedestal. */
     public static BlockPos statueFoot(Line line) {
-        return BlockPos.ZERO.relative(outward(line), RealmBuilder.GATE_OUT).atY(Y + STATUE_FOOT);
+        return BlockPos.ZERO.relative(outward(line), RealmBuilder.GATE_OUT + STATUE_BEHIND).atY(Y + STATUE_FOOT);
     }
 
     /** Where the model of a tower stands: the middle of its foot. */
@@ -293,41 +295,36 @@ public final class HubVista {
     }
 
     /**
-     * The tower's god, standing on top of its gate: an attic is raised on the gate's entablature - a block of the
-     * god's stone with a cornice round it and a plinth on top - and the figure stands on that, facing the plaza.
+     * The tower's god in small, standing just behind its gate on a stepped plinth on the plaza's floor, facing the
+     * plaza, so from the middle it is seen rising over the gate.
      */
     private static void statue(ServerLevel level, Line line) {
         Stones s = stones(line);
         BlockPos foot = statueFoot(line);
         Direction front = outward(line).getOpposite(), right = front.getClockWise();
         Mason.Stone cut = Mason.of(s.plinth());
-        // the gate's pediment gives way to the attic; the air above it is cleared for the figure
-        for (int a = -6; a <= 6; a++) for (int b = -5; b <= 5; b++) for (int y = -2; y <= 48; y++) {
+        // the air it stands in is cleared - but not the gate in front of it
+        for (int a = -6; a <= 6; a++) for (int b = -5; b <= STATUE_BEHIND - 2; b++) for (int y = -2; y <= 34; y++) {
             BlockPos at = foot.relative(right, a).relative(front, b).above(y);
             if (!level.getBlockState(at).isAir()) set(level, at, Blocks.AIR);
         }
-        for (int a = -5; a <= 5; a++) {
+        // the plinth: a stepped base, a die, a moulded top
+        for (int a = -4; a <= 4; a++) {
             for (int b = -3; b <= 3; b++) {
                 BlockPos at = foot.relative(right, a).relative(front, b);
-                boolean rim = Math.abs(a) == 5 || Math.abs(b) == 3;
-                Direction out = Math.abs(a) == 5 ? (a > 0 ? right : right.getOpposite()) : (b > 0 ? front : front.getOpposite());
-                // the attic: a course of the god's stone, carried out on a cornice of hanging stairs
-                set(level, at.below(2), rim ? Mason.stair(cut.stairs(), out.getOpposite(), true) : s.plinthTrim().defaultBlockState());
-                // and the plinth on it, its edge stepped
-                if (Math.abs(a) <= 4 && Math.abs(b) <= 2) {
-                    boolean edge = Math.abs(a) == 4 || Math.abs(b) == 2;
-                    Direction o2 = Math.abs(a) == 4 ? (a > 0 ? right : right.getOpposite()) : (b > 0 ? front : front.getOpposite());
-                    set(level, at.below(1), edge ? Mason.stair(cut.stairs(), o2.getOpposite(), false) : s.plinth().defaultBlockState());
-                }
+                boolean rim = Math.abs(a) == 4 || Math.abs(b) == 3;
+                Direction out = Math.abs(a) == 4 ? (a > 0 ? right : right.getOpposite()) : (b > 0 ? front : front.getOpposite());
+                set(level, at.below(2), rim ? Mason.stair(cut.stairs(), out.getOpposite(), false) : s.plinthTrim().defaultBlockState());
+                if (!rim) set(level, at.below(1), Math.abs(a) == 3 || Math.abs(b) == 2 ? s.plinthTrim() : s.plinth());
             }
         }
-        // a lamp at each front corner of the attic, and the god's mark in the middle of its face
-        for (int side = -1; side <= 1; side += 2) set(level, foot.relative(right, side * 4).relative(front, 2).below(1), s.light());
-        set(level, foot.relative(front, 3).below(2), s.light());
+        // a lamp at each front corner, and the god's mark in the middle of the die's face
+        for (int side = -1; side <= 1; side += 2) set(level, foot.relative(right, side * 3).relative(front, 2), s.light());
+        set(level, foot.relative(front, 3).below(1), s.light());
         // the figure
-        for (int bx = -8; bx <= 9; bx++) {
-            for (int by = 0; by <= 34; by++) {
-                for (int bz = -4; bz <= 5; bz++) {
+        for (int bx = -6; bx <= 7; bx++) {
+            for (int by = 0; by <= 24; by++) {
+                for (int bz = -3; bz <= 4; bz++) {
                     Part p = part(line, bx / SCALE, by / SCALE, bz / SCALE);
                     if (p == null) continue;
                     set(level, foot.relative(right, bx).relative(front, bz).above(by), s.of(p));
