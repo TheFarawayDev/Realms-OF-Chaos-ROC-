@@ -1,0 +1,7 @@
+{
+  "parent": "minecraft:block/cube_column",
+  "textures": {
+    "end": "realms_of_chaos:block/arrival_sigil",
+    "side": "realms_of_chaos:block/arrival_sigil_side"
+  }
+}

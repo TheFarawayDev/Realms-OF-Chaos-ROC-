@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "key": {
+    "M": "realms_of_chaos:chaos_mosaic",
+    "G": "minecraft:gold_ingot",
+    "E": "minecraft:ender_pearl"
+  },
+  "pattern": [
+    "MGM",
+    "GEG",
+    "MGM"
+  ],
+  "result": {
+    "id": "realms_of_chaos:arrival_sigil",
+    "count": 2
+  }
+}

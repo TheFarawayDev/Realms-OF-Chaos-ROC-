@@ -58,6 +58,22 @@ The current build is an **Alpha**.
   between the windows, and its walkway paved in its floor panels with one frame round the whole ring; every
   passage room of the tower has its columns in the tower's column and, in the tall rooms, its brick above the
   band. All craftable and dug with a pickaxe. (`art/renders/tower-stone*.png`)
+* **A real weapon rack.** The Weapon Rack is a rack on the wall now, not a painted cube: a board of dark oak, two
+  rails, and on them a spear, a sword, a shield or two crossed axes, modelled in the round - which, the game
+  chooses block by block. It faces the way it is placed, and racks side by side or one over another join: end
+  posts and the cap stand only where the run ends. (`art/renders/weapon-rack.png`)
+* **The upper floors in their own stone.** Six more blocks for the towers' higher stretches: Cloudstone and Cloud
+  Tile (the Sky's), Trench Stone - dark, with glowing specks - and Nacre Tile (the Sea's), Tartarus Stone and the
+  gold-lined Throne Tile (the Shades'). The second stretch of every tower now uses the Olympian, Abyssal and
+  Underworld stone, the third and the summit these. (`art/renders/upper-floors.png`)
+* **Portal frames and arrival sigils.** Every gate - in the hub, on every tower floor, at the end of every passage
+  level - stands between the Portal Frames of its tower (the Sky, the Sea, the Shades, or the Hub's for the way
+  out): columns with a rune glowing in each, a base and a cap only at the ends. And wherever somebody arrives -
+  the hub's spawn, the hub's arrival points, every tower floor's arrival pad, every passage level's first room -
+  they stand on an Arrival Sigil, a ring of the three gods' colours in gold. (`art/renders/portals-and-sigils.png`,
+  `portal-frames.png`)
+* Every room updated in these builds, as it stands now: `art/renders/rooms-updated.png`. Two developer commands
+  help look round: `/roc dev floor <tower> <floor>` and `/roc dev room <tower> <kind>`.
 * **Blocks that vary.** The blocks laid in great runs now come in several looks the game picks between, block by
   block, so a wall or a floor of them never repeats: the Storm, Tide, Ash and Underworld Bricks (plain, cracked, a
   brick gold-veined, barnacled or ember-lit, a worn patch), the Abyssal Tile, Olympian Tiles, Bath Tile and Olympian
@@ -65,8 +81,8 @@ The current build is an **Alpha**.
   then a comet, turned every way), the three hedges (leaves turned, flowers scattered differently) and the Bronze
   Grate (bright, or going green). Every variant still runs on into its neighbours. (`art/renders/block-variants.png`)
 * **Racks and shelves that connect.** The Weapon Rack and the Scroll Shelf are connecting blocks now: a run of racks
-  is one rack of spears, swords, shields and axes in a single frame, and a wall of scroll shelves one case of
-  pigeonholes. Libraries have two walls of books and two of scrolls. (`art/renders/connected-furniture.png`)
+  is one rack, and a wall of scroll shelves one case of pigeonholes. Libraries have two walls of books and two of
+  scrolls.
 * **Four new rooms, and twelve more blocks to furnish them.** Passages now have **observatories** (a vault of
   stars overhead, the floor's quarters in the tower's mosaic, celestial globes on bronze stands and lecterns of
   star charts), **armouries** (racks of arms along the walls, bronze grates underfoot, an anvil, a grindstone and a

@@ -38,6 +38,17 @@
     "realms_of_chaos:bath_tile",
     "realms_of_chaos:laurel_hedge",
     "realms_of_chaos:kelp_weave",
-    "realms_of_chaos:asphodel_bed"
+    "realms_of_chaos:asphodel_bed",
+    "realms_of_chaos:cloudstone",
+    "realms_of_chaos:cloud_tile",
+    "realms_of_chaos:trench_stone",
+    "realms_of_chaos:nacre_tile",
+    "realms_of_chaos:tartarus_stone",
+    "realms_of_chaos:throne_tile",
+    "realms_of_chaos:portal_frame_sky",
+    "realms_of_chaos:portal_frame_sea",
+    "realms_of_chaos:portal_frame_shade",
+    "realms_of_chaos:portal_frame_hub",
+    "realms_of_chaos:arrival_sigil"
   ]
 }

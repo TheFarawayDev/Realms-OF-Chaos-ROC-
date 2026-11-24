@@ -543,7 +543,7 @@
       16
     ],
     "columns": 8,
-    "count": 390,
+    "count": 407,
     "source": "assets/realms_of_chaos/textures/block",
     "tiles": {
       "abyssal_panel_0": [
@@ -718,1393 +718,1461 @@
         2,
         5
       ],
-      "ash_brick": [
+      "arrival_sigil": [
         3,
+        5
+      ],
+      "arrival_sigil_side": [
+        4,
+        5
+      ],
+      "ash_brick": [
+        5,
         5
       ],
       "ash_brick_v1": [
-        4,
+        6,
         5
       ],
       "ash_brick_v2": [
-        5,
+        7,
         5
       ],
       "ash_brick_v3": [
-        6,
-        5
+        0,
+        6
       ],
       "asphodel_bed": [
-        7,
-        5
+        1,
+        6
       ],
       "asphodel_bed_v1": [
-        0,
+        2,
         6
       ],
       "asphodel_bed_v2": [
-        1,
+        3,
         6
       ],
       "bath_tile": [
-        2,
+        4,
         6
       ],
       "bath_tile_v1": [
-        3,
+        5,
         6
       ],
       "bath_tile_v2": [
-        4,
+        6,
         6
       ],
       "beam_emitter": [
-        5,
+        7,
         6
       ],
       "beam_emitter_lens": [
-        6,
-        6
+        0,
+        7
       ],
       "beam_gold": [
-        7,
-        6
+        1,
+        7
       ],
       "beam_iron": [
-        0,
+        2,
         7
       ],
       "beam_mirror_lit_side": [
-        1,
+        3,
         7
       ],
       "beam_mirror_lit_top": [
-        2,
+        4,
         7
       ],
       "beam_mirror_pane": [
-        3,
+        5,
         7
       ],
       "beam_mirror_pane_lit": [
-        4,
+        6,
         7
       ],
       "beam_mirror_side": [
-        5,
+        7,
         7
       ],
       "beam_mirror_top": [
-        6,
-        7
+        0,
+        8
       ],
       "beam_receiver": [
-        7,
-        7
+        1,
+        8
       ],
       "beam_receiver_lens": [
-        0,
+        2,
         8
       ],
       "beam_receiver_lit": [
-        1,
+        3,
         8
       ],
       "beam_receiver_lit_lens": [
-        2,
+        4,
         8
       ],
       "beam_stone": [
-        3,
+        5,
         8
       ],
       "bone_column_bottom": [
-        4,
+        6,
         8
       ],
       "bone_column_end": [
-        5,
+        7,
         8
       ],
       "bone_column_middle": [
-        6,
-        8
+        0,
+        9
       ],
       "bone_column_single": [
-        7,
-        8
+        1,
+        9
       ],
       "bone_column_top": [
-        0,
+        2,
         9
       ],
       "bounty_board_side": [
-        1,
+        3,
         9
       ],
       "bounty_board_side_0": [
-        2,
+        4,
         9
       ],
       "bounty_board_side_1": [
-        3,
+        5,
         9
       ],
       "bounty_board_side_2": [
-        4,
+        6,
         9
       ],
       "bounty_board_side_3": [
-        5,
+        7,
         9
       ],
       "bounty_board_side_4": [
-        6,
-        9
+        0,
+        10
       ],
       "bounty_board_side_5": [
-        7,
-        9
+        1,
+        10
       ],
       "bounty_board_top": [
-        0,
+        2,
         10
       ],
       "bronze": [
-        1,
+        3,
         10
       ],
       "bronze_grate": [
-        2,
+        4,
         10
       ],
       "bronze_grate_v1": [
-        3,
+        5,
         10
       ],
       "bronze_grate_v2": [
-        4,
+        6,
         10
       ],
       "celestial_globe": [
-        5,
+        7,
         10
       ],
       "chaos_forge_side": [
-        6,
-        10
+        0,
+        11
       ],
       "chaos_forge_side_0": [
-        7,
-        10
+        1,
+        11
       ],
       "chaos_forge_side_1": [
-        0,
+        2,
         11
       ],
       "chaos_forge_side_10": [
-        1,
+        3,
         11
       ],
       "chaos_forge_side_11": [
-        2,
+        4,
         11
       ],
       "chaos_forge_side_12": [
-        3,
+        5,
         11
       ],
       "chaos_forge_side_13": [
-        4,
+        6,
         11
       ],
       "chaos_forge_side_14": [
-        5,
+        7,
         11
       ],
       "chaos_forge_side_15": [
-        6,
-        11
+        0,
+        12
       ],
       "chaos_forge_side_2": [
-        7,
-        11
+        1,
+        12
       ],
       "chaos_forge_side_3": [
-        0,
+        2,
         12
       ],
       "chaos_forge_side_4": [
-        1,
+        3,
         12
       ],
       "chaos_forge_side_5": [
-        2,
+        4,
         12
       ],
       "chaos_forge_side_6": [
-        3,
+        5,
         12
       ],
       "chaos_forge_side_7": [
-        4,
+        6,
         12
       ],
       "chaos_forge_side_8": [
-        5,
+        7,
         12
       ],
       "chaos_forge_side_9": [
-        6,
-        12
+        0,
+        13
       ],
       "chaos_forge_top": [
-        7,
-        12
+        1,
+        13
       ],
       "chaos_forge_top_0": [
-        0,
+        2,
         13
       ],
       "chaos_forge_top_1": [
-        1,
+        3,
         13
       ],
       "chaos_forge_top_10": [
-        2,
+        4,
         13
       ],
       "chaos_forge_top_11": [
-        3,
+        5,
         13
       ],
       "chaos_forge_top_12": [
-        4,
+        6,
         13
       ],
       "chaos_forge_top_13": [
-        5,
+        7,
         13
       ],
       "chaos_forge_top_14": [
-        6,
-        13
+        0,
+        14
       ],
       "chaos_forge_top_15": [
-        7,
-        13
+        1,
+        14
       ],
       "chaos_forge_top_2": [
-        0,
+        2,
         14
       ],
       "chaos_forge_top_3": [
-        1,
+        3,
         14
       ],
       "chaos_forge_top_4": [
-        2,
+        4,
         14
       ],
       "chaos_forge_top_5": [
-        3,
+        5,
         14
       ],
       "chaos_forge_top_6": [
-        4,
+        6,
         14
       ],
       "chaos_forge_top_7": [
-        5,
+        7,
         14
       ],
       "chaos_forge_top_8": [
-        6,
-        14
+        0,
+        15
       ],
       "chaos_forge_top_9": [
-        7,
-        14
+        1,
+        15
       ],
       "chaos_lamp": [
-        0,
+        2,
         15
       ],
       "chaos_mosaic": [
-        1,
+        3,
         15
       ],
       "chime_crystal_lit_side": [
-        2,
+        4,
         15
       ],
       "chime_crystal_lit_top": [
-        3,
+        5,
         15
       ],
       "chime_crystal_side": [
-        4,
+        6,
         15
       ],
       "chime_crystal_top": [
-        5,
-        15
-      ],
-      "coral_column_bottom": [
-        6,
-        15
-      ],
-      "coral_column_end": [
         7,
         15
       ],
-      "coral_column_middle": [
+      "cloud_tile": [
         0,
+        16
+      ],
+      "cloudstone": [
+        1,
+        16
+      ],
+      "coral_column_bottom": [
+        2,
+        16
+      ],
+      "coral_column_end": [
+        3,
+        16
+      ],
+      "coral_column_middle": [
+        4,
         16
       ],
       "coral_column_single": [
-        1,
+        5,
         16
       ],
       "coral_column_top": [
-        2,
+        6,
         16
       ],
       "dart_tile": [
-        3,
+        7,
         16
       ],
       "ember_panel_0": [
-        4,
-        16
+        0,
+        17
       ],
       "ember_panel_1": [
-        5,
-        16
+        1,
+        17
       ],
       "ember_panel_10": [
-        6,
-        16
+        2,
+        17
       ],
       "ember_panel_11": [
-        7,
-        16
+        3,
+        17
       ],
       "ember_panel_12": [
-        0,
+        4,
         17
       ],
       "ember_panel_13": [
-        1,
+        5,
         17
       ],
       "ember_panel_14": [
-        2,
+        6,
         17
       ],
       "ember_panel_15": [
-        3,
+        7,
         17
       ],
       "ember_panel_2": [
-        4,
-        17
+        0,
+        18
       ],
       "ember_panel_3": [
-        5,
-        17
+        1,
+        18
       ],
       "ember_panel_4": [
-        6,
-        17
+        2,
+        18
       ],
       "ember_panel_5": [
-        7,
-        17
+        3,
+        18
       ],
       "ember_panel_6": [
-        0,
+        4,
         18
       ],
       "ember_panel_7": [
-        1,
+        5,
         18
       ],
       "ember_panel_8": [
-        2,
+        6,
         18
       ],
       "ember_panel_9": [
-        3,
+        7,
         18
       ],
       "flame_vent_side": [
-        4,
-        18
+        0,
+        19
       ],
       "flame_vent_top": [
-        5,
-        18
+        1,
+        19
       ],
       "gas_vent_side": [
-        6,
-        18
+        2,
+        19
       ],
       "gas_vent_top": [
-        7,
-        18
+        3,
+        19
       ],
       "gate_ascend": [
-        0,
+        4,
         19
       ],
       "gate_hades": [
-        1,
+        5,
         19
       ],
       "gate_hub": [
-        2,
+        6,
         19
       ],
       "gate_leave": [
-        3,
+        7,
         19
       ],
       "gate_pedestal_band": [
-        4,
-        19
+        0,
+        20
       ],
       "gate_pedestal_capital": [
-        5,
-        19
+        1,
+        20
       ],
       "gate_pedestal_plain": [
-        6,
-        19
+        2,
+        20
       ],
       "gate_pedestal_plinth": [
-        7,
-        19
+        3,
+        20
       ],
       "gate_pedestal_shaft": [
-        0,
+        4,
         20
       ],
       "gate_pedestal_side": [
-        1,
+        5,
         20
       ],
       "gate_pedestal_top": [
-        2,
+        6,
         20
       ],
       "gate_poseidon": [
-        3,
+        7,
         20
       ],
       "gate_zeus": [
-        4,
-        20
+        0,
+        21
       ],
       "gilded_frieze": [
-        5,
-        20
+        1,
+        21
       ],
       "glyph_tile": [
-        6,
-        20
+        2,
+        21
       ],
       "glyph_tile_lit": [
-        7,
-        20
+        3,
+        21
       ],
       "hub_heart_side": [
-        0,
+        4,
         21
       ],
       "hub_heart_top": [
-        1,
+        5,
         21
       ],
       "kelp_weave": [
-        2,
+        6,
         21
       ],
       "kelp_weave_v1": [
-        3,
+        7,
         21
       ],
       "kelp_weave_v2": [
-        4,
-        21
+        0,
+        22
       ],
       "laurel_hedge": [
-        5,
-        21
+        1,
+        22
       ],
       "laurel_hedge_v1": [
-        6,
-        21
+        2,
+        22
       ],
       "laurel_hedge_v2": [
-        7,
-        21
+        3,
+        22
       ],
       "lore_tablet_side": [
-        0,
+        4,
         22
       ],
       "lore_tablet_top": [
-        1,
+        5,
         22
       ],
       "marble_column_bottom": [
-        2,
+        6,
         22
       ],
       "marble_column_end": [
-        3,
+        7,
         22
       ],
       "marble_column_middle": [
-        4,
-        22
+        0,
+        23
       ],
       "marble_column_single": [
-        5,
-        22
+        1,
+        23
       ],
       "marble_column_top": [
-        6,
-        22
+        2,
+        23
       ],
       "memory_plate": [
-        7,
-        22
+        3,
+        23
       ],
       "memory_plate_lit": [
-        0,
+        4,
+        23
+      ],
+      "nacre_tile": [
+        5,
         23
       ],
       "olympian_marble": [
-        1,
+        6,
         23
       ],
       "olympian_marble_pillar": [
-        2,
+        7,
         23
       ],
       "olympian_marble_pillar_top": [
-        3,
-        23
+        0,
+        24
       ],
       "olympian_marble_v1": [
-        4,
-        23
+        1,
+        24
       ],
       "olympian_marble_v2": [
-        5,
-        23
+        2,
+        24
       ],
       "olympian_marble_v3": [
-        6,
-        23
+        3,
+        24
       ],
       "olympian_panel_0": [
-        7,
-        23
+        4,
+        24
       ],
       "olympian_panel_1": [
-        0,
+        5,
         24
       ],
       "olympian_panel_10": [
-        1,
+        6,
         24
       ],
       "olympian_panel_11": [
-        2,
+        7,
         24
       ],
       "olympian_panel_12": [
-        3,
-        24
+        0,
+        25
       ],
       "olympian_panel_13": [
-        4,
-        24
+        1,
+        25
       ],
       "olympian_panel_14": [
-        5,
-        24
+        2,
+        25
       ],
       "olympian_panel_15": [
-        6,
-        24
+        3,
+        25
       ],
       "olympian_panel_2": [
-        7,
-        24
+        4,
+        25
       ],
       "olympian_panel_3": [
-        0,
+        5,
         25
       ],
       "olympian_panel_4": [
-        1,
+        6,
         25
       ],
       "olympian_panel_5": [
-        2,
+        7,
         25
       ],
       "olympian_panel_6": [
-        3,
-        25
+        0,
+        26
       ],
       "olympian_panel_7": [
-        4,
-        25
+        1,
+        26
       ],
       "olympian_panel_8": [
-        5,
-        25
+        2,
+        26
       ],
       "olympian_panel_9": [
-        6,
-        25
+        3,
+        26
       ],
       "olympian_tiles": [
-        7,
-        25
+        4,
+        26
       ],
       "olympian_tiles_v1": [
-        0,
+        5,
         26
       ],
       "olympian_tiles_v2": [
-        1,
+        6,
         26
       ],
       "oracle_side": [
-        2,
+        7,
         26
       ],
       "oracle_top": [
-        3,
-        26
+        0,
+        27
       ],
       "passage_cache": [
-        4,
-        26
+        1,
+        27
       ],
       "passage_seal": [
-        5,
-        26
+        2,
+        27
       ],
       "passage_seal_top": [
-        6,
-        26
+        3,
+        27
       ],
       "passage_shrine": [
-        7,
-        26
+        4,
+        27
       ],
       "pearl_panel_0": [
-        0,
+        5,
         27
       ],
       "pearl_panel_1": [
-        1,
+        6,
         27
       ],
       "pearl_panel_10": [
-        2,
+        7,
         27
       ],
       "pearl_panel_11": [
-        3,
-        27
+        0,
+        28
       ],
       "pearl_panel_12": [
-        4,
-        27
+        1,
+        28
       ],
       "pearl_panel_13": [
-        5,
-        27
+        2,
+        28
       ],
       "pearl_panel_14": [
-        6,
-        27
+        3,
+        28
       ],
       "pearl_panel_15": [
-        7,
-        27
+        4,
+        28
       ],
       "pearl_panel_2": [
-        0,
+        5,
         28
       ],
       "pearl_panel_3": [
-        1,
+        6,
         28
       ],
       "pearl_panel_4": [
-        2,
+        7,
         28
       ],
       "pearl_panel_5": [
-        3,
-        28
+        0,
+        29
       ],
       "pearl_panel_6": [
-        4,
-        28
+        1,
+        29
       ],
       "pearl_panel_7": [
-        5,
-        28
+        2,
+        29
       ],
       "pearl_panel_8": [
-        6,
-        28
+        3,
+        29
       ],
       "pearl_panel_9": [
+        4,
+        29
+      ],
+      "portal_frame_hub_bottom": [
+        5,
+        29
+      ],
+      "portal_frame_hub_end": [
+        6,
+        29
+      ],
+      "portal_frame_hub_middle": [
         7,
-        28
+        29
+      ],
+      "portal_frame_hub_single": [
+        0,
+        30
+      ],
+      "portal_frame_hub_top": [
+        1,
+        30
+      ],
+      "portal_frame_sea_bottom": [
+        2,
+        30
+      ],
+      "portal_frame_sea_end": [
+        3,
+        30
+      ],
+      "portal_frame_sea_middle": [
+        4,
+        30
+      ],
+      "portal_frame_sea_single": [
+        5,
+        30
+      ],
+      "portal_frame_sea_top": [
+        6,
+        30
+      ],
+      "portal_frame_shade_bottom": [
+        7,
+        30
+      ],
+      "portal_frame_shade_end": [
+        0,
+        31
+      ],
+      "portal_frame_shade_middle": [
+        1,
+        31
+      ],
+      "portal_frame_shade_single": [
+        2,
+        31
+      ],
+      "portal_frame_shade_top": [
+        3,
+        31
+      ],
+      "portal_frame_sky_bottom": [
+        4,
+        31
+      ],
+      "portal_frame_sky_end": [
+        5,
+        31
+      ],
+      "portal_frame_sky_middle": [
+        6,
+        31
+      ],
+      "portal_frame_sky_single": [
+        7,
+        31
+      ],
+      "portal_frame_sky_top": [
+        0,
+        32
+      ],
+      "rack_board": [
+        1,
+        32
+      ],
+      "rack_gold": [
+        2,
+        32
+      ],
+      "rack_iron": [
+        3,
+        32
+      ],
+      "rack_leather": [
+        4,
+        32
+      ],
+      "rack_shield": [
+        5,
+        32
+      ],
+      "rack_wood": [
+        6,
+        32
       ],
       "relay_core_side": [
-        0,
-        29
+        7,
+        32
       ],
       "relay_core_top": [
-        1,
-        29
+        0,
+        33
       ],
       "rune_stone_0": [
-        2,
-        29
+        1,
+        33
       ],
       "rune_stone_0_lit": [
-        3,
-        29
+        2,
+        33
       ],
       "rune_stone_1": [
-        4,
-        29
+        3,
+        33
       ],
       "rune_stone_1_lit": [
-        5,
-        29
+        4,
+        33
       ],
       "rune_stone_2": [
-        6,
-        29
+        5,
+        33
       ],
       "rune_stone_2_lit": [
-        7,
-        29
+        6,
+        33
       ],
       "rune_stone_3": [
-        0,
-        30
+        7,
+        33
       ],
       "rune_stone_3_lit": [
-        1,
-        30
+        0,
+        34
       ],
       "rune_stone_top": [
-        2,
-        30
+        1,
+        34
       ],
       "scroll_shelf": [
-        3,
-        30
+        2,
+        34
       ],
       "scroll_shelf_0": [
-        4,
-        30
+        3,
+        34
       ],
       "scroll_shelf_1": [
-        5,
-        30
+        4,
+        34
       ],
       "scroll_shelf_10": [
-        6,
-        30
+        5,
+        34
       ],
       "scroll_shelf_11": [
-        7,
-        30
+        6,
+        34
       ],
       "scroll_shelf_12": [
-        0,
-        31
+        7,
+        34
       ],
       "scroll_shelf_13": [
-        1,
-        31
+        0,
+        35
       ],
       "scroll_shelf_14": [
-        2,
-        31
+        1,
+        35
       ],
       "scroll_shelf_15": [
-        3,
-        31
+        2,
+        35
       ],
       "scroll_shelf_2": [
-        4,
-        31
+        3,
+        35
       ],
       "scroll_shelf_3": [
-        5,
-        31
+        4,
+        35
       ],
       "scroll_shelf_4": [
-        6,
-        31
+        5,
+        35
       ],
       "scroll_shelf_5": [
-        7,
-        31
+        6,
+        35
       ],
       "scroll_shelf_6": [
-        0,
-        32
+        7,
+        35
       ],
       "scroll_shelf_7": [
-        1,
-        32
+        0,
+        36
       ],
       "scroll_shelf_8": [
-        2,
-        32
+        1,
+        36
       ],
       "scroll_shelf_9": [
-        3,
-        32
+        2,
+        36
       ],
       "sea_mosaic_0": [
-        4,
-        32
+        3,
+        36
       ],
       "sea_mosaic_1": [
-        5,
-        32
+        4,
+        36
       ],
       "sea_mosaic_10": [
-        6,
-        32
+        5,
+        36
       ],
       "sea_mosaic_11": [
-        7,
-        32
+        6,
+        36
       ],
       "sea_mosaic_12": [
-        0,
-        33
+        7,
+        36
       ],
       "sea_mosaic_13": [
-        1,
-        33
+        0,
+        37
       ],
       "sea_mosaic_14": [
-        2,
-        33
+        1,
+        37
       ],
       "sea_mosaic_15": [
-        3,
-        33
+        2,
+        37
       ],
       "sea_mosaic_2": [
-        4,
-        33
+        3,
+        37
       ],
       "sea_mosaic_3": [
-        5,
-        33
+        4,
+        37
       ],
       "sea_mosaic_4": [
-        6,
-        33
+        5,
+        37
       ],
       "sea_mosaic_5": [
-        7,
-        33
+        6,
+        37
       ],
       "sea_mosaic_6": [
-        0,
-        34
+        7,
+        37
       ],
       "sea_mosaic_7": [
-        1,
-        34
+        0,
+        38
       ],
       "sea_mosaic_8": [
-        2,
-        34
+        1,
+        38
       ],
       "sea_mosaic_9": [
-        3,
-        34
+        2,
+        38
       ],
       "sea_relief": [
-        4,
-        34
+        3,
+        38
       ],
       "shade_mosaic_0": [
-        5,
-        34
+        4,
+        38
       ],
       "shade_mosaic_1": [
-        6,
-        34
+        5,
+        38
       ],
       "shade_mosaic_10": [
-        7,
-        34
+        6,
+        38
       ],
       "shade_mosaic_11": [
-        0,
-        35
+        7,
+        38
       ],
       "shade_mosaic_12": [
-        1,
-        35
+        0,
+        39
       ],
       "shade_mosaic_13": [
-        2,
-        35
+        1,
+        39
       ],
       "shade_mosaic_14": [
-        3,
-        35
+        2,
+        39
       ],
       "shade_mosaic_15": [
-        4,
-        35
+        3,
+        39
       ],
       "shade_mosaic_2": [
-        5,
-        35
+        4,
+        39
       ],
       "shade_mosaic_3": [
-        6,
-        35
+        5,
+        39
       ],
       "shade_mosaic_4": [
-        7,
-        35
+        6,
+        39
       ],
       "shade_mosaic_5": [
-        0,
-        36
+        7,
+        39
       ],
       "shade_mosaic_6": [
-        1,
-        36
+        0,
+        40
       ],
       "shade_mosaic_7": [
-        2,
-        36
+        1,
+        40
       ],
       "shade_mosaic_8": [
-        3,
-        36
+        2,
+        40
       ],
       "shade_mosaic_9": [
-        4,
-        36
+        3,
+        40
       ],
       "shade_relief": [
-        5,
-        36
+        4,
+        40
       ],
       "shield_pylon_side": [
-        6,
-        36
+        5,
+        40
       ],
       "shield_pylon_top": [
-        7,
-        36
+        6,
+        40
       ],
       "signal_jammer_side": [
-        0,
-        37
+        7,
+        40
       ],
       "signal_jammer_top": [
-        1,
-        37
+        0,
+        41
       ],
       "sky_mosaic_0": [
-        2,
-        37
+        1,
+        41
       ],
       "sky_mosaic_1": [
-        3,
-        37
+        2,
+        41
       ],
       "sky_mosaic_10": [
-        4,
-        37
+        3,
+        41
       ],
       "sky_mosaic_11": [
-        5,
-        37
+        4,
+        41
       ],
       "sky_mosaic_12": [
-        6,
-        37
+        5,
+        41
       ],
       "sky_mosaic_13": [
-        7,
-        37
+        6,
+        41
       ],
       "sky_mosaic_14": [
-        0,
-        38
+        7,
+        41
       ],
       "sky_mosaic_15": [
-        1,
-        38
+        0,
+        42
       ],
       "sky_mosaic_2": [
-        2,
-        38
+        1,
+        42
       ],
       "sky_mosaic_3": [
-        3,
-        38
+        2,
+        42
       ],
       "sky_mosaic_4": [
-        4,
-        38
+        3,
+        42
       ],
       "sky_mosaic_5": [
-        5,
-        38
+        4,
+        42
       ],
       "sky_mosaic_6": [
-        6,
-        38
+        5,
+        42
       ],
       "sky_mosaic_7": [
-        7,
-        38
+        6,
+        42
       ],
       "sky_mosaic_8": [
-        0,
-        39
+        7,
+        42
       ],
       "sky_mosaic_9": [
-        1,
-        39
+        0,
+        43
       ],
       "sky_relief": [
-        2,
-        39
+        1,
+        43
       ],
       "spike_plate": [
-        3,
-        39
+        2,
+        43
       ],
       "spike_plate_dark": [
-        4,
-        39
+        3,
+        43
       ],
       "star_vault": [
-        5,
-        39
+        4,
+        43
       ],
       "star_vault_v1": [
-        6,
-        39
+        5,
+        43
       ],
       "star_vault_v2": [
-        7,
-        39
+        6,
+        43
       ],
       "star_vault_v3": [
-        0,
-        40
+        7,
+        43
       ],
       "storm_brick": [
-        1,
-        40
+        0,
+        44
       ],
       "storm_brick_v1": [
-        2,
-        40
+        1,
+        44
       ],
       "storm_brick_v2": [
-        3,
-        40
+        2,
+        44
       ],
       "storm_brick_v3": [
-        4,
-        40
+        3,
+        44
       ],
       "sunstone_panel_0": [
-        5,
-        40
+        4,
+        44
       ],
       "sunstone_panel_1": [
-        6,
-        40
+        5,
+        44
       ],
       "sunstone_panel_10": [
-        7,
-        40
+        6,
+        44
       ],
       "sunstone_panel_11": [
-        0,
-        41
+        7,
+        44
       ],
       "sunstone_panel_12": [
-        1,
-        41
+        0,
+        45
       ],
       "sunstone_panel_13": [
-        2,
-        41
+        1,
+        45
       ],
       "sunstone_panel_14": [
-        3,
-        41
+        2,
+        45
       ],
       "sunstone_panel_15": [
-        4,
-        41
+        3,
+        45
       ],
       "sunstone_panel_2": [
-        5,
-        41
+        4,
+        45
       ],
       "sunstone_panel_3": [
-        6,
-        41
+        5,
+        45
       ],
       "sunstone_panel_4": [
-        7,
-        41
+        6,
+        45
       ],
       "sunstone_panel_5": [
-        0,
-        42
+        7,
+        45
       ],
       "sunstone_panel_6": [
-        1,
-        42
+        0,
+        46
       ],
       "sunstone_panel_7": [
-        2,
-        42
+        1,
+        46
       ],
       "sunstone_panel_8": [
-        3,
-        42
+        2,
+        46
       ],
       "sunstone_panel_9": [
+        3,
+        46
+      ],
+      "tartarus_stone": [
         4,
-        42
+        46
+      ],
+      "throne_tile": [
+        5,
+        46
       ],
       "tide_brick": [
-        5,
-        42
+        6,
+        46
       ],
       "tide_brick_v1": [
-        6,
-        42
+        7,
+        46
       ],
       "tide_brick_v2": [
-        7,
-        42
+        0,
+        47
       ],
       "tide_brick_v3": [
-        0,
-        43
+        1,
+        47
       ],
       "tower_brazier_hades_top": [
-        1,
-        43
+        2,
+        47
       ],
       "tower_brazier_poseidon_top": [
-        2,
-        43
+        3,
+        47
       ],
       "tower_brazier_side": [
-        3,
-        43
+        4,
+        47
       ],
       "tower_brazier_zeus_top": [
-        4,
-        43
+        5,
+        47
       ],
       "trap_spikes": [
-        5,
-        43
+        6,
+        47
+      ],
+      "trench_stone": [
+        7,
+        47
       ],
       "underworld_brick": [
-        6,
-        43
+        0,
+        48
       ],
       "underworld_brick_v1": [
-        7,
-        43
+        1,
+        48
       ],
       "underworld_brick_v2": [
-        0,
-        44
+        2,
+        48
       ],
       "underworld_brick_v3": [
-        1,
-        44
+        3,
+        48
       ],
       "underworld_panel_0": [
-        2,
-        44
+        4,
+        48
       ],
       "underworld_panel_1": [
-        3,
-        44
+        5,
+        48
       ],
       "underworld_panel_10": [
-        4,
-        44
+        6,
+        48
       ],
       "underworld_panel_11": [
-        5,
-        44
+        7,
+        48
       ],
       "underworld_panel_12": [
-        6,
-        44
+        0,
+        49
       ],
       "underworld_panel_13": [
-        7,
-        44
+        1,
+        49
       ],
       "underworld_panel_14": [
-        0,
-        45
+        2,
+        49
       ],
       "underworld_panel_15": [
-        1,
-        45
+        3,
+        49
       ],
       "underworld_panel_2": [
-        2,
-        45
+        4,
+        49
       ],
       "underworld_panel_3": [
-        3,
-        45
+        5,
+        49
       ],
       "underworld_panel_4": [
-        4,
-        45
+        6,
+        49
       ],
       "underworld_panel_5": [
-        5,
-        45
+        7,
+        49
       ],
       "underworld_panel_6": [
-        6,
-        45
+        0,
+        50
       ],
       "underworld_panel_7": [
-        7,
-        45
+        1,
+        50
       ],
       "underworld_panel_8": [
-        0,
-        46
+        2,
+        50
       ],
       "underworld_panel_9": [
-        1,
-        46
+        3,
+        50
       ],
       "waygate_obelisk_side": [
-        2,
-        46
+        4,
+        50
       ],
       "waygate_obelisk_top": [
-        3,
-        46
+        5,
+        50
       ],
       "weapon_rack": [
-        4,
-        46
-      ],
-      "weapon_rack_0": [
-        5,
-        46
-      ],
-      "weapon_rack_1": [
         6,
-        46
-      ],
-      "weapon_rack_10": [
-        7,
-        46
-      ],
-      "weapon_rack_11": [
-        0,
-        47
-      ],
-      "weapon_rack_12": [
-        1,
-        47
-      ],
-      "weapon_rack_13": [
-        2,
-        47
-      ],
-      "weapon_rack_14": [
-        3,
-        47
-      ],
-      "weapon_rack_15": [
-        4,
-        47
-      ],
-      "weapon_rack_2": [
-        5,
-        47
-      ],
-      "weapon_rack_3": [
-        6,
-        47
-      ],
-      "weapon_rack_4": [
-        7,
-        47
-      ],
-      "weapon_rack_5": [
-        0,
-        48
-      ],
-      "weapon_rack_6": [
-        1,
-        48
-      ],
-      "weapon_rack_7": [
-        2,
-        48
-      ],
-      "weapon_rack_8": [
-        3,
-        48
-      ],
-      "weapon_rack_9": [
-        4,
-        48
-      ],
-      "weapon_rack_top": [
-        5,
-        48
+        50
       ]
     }
   },

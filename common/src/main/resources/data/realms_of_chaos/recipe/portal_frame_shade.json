@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "key": {
+    "B": "realms_of_chaos:underworld_brick",
+    "C": "minecraft:crying_obsidian"
+  },
+  "pattern": [
+    "B",
+    "C",
+    "B"
+  ],
+  "result": {
+    "id": "realms_of_chaos:portal_frame_shade",
+    "count": 2
+  }
+}

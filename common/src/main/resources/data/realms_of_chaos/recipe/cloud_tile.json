@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "key": {
+    "C": "realms_of_chaos:cloudstone",
+    "G": "minecraft:gold_nugget"
+  },
+  "pattern": [
+    "CC",
+    "CG"
+  ],
+  "result": {
+    "id": "realms_of_chaos:cloud_tile",
+    "count": 3
+  }
+}

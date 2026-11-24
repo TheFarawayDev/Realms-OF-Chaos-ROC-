@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "key": {
+    "T": "realms_of_chaos:abyssal_tile",
+    "S": "minecraft:sea_lantern"
+  },
+  "pattern": [
+    "T",
+    "S",
+    "T"
+  ],
+  "result": {
+    "id": "realms_of_chaos:portal_frame_sea",
+    "count": 2
+  }
+}

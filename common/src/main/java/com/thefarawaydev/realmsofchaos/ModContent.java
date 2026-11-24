@@ -103,6 +103,10 @@ public final class ModContent {
     public static final Ref<Block> SKY_MOSAIC = new Ref<>(), SEA_MOSAIC = new Ref<>(), SHADE_MOSAIC = new Ref<>(), STAR_VAULT = new Ref<>(),
             CELESTIAL_GLOBE = new Ref<>(), BRONZE_GRATE = new Ref<>(), WEAPON_RACK = new Ref<>(), SCROLL_SHELF = new Ref<>(), BATH_TILE = new Ref<>(),
             LAUREL_HEDGE = new Ref<>(), KELP_WEAVE = new Ref<>(), ASPHODEL_BED = new Ref<>();
+    /** The upper floors' stone, the portal frames, and the sigil travellers arrive on. */
+    public static final Ref<Block> CLOUDSTONE = new Ref<>(), CLOUD_TILE = new Ref<>(), TRENCH_STONE = new Ref<>(), NACRE_TILE = new Ref<>(),
+            TARTARUS_STONE = new Ref<>(), THRONE_TILE = new Ref<>(), PORTAL_FRAME_SKY = new Ref<>(), PORTAL_FRAME_SEA = new Ref<>(),
+            PORTAL_FRAME_SHADE = new Ref<>(), PORTAL_FRAME_HUB = new Ref<>(), ARRIVAL_SIGIL = new Ref<>();
     public static final Ref<Block> TOWER_BRAZIER = new Ref<>();
 
     public static final List<Def<Block>> BLOCK_DEFS = new ArrayList<>();
@@ -270,11 +274,22 @@ public final class ModContent {
         block("star_vault", STAR_VAULT, key -> new Block(decor(key).mapColor(MapColor.COLOR_BLUE).lightLevel(s -> 6)));
         block("celestial_globe", CELESTIAL_GLOBE, key -> new Block(decor(key).mapColor(MapColor.COLOR_BLUE).noOcclusion().lightLevel(s -> 9).sound(SoundType.METAL)));
         block("bronze_grate", BRONZE_GRATE, key -> new Block(decor(key).mapColor(MapColor.COLOR_ORANGE).sound(SoundType.METAL)));
-        block("weapon_rack", WEAPON_RACK, key -> new com.thefarawaydev.realmsofchaos.block.ConnectedBlock(decor(key).mapColor(MapColor.WOOD).sound(SoundType.WOOD).strength(2.0F)));
+        block("weapon_rack", WEAPON_RACK, key -> new com.thefarawaydev.realmsofchaos.block.WeaponRackBlock(decor(key).mapColor(MapColor.WOOD).sound(SoundType.WOOD).strength(2.0F).noOcclusion()));
         block("scroll_shelf", SCROLL_SHELF, key -> new com.thefarawaydev.realmsofchaos.block.ConnectedBlock(decor(key).mapColor(MapColor.WOOD).sound(SoundType.WOOD).strength(1.5F)));
         block("bath_tile", BATH_TILE, key -> new Block(decor(key).mapColor(MapColor.SNOW)));
         block("laurel_hedge", LAUREL_HEDGE, key -> new Block(decor(key).mapColor(MapColor.PLANT).sound(SoundType.AZALEA_LEAVES).strength(0.6F)));
         block("kelp_weave", KELP_WEAVE, key -> new Block(decor(key).mapColor(MapColor.PLANT).sound(SoundType.WET_GRASS).strength(0.6F)));
+        block("cloudstone", CLOUDSTONE, key -> new Block(decor(key).mapColor(MapColor.SNOW)));
+        block("cloud_tile", CLOUD_TILE, key -> new Block(decor(key).mapColor(MapColor.SNOW)));
+        block("trench_stone", TRENCH_STONE, key -> new Block(decor(key).mapColor(MapColor.COLOR_BLUE).lightLevel(s -> 2)));
+        block("nacre_tile", NACRE_TILE, key -> new Block(decor(key).mapColor(MapColor.COLOR_PINK)));
+        block("tartarus_stone", TARTARUS_STONE, key -> new Block(decor(key).mapColor(MapColor.NETHER)));
+        block("throne_tile", THRONE_TILE, key -> new Block(decor(key).mapColor(MapColor.COLOR_BLACK)));
+        block("portal_frame_sky", PORTAL_FRAME_SKY, key -> new com.thefarawaydev.realmsofchaos.block.ConnectedBlock(decor(key).mapColor(MapColor.QUARTZ).lightLevel(s -> 7)));
+        block("portal_frame_sea", PORTAL_FRAME_SEA, key -> new com.thefarawaydev.realmsofchaos.block.ConnectedBlock(decor(key).mapColor(MapColor.WARPED_WART_BLOCK).lightLevel(s -> 7)));
+        block("portal_frame_shade", PORTAL_FRAME_SHADE, key -> new com.thefarawaydev.realmsofchaos.block.ConnectedBlock(decor(key).mapColor(MapColor.COLOR_PURPLE).lightLevel(s -> 7)));
+        block("portal_frame_hub", PORTAL_FRAME_HUB, key -> new com.thefarawaydev.realmsofchaos.block.ConnectedBlock(decor(key).mapColor(MapColor.COLOR_GRAY).lightLevel(s -> 7)));
+        block("arrival_sigil", ARRIVAL_SIGIL, key -> new Block(decor(key).mapColor(MapColor.COLOR_PURPLE).lightLevel(s -> 10)));
         block("asphodel_bed", ASPHODEL_BED, key -> new Block(decor(key).mapColor(MapColor.COLOR_LIGHT_GRAY).sound(SoundType.AZALEA_LEAVES).strength(0.6F)));
 
         // items: codex, compass, 45 god weapons (ordered by line, rank 1 -> 15), then the block items

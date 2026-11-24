@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "key": {
+    "D": "minecraft:deepslate",
+    "G": "minecraft:glow_ink_sac"
+  },
+  "pattern": [
+    "DD",
+    "DG"
+  ],
+  "result": {
+    "id": "realms_of_chaos:trench_stone",
+    "count": 3
+  }
+}

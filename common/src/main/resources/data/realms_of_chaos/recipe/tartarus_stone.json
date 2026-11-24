@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "key": {
+    "B": "minecraft:blackstone",
+    "M": "minecraft:magma_block"
+  },
+  "pattern": [
+    "BB",
+    "BM"
+  ],
+  "result": {
+    "id": "realms_of_chaos:tartarus_stone",
+    "count": 3
+  }
+}

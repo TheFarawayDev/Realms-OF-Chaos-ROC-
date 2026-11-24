@@ -73,8 +73,21 @@ public final class Mason {
 
     private Mason() {}
 
+    /** The mod's own building stone, cut with the vanilla stairs nearest it in colour. */
+    private static Stone mods(Block block) {
+        if (block == com.thefarawaydev.realmsofchaos.ModContent.OLYMPIAN_MARBLE.get() || block == com.thefarawaydev.realmsofchaos.ModContent.CLOUDSTONE.get())
+            return new Stone(block, Blocks.QUARTZ_STAIRS, Blocks.QUARTZ_SLAB, Blocks.DIORITE_WALL);
+        if (block == com.thefarawaydev.realmsofchaos.ModContent.TRENCH_STONE.get())
+            return new Stone(block, Blocks.DEEPSLATE_TILE_STAIRS, Blocks.DEEPSLATE_TILE_SLAB, Blocks.DEEPSLATE_TILE_WALL);
+        if (block == com.thefarawaydev.realmsofchaos.ModContent.UNDERWORLD_BRICK.get() || block == com.thefarawaydev.realmsofchaos.ModContent.TARTARUS_STONE.get())
+            return new Stone(block, Blocks.POLISHED_BLACKSTONE_BRICK_STAIRS, Blocks.POLISHED_BLACKSTONE_BRICK_SLAB, Blocks.POLISHED_BLACKSTONE_BRICK_WALL);
+        return null;
+    }
+
     /** The stair, slab and wall that go with a block; stone bricks' if it has none of its own. */
     public static Stone of(Block block) {
+        Stone own = mods(block);
+        if (own != null) return own;
         Stone stone = CUTS.get(block);
         return stone != null ? stone : new Stone(block, Blocks.STONE_BRICK_STAIRS, Blocks.STONE_BRICK_SLAB, Blocks.STONE_BRICK_WALL);
     }

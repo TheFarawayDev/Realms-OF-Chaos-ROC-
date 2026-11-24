@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "key": {
+    "C": "minecraft:calcite",
+    "W": "minecraft:white_wool"
+  },
+  "pattern": [
+    "CC",
+    "CW"
+  ],
+  "result": {
+    "id": "realms_of_chaos:cloudstone",
+    "count": 3
+  }
+}

@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "key": {
+    "P": "minecraft:prismarine",
+    "N": "minecraft:nautilus_shell"
+  },
+  "pattern": [
+    "PPP",
+    "PNP",
+    "PPP"
+  ],
+  "result": {
+    "id": "realms_of_chaos:nacre_tile",
+    "count": 8
+  }
+}

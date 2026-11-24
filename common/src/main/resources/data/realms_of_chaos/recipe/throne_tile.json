@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "key": {
+    "O": "minecraft:obsidian",
+    "G": "minecraft:gold_ingot"
+  },
+  "pattern": [
+    "OO",
+    "OG"
+  ],
+  "result": {
+    "id": "realms_of_chaos:throne_tile",
+    "count": 3
+  }
+}

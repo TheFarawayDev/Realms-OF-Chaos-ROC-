@@ -1,0 +1,7 @@
+{
+  "parent": "minecraft:block/cube_column",
+  "textures": {
+    "end": "realms_of_chaos:block/portal_frame_shade_end",
+    "side": "realms_of_chaos:block/portal_frame_shade_bottom"
+  }
+}

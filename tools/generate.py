@@ -821,6 +821,17 @@ def gen_lang():
         "block.realms_of_chaos.laurel_hedge": "Laurel Hedge",
         "block.realms_of_chaos.kelp_weave": "Kelp Weave",
         "block.realms_of_chaos.asphodel_bed": "Asphodel Bed",
+        "block.realms_of_chaos.cloudstone": "Cloudstone",
+        "block.realms_of_chaos.cloud_tile": "Cloud Tile",
+        "block.realms_of_chaos.trench_stone": "Trench Stone",
+        "block.realms_of_chaos.nacre_tile": "Nacre Tile",
+        "block.realms_of_chaos.tartarus_stone": "Tartarus Stone",
+        "block.realms_of_chaos.throne_tile": "Throne Tile",
+        "block.realms_of_chaos.portal_frame_sky": "Portal Frame of the Sky",
+        "block.realms_of_chaos.portal_frame_sea": "Portal Frame of the Sea",
+        "block.realms_of_chaos.portal_frame_shade": "Portal Frame of the Shades",
+        "block.realms_of_chaos.portal_frame_hub": "Portal Frame of the Hub",
+        "block.realms_of_chaos.arrival_sigil": "Arrival Sigil",
         "hud.realms_of_chaos.passage.room.observatory": "An observatory - a vault of stars",
         "hud.realms_of_chaos.passage.room.armory": "An armoury",
         "hud.realms_of_chaos.passage.room.baths": "Baths",
@@ -1905,7 +1916,9 @@ DECOR = ["olympian_marble", "olympian_marble_pillar", "gilded_frieze", "abyssal_
          "olympian_tiles", "chaos_mosaic", "olympian_panel", "abyssal_panel", "underworld_panel", "sky_relief", "sea_relief", "shade_relief",
          "marble_column", "sunstone_panel", "storm_brick", "coral_column", "pearl_panel", "tide_brick", "bone_column", "ember_panel", "ash_brick",
          "sky_mosaic", "sea_mosaic", "shade_mosaic", "star_vault", "celestial_globe", "bronze_grate", "weapon_rack", "scroll_shelf", "bath_tile",
-         "laurel_hedge", "kelp_weave", "asphodel_bed"]
+         "laurel_hedge", "kelp_weave", "asphodel_bed",
+         "cloudstone", "cloud_tile", "trench_stone", "nacre_tile", "tartarus_stone", "throne_tile",
+         "portal_frame_sky", "portal_frame_sea", "portal_frame_shade", "portal_frame_hub", "arrival_sigil"]
 FIELD_DROPS = FIELD_DROPS + DECOR
 
 # The 22 Major Arcana: (id, numeral, name, what the card does, 8x8 symbol (# ink, + colour), colour)

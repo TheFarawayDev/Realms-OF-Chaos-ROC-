@@ -597,6 +597,8 @@ def run(assets, data=None):
         gen_room_furnishings(assets, data)
         gen_connected_furniture(assets)
         gen_variety(assets)
+        gen_weapon_rack(assets)
+        gen_upper(assets, data)
 
 
 # ---- high-resolution building stone: 64x64, with connecting panels ---------------------------------------------------
@@ -1396,7 +1398,7 @@ def gen_connected_furniture(assets):
         if kind == 3 and lx == 2 and 2 <= y <= 14: c = (150, 110, 70)                                          # an axe
         if kind == 3 and lx in (0, 1) and 3 <= y <= 6: c = (190, 196, 206)
         return c
-    connected(assets, "weapon_rack", rack_field, (84, 56, 34), (120, 84, 52), (46, 30, 18), (150, 110, 60))
+    # (the weapon rack is a model of its own now: see gen_weapon_rack)
 
     # the scroll shelf: pigeonholes of scrolls, two rows to a block, the case framing a whole wall of them
     def shelf_field(x, y):
@@ -1410,3 +1412,185 @@ def gen_connected_furniture(assets):
             return c
         return (40, 28, 18)
     connected(assets, "scroll_shelf", shelf_field, (96, 64, 38), (130, 92, 58), (56, 36, 22), (150, 118, 70))
+
+
+# ---- the weapon rack: a real rack on the wall, with real arms on it ---------------------------------------------------
+
+def gen_weapon_rack(assets):
+    import glob
+    T = os.path.join(assets, "textures/block")
+    M = os.path.join(assets, "models/block")
+    for old in glob.glob(os.path.join(T, "weapon_rack_*.png")) + glob.glob(os.path.join(M, "weapon_rack_*.json")):
+        os.remove(old)
+    g = grain(101, 0.05)
+    tex = {
+        "rack_wood": lambda x, y: shade((96, 64, 38), g[y][x] * (0.86 if y % 4 == 3 else 1.0)),
+        "rack_board": lambda x, y: shade((62, 42, 26), g[y][x] * (0.8 if x % 4 == 3 else 1.0)),
+        "rack_iron": lambda x, y: mix((150, 156, 170), (236, 240, 248), (15 - y + x) / 30),
+        "rack_gold": lambda x, y: GOLD_HI if (x + y) % 4 == 0 else GOLD,
+        "rack_leather": lambda x, y: (96, 56, 40) if (x + y) % 3 else (70, 40, 30),
+        "rack_shield": lambda x, y: (GOLD if min(x, y, 15 - x, 15 - y) < 2 else (176, 48, 40) if (x // 4 + y // 4) % 2 else (150, 36, 32)),
+    }
+    for name, fn in tex.items():
+        paint_hi(fn).save(os.path.join(T, name + ".png"))
+    t = lambda n: f"{MOD}:block/{n}"
+    textures = {"particle": t("rack_wood"), "wood": t("rack_wood"), "board": t("rack_board"), "iron": t("rack_iron"), "gold": t("rack_gold"),
+                "leather": t("rack_leather"), "shield": t("rack_shield")}
+
+    def box(a, b, texture, rot=None, cull_back=False):
+        faces = {d: {"texture": f"#{texture}"} for d in ("north", "south", "east", "west", "up", "down")}
+        if cull_back:
+            faces["south"]["cullface"] = "south"
+        el = {"from": list(a), "to": list(b), "faces": faces}
+        if rot:
+            el["rotation"] = rot
+        return el
+
+    # (drawn facing north: the board against the south side of the block, the arms hung in front of it)
+    arms = {
+        "spear": [box((7.5, 0.5, 9.5), (8.5, 13, 10.5), "wood"), box((7, 13, 9.5), (9, 14.5, 10.5), "iron"), box((7.5, 14.5, 9.5), (8.5, 16, 10.5), "iron"),
+                  box((6.5, 12.5, 9.25), (9.5, 13, 10.75), "gold")],
+        "sword": [box((7, 5, 9.5), (9, 15.5, 10.5), "iron"), box((5, 4, 9), (11, 5, 11), "gold"), box((7.5, 1.5, 9.5), (8.5, 4, 10.5), "leather"),
+                  box((7, 0.5, 9.5), (9, 1.5, 10.5), "gold")],
+        "shield": [box((3, 2.5, 9.5), (13, 13.5, 10.75), "shield"), box((7, 6.5, 9), (9, 9.5, 9.5), "gold")],
+        "axes": [],
+    }
+    for sign in (1, -1):
+        r = {"origin": [8, 8, 10], "axis": "z", "angle": 45.0 * sign}
+        arms["axes"] += [box((7.5, 0.5, 9.5 - (0.5 if sign < 0 else 0)), (8.5, 15, 10.5 - (0.5 if sign < 0 else 0)), "wood", r),
+                         box((8.5, 11, 9.25 - (0.5 if sign < 0 else 0)), (11.5, 15, 10.75 - (0.5 if sign < 0 else 0)), "iron", r)]
+    dirs = {"north": 0, "east": 90, "south": 180, "west": 270}
+    variants = {}
+    for mask in range(16):
+        left, right, up, down = mask & 1, mask & 2, mask & 4, mask & 8
+        frame = [box((0, 0, 13), (16, 16, 16), "board", cull_back=True),
+                 box((0, 3, 11), (16, 4, 13), "wood"), box((0, 11, 11), (16, 12, 13), "wood")]
+        # (seen from in front, its left is the east side of a north-facing model)
+        if not left: frame.append(box((14, 0, 11), (16, 16, 16), "wood"))
+        if not right: frame.append(box((0, 0, 11), (2, 16, 16), "wood"))
+        if not up: frame.append(box((0, 14.5, 10.5), (16, 16, 16), "wood"))
+        if not down: frame.append(box((0, 0, 11), (16, 1, 16), "wood"))
+        for arm, parts in arms.items():
+            wj(os.path.join(M, f"weapon_rack_{mask}_{arm}.json"), {"parent": "minecraft:block/block", "textures": textures, "elements": frame + parts})
+        for facing, rot in dirs.items():
+            key = f"down={'true' if down else 'false'},facing={facing},left={'true' if left else 'false'},right={'true' if right else 'false'},up={'true' if up else 'false'}"
+            variants[key] = [{"model": f"{MOD}:block/weapon_rack_{mask}_{arm}", "y": rot, "weight": w}
+                             for arm, w in (("spear", 3), ("sword", 3), ("shield", 2), ("axes", 2))]
+    wj(os.path.join(assets, "blockstates/weapon_rack.json"), {"variants": variants})
+    wj(os.path.join(M, "weapon_rack.json"), {"parent": f"{MOD}:block/weapon_rack_0_sword"})
+    wj(os.path.join(assets, "items/weapon_rack.json"), {"model": {"type": "minecraft:model", "model": f"{MOD}:block/weapon_rack"}})
+
+
+# ---- the upper floors' stone, portal frames, arrival sigils ---------------------------------------------------------------
+
+UPPER_BLOCKS = ["cloudstone", "cloud_tile", "trench_stone", "nacre_tile", "tartarus_stone", "throne_tile",
+                "portal_frame_sky", "portal_frame_sea", "portal_frame_shade", "portal_frame_hub", "arrival_sigil"]
+
+
+def gen_upper(assets, data):
+    T = os.path.join(assets, "textures/block")
+    g = grain(111, 0.05)
+    rnd = random.Random(3)
+    spots = [(rnd.randrange(16), rnd.randrange(16)) for _ in range(12)]
+
+    def cloudstone(x, y):
+        v = 0.5 + 0.5 * math.sin(x * 0.7 + math.sin(y * 0.5) * 2) * math.cos(y * 0.6)
+        c = mix((214, 224, 240), (250, 252, 255), v)
+        if y % 8 == 7: c = (176, 190, 214)                                        # coursing
+        if (x + (4 if (y // 8) % 2 else 0)) % 16 == 0: c = (176, 190, 214)
+        return shade(c, g[y][x])
+
+    def cloud_tile(x, y):
+        tx, ty = x % 8, y % 8
+        if tx == 0 or ty == 0: return (190, 200, 220)
+        c = cloudstone(x, y)
+        if (tx, ty) in ((4, 4), (3, 4), (4, 3)): c = GOLD
+        if tx == 7 or ty == 7: c = shade(c, 0.9)
+        return c
+
+    def trench(x, y):
+        c = shade((26, 40, 60), g[y][x] * (1.15 if (x * 3 + y) % 7 == 0 else 1.0))
+        if (x, y) in spots[:7]: c = (90, 240, 220)                                # glowing specks
+        if y % 8 == 7 or (x + (4 if (y // 8) % 2 else 0)) % 16 == 0: c = (14, 22, 34)
+        return c
+
+    def nacre(x, y):
+        t = 0.5 + 0.5 * math.sin(x * 0.9 + y * 0.5 + math.sin(x * 0.4) * 2)
+        c = mix((210, 226, 236), (236, 214, 232), t)
+        if (x % 8 == 0) or (y % 8 == 0): c = (150, 180, 196)
+        return shade(c, g[y][x])
+
+    def tartarus(x, y):
+        c = shade((40, 24, 26), g[y][x])
+        row = y // 4
+        bx, by = (x + (4 if row % 2 else 0)) % 8, y % 4
+        if by == 3 or bx == 7: c = (200, 60, 30) if (x + y * 3) % 5 == 0 else (90, 26, 20)
+        elif by == 0 or bx == 0: c = (70, 44, 46)
+        return c
+
+    def throne(x, y):
+        tx, ty = x % 8, y % 8
+        c = shade((24, 20, 30), g[y][x])
+        if tx == 0 or ty == 0: c = GOLD_LO
+        if tx == ty or tx == 8 - ty: c = (60, 48, 70)
+        if (tx, ty) == (4, 4): c = GOLD_HI
+        return c
+    for name, fn in (("cloudstone", cloudstone), ("cloud_tile", cloud_tile), ("trench_stone", trench), ("nacre_tile", nacre),
+                     ("tartarus_stone", tartarus), ("throne_tile", throne)):
+        paint_hi(fn).save(os.path.join(T, name + ".png"))
+        cube(assets, name)
+
+    # portal frames: columns of the gods' stone with a rune glowing in each, base and cap only where a run ends
+    for name, base, light, dark, accent in (("portal_frame_sky", (232, 228, 220), (252, 250, 244), (160, 152, 142), (255, 214, 90)),
+                                            ("portal_frame_sea", (70, 150, 146), (150, 214, 206), (30, 80, 84), (120, 240, 240)),
+                                            ("portal_frame_shade", (52, 44, 60), (96, 84, 110), (20, 16, 26), (196, 120, 255)),
+                                            ("portal_frame_hub", (150, 140, 160), (200, 192, 210), (80, 72, 92), (200, 150, 255))):
+        connected_column(assets, name, base, light, dark, accent)
+        # a rune let into the middle of every side, glowing
+        rune = ["..##..", ".#..#.", "#.##.#", "#.##.#", ".#..#.", "..##.."]
+        for kind in ("single", "bottom", "middle", "top"):
+            img = Image.open(os.path.join(T, f"{name}_{kind}.png")).convert("RGBA")
+            for ry, row in enumerate(rune):
+                for rx, ch in enumerate(row):
+                    if ch == "#":
+                        img.putpixel((5 + rx, 5 + ry), accent + (255,))
+                    elif 0 < rx < 5 and 0 < ry < 5:
+                        img.putpixel((5 + rx, 5 + ry), shade(dark, 0.8) + (255,))
+            img.save(os.path.join(T, f"{name}_{kind}.png"))
+
+    # the arrival sigil: a ring of gold round the three gods' colours, where travellers come to stand
+    cols = [(255, 214, 100), (100, 228, 236), (200, 130, 255)]
+
+    def sigil(x, y):
+        r = math.hypot(x - 7.5, y - 7.5)
+        a = (math.atan2(y - 7.5, x - 7.5) + math.pi) / math.tau
+        c = shade((60, 56, 72), g[y][x])
+        if 6.2 < r < 7.4: c = GOLD
+        elif 4.6 < r <= 6.2: c = cols[int(a * 3) % 3]
+        elif 3.6 < r <= 4.6: c = GOLD_LO
+        elif r <= 2.2: c = (255, 250, 236)
+        elif r <= 3.6 and int(a * 8) % 2: c = (150, 120, 220)
+        return c
+    paint_hi(sigil).save(os.path.join(T, "arrival_sigil.png"))
+    paint_hi(lambda x, y: shade((60, 56, 72), g[y][x] * (1.2 if x in (0, 15) or y in (0, 15) else 1.0))).save(os.path.join(T, "arrival_sigil_side.png"))
+    cube(assets, "arrival_sigil", side="arrival_sigil_side", top="arrival_sigil")
+
+    recipes = {
+        "cloudstone": ({"C": "minecraft:calcite", "W": "minecraft:white_wool"}, ["CC", "CW"], 3),
+        "cloud_tile": ({"C": f"{MOD}:cloudstone", "G": "minecraft:gold_nugget"}, ["CC", "CG"], 3),
+        "trench_stone": ({"D": "minecraft:deepslate", "G": "minecraft:glow_ink_sac"}, ["DD", "DG"], 3),
+        "nacre_tile": ({"P": "minecraft:prismarine", "N": "minecraft:nautilus_shell"}, ["PPP", "PNP", "PPP"], 8),
+        "tartarus_stone": ({"B": "minecraft:blackstone", "M": "minecraft:magma_block"}, ["BB", "BM"], 3),
+        "throne_tile": ({"O": "minecraft:obsidian", "G": "minecraft:gold_ingot"}, ["OO", "OG"], 3),
+        "portal_frame_sky": ({"M": f"{MOD}:olympian_marble", "G": "minecraft:glowstone_dust"}, ["M", "G", "M"], 2),
+        "portal_frame_sea": ({"T": f"{MOD}:abyssal_tile", "S": "minecraft:sea_lantern"}, ["T", "S", "T"], 2),
+        "portal_frame_shade": ({"B": f"{MOD}:underworld_brick", "C": "minecraft:crying_obsidian"}, ["B", "C", "B"], 2),
+        "portal_frame_hub": ({"S": "minecraft:stone_bricks", "A": "minecraft:amethyst_shard"}, ["S", "A", "S"], 2),
+        "arrival_sigil": ({"M": f"{MOD}:chaos_mosaic", "G": "minecraft:gold_ingot", "E": "minecraft:ender_pearl"}, ["MGM", "GEG", "MGM"], 2),
+    }
+    for rid, (key_, pattern_, count) in recipes.items():
+        wj(os.path.join(data, f"recipe/{rid}.json"), {"type": "minecraft:crafting_shaped", "category": "building", "key": key_, "pattern": pattern_,
+                                                      "result": {"id": f"{MOD}:{rid}", "count": count}})
+    for b in UPPER_BLOCKS:
+        wj(os.path.join(data, f"loot_table/blocks/{b}.json"), {"type": "minecraft:block", "pools": [{"rolls": 1, "entries": [{"type": "minecraft:item", "name": f"{MOD}:{b}"}],
+                                                                                                  "conditions": [{"condition": "minecraft:survives_explosion"}]}]})

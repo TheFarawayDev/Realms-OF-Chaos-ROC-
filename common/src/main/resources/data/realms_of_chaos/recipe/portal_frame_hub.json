@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "key": {
+    "S": "minecraft:stone_bricks",
+    "A": "minecraft:amethyst_shard"
+  },
+  "pattern": [
+    "S",
+    "A",
+    "S"
+  ],
+  "result": {
+    "id": "realms_of_chaos:portal_frame_hub",
+    "count": 2
+  }
+}

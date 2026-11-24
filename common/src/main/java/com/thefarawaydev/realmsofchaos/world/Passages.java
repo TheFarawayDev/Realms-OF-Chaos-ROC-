@@ -70,7 +70,7 @@ public final class Passages {
     public static final int TALL = 8;
     public static final int MAX_SIZE = 6;
     public static final int X0 = 600, PITCH = 160;
-    public static final int LAYOUT_VERSION = 15;
+    public static final int LAYOUT_VERSION = 16;
     public static final String GUARDIAN_TAG = "realms_of_chaos_guardian";
     private static final String HUD = "hud." + RealmsOfChaos.MOD_ID + ".passage.";
 
@@ -924,7 +924,10 @@ public final class Passages {
         });
         for (Cell c : plan.cells()) steps.add(() -> furnish(level, plan, c, p, random));
         // the connecting blocks are joined once everything stands
-        steps.add(() -> com.thefarawaydev.realmsofchaos.block.ConnectedBlock.settle(level, o.offset(-1, -2, -1), o.offset(w, LEVEL_PITCH - 3, w)));
+        steps.add(() -> {
+            com.thefarawaydev.realmsofchaos.block.ConnectedBlock.settle(level, o.offset(-1, -2, -1), o.offset(w, LEVEL_PITCH - 3, w));
+            com.thefarawaydev.realmsofchaos.block.WeaponRackBlock.settle(level, o.offset(-1, -2, -1), o.offset(w, LEVEL_PITCH - 3, w));
+        });
         return steps;
     }
 
@@ -1146,6 +1149,15 @@ public final class Passages {
         };
     }
 
+    /** The frame a tower's gates stand in. */
+    public static Block portalFrame(Line line) {
+        return switch (line) {
+            case ZEUS -> ModContent.PORTAL_FRAME_SKY.get();
+            case POSEIDON -> ModContent.PORTAL_FRAME_SEA.get();
+            case HADES -> ModContent.PORTAL_FRAME_SHADE.get();
+        };
+    }
+
     /** The carved relief set into a tower's walls. */
     public static Block relief(Line line) {
         return switch (line) {
@@ -1181,14 +1193,14 @@ public final class Passages {
         switch (plan.kind(c)) {
             case START -> {
                 for (int dx = -1; dx <= 1; dx++) for (int dz = -1; dz <= 1; dz++) set(level, m.offset(dx, 0, dz), p.inlay());
-                set(level, m, p.light());
+                set(level, m, ModContent.ARRIVAL_SIGIL.get());                  // where a climber arrives
             }
             case EXIT -> {
                 // the gate stands across the way a climber comes in, in an arch of its own, lit at its feet
                 for (BlockPos g : plan.gatePositions()) set(level, g, GATE_SHUT);
                 for (int dy = 1; dy <= 4; dy++) {
-                    set(level, plan.gateOffset(-2, dy), dy == 4 ? p.trim() : p.pillar());
-                    set(level, plan.gateOffset(2, dy), dy == 4 ? p.trim() : p.pillar());
+                    set(level, plan.gateOffset(-2, dy), dy == 4 ? p.trim() : portalFrame(plan.line));
+                    set(level, plan.gateOffset(2, dy), dy == 4 ? p.trim() : portalFrame(plan.line));
                 }
                 for (int a = -1; a <= 1; a++) set(level, plan.gateOffset(a, 4), p.trim());
                 set(level, plan.gateOffset(0, 5), p.light());
@@ -1402,7 +1414,10 @@ public final class Passages {
                 for (int d = 2; d <= far; d++) {
                     for (int[] k : new int[][]{{d, -far}, {-d, -far}, {d, far}, {-d, far}, {-far, d}, {-far, -d}, {far, d}, {far, -d}}) {
                         if (cut(plan, c, k[0], k[1])) continue;
-                        for (int y = 1; y <= 2; y++) set(level, m.offset(k[0], y, k[1]), ModContent.WEAPON_RACK.get());
+                        // racks hung on the walls, facing into the room
+                        net.minecraft.core.Direction into = Mason.outward(k[0], k[1]).getOpposite();
+                        BlockState rack = ((com.thefarawaydev.realmsofchaos.block.WeaponRackBlock) ModContent.WEAPON_RACK.get()).facing(into);
+                        for (int y = 1; y <= 2; y++) level.setBlock(m.offset(k[0], y, k[1]), rack, 2);
                     }
                 }
                 for (int dx = -far + 1; dx <= far - 1; dx++) {

@@ -17,7 +17,7 @@ import net.minecraft.world.level.block.state.BlockState;
  * solid stands inside the fight ring, the entrance and exit corridors are flat, and the whole floor is enclosed.
  */
 public final class TowerBuilder {
-    public static final int LAYOUT_VERSION = 8;
+    public static final int LAYOUT_VERSION = 9;
 
     public enum Layout { FLAT, MOUNDS, PILLARS, PIT, DAIS, WAVES, MOAT, TERRACES, SPLIT, ZIGGURAT, SUMMIT }
 
@@ -72,31 +72,31 @@ public final class TowerBuilder {
             case ZEUS -> switch (tier) {
                 case 1 -> new Palette(Blocks.MOSS_BLOCK, Blocks.MOSSY_STONE_BRICKS, Blocks.STONE_BRICKS, Blocks.STONE_BRICKS,
                         Blocks.CHISELED_STONE_BRICKS, Blocks.OAK_LOG, Blocks.GLOWSTONE, Blocks.MOSSY_COBBLESTONE, Blocks.GLASS, Blocks.WATER);
-                case 2 -> new Palette(Blocks.SMOOTH_QUARTZ, Blocks.QUARTZ_BRICKS, Blocks.QUARTZ_BLOCK, Blocks.QUARTZ_BRICKS,
+                case 2 -> new Palette(ModContent.OLYMPIAN_TILES.get(), Blocks.QUARTZ_BRICKS, Blocks.QUARTZ_BLOCK, ModContent.OLYMPIAN_MARBLE.get(),
                         Blocks.CHISELED_QUARTZ_BLOCK, Blocks.QUARTZ_PILLAR, Blocks.GLOWSTONE, Blocks.GOLD_BLOCK, Blocks.GLASS, Blocks.WATER);
-                case 3 -> new Palette(Blocks.SNOW_BLOCK, Blocks.CALCITE, Blocks.CALCITE, Blocks.CALCITE,
+                case 3 -> new Palette(ModContent.CLOUD_TILE.get(), Blocks.CALCITE, Blocks.CALCITE, ModContent.CLOUDSTONE.get(),
                         Blocks.GOLD_BLOCK, Blocks.QUARTZ_PILLAR, Blocks.PEARLESCENT_FROGLIGHT, Blocks.POLISHED_DIORITE, Blocks.GLASS, Blocks.WATER);
-                default -> new Palette(Blocks.SMOOTH_QUARTZ, Blocks.CHISELED_QUARTZ_BLOCK, Blocks.QUARTZ_BLOCK, Blocks.QUARTZ_BRICKS,
+                default -> new Palette(ModContent.CLOUD_TILE.get(), Blocks.CHISELED_QUARTZ_BLOCK, Blocks.QUARTZ_BLOCK, ModContent.OLYMPIAN_MARBLE.get(),
                         Blocks.GOLD_BLOCK, Blocks.QUARTZ_PILLAR, Blocks.GLOWSTONE, Blocks.GOLD_BLOCK, Blocks.GLASS, Blocks.WATER);
             };
             case POSEIDON -> switch (tier) {
                 case 1 -> new Palette(Blocks.SMOOTH_SANDSTONE, Blocks.SANDSTONE, Blocks.SANDSTONE, Blocks.CUT_SANDSTONE,
                         Blocks.CHISELED_SANDSTONE, Blocks.PRISMARINE, Blocks.SEA_LANTERN, Blocks.PRISMARINE, Blocks.GLASS, Blocks.WATER);
-                case 2 -> new Palette(Blocks.PRISMARINE_BRICKS, Blocks.PRISMARINE, Blocks.PRISMARINE, Blocks.PRISMARINE_BRICKS,
+                case 2 -> new Palette(ModContent.ABYSSAL_TILE.get(), Blocks.PRISMARINE, Blocks.PRISMARINE, Blocks.PRISMARINE_BRICKS,
                         Blocks.DARK_PRISMARINE, Blocks.PRISMARINE_BRICKS, Blocks.SEA_LANTERN, Blocks.DARK_PRISMARINE, Blocks.GLASS, Blocks.WATER);
-                case 3 -> new Palette(Blocks.DEEPSLATE_TILES, Blocks.POLISHED_DEEPSLATE, Blocks.DEEPSLATE_BRICKS, Blocks.DEEPSLATE_BRICKS,
+                case 3 -> new Palette(Blocks.DEEPSLATE_TILES, Blocks.POLISHED_DEEPSLATE, Blocks.DEEPSLATE_BRICKS, ModContent.TRENCH_STONE.get(),
                         Blocks.DARK_PRISMARINE, Blocks.DARK_PRISMARINE, Blocks.SEA_LANTERN, Blocks.CHISELED_DEEPSLATE, Blocks.TINTED_GLASS, Blocks.WATER);
-                default -> new Palette(Blocks.DARK_PRISMARINE, Blocks.PRISMARINE_BRICKS, Blocks.PRISMARINE_BRICKS, Blocks.DARK_PRISMARINE,
+                default -> new Palette(ModContent.NACRE_TILE.get(), Blocks.PRISMARINE_BRICKS, Blocks.PRISMARINE_BRICKS, ModContent.TRENCH_STONE.get(),
                         Blocks.SEA_LANTERN, Blocks.PRISMARINE_BRICKS, Blocks.SEA_LANTERN, Blocks.LAPIS_BLOCK, Blocks.GLASS, Blocks.WATER);
             };
             case HADES -> switch (tier) {
                 case 1 -> new Palette(Blocks.SOUL_SOIL, Blocks.COARSE_DIRT, Blocks.SMOOTH_BASALT, Blocks.SMOOTH_BASALT,
                         Blocks.BONE_BLOCK, Blocks.POLISHED_BASALT, Blocks.SHROOMLIGHT, Blocks.BONE_BLOCK, Blocks.TINTED_GLASS, Blocks.LAVA);
-                case 2 -> new Palette(Blocks.BLACKSTONE, Blocks.NETHER_BRICKS, Blocks.NETHER_BRICKS, Blocks.NETHER_BRICKS,
+                case 2 -> new Palette(Blocks.BLACKSTONE, Blocks.NETHER_BRICKS, Blocks.NETHER_BRICKS, ModContent.UNDERWORLD_BRICK.get(),
                         Blocks.RED_NETHER_BRICKS, Blocks.POLISHED_BLACKSTONE, Blocks.SHROOMLIGHT, Blocks.GILDED_BLACKSTONE, Blocks.TINTED_GLASS, Blocks.LAVA);
-                case 3 -> new Palette(Blocks.POLISHED_BLACKSTONE_BRICKS, Blocks.POLISHED_BLACKSTONE, Blocks.POLISHED_BLACKSTONE, Blocks.POLISHED_BLACKSTONE_BRICKS,
+                case 3 -> new Palette(Blocks.POLISHED_BLACKSTONE_BRICKS, Blocks.POLISHED_BLACKSTONE, Blocks.POLISHED_BLACKSTONE, ModContent.TARTARUS_STONE.get(),
                         Blocks.CRYING_OBSIDIAN, Blocks.OBSIDIAN, Blocks.SHROOMLIGHT, Blocks.AMETHYST_BLOCK, Blocks.TINTED_GLASS, Blocks.LAVA);
-                default -> new Palette(Blocks.OBSIDIAN, Blocks.CRYING_OBSIDIAN, Blocks.POLISHED_BLACKSTONE, Blocks.POLISHED_BLACKSTONE_BRICKS,
+                default -> new Palette(ModContent.THRONE_TILE.get(), Blocks.CRYING_OBSIDIAN, Blocks.POLISHED_BLACKSTONE, ModContent.TARTARUS_STONE.get(),
                         Blocks.GILDED_BLACKSTONE, Blocks.POLISHED_BLACKSTONE, Blocks.SHROOMLIGHT, Blocks.GILDED_BLACKSTONE, Blocks.TINTED_GLASS, Blocks.LAVA);
             };
         };
@@ -299,8 +299,8 @@ public final class TowerBuilder {
         }).defaultBlockState(), 2);
 
         // ---- gates: home to the hub on the south side, up to the next floor on the north side
-        gate(level, 0, y0, 19, p, ModContent.GATE_HUB.get());
-        if (!summit) gate(level, 0, y0, -19, p, ModContent.GATE_ASCEND.get());
+        gate(level, 0, y0, 19, p, ModContent.GATE_HUB.get(), Passages.portalFrame(line));
+        if (!summit) gate(level, 0, y0, -19, p, ModContent.GATE_ASCEND.get(), Passages.portalFrame(line));
         com.thefarawaydev.realmsofchaos.block.ConnectedBlock.settle(level, new BlockPos(-ri, y0 - 1, -ri), new BlockPos(ri, y0 + Tower.ROOM_HEIGHT + 1, ri));
     }
 
@@ -310,6 +310,7 @@ public final class TowerBuilder {
     }
 
     private static Block surface(Palette p, HeightFn hf, int floor, int x, int z, double r, int h) {
+        if (x == 0 && z == 15) return ModContent.ARRIVAL_SIGIL.get();                    // where a climber arrives
         if (r < 2.5) return p.inlay();                                                  // centre medallion: the boss spot
         if (r >= Tower.FIGHT_RADIUS - 0.5 && r < Tower.FIGHT_RADIUS + 0.5) {             // the ring that marks the fight area
             return Math.floorMod(x + z, 5) == 0 ? p.light() : p.inlay();
@@ -489,7 +490,7 @@ public final class TowerBuilder {
     }
 
     /** A gate across X centred at (cx, cz), standing on the floor at y0. */
-    private static void gate(ServerLevel level, int cx, int y0, int cz, Palette p, Block gateBlock) {
-        Mason.gateway(level, new BlockPos(cx, y0, cz), Direction.NORTH, Mason.of(p.wall()), p.pillar(), p.trim(), p.light(), p.inlay(), gateBlock);
+    private static void gate(ServerLevel level, int cx, int y0, int cz, Palette p, Block gateBlock, Block frame) {
+        Mason.gateway(level, new BlockPos(cx, y0, cz), Direction.NORTH, Mason.of(p.wall()), frame, p.trim(), p.light(), p.inlay(), gateBlock);
     }
 }

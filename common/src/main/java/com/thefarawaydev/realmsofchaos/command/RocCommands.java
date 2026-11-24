@@ -37,6 +37,19 @@ public final class RocCommands {
                                     com.thefarawaydev.realmsofchaos.world.Access.attune(p);
                                     Teleports.enterTower(p, line);
                                 }))))
+                        .then(Commands.literal("floor")
+                                .then(Commands.argument("line", com.mojang.brigadier.arguments.StringArgumentType.word())
+                                        .then(Commands.argument("floor", com.mojang.brigadier.arguments.IntegerArgumentType.integer(1, 15)).executes(ctx -> ui(ctx.getSource().getPlayerOrException(), p -> {
+                                            // straight to a floor of a tower, built if need be: somewhere to go and look
+                                            com.thefarawaydev.realmsofchaos.god.Line line = com.thefarawaydev.realmsofchaos.god.Line.valueOf(com.mojang.brigadier.arguments.StringArgumentType.getString(ctx, "line").toUpperCase(java.util.Locale.ROOT));
+                                            com.thefarawaydev.realmsofchaos.world.Access.attune(p);
+                                            int floor = com.mojang.brigadier.arguments.IntegerArgumentType.getInteger(ctx, "floor");
+                                            net.minecraft.server.level.ServerLevel dest = p.level().getServer().getLevel(com.thefarawaydev.realmsofchaos.world.Realm.ofLine(line).key());
+                                            if (dest == null) return;
+                                            com.thefarawaydev.realmsofchaos.world.TowerBuilder.ensureFloor(dest, line, floor);
+                                            net.minecraft.world.phys.Vec3 at = com.thefarawaydev.realmsofchaos.world.Tower.arrival(floor);
+                                            p.teleportTo(dest, at.x, at.y, at.z, java.util.Set.of(), com.thefarawaydev.realmsofchaos.world.Tower.ARRIVAL_YAW, 0.0F, false);
+                                        })))))
                         .then(Commands.literal("room")
                                 .then(Commands.argument("line", com.mojang.brigadier.arguments.StringArgumentType.word())
                                         .then(Commands.argument("kind", com.mojang.brigadier.arguments.StringArgumentType.word()).executes(ctx -> ui(ctx.getSource().getPlayerOrException(), p -> {
@@ -44,7 +57,8 @@ public final class RocCommands {
                                             com.thefarawaydev.realmsofchaos.god.Line line = com.thefarawaydev.realmsofchaos.god.Line.valueOf(com.mojang.brigadier.arguments.StringArgumentType.getString(ctx, "line").toUpperCase(java.util.Locale.ROOT));
                                             com.thefarawaydev.realmsofchaos.world.Passages.Kind kind = com.thefarawaydev.realmsofchaos.world.Passages.Kind.valueOf(com.mojang.brigadier.arguments.StringArgumentType.getString(ctx, "kind").toUpperCase(java.util.Locale.ROOT));
                                             com.thefarawaydev.realmsofchaos.world.Access.attune(p);
-                                            if (com.thefarawaydev.realmsofchaos.world.Realm.of(p.level().dimension()) == null) Teleports.enterTower(p, line);
+                                            // (into this tower's own realm first: its passages are built in it, not in another's)
+                                            if (com.thefarawaydev.realmsofchaos.world.Realm.of(p.level().dimension()) != com.thefarawaydev.realmsofchaos.world.Realm.ofLine(line)) Teleports.enterTower(p, line);
                                             if (!(p.level() instanceof net.minecraft.server.level.ServerLevel level)) return;
                                             for (int index = 1; index <= com.thefarawaydev.realmsofchaos.world.Passages.COUNT; index++) {
                                                 for (int stage = 0; stage < com.thefarawaydev.realmsofchaos.world.Passages.stages(level, line, index); stage++) {
