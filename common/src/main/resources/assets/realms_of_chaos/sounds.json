@@ -255,7 +255,9 @@
   },
   "parry": {
     "sounds": [
-      "realms_of_chaos:fx/parry"
+      "realms_of_chaos:fx/parry1",
+      "realms_of_chaos:fx/parry2",
+      "realms_of_chaos:fx/parry3"
     ],
     "subtitle": "subtitles.realms_of_chaos.parry"
   },
@@ -267,7 +269,9 @@
   },
   "dodge": {
     "sounds": [
-      "realms_of_chaos:fx/dodge"
+      "realms_of_chaos:fx/dodge1",
+      "realms_of_chaos:fx/dodge2",
+      "realms_of_chaos:fx/dodge3"
     ],
     "subtitle": "subtitles.realms_of_chaos.dodge"
   },
@@ -279,7 +283,9 @@
   },
   "forge_strike": {
     "sounds": [
-      "realms_of_chaos:fx/forge_strike"
+      "realms_of_chaos:fx/forge_strike1",
+      "realms_of_chaos:fx/forge_strike2",
+      "realms_of_chaos:fx/forge_strike3"
     ],
     "subtitle": "subtitles.realms_of_chaos.forge_strike"
   },
@@ -303,7 +309,9 @@
   },
   "seal_strike": {
     "sounds": [
-      "realms_of_chaos:fx/seal_strike"
+      "realms_of_chaos:fx/seal_strike1",
+      "realms_of_chaos:fx/seal_strike2",
+      "realms_of_chaos:fx/seal_strike3"
     ],
     "subtitle": "subtitles.realms_of_chaos.seal_strike"
   },
@@ -327,7 +335,9 @@
   },
   "lock_pin": {
     "sounds": [
-      "realms_of_chaos:fx/lock_pin"
+      "realms_of_chaos:fx/lock_pin1",
+      "realms_of_chaos:fx/lock_pin2",
+      "realms_of_chaos:fx/lock_pin3"
     ],
     "subtitle": "subtitles.realms_of_chaos.lock_pin"
   },
@@ -369,7 +379,9 @@
   },
   "dummy_hit": {
     "sounds": [
-      "realms_of_chaos:fx/dummy_hit"
+      "realms_of_chaos:fx/dummy_hit1",
+      "realms_of_chaos:fx/dummy_hit2",
+      "realms_of_chaos:fx/dummy_hit3"
     ],
     "subtitle": "subtitles.realms_of_chaos.dummy_hit"
   },

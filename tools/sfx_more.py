@@ -1,8 +1,8 @@
 """More sound effects: the relics charging and striking, the moves of a fight, the mod's blocks being used, and the
-small idle sounds machines and fires make - each made from synthesised layers (metal partials, filtered noise,
-hums), with real instruments from the soundfont where an effect wants a musical note.
+small idle sounds machines and fires make - short and dry like the game's own sounds, made from synthesised thuds,
+clacks, clangs, whooshes, crackles and hums, with a note-block-like pling where something good happens.
 
-  relics      relic_cast_zeus / _poseidon / _hades   a breath of charge, then the power let go
+  relics      relic_cast_zeus / _poseidon / _hades   a zap, a splash, a dark whoosh
               relic_shot_zeus / _poseidon / _hades   a relic's shot
               relic_ready                             a relic's move charged again
               relic_flourish, relic_level             the fourth blow of a chain; a relic rising a level
@@ -141,158 +141,201 @@ def souls(secs, seed=0):
 
 
 # ------------------------------------------------------------------------------------------------ the effects
+# The effects are made the way the game's own are: short, dry (no hall around them), a chunky blow or click or
+# whoosh at the heart, and a note-block "pling" where something good happens. The sounds heard over and over (the
+# hammer, a hit, a pin, a parry) come in a few variants, one picked at random each time, as the game's own do.
+VERSION = 2
+TOP = 7500                       # the game's sounds are a little soft at the very top
+
+
+def mix(*parts):
+    """Layers of different lengths added together."""
+    out = blank(max(len(p) for p in parts) / SR + 1 / SR)
+    for p in parts: out[:len(p)] += p
+    return out
+
+
+def dry(x, out=0.05, peak=0.9):
+    return norm(fade(lowpass(x, TOP), 0.002, out), peak)
+
+
+def ping(m, secs=0.5, bright=0.6):
+    """A note-block pling: a bell-like note with a quick, clean decay."""
+    from music import bell, midi
+    t = tvec(secs)
+    x = bell(midi(m), secs) * 0.7 + np.sin(TAU * midi(m) * t) * np.exp(-t * 7) * 0.6
+    return x * (1 - np.exp(-t * 400))
+
+
+def harp(m, secs=0.4):
+    from music import pluck, midi
+    return pluck(midi(m), secs, 0.6)
+
+
+def thud(f0, secs, seed=0, body=1.0):
+    """A heavy blow on something solid: a falling low tone and a short burst of dull noise."""
+    t = tvec(secs)
+    tone = np.sin(TAU * np.cumsum(f0 * (0.55 + 0.45 * np.exp(-t * 30))) / SR) * np.exp(-t * 14)
+    knock = lowpass(noise(secs, seed), 900) * np.exp(-t * 35)
+    return tone * body + knock * 0.9
+
+
+def clack(f, secs, seed=0):
+    """Wood or stone knocked: a few short resonances and a sharp tick."""
+    t = tvec(secs)
+    out = sum(a * np.sin(TAU * f * r * t) * np.exp(-t * d) for r, a, d in ((1, 1, 40), (2.3, 0.5, 60), (3.9, 0.3, 90)))
+    return out + bandpass(noise(secs, seed), 1500, 6000) * np.exp(-t * 120) * 1.2
+
+
+def clang(f, secs, seed=0):
+    """An anvil-like clang: a metal strike cut short."""
+    return metal(f, secs, ratios=(1.0, 2.4, 3.9, 5.6), decay=9, seed=seed, ring=1.0)
+
+
+def zap(secs, seed=0, f0=2200):
+    t = tvec(secs)
+    sweep = np.sign(np.sin(TAU * np.cumsum(f0 * np.exp(-t * 9) + 120) / SR)) * np.exp(-t * 12) * 0.35
+    return lowpass(sweep, 5000) + crackle(secs, 260, seed, 8000) * np.exp(-t * 8)
+
+
+def splash(secs, seed=0):
+    """Water thrown: a burst of noise with the low of the water in it, and bubbles."""
+    t = tvec(secs)
+    x = bandpass(noise(secs, seed), 400, 5000) * np.exp(-t * 9) + lowpass(noise(secs, seed + 1), 500) * np.exp(-t * 6) * 1.5
+    rng = np.random.default_rng(seed)
+    for _ in range(int(secs * 18)):
+        at, f = rng.uniform(0.05, secs * 0.8), rng.uniform(500, 1400)
+        b = tvec(0.04)
+        place(x, np.sin(TAU * np.cumsum(f * (1 + b * 12)) / SR) * np.exp(-b * 90) * 0.4, at)
+    return x
+
+
+def grains(secs, seed=0, rate=60, lo=200, hi=2500):
+    """Stone crumbling: many short knocks of filtered noise, thinning out."""
+    t = tvec(secs)
+    return bandpass(crackle(secs, rate, seed, hi) * 3, lo, hi) * np.exp(-t * 3.5)
+
+
+def mumble(secs, seed=0, base=150):
+    """A voice murmuring: a buzzing tone through two moving formants, rising and falling in syllables."""
+    t = tvec(secs)
+    rng = np.random.default_rng(seed)
+    pitch = base * (1 + 0.15 * np.sin(TAU * 2.2 * t + rng.uniform(0, 6)))
+    src = sum(np.sin(TAU * np.cumsum(pitch * k) / SR) / k for k in range(1, 12))
+    out = bandpass(src, 300, 900) + bandpass(src, 1100, 2400) * 0.6
+    syll = np.abs(np.sin(np.pi * t * 5.5)) ** 0.7
+    return out * syll
+
+
 def effects():
     out = {}
-    # ---- the relics: a breath of charge, then the power let go
-    x = blank(2.2)
-    place(x, crackle(0.35, 120, 1, 8000) * np.linspace(0.2, 1, int(0.35 * SR)), 0.0, 0.6)
-    place(x, riser(0.35, 400, 6000, 2), 0.0, 0.25)
-    place(x, thunder(1.8, 3), 0.33, 1.0)
-    place(x, boom(1.6, 80, 34), 0.33, 0.8)
-    out["relic_cast_zeus"] = norm(fade(x, 0.005, 0.5))
-    x = blank(2.2)
-    place(x, whoosh(0.45, 200, 1200, 4), 0.0, 0.8)
-    place(x, wave(1.8, 5), 0.25, 1.0)
-    place(x, boom(1.4, 70, 30), 0.4, 0.5)
-    out["relic_cast_poseidon"] = norm(fade(x, 0.005, 0.5))
-    x = blank(2.2)
-    place(x, souls(0.5, 6)[::-1] * 0.8, 0.0, 0.8)
-    place(x, souls(1.6, 7), 0.45, 1.0)
-    place(x, boom(1.6, 60, 26), 0.45, 0.8)
-    place(x, crackle(1.0, 30, 8, 2500), 0.5, 0.3)
-    out["relic_cast_hades"] = norm(fade(x, 0.005, 0.5))
-    # a relic's shot: a zap, a jet of water, a dark streak
-    x = blank(0.7)
-    place(x, crackle(0.25, 200, 9, 9000), 0.0, 0.8)
-    t = tvec(0.25)
-    place(x, np.sin(TAU * np.cumsum(1800 * np.exp(-t * 8) + 200) / SR) * np.exp(-t * 10), 0.0, 0.5)
-    out["relic_shot_zeus"] = norm(fade(x, 0.002, 0.2))
-    out["relic_shot_poseidon"] = norm(fade(whoosh(0.6, 400, 2500, 10) + lowpass(noise(0.6, 11), 600) * np.exp(-tvec(0.6) * 6) * 0.8, 0.002, 0.2))
-    x = whoosh(0.7, 150, 900, 12, up=False)
-    place(x, souls(0.6, 13), 0.05, 0.4)
-    out["relic_shot_hades"] = norm(fade(x, 0.002, 0.25))
-    # a move charged again: a rising shimmer that settles on a bright note
-    x = orchestra(lambda s: [s.note(s.instrument(CELESTA, 110), i * 0.06, 1.2, p, 90) for i, p in enumerate((79, 83, 86, 91))], 1.6, 0.6, 0.5)
-    place(x, glass(1568, 1.2, 0.02), 0.2, 0.15)
-    out["relic_ready"] = norm(fade(x, 0.002, 0.4))
-    # the flourish: a heavy blow and the ring of the weapon
-    x = blank(1.4)
-    place(x, metal(420, 1.3, seed=14, ring=1.4), 0.0, 0.6)
-    place(x, boom(0.8, 120, 50), 0.0, 0.7)
-    place(x, lowpass(noise(0.2, 15), 1200) * np.exp(-tvec(0.2) * 25), 0.0, 0.8)
-    out["relic_flourish"] = norm(fade(x, 0.002, 0.3))
-    # a relic rises a level: horns and a bright choir in a rising chord
-    def lvl(s):
-        h, c = s.instrument(HORN, 110), s.instrument(CHOIR, 100)
-        for i, p in enumerate((60, 64, 67, 72)): s.note(h, i * 0.12, 1.4 - i * 0.1, p, 100)
-        s.chord(c, 0.36, 1.2, [72, 76, 79], 95)
-    out["relic_level"] = norm(fade(orchestra(lvl, 2.0, 0.6, 0.5), 0.002, 0.5))
-    # ---- a fight
-    x = blank(1.2)
-    place(x, metal(880, 1.1, ratios=(1.0, 2.4, 3.9, 5.6, 8.1), decay=3.0, seed=16, ring=1.3), 0.0, 0.8)
-    place(x, metal(1320, 0.9, seed=17), 0.004, 0.4)
-    out["parry"] = norm(fade(x, 0.001, 0.3))
+    v3 = lambda make: [make(i) for i in range(3)]
+    # ---- the relics
+    x = blank(0.9)
+    place(x, zap(0.3, 1), 0.0, 0.8)
+    place(x, thud(70, 0.8, 2, 1.4), 0.12, 1.0)
+    place(x, crackle(0.6, 60, 3, 6000) * np.exp(-tvec(0.6) * 5), 0.12, 0.6)
+    out["relic_cast_zeus"] = dry(x, 0.2)
     x = blank(0.8)
-    place(x, whoosh(0.22, 1200, 7000, 18), 0.0, 0.8)
-    place(x, lowpass(noise(0.25, 19), 2500) * np.exp(-tvec(0.25) * 20), 0.18, 0.9)
-    place(x, boom(0.5, 140, 60), 0.18, 0.5)
-    out["riposte"] = norm(fade(x, 0.001, 0.2))
-    out["dodge"] = norm(fade(whoosh(0.4, 250, 2200, 20) + whoosh(0.4, 500, 4000, 21) * 0.5, 0.002, 0.1))
+    place(x, whoosh(0.25, 300, 1500, 4), 0.0, 0.6)
+    place(x, splash(0.6, 5), 0.15, 1.0)
+    out["relic_cast_poseidon"] = dry(x, 0.2)
+    x = blank(0.9)
+    place(x, whoosh(0.3, 120, 700, 6, up=False), 0.0, 0.8)
+    t = tvec(0.7)
+    place(x, np.sin(TAU * np.cumsum(140 * (1 - 0.35 * t / 0.7)) / SR) * np.exp(-t * 4) * 0.6, 0.15)
+    place(x, thud(55, 0.6, 7), 0.15, 0.9)
+    out["relic_cast_hades"] = dry(x, 0.25)
+    out["relic_shot_zeus"] = dry(zap(0.3, 9), 0.08)
+    out["relic_shot_poseidon"] = dry(splash(0.35, 10) * 0.8 + whoosh(0.35, 500, 2500, 11) * 0.6, 0.08)
+    out["relic_shot_hades"] = dry(whoosh(0.4, 150, 900, 12, up=False) + lowpass(noise(0.4, 13), 300) * np.exp(-tvec(0.4) * 8), 0.1)
+    x = blank(0.6)
+    place(x, ping(79, 0.3), 0.0, 0.8)
+    place(x, ping(86, 0.5), 0.09, 1.0)
+    out["relic_ready"] = dry(x, 0.15, 0.8)
+    x = thud(90, 0.5, 14, 1.3)
+    place(x, clang(520, 0.4, 15) * 0.5, 0.0)
+    out["relic_flourish"] = dry(x, 0.12)
+    x = blank(0.9)
+    for i, m in enumerate((72, 76, 79, 84)): place(x, ping(m, 0.6), i * 0.07, 0.8)
+    out["relic_level"] = dry(x, 0.2, 0.85)
+    # ---- a fight
+    out["parry"] = v3(lambda i: dry(mix(clang(700 + 90 * i, 0.35, 16 + i) * 0.8, clack(300 + 30 * i, 0.2, 20 + i) * 0.6), 0.1))
+    x = blank(0.4)
+    place(x, whoosh(0.15, 1200, 6000, 18), 0.0, 0.7)
+    place(x, thud(120, 0.25, 19), 0.11, 1.0)
+    out["riposte"] = dry(x, 0.08)
+    out["dodge"] = v3(lambda i: dry(whoosh(0.22 + 0.03 * i, 300 + 80 * i, 2500 + 400 * i, 23 + i), 0.04, 0.7))
     # ---- the blocks
-    t = tvec(1.4)
-    grind = lowpass(noise(1.4, 22), 500) * (1 + 0.4 * np.sin(TAU * 7 * t)) + bandpass(noise(1.4, 23), 800, 2500) * 0.15
-    x = grind * np.sin(np.pi * np.clip(t / 1.4, 0, 1)) ** 0.5
-    place(x, boom(0.6, 90, 45), 1.1, 0.6)
-    out["sliding_door"] = norm(fade(x, 0.05, 0.25))
-    out["forge_strike"] = norm(fade(metal(620, 1.0, seed=24) + metal(310, 1.0, seed=26) * 0.5, 0.001, 0.3))
-    x = metal(620, 1.6, seed=27, ring=1.6)
-    place(x, orchestra(lambda s: s.chord(s.instrument(GLOCK, 110), 0.05, 1.2, [84, 88, 91], 100), 1.6, 0.5, 0.4), 0.0, 0.8)
-    out["forge_perfect"] = norm(fade(x, 0.001, 0.4))
-    x = metal(240, 0.9, decay=7, seed=28) * 0.7
-    place(x, lowpass(noise(0.3, 29), 600) * np.exp(-tvec(0.3) * 12), 0.0, 0.8)
-    out["forge_miss"] = norm(fade(x, 0.001, 0.3))
-    def done(s):
-        h, b = s.instrument(BRASS, 115), s.instrument(TUBULAR, 100)
-        s.chord(h, 0.0, 1.6, [55, 62, 67, 71], 110)
-        s.note(b, 0.0, 2.0, 79, 100)
-    x = orchestra(done, 2.4, 0.6, 0.5)
-    place(x, metal(620, 1.0, seed=30), 0.0, 0.5)
-    out["forge_done"] = norm(fade(x, 0.002, 0.6))
-    x = metal(180, 0.9, ratios=(1.0, 1.7, 2.9, 4.1), decay=6, seed=31) * 0.6
-    place(x, lowpass(noise(0.15, 32), 1800) * np.exp(-tvec(0.15) * 30), 0.0, 1.0)
-    out["seal_strike"] = norm(fade(x, 0.001, 0.25))
-    x = blank(3.0)
-    place(x, crackle(0.6, 80, 33, 5000), 0.0, 0.8)
-    place(x, lowpass(noise(1.2, 34), 900) * np.exp(-tvec(1.2) * 3), 0.0, 0.8)
-    place(x, boom(1.5, 70, 30), 0.0, 0.7)
-    place(x, orchestra(lambda s: s.chord(s.instrument(CHOIR, 110), 0.1, 2.2, [57, 64, 69, 73], 105), 3.0, 0.7, 0.6), 0.0, 0.7)
-    out["seal_break"] = norm(fade(x, 0.002, 0.8))
-    def summon(s):
-        hn, tb, c, tm = s.instrument(HORN, 120), s.instrument(TROMBONE, 115), s.instrument(CHOIR, 110), s.instrument(TIMPANI, 115)
-        s.note(hn, 0.0, 2.2, 45, 120); s.note(tb, 0.0, 2.2, 33, 115); s.note(hn, 0.6, 1.6, 52, 110)
-        s.chord(c, 0.4, 2.4, [45, 52, 57, 60], 105)
-        for i in range(10): s.note(tm, i * 0.06, 0.1, 33, 50 + i * 7)
-        s.note(tm, 0.6, 2.0, 33, 127)
-    x = orchestra(summon, 3.5, 0.7, 0.6)
-    place(x, boom(2.0, 60, 25), 0.6, 0.6)
-    out["altar_summon"] = norm(fade(x, 0.005, 0.8))
-    t = tvec(0.5)
-    creak = np.sin(TAU * np.cumsum(180 + 120 * np.sin(TAU * 3 * t) + 40 * np.random.default_rng(35).normal(0, 1, len(t))) / SR) * np.sin(np.pi * t / 0.5) * 0.4
-    x = blank(1.6)
-    place(x, creak + bandpass(noise(0.5, 36), 300, 1500) * 0.3, 0.0, 0.8)
-    place(x, orchestra(lambda s: [s.note(s.instrument(CELESTA, 110), 0.45 + i * 0.05, 1.0, p, 95) for i, p in enumerate((76, 79, 84, 88))], 1.6, 0.6, 0.5), 0.0, 0.8)
-    out["cache_open"] = norm(fade(x, 0.002, 0.4))
-    out["lock_pin"] = norm(fade(metal(3200, 0.12, decay=30, seed=37) * 0.6 + bandpass(noise(0.12, 38), 3000, 9000) * np.exp(-tvec(0.12) * 80), 0.0005, 0.04))
-    x = metal(2600, 0.4, decay=14, seed=39)
-    place(x, bandpass(noise(0.05, 40), 2000, 9000) * 2, 0.0, 1.0)
-    place(x, metal(1800, 0.3, decay=20, seed=41) * 0.4, 0.12, 1.0)
-    out["lock_break"] = norm(fade(x, 0.0005, 0.1))
-    x = metal(500, 0.6, ratios=(1.0, 1.9, 3.3), decay=9, seed=42)
-    place(x, lowpass(noise(0.1, 43), 1500) * np.exp(-tvec(0.1) * 40), 0.0, 1.2)
-    place(x, metal(700, 0.5, decay=10, seed=44) * 0.5, 0.15, 1.0)
-    out["lock_open"] = norm(fade(x, 0.0005, 0.15))
-    t = tvec(1.5)
-    x = hum(110, 1.5, seed=45) * (t / 1.5) + glass(880 * 1.5, 1.5, 0.5) * 0.3
-    out["waygate_charge"] = norm(fade(x, 0.2, 0.3))
-    x = blank(2.0)
-    place(x, whoosh(1.2, 200, 6000, 46), 0.0, 1.0)
-    place(x, orchestra(lambda s: s.chord(s.instrument(OOHS, 110), 0.3, 1.4, [69, 73, 76, 81], 100), 2.0, 0.8, 0.6), 0.0, 0.6)
-    out["waygate_travel"] = norm(fade(x, 0.01, 0.5))
-    x = orchestra(lambda s: (s.chord(s.instrument(OOHS, 110), 0.0, 2.0, [62, 69, 74], 100), s.note(s.instrument(CELESTA, 100), 0.2, 1.5, 86, 80)), 2.4, 0.8, 0.6)
-    place(x, bandpass(noise(2.0, 47), 400, 2500) * np.sin(np.pi * tvec(2.0) / 2.0) * 0.25, 0.0, 1.0)
-    out["oracle_speak"] = norm(fade(x, 0.05, 0.6))
-    x = synth_taiko(0.7, seed=48, dur=1.6)
-    place(x, boom(1.4, 70, 35), 0.0, 0.7)
-    out["war_drum"] = norm(fade(x, 0.001, 0.4))
-    x = lowpass(noise(0.3, 49), 900) * np.exp(-tvec(0.3) * 18)
-    place(x, np.sin(TAU * 140 * tvec(0.25)) * np.exp(-tvec(0.25) * 25), 0.0, 0.6)
-    out["dummy_hit"] = norm(fade(x, 0.001, 0.08))
-    def solved(s):
-        h, c = s.instrument(HARP, 110), s.instrument(CHOIR, 100)
-        for i, p in enumerate((62, 66, 69, 74, 78, 81)): s.note(h, i * 0.07, 1.6, p, 95)
-        s.chord(c, 0.3, 1.8, [62, 66, 69, 74], 95)
-    out["puzzle_solved"] = norm(fade(orchestra(solved, 2.6, 0.7, 0.6), 0.002, 0.6))
-    # ---- idle: what machines and fires do while nobody touches them (played now and then, so each fades in and out)
-    def idle(x, secs, inn=0.4, outp=0.6):
-        return norm(fade(x[:int(secs * SR)], inn, outp), 0.7)
-    out["idle_orb"] = idle(hum(73, 3.0, (1, 0.6, 0.3, 0.2, 0.1), 0.4, 50) + glass(1175, 3.0, 0.8) * 0.15, 3.0)
-    t = tvec(3.0)
-    roar = lowpass(noise(3.0, 51), 350) * (1 + 0.3 * np.sin(TAU * 0.7 * t)) * 2
-    out["idle_forge"] = idle(roar + crackle(3.0, 25, 52, 3500) * 1.5, 3.0, 0.3, 0.6)
-    out["idle_gate"] = idle(hum(55, 3.0, (1, 0.7, 0.4, 0.3, 0.2), 1.2, 53) * (1 + 0.5 * np.sin(TAU * 1.1 * t)) + whoosh(3.0, 200, 900, 54) * 0.3, 3.0)
-    out["idle_relay"] = idle(hum(120, 2.5, (1, 0.4, 0.3, 0.15), 2.0, 55) + crackle(2.5, 6, 56, 7000) * 0.6, 2.5)
-    buzz = np.sign(np.sin(TAU * 100 * tvec(2.0))) * 0.25 + hum(100, 2.0, (1, 0.5), 3.0, 57)
-    out["idle_jammer"] = idle(lowpass(buzz, 2500) + crackle(2.0, 20, 58, 8000) * 0.8, 2.0, 0.2, 0.4)
-    out["idle_waygate"] = idle(hum(98, 3.0, (1, 0.5, 0.25, 0.25), 0.5, 59) + glass(784, 3.0, 1.0) * 0.2, 3.0)
-    t = tvec(2.5)
-    out["idle_fire"] = idle(lowpass(noise(2.5, 60), 500) * (1 + 0.4 * np.sin(TAU * 1.3 * t)) * 1.5 + crackle(2.5, 18, 61, 3000) * 1.4, 2.5, 0.3, 0.5)
-    out["idle_oracle"] = idle(lowpass(noise(3.0, 62), 600) * 1.2 + bandpass(noise(3.0, 63), 500, 1800) * np.sin(TAU * 0.5 * tvec(3.0)) ** 2 * 0.6 + hum(147, 3.0, (1, 0.3), 0.3, 64) * 0.4, 3.0)
-    def murmur(s):
-        ch = s.instrument(OOHS, 70)
-        s.chord(ch, 0.0, 3.0, [57, 64, 69], 60)
-        s.swell(ch, 0.0, 3.0, 20, 80)
-    out["idle_altar"] = idle(orchestra(murmur, 3.5, 0.9, 0.7), 3.5, 0.8, 1.0)
-    out["idle_pedestal"] = idle(glass(659, 2.5, 0.6) * 0.5 + glass(988, 2.5, 0.9) * 0.3 + hum(82, 2.5, (1, 0.3), 0.6, 65) * 0.3, 2.5)
+    t = tvec(0.6)
+    x = blank(0.8)
+    place(x, lowpass(noise(0.6, 26), 600) * (1 + 0.5 * np.sin(TAU * 18 * t)) * np.sin(np.pi * t / 0.6) ** 0.5, 0.0, 0.8)
+    place(x, clack(110, 0.25, 27) + thud(80, 0.25, 28), 0.55, 1.0)
+    out["sliding_door"] = dry(x, 0.08)
+    out["forge_strike"] = v3(lambda i: dry(mix(clang(600 + 70 * i, 0.4, 30 + i), thud(200, 0.12, 33 + i) * 0.4), 0.1))
+    x = clang(660, 0.4, 36)
+    place(x, ping(91, 0.4), 0.05, 0.6)
+    out["forge_perfect"] = dry(np.concatenate([x, blank(0.1)]), 0.15)
+    out["forge_miss"] = dry(mix(thud(160, 0.3, 37), clack(240, 0.2, 38) * 0.5), 0.08)
+    x = blank(0.9)
+    place(x, clang(620, 0.4, 39), 0.0, 0.7)
+    place(x, ping(79, 0.4), 0.15, 0.7)
+    place(x, ping(84, 0.6), 0.27, 0.8)
+    out["forge_done"] = dry(x, 0.2)
+    out["seal_strike"] = v3(lambda i: dry(mix(clack(150 + 20 * i, 0.25, 40 + i), thud(110, 0.2, 43 + i) * 0.6), 0.06))
+    x = blank(0.9)
+    place(x, thud(70, 0.5, 46, 1.2), 0.0, 1.0)
+    place(x, grains(0.85, 47), 0.0, 0.9)
+    place(x, ping(81, 0.5) * 0.5 + ping(88, 0.5) * 0.4, 0.1, 0.5)
+    out["seal_break"] = dry(x, 0.2)
+    x = blank(1.5)
+    t = tvec(1.1)
+    place(x, lowpass(noise(1.1, 48), 250) * (t / 1.1) * 2 + np.sin(TAU * np.cumsum(55 + 50 * t / 1.1) / SR) * (t / 1.1) * 0.5, 0.0, 0.8)
+    place(x, thud(60, 0.5, 49, 1.5), 1.0, 1.0)
+    place(x, grains(0.5, 50), 1.0, 0.5)
+    out["altar_summon"] = dry(x, 0.2)
+    t = tvec(0.3)
+    creak = np.sin(TAU * np.cumsum(220 + 90 * np.sin(TAU * 4 * t)) / SR) * np.sin(np.pi * t / 0.3) * 0.35
+    x = blank(0.7)
+    place(x, creak + clack(180, 0.3, 51) * 0.4, 0.0, 0.8)
+    place(x, harp(76, 0.4), 0.22, 0.5)
+    place(x, harp(83, 0.45), 0.3, 0.5)
+    out["cache_open"] = dry(x, 0.12)
+    out["lock_pin"] = v3(lambda i: dry(clack(1900 + 250 * i, 0.07, 52 + i), 0.02, 0.7))
+    x = clack(1500, 0.12, 55)
+    place(x, clack(1100, 0.12, 56) * 0.6, 0.06)
+    out["lock_break"] = dry(np.concatenate([x, blank(0.08)]), 0.05)
+    x = blank(0.35)
+    place(x, clack(900, 0.12, 57), 0.0, 1.0)
+    place(x, mix(clack(600, 0.15, 58), thud(180, 0.12, 59) * 0.4), 0.1, 0.9)
+    out["lock_open"] = dry(x, 0.06)
+    t = tvec(1.2)
+    rise = np.sin(TAU * np.cumsum(180 + 380 * (t / 1.2) ** 1.5) / SR) * (t / 1.2) * 0.4
+    out["waygate_charge"] = dry(rise + bandpass(noise(1.2, 60), 300, 2000) * (t / 1.2) * 0.4, 0.15)
+    t = tvec(0.9)
+    fall = np.sin(TAU * np.cumsum(900 * np.exp(-t * 3) + 120) / SR) * np.exp(-t * 3) * 0.4
+    out["waygate_travel"] = dry(whoosh(0.9, 200, 3500, 61) + fall, 0.2)
+    out["oracle_speak"] = dry(mumble(0.6, 62, 140) + lowpass(noise(0.6, 63), 400) * 0.15, 0.12)
+    out["war_drum"] = dry(mix(thud(65, 0.6, 64, 1.6), clack(90, 0.15, 65) * 0.3), 0.15)
+    out["dummy_hit"] = v3(lambda i: dry(mix(lowpass(noise(0.18, 66 + i), 1100 - 100 * i) * np.exp(-tvec(0.18) * 22), thud(130 + 15 * i, 0.15, 69 + i) * 0.5), 0.04))
+    x = blank(0.9)
+    for i, m in enumerate((74, 78, 81, 86)): place(x, harp(m, 0.5) * 0.7 + ping(m, 0.5) * 0.4, i * 0.09)
+    out["puzzle_solved"] = dry(x, 0.2)
+    # ---- idle: short and quiet, played now and then
+    def idle(x, secs, inn=0.15, outp=0.3):
+        return norm(fade(lowpass(x[:int(secs * SR)], TOP), inn, outp), 0.6)
+    out["idle_orb"] = idle(hum(73, 1.6, (1, 0.5, 0.2), 0.8, 72) + ping(86, 1.6) * 0.15, 1.6)
+    t = tvec(1.2)
+    out["idle_forge"] = idle(lowpass(noise(1.2, 73), 300) * 1.4 + crackle(1.2, 14, 74, 3000) * 1.6, 1.2, 0.1, 0.3)
+    out["idle_gate"] = idle(hum(55, 2.0, (1, 0.6, 0.3), 1.5, 75) * (1 + 0.4 * np.sin(TAU * 1.5 * tvec(2.0))), 2.0, 0.3, 0.5)
+    out["idle_relay"] = idle(hum(120, 1.2, (1, 0.3, 0.2), 3.0, 76) + crackle(1.2, 5, 77, 7000) * 0.5, 1.2)
+    buzz = np.sign(np.sin(TAU * 100 * tvec(1.0))) * 0.2 + hum(100, 1.0, (1, 0.4), 4.0, 78)
+    out["idle_jammer"] = idle(lowpass(buzz, 2000) + crackle(1.0, 12, 79, 7000) * 0.6, 1.0, 0.08, 0.2)
+    out["idle_waygate"] = idle(hum(98, 1.8, (1, 0.4, 0.2), 0.7, 80) * (1 + 0.3 * np.sin(TAU * 2 * tvec(1.8))), 1.8, 0.3, 0.5)
+    out["idle_fire"] = idle(lowpass(noise(1.0, 81), 400) * 0.8 + crackle(1.0, 12, 82, 3000) * 1.8, 1.0, 0.05, 0.25)
+    out["idle_oracle"] = idle(lowpass(noise(1.5, 83), 500) * 1.0 + crackle(1.5, 6, 84, 2500) * 1.2 + hum(147, 1.5, (1, 0.3), 0.5, 85) * 0.3, 1.5)
+    out["idle_altar"] = idle(mumble(1.4, 86, 110) * 0.5 + hum(55, 1.4, (1, 0.4), 0.6, 87) * 0.4, 1.4, 0.3, 0.5)
+    out["idle_pedestal"] = idle(ping(76, 1.4) * 0.3 + ping(83, 1.4) * 0.2 + hum(82, 1.4, (1, 0.3), 0.6, 88) * 0.3, 1.4)
     return out
 
 

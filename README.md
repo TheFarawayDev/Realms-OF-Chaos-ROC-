@@ -16,39 +16,36 @@ The current build is an **Alpha**.
 
 ## What's in 1.2.0
 
-* **Nineteen tracks, composed around their harmony and played by real instruments.** The score was written
-  again (`tools/harmony.py`) so that everything sounding at once belongs together: each track follows a chord
-  progression in one key; its pads and sustained parts are voice-led from chord to chord and stop at each change
-  rather than ringing into the next; its bass keeps to the chord's root; its melodies are built in phrases - a motif,
-  repeated and answered - with the notes on the strong beats always tones of the chord under them and the notes
-  between stepping through the key; a theme played again later lands on the same chords; and the pitched drums
-  (taiko, toms, timpani) are tuned to each chord's root. (Measured: the old arrangement had clashing notes sounding
-  together 40-50% of the time; the new one 1-6%, the rest passing notes.) The instruments are those of an ancient,
-  mythic world - harps, lyre-like guitar, pan flute and reeds, orchestral strings, horns and drums, choirs - played
-  by FluidSynth with the Fluid (R3) General MIDI SoundFont by Frank Wen (MIT licence; its notice is in
-  `assets/realms_of_chaos/sounds/credits.txt`). The Ruined Gate keeps its earlier, synthesised track. All are brought
-  to the same loudness.
+* **Nineteen tracks in the manner of Minecraft's own music.** The score was written again (`tools/craft.py`) to sit
+  beside the game's music: a soft felt piano, warm synth pads, an electric piano, a celesta or music box catching the
+  light, slow tempos, lots of room and whole phrases of silence; for the fights, synths and electronic drums rather
+  than an orchestra. All of it original. The harmony engine underneath is the same one (`tools/harmony.py`): each
+  track follows a chord progression in one key, its pads are voice-led and stop at each chord change, its bass keeps
+  to the root, and its melodies are built in phrases with chord tones on the strong beats (measured: notes a
+  semitone apart sound together 0-4% of the time, all passing notes). Played by FluidSynth with the Fluid (R3)
+  General MIDI SoundFont by Frank Wen (MIT licence; its notice is in `assets/realms_of_chaos/sounds/credits.txt`).
+  The Ruined Gate keeps its synthesised track. All are brought to the same loudness.
 
   | Track | Plays | Instruments | Key, time |
   | --- | --- | --- | --- |
-  | The Hub | the hub | harp, lyre-like guitar, flute, soft strings, cello, frame drum | D major, 80 bpm |
-  | The Hermitage | your Hermitage island | pan flute, harp, cello, soft strings, birdsong | F major, 66 bpm |
-  | Olympus | floors 1-10 of Zeus's tower | stately waltz: pizzicato strings, harp, flute and oboe in thirds, horns, glockenspiel | G lydian, 96 bpm, 3/4 |
-  | The Storm on the Peak | floors 11-15 of Zeus's tower | tremolo strings, driving cellos, horns and brass, choir, timpani thunder | E minor, 116 bpm |
-  | The Abyss | floors 1-10 of Poseidon's tower | vibraphone in waves, strings, voices, clarinet, celesta, the sea | B minor, rolling 6/8 |
-  | The Trench | floors 11-15 of Poseidon's tower | low strings and basses, English horn, voices, a bowed shimmer | F# minor, 52 bpm |
-  | The Underworld | floors 1-10 of Hades's tower | trombone and tuba chorale, low strings, choir, cello, low harp, tolling bell, a heartbeat | C minor, 54 bpm |
-  | Tartarus | floors 11-15 of Hades's tower | a rite: low organ, a chant of men's voices in thirds, frame drums, a bowed shimmer | C# minor, 76 bpm, 5/4 |
-  | The Passages | any passage level | pizzicato strings tiptoeing, harp, clarinet and bassoon, celesta, a ticking clock | D minor, 100 bpm |
-  | The War Dance | fighting a passage's guardians | a Greek war dance: a double reed like an aulos, a lute strumming, darbuka and riq | D hijaz, 9/8 (2+2+2+3) |
-  | A God's Trial | any god's trial | full orchestra: spiccato strings, driving low strings, a heroic horn theme doubled by brass at the climax, choir, taiko, timpani rolls, snare, crashes, orchestra hits; built in sections with a breakdown | D minor, 148 bpm |
-  | The Last Stand | a god driven to its wrath phase | a gallop in 12/8: the choir chanting the theme, brass stabs, strings in triplets, taiko, toms, snare | E harmonic minor |
-  | The King on the Summit | a tower king's trial | a great choir over the full orchestra, the horn chant, tubular bells, the drums of war | B minor, 132 bpm |
-  | The Fallen Titan | fighting a roused Titan | a drum ensemble - taiko, toms, the great bass drum - with trombones and tuba hammering, a choir at the end | C minor, 7/8 (2+2+3) |
-  | The Oracle's Flame | by the Oracle in the hub | a single voice over glass, a celesta turning, a bowed sound and a cello | E dorian, 60 bpm, 3/4 |
-  | The Citadel of the Sky | near the Citadel of the Sky | a march: trumpet theme with horns in thirds, striding strings, tuba, snare and timpani | Bb major, 104 bpm |
-  | The Citadel of the Tides | near the Citadel of the Tides | a march that rolls like a deck: horns, tuba and pizzicato rocking, snare and tambourine, the sea | G major, 6/8 |
-  | The Citadel of the Shades | near the Citadel of the Shades | a dirge: bassoons and contrabassoon, plucked basses, muffled timpani, humming voices | F minor, 72 bpm, 3/4 |
+  | The Hub | the hub | felt piano and electric piano over a warm pad | D major, 72 bpm |
+  | The Hermitage | your Hermitage island | a music box and piano, a soft pad, birdsong | F major, 62 bpm |
+  | Olympus | floors 1-10 of Zeus's tower | bright piano and glockenspiel, an airy pad | G lydian, 84 bpm, 3/4 |
+  | The Storm on the Peak | floors 11-15 of Zeus's tower | synth strings and running piano over a soft beat | E minor, 96 bpm |
+  | The Abyss | floors 1-10 of Poseidon's tower | vibraphone and electric piano, a watery pad | B minor, slow 6/8 |
+  | The Trench | floors 11-15 of Poseidon's tower | a deep bowed pad and low piano notes far apart, echoes | F# minor, 50 bpm |
+  | The Underworld | floors 1-10 of Hades's tower | dark piano, a choir pad and a metallic one, embers crackling | C minor, 56 bpm |
+  | Tartarus | floors 11-15 of Hades's tower | a synth bass pulsing under metallic pads, low piano | C# minor, 66 bpm, 5/4 |
+  | The Passages | any passage level | kalimba and electric piano over a ticking beat | D minor, 92 bpm |
+  | The War Dance | fighting a passage's guardians | square-wave lead, synth bass, 808 drums | D hijaz, 9/8 (2+2+2+3) |
+  | A God's Trial | any god's trial | saw lead, a pulsing synth bass, square arpeggios, a choir pad, driving drums | D minor, 140 bpm |
+  | The Last Stand | a god driven to its wrath phase | fast saw arpeggios in 12/8, synth bass, 808 drums, choir pad | E harmonic minor |
+  | The King on the Summit | a tower king's trial | choir pad, synth brass theme, bells, big drums and tom fills | B minor, 128 bpm |
+  | The Fallen Titan | fighting a roused Titan | heavy synth bass, kick and toms, a metallic pad | C minor, 7/8 (2+2+3) |
+  | The Oracle's Flame | by the Oracle in the hub | celesta and piano over a halo pad | E dorian, 58 bpm, 3/4 |
+  | The Citadel of the Sky | near the Citadel of the Sky | synth brass and piano, a soft snare march | Bb major, 96 bpm |
+  | The Citadel of the Tides | near the Citadel of the Tides | electric piano rocking in six, a pad like a tide | G major, slow 6/8 |
+  | The Citadel of the Shades | near the Citadel of the Shades | low piano and a bowed pad | F minor, 60 bpm, 3/4 |
   | The Ruined Gate | at the Ruined Gate | choir, glass harmonics, deep swells (synthesised) | Ab lydian, no beat |
 
   Each is about two minutes, with about forty seconds of quiet between plays; anywhere else the game's own music
@@ -71,24 +68,25 @@ The current build is an **Alpha**.
   horns answering and the timpani under them; the orb blooms with a celesta and glockenspiel run, a harp glissando and
   voices; a core rises through a sweep into a taiko and a brass swell; a pattern rings crystal and vibraphone out of a
   short reversed cymbal; ichor falls down a kalimba with voices and bubbles; the screens click with a woodblock.
-* **Forty more sound effects.** (`tools/sfx_more.py`: metal partials, filtered noise and hums, with soundfont
-  horns, choirs and harps where an effect wants a note.)
-  * *Relics:* casting a move (or a relic's area release) gathers a breath of charge and lets the power go - crackling
-    lightning and a thunderclap for Zeus's relics, a swell and a breaking wave for Poseidon's, hollow voices sliding
-    down for Hades's; each tower's shots have their own (a zap, a jet of water, a dark streak); the moment a move has
-    charged again, a celesta shimmer tells its holder (only them); a chain's fourth blow lands with a heavy ring; a
-    relic rising a level is answered by horns and a choir.
-  * *A fight:* a parry rings like struck steel; a riposte is a sharp slash and a blow; a dodge is a rush of air.
-  * *Blocks:* sliding stone doors grind and settle; the forge's hammer rings (brighter on a perfect strike, dull on a
-    miss) and a finished forging is a brass chord and a bell; a passage seal is struck with a stony crack and its
-    breaking is a shattering with a choir; calling a god at an altar is a war horn, trombones, a choir and a timpani
-    roll; a cache creaks open on a celesta's twinkle; lockpicking has a pin's click, a pick's snap and a lock's clunk;
-    a waygate gathers with a rising hum and you pass through on a rush and voices; the Oracle answers with voices and a
-    breath; war drums boom; training dummies thump; a solved puzzle is a harp and a choir.
-  * *Idle:* machines and fires sound now and then on their own - the Orb of Plenty hums at its work, the Chaos Forge
-    roars and crackles, an open gate thrums, relay cores hum, signal jammers buzz and spark, waygate obelisks hum,
-    braziers, lamps and candelabra crackle, the Oracle's flame breathes, altars murmur, a pedestal with keystones set
-    glows with a soft tone. (Played by each player's own game, quietly, so they cost the server nothing.)
+* **Forty more sound effects, made like the game's own.** (`tools/sfx_more.py`) Short and dry, with no hall around
+  them: a chunky blow, click or whoosh at the heart, and a note-block-like pling when something good happens. The
+  sounds heard over and over - the hammer, a parry, a dodge, a seal struck, a dummy hit, a lock's pin - come in three
+  variants each, one picked at random every time, as the game does with its own.
+  * *Relics:* casting a move gives a zap and a thump for Zeus's relics, a splash with bubbles for Poseidon's, a dark
+    falling whoosh for Hades's; each tower's shots have their own (a zap, a splash, a dark streak); when a move has
+    charged again two plings tell its holder (only them); a chain's fourth blow is a heavy thud and clang; a relic
+    rising a level is a quick four-note pling.
+  * *A fight:* a parry is a short clang and knock; a riposte a swish and a thud; a dodge a quick whoosh.
+  * *Blocks:* sliding stone doors grind and clunk; the forge's hammer clangs like an anvil (a pling on a perfect
+    strike, a dull thunk on a miss, two plings when the forging is done); a passage seal is struck with a stony knock
+    and breaks with a crumble; calling a god at an altar is a rising rumble and a blow; a cache creaks open on two harp
+    notes; lockpicking has a pin's click, a pick's snap and a lock's clack; a waygate charges with a rising tone and
+    you pass through on a whoosh; the Oracle murmurs; war drums thud; training dummies thump; a solved puzzle is a
+    harp-and-pling arpeggio.
+  * *Idle:* machines and fires sound now and then on their own, briefly - the Orb of Plenty hums at its work, the
+    Chaos Forge roars and crackles, an open gate thrums, relay cores hum, signal jammers buzz and spark, waygate
+    obelisks hum, braziers, lamps and candelabra crackle, the Oracle's flame breathes, altars murmur, a pedestal with
+    keystones set glows with a soft tone. (Played by each player's own game, quietly, so they cost the server nothing.)
 * **Seven creative tabs.** The one long tab is now: *Realms of Chaos* (the Codex, compass, keystones, seekers,
   cores, ichor, the orbs and their shrine, waygates and relays), *Chaos: Relics & Arms*, *Chaos: Materials*, *Chaos: Building Blocks*
   (stone, tile, glass, stairs, slabs and doors), *Chaos: Furniture*, *Chaos: Curios & Music* (discs, tarot, dolls) and *Chaos: Realm

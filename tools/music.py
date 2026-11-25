@@ -317,14 +317,14 @@ TRACK_IDS = ["hub", "hermitage", "olympus", "olympus_peak", "abyss", "abyss_tren
              "arena", "trial", "summit", "wrath", "titan", "oracle", "citadel", "citadel_sea", "citadel_shade", "gate"]
 EFFECT_IDS = ["orb_make", "orb_core", "orb_pattern", "orb_ichor", "shrine_awaken", "keystone_set", "gate_awaken", "ui_click"]
 # bump to write every track and effect again
-SCORE_VERSION = 6
+SCORE_VERSION = 7
 
 
 def render(name):
     """A track, composed around its harmony and played by real instruments (harmony.py, through FluidSynth and the
     FluidR3 GM soundfont) - the Ruined Gate's the synthesised one - all brought to the same loudness."""
-    import harmony
-    x = harmony.TRACKS[name]()
+    import craft
+    x = craft.TRACKS[name]()
     rms = np.sqrt(np.mean(x ** 2)) + 1e-9
     x = x * (0.17 / rms)
     return np.tanh(x * 1.1) / np.tanh(1.1)
@@ -351,14 +351,29 @@ def gen(assets, wj, only_missing=True):
             write_ogg(effects[name], path, quality=5)
         sounds[name] = {"sounds": [f"realms_of_chaos:fx/{name}"], "subtitle": f"subtitles.realms_of_chaos.{name}"}
     # and the second set of effects - the relics, a fight, the blocks, idle machines (sfx_more.py) - made once
+    # (made again when sfx_more.VERSION changes; an effect given as a list is that many variants, one picked at random
+    # each time it plays, as the game does with its own)
     import sfx_more
-    more = None
+    more_stamp = os.path.join(os.path.dirname(os.path.abspath(__file__)), ".sfx_version")
+    more_fresh = not os.path.exists(more_stamp) or open(more_stamp).read().strip() != str(sfx_more.VERSION)
+    more = sfx_more.effects() if more_fresh else None
+    fx_dir = os.path.join(base, "fx")
     for name in sfx_more.SUBTITLES:
-        path = os.path.join(base, "fx", f"{name}.ogg")
-        if not os.path.exists(path):
-            more = more or sfx_more.effects()
-            write_ogg(more[name], path, quality=5)
-        sounds[name] = {"sounds": [f"realms_of_chaos:fx/{name}"], "subtitle": f"subtitles.realms_of_chaos.{name}"}
+        if more is not None:
+            for old in os.listdir(fx_dir):
+                if old == f"{name}.ogg" or (old.startswith(name) and old[len(name):-4].isdigit() and old.endswith(".ogg")):
+                    os.remove(os.path.join(fx_dir, old))
+            made = more[name]
+            if isinstance(made, list):
+                for i, x in enumerate(made):
+                    write_ogg(x, os.path.join(fx_dir, f"{name}{i + 1}.ogg"), quality=5)
+            else:
+                write_ogg(made, os.path.join(fx_dir, f"{name}.ogg"), quality=5)
+        files = sorted(f[:-4] for f in os.listdir(fx_dir)
+                       if f == f"{name}.ogg" or (f.startswith(name) and f[len(name):-4].isdigit() and f.endswith(".ogg")))
+        sounds[name] = {"sounds": [f"realms_of_chaos:fx/{f}" for f in files], "subtitle": f"subtitles.realms_of_chaos.{name}"}
+    with open(more_stamp, "w") as f:
+        f.write(str(sfx_more.VERSION))
     wj(os.path.join(assets, "sounds.json"), sounds)
     with open(stamp, "w") as f:
         f.write(str(SCORE_VERSION))
