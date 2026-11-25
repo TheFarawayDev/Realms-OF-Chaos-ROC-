@@ -1,0 +1,16 @@
+{
+  "variants": {
+    "axis=y": {
+      "model": "realms_of_chaos:block/porphyry_pillar"
+    },
+    "axis=z": {
+      "model": "realms_of_chaos:block/porphyry_pillar_horizontal",
+      "x": 90
+    },
+    "axis=x": {
+      "model": "realms_of_chaos:block/porphyry_pillar_horizontal",
+      "x": 90,
+      "y": 90
+    }
+  }
+}

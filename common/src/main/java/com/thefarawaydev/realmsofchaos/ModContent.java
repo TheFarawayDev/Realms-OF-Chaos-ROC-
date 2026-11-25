@@ -110,8 +110,6 @@ public final class ModContent {
     public static final Ref<Block> TOWER_BRAZIER = new Ref<>(), SPRINKLER = new Ref<>();
     /** Sliding doors: bronze, and one in each tower's stone. */
     public static final Ref<Block> BRONZE_SLIDING_DOOR = new Ref<>(), SKY_SLIDING_DOOR = new Ref<>(), SEA_SLIDING_DOOR = new Ref<>(), SHADE_SLIDING_DOOR = new Ref<>();
-    /** Swinging doors of panels, any size: bronze, and one in each tower's stone. */
-    public static final Ref<Block> BRONZE_SWING_DOOR = new Ref<>(), SKY_SWING_DOOR = new Ref<>(), SEA_SWING_DOOR = new Ref<>(), SHADE_SWING_DOOR = new Ref<>();
     /** The dial hall's and the sliding stones' blocks. */
     public static final Ref<Block> DIAL_STONE = new Ref<>(), FRESCO_TILE = new Ref<>(), SLIDE_STONE = new Ref<>(), STONE_SOCKET = new Ref<>();
     /** Sparring dummies, the barracks' furniture, three more doors, and the mod's glass. */
@@ -129,6 +127,17 @@ public final class ModContent {
     public static final Ref<Item> CHAOS_COMPASS = new Ref<>();
     public static final Ref<Item> CHAOS_CODEX = new Ref<>();
     public static final Ref<Item> FIELD_BAG = new Ref<>(), LOCKPICK = new Ref<>();
+    /** Adamantine: a rare ore from the deepest stone, worked into a metal past netherite, and the tools made of it. */
+    public static final Ref<Item> RAW_ADAMANTINE = new Ref<>(), ADAMANTINE_SCRAP = new Ref<>(), ADAMANTINE_INGOT = new Ref<>(),
+            ADAMANTINE_SWORD = new Ref<>(), ADAMANTINE_PICKAXE = new Ref<>(), ADAMANTINE_AXE = new Ref<>(), ADAMANTINE_SHOVEL = new Ref<>(), ADAMANTINE_HOE = new Ref<>();
+    public static final net.minecraft.tags.TagKey<Item> ADAMANTINE_TOOL_MATERIALS = net.minecraft.tags.TagKey.create(Registries.ITEM, RealmsOfChaos.id("adamantine_tool_materials"));
+    /** Past netherite in every way: it lasts longer, digs faster, strikes harder and takes enchantment better. */
+    public static final net.minecraft.world.item.ToolMaterial ADAMANTINE = new net.minecraft.world.item.ToolMaterial(
+            net.minecraft.tags.BlockTags.INCORRECT_FOR_NETHERITE_TOOL, 2731, 11.0F, 5.0F, 18, ADAMANTINE_TOOL_MATERIALS);
+    /** Porphyry, the purple stone of emperors, and what is cut from it; adamantine ore and its block. */
+    public static final Ref<Block> PORPHYRY = new Ref<>(), POLISHED_PORPHYRY = new Ref<>(), PORPHYRY_BRICKS = new Ref<>(), CHISELED_PORPHYRY = new Ref<>(),
+            PORPHYRY_TILES = new Ref<>(), PORPHYRY_PILLAR = new Ref<>(), PORPHYRY_DOOR = new Ref<>(), PORPHYRY_TRAPDOOR = new Ref<>(),
+            DEEPSLATE_ADAMANTINE_ORE = new Ref<>(), ADAMANTINE_BLOCK = new Ref<>();
     public static final Map<String, Ref<Item>> WEAPONS = new HashMap<>();
     /** The eight pieces of the panoply, by id. */
     public static final Map<String, Ref<Item>> PANOPLY = new java.util.LinkedHashMap<>();
@@ -322,10 +331,6 @@ public final class ModContent {
         block("sky_sliding_door", SKY_SLIDING_DOOR, key -> new com.thefarawaydev.realmsofchaos.block.SlidingDoorBlock(decor(key).mapColor(MapColor.QUARTZ).noOcclusion()));
         block("sea_sliding_door", SEA_SLIDING_DOOR, key -> new com.thefarawaydev.realmsofchaos.block.SlidingDoorBlock(decor(key).mapColor(MapColor.WARPED_WART_BLOCK).noOcclusion()));
         block("shade_sliding_door", SHADE_SLIDING_DOOR, key -> new com.thefarawaydev.realmsofchaos.block.SlidingDoorBlock(decor(key).mapColor(MapColor.COLOR_BLACK).noOcclusion()));
-        block("bronze_swing_door", BRONZE_SWING_DOOR, key -> new com.thefarawaydev.realmsofchaos.block.SwingDoorBlock(decor(key).mapColor(MapColor.COLOR_ORANGE).sound(SoundType.COPPER).noOcclusion()));
-        block("sky_swing_door", SKY_SWING_DOOR, key -> new com.thefarawaydev.realmsofchaos.block.SwingDoorBlock(decor(key).mapColor(MapColor.QUARTZ).noOcclusion()));
-        block("sea_swing_door", SEA_SWING_DOOR, key -> new com.thefarawaydev.realmsofchaos.block.SwingDoorBlock(decor(key).mapColor(MapColor.WARPED_WART_BLOCK).noOcclusion()));
-        block("shade_swing_door", SHADE_SWING_DOOR, key -> new com.thefarawaydev.realmsofchaos.block.SwingDoorBlock(decor(key).mapColor(MapColor.COLOR_BLACK).noOcclusion()));
         block("sprinkler", SPRINKLER, key -> new com.thefarawaydev.realmsofchaos.block.SprinklerBlock(decor(key).mapColor(MapColor.COLOR_ORANGE).sound(SoundType.COPPER).noOcclusion()));
         block("arena_sand", ARENA_SAND, key -> new Block(decor(key).mapColor(MapColor.SAND).sound(SoundType.SAND).strength(1.0F)));
         block("war_drum", WAR_DRUM, key -> new com.thefarawaydev.realmsofchaos.block.WarDrumBlock(decor(key).mapColor(MapColor.COLOR_RED).sound(SoundType.WOOD).strength(1.5F).noOcclusion()));
@@ -352,6 +357,19 @@ public final class ModContent {
         block("bronze_trapdoor", BRONZE_TRAPDOOR, key -> new net.minecraft.world.level.block.TrapDoorBlock(net.minecraft.world.level.block.state.properties.BlockSetType.COPPER,
                 BlockBehaviour.Properties.of().setId(key).mapColor(MapColor.COLOR_ORANGE).strength(3.0F).requiresCorrectToolForDrops().noOcclusion()));
         // each tower's own door and trapdoor
+        // porphyry
+        block("porphyry", PORPHYRY, key -> new Block(decor(key).mapColor(MapColor.COLOR_PURPLE).strength(2.0F, 6.0F)));
+        block("polished_porphyry", POLISHED_PORPHYRY, key -> new Block(decor(key).mapColor(MapColor.COLOR_PURPLE).strength(2.0F, 6.0F)));
+        block("porphyry_bricks", PORPHYRY_BRICKS, key -> new Block(decor(key).mapColor(MapColor.COLOR_PURPLE).strength(2.0F, 6.0F)));
+        block("chiseled_porphyry", CHISELED_PORPHYRY, key -> new Block(decor(key).mapColor(MapColor.COLOR_PURPLE).strength(2.0F, 6.0F)));
+        block("porphyry_tiles", PORPHYRY_TILES, key -> new Block(decor(key).mapColor(MapColor.COLOR_PURPLE).strength(2.0F, 6.0F)));
+        block("porphyry_pillar", PORPHYRY_PILLAR, key -> new net.minecraft.world.level.block.RotatedPillarBlock(decor(key).mapColor(MapColor.COLOR_PURPLE).strength(2.0F, 6.0F)));
+        door("porphyry", PORPHYRY_DOOR, PORPHYRY_TRAPDOOR, net.minecraft.world.level.block.state.properties.BlockSetType.STONE, MapColor.COLOR_PURPLE);
+        // adamantine: deep down, hard to break, and only a diamond pickaxe or better will win it
+        block("deepslate_adamantine_ore", DEEPSLATE_ADAMANTINE_ORE, key -> new net.minecraft.world.level.block.DropExperienceBlock(net.minecraft.util.valueproviders.UniformInt.of(4, 9),
+                BlockBehaviour.Properties.of().setId(key).mapColor(MapColor.DEEPSLATE).requiresCorrectToolForDrops().strength(30.0F, 1200.0F).sound(SoundType.DEEPSLATE)));
+        block("adamantine_block", ADAMANTINE_BLOCK, key -> new Block(BlockBehaviour.Properties.of().setId(key).mapColor(MapColor.DIAMOND)
+                .requiresCorrectToolForDrops().strength(50.0F, 1200.0F).sound(SoundType.NETHERITE_BLOCK)));
         door("sky", SKY_DOOR, SKY_TRAPDOOR, net.minecraft.world.level.block.state.properties.BlockSetType.COPPER, MapColor.QUARTZ);
         door("sea", SEA_DOOR, SEA_TRAPDOOR, net.minecraft.world.level.block.state.properties.BlockSetType.DARK_OAK, MapColor.WARPED_WART_BLOCK);
         door("shade", SHADE_DOOR, SHADE_TRAPDOOR, net.minecraft.world.level.block.state.properties.BlockSetType.CRIMSON, MapColor.COLOR_BLACK);
@@ -367,6 +385,8 @@ public final class ModContent {
         stones.put("tide_brick", TIDE_BRICK);
         stones.put("ash_brick", ASH_BRICK);
         stones.put("underworld_brick", UNDERWORLD_BRICK);
+        stones.put("polished_porphyry", POLISHED_PORPHYRY);
+        stones.put("porphyry_bricks", PORPHYRY_BRICKS);
         for (Map.Entry<String, Ref<Block>> stone : stones.entrySet()) {
             Ref<Block> stairs = new Ref<>(), slab = new Ref<>();
             STAIRS.put(stone.getKey(), stairs);
@@ -380,6 +400,14 @@ public final class ModContent {
         item("chaos_codex", CHAOS_CODEX, key -> new CodexItem(new Item.Properties().setId(key).stacksTo(1)));
         item("chaos_compass", CHAOS_COMPASS, key -> new ChaosCompassItem(new Item.Properties().setId(key).stacksTo(1)));
         item("lockpick", LOCKPICK, key -> new Item(new Item.Properties().setId(key).stacksTo(16)));
+        item("raw_adamantine", RAW_ADAMANTINE, key -> new Item(new Item.Properties().setId(key).rarity(net.minecraft.world.item.Rarity.UNCOMMON)));
+        item("adamantine_scrap", ADAMANTINE_SCRAP, key -> new Item(new Item.Properties().setId(key).rarity(net.minecraft.world.item.Rarity.RARE).fireResistant()));
+        item("adamantine_ingot", ADAMANTINE_INGOT, key -> new Item(new Item.Properties().setId(key).rarity(net.minecraft.world.item.Rarity.RARE).fireResistant()));
+        item("adamantine_sword", ADAMANTINE_SWORD, key -> new Item(tool(key).sword(ADAMANTINE, 3.0F, -2.4F)));
+        item("adamantine_pickaxe", ADAMANTINE_PICKAXE, key -> new Item(tool(key).pickaxe(ADAMANTINE, 1.0F, -2.8F)));
+        item("adamantine_axe", ADAMANTINE_AXE, key -> new Item(tool(key).axe(ADAMANTINE, 5.0F, -3.0F)));
+        item("adamantine_shovel", ADAMANTINE_SHOVEL, key -> new Item(tool(key).shovel(ADAMANTINE, 1.5F, -3.0F)));
+        item("adamantine_hoe", ADAMANTINE_HOE, key -> new Item(tool(key).hoe(ADAMANTINE, -5.0F, 0.0F)));
         item("field_bag", FIELD_BAG, key -> new com.thefarawaydev.realmsofchaos.item.FieldBagItem(new Item.Properties().setId(key).stacksTo(1)));
         for (Line line : Line.values()) {
             for (God god : Gods.ofLine(line)) {
@@ -446,6 +474,11 @@ public final class ModContent {
 
     private static void block(String id, Ref<Block> ref, Function<ResourceKey<Block>, Block> factory) {
         BLOCK_DEFS.add(new Def<>(id, factory, ref));
+    }
+
+    /** What every adamantine tool shares: one to a stack, proof against fire and lava, and rare. */
+    private static Item.Properties tool(ResourceKey<Item> key) {
+        return new Item.Properties().setId(key).fireResistant().rarity(net.minecraft.world.item.Rarity.EPIC);
     }
 
     private static void item(String id, Ref<Item> ref, Function<ResourceKey<Item>, Item> factory) {
@@ -583,6 +616,8 @@ public final class ModContent {
         out.add(CHAOS_COMPASS.get());
         out.add(FIELD_BAG.get());
         out.add(LOCKPICK.get());
+        for (Ref<Item> r : List.of(RAW_ADAMANTINE, ADAMANTINE_SCRAP, ADAMANTINE_INGOT, ADAMANTINE_SWORD, ADAMANTINE_PICKAXE, ADAMANTINE_AXE, ADAMANTINE_SHOVEL, ADAMANTINE_HOE))
+            out.add(r.get());
         for (Line line : Line.values()) {
             for (God god : Gods.ofLine(line)) {
                 out.add(WEAPONS.get(god.id()).get());

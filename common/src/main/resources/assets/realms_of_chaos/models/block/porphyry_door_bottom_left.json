@@ -1,0 +1,7 @@
+{
+  "parent": "minecraft:block/door_bottom_left",
+  "textures": {
+    "bottom": "realms_of_chaos:block/porphyry_door_bottom",
+    "top": "realms_of_chaos:block/porphyry_door_top"
+  }
+}

@@ -1,0 +1,8 @@
+{
+  "parent": "minecraft:block/inner_stairs",
+  "textures": {
+    "bottom": "realms_of_chaos:block/porphyry_bricks",
+    "side": "realms_of_chaos:block/porphyry_bricks",
+    "top": "realms_of_chaos:block/porphyry_bricks"
+  }
+}

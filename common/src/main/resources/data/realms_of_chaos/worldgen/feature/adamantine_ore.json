@@ -1,0 +1,14 @@
+{
+  "type": "minecraft:ore",
+  "discard_chance_on_air_exposure": 0.7,
+  "size": 3,
+  "targets": [
+    {
+      "state": "realms_of_chaos:deepslate_adamantine_ore",
+      "target": {
+        "predicate_type": "minecraft:tag_match",
+        "tag": "minecraft:deepslate_ore_replaceables"
+      }
+    }
+  ]
+}

@@ -30,6 +30,10 @@ public class RealmsOfChaosFabric implements ModInitializer {
 
     @Override
     public void onInitialize() {
+        // adamantine ore, in the deepest stone of the overworld (on Forge: data/realms_of_chaos/forge/biome_modifier)
+        net.fabricmc.fabric.api.biome.v1.BiomeModifications.addFeature(net.fabricmc.fabric.api.biome.v1.BiomeSelectors.foundInOverworld(),
+                net.minecraft.world.level.levelgen.GenerationStep.Decoration.UNDERGROUND_ORES,
+                ResourceKey.create(Registries.PLACED_FEATURE, RealmsOfChaos.id("adamantine_ore")));
         for (ModContent.Def<net.minecraft.world.level.block.Block> def : ModContent.BLOCK_DEFS) {
             Identifier id = RealmsOfChaos.id(def.id());
             var block = def.factory().apply(ResourceKey.create(Registries.BLOCK, id));

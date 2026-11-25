@@ -1,0 +1,8 @@
+{
+  "parent": "minecraft:block/slab_top",
+  "textures": {
+    "bottom": "realms_of_chaos:block/polished_porphyry",
+    "side": "realms_of_chaos:block/polished_porphyry",
+    "top": "realms_of_chaos:block/polished_porphyry"
+  }
+}

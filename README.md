@@ -16,28 +16,32 @@ The current build is an **Alpha**.
 
 ## What's in 1.2.0
 
-* **Doors that read as one door.** Every panel of a sliding or swinging door knows which of its edges join the rest
-  of its door, and is drawn to match: the frame runs only round the outside of the whole door, whatever its size. A
-  swinging door has iron straps down its hinge edge, a rail where its panels meet one above another, and a ring to
-  pull at hand height on its free edge; a sliding door has an inlaid line running round it inside its frame and a pull
-  sunk into its leading edge. (`art/renders/doors-joined.png`)
-* **Regular doors.** Set a swinging or sliding door where it joins no other door and it goes down as a regular door,
-  two high, taking a second panel from the stack (set against another door, a panel joins it instead). A swinging
-  door's panel is now three pixels thick against the side of its block, like the game's own doors, and the leaf turns
-  on its hinge corner - so a regular door swings open against its frame. Each door has a flat item picture.
-  (`art/videos/regular-door.mp4`)
-* **Swinging doors, of any size.** Ordinary doors built the new way: four Swinging Doors - bronze, Sky, Sea and
-  Shade - each block a panel of boards (or ashlar, or plates) with an iron band and studs across it. Set panels side
-  by side and stacked and they make one leaf, up to 64 panels, hung on one edge. Use it, or give any panel a redstone
-  signal, and the whole leaf swings a quarter turn on its hinge, away from whoever set it - seen to swing, turning
-  smoothly on the hinge, then landing as blocks; use it again, or take the signal away, and it swings back. Something
-  where it would swing holds it shut. The hinge is on the setter's left, or on their right if they set it sneaking.
-  Four at a time from the tower's stone or bronze with a nugget or shard. (`art/renders/swinging-door.png`,
-  `art/videos/swinging-door.mp4`)
-* **Treasure rooms behind swinging doors.** Each treasure room is shut behind a great swinging door of its tower's
-  stone, three wide and three high, that swings out into the corridor.
+* **Adamantine, and the first tool set.** A new ore, **Deepslate Adamantine Ore**, lies in small veins in the deepest
+  stone of the overworld (below y -40) - about twenty times rarer than diamond. It is as hard as ancient debris and
+  wants a diamond pickaxe or better. It gives **Raw Adamantine**, which only a blast furnace will render into
+  **Adamantine Scrap**; four scrap and a netherite ingot make an **Adamantine Ingot**, and nine ingots a **Block of
+  Adamantine** (a beacon base; the ingot pays a beacon too). From the ingots come the mod's first tools - an
+  **Adamantine Sword, Pickaxe, Axe, Shovel and Hoe** - better than netherite in every way: 2731 uses to netherite's
+  2031, mining speed 11 to 9, a point more damage, and better enchantability (18 to 15). They mine all netherite
+  can, cannot burn, and are mended at an anvil with an ingot. (`art/renders/adamantine-tools.png`)
+* **Porphyry.** A new building stone, the purple of emperors with pale crystals in it: **Porphyry**, **Polished
+  Porphyry**, **Porphyry Bricks**, **Porphyry Tiles**, **Chiseled Porphyry** (a gilt rosette) and a fluted **Porphyry
+  Pillar**, with stairs and slabs of the polished stone and the bricks, and a **Porphyry Door** and **Porphyry
+  Trapdoor**. Made from granite, cobbled deepslate and an amethyst shard; everything else is cut from it at a
+  stonecutter or crafted. (`art/renders/porphyry-adamantine.png`)
+* **The doors, redrawn the game's way.** Every door of the mod - bronze, Sky, Sea, Shade, garrison, verdigris, ivory
+  and porphyry - is drawn like the game's own: stiles and rails lit from the top left, a window of four panes behind
+  a cross of mullions above (a carved emblem in the stone doors), two raised panels below, iron hinges and a handle.
+  Trapdoors match, with holes to see through. They open and shut at once, as the game's doors do.
+  (`art/renders/doors-redrawn.png`)
+* **Sliding doors that join up.** Each panel of a sliding door knows which of its edges join the rest of its door,
+  so the frame runs only round the outside of the whole door, an inlaid line inside it and a pull sunk into its
+  leading edge, whatever the door's size. Set one where it joins no other door and it goes down two high, taking a
+  second panel from the stack. (`art/renders/sliding-door-joined.png`)
+* **The swinging doors are gone.** The panel-built swinging doors, and the great swinging doors on the treasure rooms,
+  have been taken out; treasure rooms are open again.
 * **Sliding doors.** Four of them - bronze, and one in each tower's stone: Sky, Sea and Shade. Each block is a
-  coffered panel; set panels side by side and on top of each other and they make one door, of any size up to 64
+  panel; set panels side by side and on top of each other and they make one door, of any size up to 64
   panels. Use it, or give any panel a redstone signal, and the whole door glides sideways a block at a time until it
   has moved its own width (four blocks at most) or meets something in the way; use it again, or take the signal
   away, and it glides back. It slides to the right of whoever set it - set it while sneaking to have it slide left.

@@ -1,0 +1,8 @@
+{
+  "type": "minecraft:stonecutting",
+  "ingredient": "realms_of_chaos:porphyry",
+  "result": {
+    "id": "realms_of_chaos:porphyry_bricks_slab",
+    "count": 2
+  }
+}

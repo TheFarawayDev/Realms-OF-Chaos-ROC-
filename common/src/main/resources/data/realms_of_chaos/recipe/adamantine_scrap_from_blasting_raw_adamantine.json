@@ -1,0 +1,11 @@
+{
+  "type": "minecraft:blasting",
+  "category": "misc",
+  "cookingtime": 400,
+  "experience": 2.0,
+  "group": "adamantine_scrap",
+  "ingredient": "realms_of_chaos:raw_adamantine",
+  "result": {
+    "id": "realms_of_chaos:adamantine_scrap"
+  }
+}

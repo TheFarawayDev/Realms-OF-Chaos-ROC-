@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "key": {
+    "#": "realms_of_chaos:polished_porphyry"
+  },
+  "pattern": [
+    "#  ",
+    "## ",
+    "###"
+  ],
+  "result": {
+    "id": "realms_of_chaos:polished_porphyry_stairs",
+    "count": 4
+  }
+}

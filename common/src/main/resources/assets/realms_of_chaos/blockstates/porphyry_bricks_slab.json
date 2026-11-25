@@ -1,0 +1,13 @@
+{
+  "variants": {
+    "type=bottom": {
+      "model": "realms_of_chaos:block/porphyry_bricks_slab"
+    },
+    "type=double": {
+      "model": "realms_of_chaos:block/porphyry_bricks"
+    },
+    "type=top": {
+      "model": "realms_of_chaos:block/porphyry_bricks_slab_top"
+    }
+  }
+}

@@ -609,6 +609,7 @@ def run(assets, data=None):
         gen_sprinkler(assets, data)
         gen_puzzle2(assets, data)
         gen_sliding_doors(assets, data)
+        gen_porphyry_adamantine(assets, data)
         for floor in ("sunstone_panel", "pearl_panel", "ember_panel", "sky_mosaic", "sea_mosaic", "shade_mosaic"):
             connected_breaks(assets, floor)
 
@@ -1739,7 +1740,8 @@ def connected_breaks(assets, name):
 
 # ---- stairs and slabs of the mod's stone; the bronze door and trapdoor ---------------------------------------------------
 
-CUT_STONES = ["olympian_marble", "cloudstone", "trench_stone", "tartarus_stone", "storm_brick", "tide_brick", "ash_brick", "underworld_brick"]
+CUT_STONES = ["olympian_marble", "cloudstone", "trench_stone", "tartarus_stone", "storm_brick", "tide_brick", "ash_brick", "underworld_brick",
+              "polished_porphyry", "porphyry_bricks"]
 DOORS = ["bronze_door", "bronze_trapdoor"]
 
 
@@ -1882,71 +1884,112 @@ DOOR_SPECS = {
     "garrison": ((92, 62, 38), (40, 28, 20), (118, 120, 128), (178, 182, 190), (200, 60, 50), "shield", "planks"),
     "verdigris": ((88, 160, 132), (46, 98, 80), (176, 116, 62), GOLD_HI, (226, 190, 110), "laurel", "metal"),
     "ivory": ((236, 228, 206), (186, 170, 140), GOLD, GOLD_HI, (190, 150, 60), "star", "stone"),
+    "porphyry": ((120, 42, 68), (62, 20, 36), GOLD, GOLD_HI, (240, 196, 60), "laurel", "stone"),
 }
 
 
 def door_textures(field, frame, band, stud, glow, emblem, style, seed):
+    """
+    A door in the game's own manner, upper and lower half, and its trapdoor. Stiles and rails lit on the top and left
+    and shadowed on the bottom and right; above, a window of four panes behind a cross of mullions (or, in a door of
+    stone, a carved panel with the tower's emblem); below, two raised panels side by side; iron hinges on the left
+    stile and a handle on the right. The trapdoor is a frame with a cross, and holes to see through.
+    """
     g = grain(seed, 0.05)
+    clear = (0, 0, 0, 0)
+    window = style != "stone"
 
     def surface(x, y):
         if style == "planks":
-            c = shade(field, g[y][x] * (0.8 if x % 4 == 3 else 1.06 if x % 4 == 0 else 1.0))
+            c = shade(field, g[y][x] * (0.78 if x % 4 == 3 else 1.07 if x % 4 == 0 else 1.0))
         elif style == "stone":
             c = shade(field, g[y][x] * (0.97 + 0.03 * ((x + y) % 3)))
         else:
             c = shade(field, g[y][x] * (1.08 if (x + y) % 7 == 0 else 1.0))
         return c
 
-    def leaf(top):
+    def stile(x):
+        return shade(frame, {0: 0.55, 1: 1.25, 14: 0.85, 15: 0.55}[x])
+
+    def upper():
         img = Image.new("RGBA", (16, 16))
         for y in range(16):
             for x in range(16):
-                c = surface(x, y)
-                # the stiles and rails: a frame round the leaf, lit on its left, shadowed on its right
-                if x <= 1 or x >= 14:
-                    c = shade(frame, 1.25 if x == 1 else 0.75 if x == 14 else 1.0)
-                if (top and y <= 1) or (not top and y >= 14):
-                    c = shade(frame, 1.25 if (top and y == 1) else 0.75 if (not top and y == 14) else 1.0)
-                # a rail across the middle of the door: the bottom of the upper leaf, the top of the lower one
-                if (top and y >= 14) or (not top and y <= 1):
-                    c = band if (top and y == 14) or (not top and y == 1) else shade(frame, 1.0)
-                # the sunk panel: shadowed on its top and left edge, lit on its bottom and right
-                px0, px1 = 3, 12
-                py0, py1 = (3, 12) if top else (3, 12)
-                if px0 <= x <= px1 and py0 <= y <= py1:
-                    if x == px0 or y == py0: c = shade(frame, 0.9)
-                    elif x == px1 or y == py1: c = shade(field, 1.25)
-                    else: c = shade(surface(x, y), 0.9)
-                # the emblem raised in the upper panel; a lozenge and bands in the lower
-                if top:
-                    ex, ey = x - 4, y - 4
-                    if 0 <= ex < 8 and 0 <= ey < 8 and EMBLEMS[emblem][ey][ex] == "#":
-                        c = glow if (ex + ey) % 4 else shade(glow, 1.15)
+                if x in (0, 1, 14, 15): c = stile(x)
+                elif y == 0: c = shade(frame, 0.55)
+                elif y == 1: c = shade(frame, 1.25)
+                elif y == 14: c = band
+                elif y == 15: c = shade(band, 0.72)
+                elif window:
+                    # a window of four panes in a frame, behind a cross of mullions
+                    if x in (2, 13) or y in (2, 13): c = shade(frame, 0.9) if x == 2 or y == 2 else shade(frame, 1.1)
+                    elif x in (7, 8) or y in (7, 8): c = shade(frame, 1.15) if x == 7 or y == 7 else shade(frame, 0.85)
+                    else: c = clear
                 else:
-                    d = abs(x - 7.5) + abs(y - 7.5)
-                    if 3.0 <= d < 4.0: c = glow
-                    if d < 1.5: c = shade(glow, 1.1)
-                # studs at the corners of the panel, hinges on the left stile, a ring on the right
-                if (x, y) in ((2, 2), (13, 2), (2, 13), (13, 13)): c = stud
-                if x <= 1 and y in ((4, 5) if top else (10, 11)): c = shade(band, 0.9)
-                if top and x == 12 and y == 14: c = stud
-                if not top and x in (11, 12, 13) and y == 2: c = stud
+                    # a carved panel with the emblem raised in it
+                    if x == 2 or y == 2: c = shade(frame, 0.85)
+                    elif x == 13 or y == 13: c = shade(field, 1.25)
+                    else:
+                        c = shade(surface(x, y), 0.92)
+                        ex, ey = x - 4, y - 4
+                        if 0 <= ex < 8 and 0 <= ey < 8 and EMBLEMS[emblem][ey][ex] == "#":
+                            c = glow if (ex + ey) % 4 else shade(glow, 1.15)
+                # an iron hinge on the left stile
+                if x <= 2 and y in (4, 5): c = shade(band, 0.95) if y == 4 else shade(band, 0.7)
+                if (x, y) == (1, 4): c = stud
+                img.putpixel((x, y), c if len(c) == 4 else tuple(c[:3]) + (255,))
+        return img
+
+    def lower():
+        img = Image.new("RGBA", (16, 16))
+        for y in range(16):
+            for x in range(16):
+                if x in (0, 1, 14, 15): c = stile(x)
+                elif y == 0: c = shade(band, 1.12)
+                elif y == 1: c = band
+                elif y == 14: c = shade(frame, 0.85)
+                elif y == 15: c = shade(frame, 0.55)
+                elif x in (7, 8): c = shade(frame, 1.1) if x == 7 else shade(frame, 0.9)
+                elif y == 2 or y == 13 or x in (2, 13): c = shade(frame, 1.0)
+                else:
+                    # two raised panels, lit on their top and left edges, shadowed on the bottom and right
+                    px0 = 3 if x < 7 else 9
+                    px1 = px0 + 3
+                    if y == 3 or x == px0: c = shade(field, 1.28)
+                    elif y == 12 or x == px1: c = shade(field, 0.7)
+                    else: c = surface(x, y)
+                    # a lozenge on each panel, in the tower's colour
+                    if y in (7, 8) and x in (px0 + 1, px0 + 2): c = glow if y == 7 else shade(glow, 0.8)
+                # a hinge low on the left stile, and the handle on the right, just under the rail
+                if x <= 2 and y in (10, 11): c = shade(band, 0.95) if y == 10 else shade(band, 0.7)
+                if (x, y) == (1, 10): c = stud
+                if x == 13 and 1 <= y <= 4: c = shade(band, 0.8)
+                if x == 12 and y in (2, 3): c = stud if y == 2 else shade(stud, 0.75)
                 img.putpixel((x, y), tuple(c[:3]) + (255,))
         return img
 
-    hatch = Image.new("RGBA", (16, 16))
-    for y in range(16):
-        for x in range(16):
-            c = surface(x, y)
-            e = min(x, y, 15 - x, 15 - y)
-            if e <= 1: c = shade(frame, 1.25 if (x == 1 or y == 1) and e == 1 else 0.75 if e == 1 else 1.0)
-            elif e == 2: c = band if (x + y) % 2 else shade(band, 0.85)
-            ex, ey = x - 4, y - 4
-            if 0 <= ex < 8 and 0 <= ey < 8 and EMBLEMS[emblem][ey][ex] == "#": c = glow
-            if (x, y) in ((3, 3), (12, 3), (3, 12), (12, 12)): c = stud
-            hatch.putpixel((x, y), tuple(c[:3]) + (255,))
-    return leaf(True), leaf(False), hatch
+    def hatch():
+        img = Image.new("RGBA", (16, 16))
+        for y in range(16):
+            for x in range(16):
+                e = min(x, y, 15 - x, 15 - y)
+                if e == 0: c = shade(frame, 0.55)
+                elif e == 1: c = shade(frame, 1.25) if (x == 1 or y == 1) and x != 14 and y != 14 else shade(frame, 0.85)
+                elif window and (x in (7, 8) or y in (7, 8)): c = shade(frame, 1.1) if x == 7 or y == 7 else shade(frame, 0.9)
+                else:
+                    c = surface(x, y)
+                    qx, qy = x % 8, y % 8
+                    if window and qx in (4, 5) and qy in (4, 5): c = clear       # a hole to see through
+                    elif window and qx in (3, 6) and qy in (3, 4, 5, 6) or window and qy in (3, 6) and qx in (3, 4, 5, 6):
+                        c = shade(frame, 0.9)
+                if (x, y) in ((2, 2), (13, 2), (2, 13), (13, 13)): c = stud
+                if not window:
+                    ex, ey = x - 4, y - 4
+                    if 0 <= ex < 8 and 0 <= ey < 8 and EMBLEMS[emblem][ey][ex] == "#": c = glow
+                img.putpixel((x, y), c if len(c) == 4 else tuple(c[:3]) + (255,))
+        return img
 
+    return upper(), lower(), hatch()
 
 def gen_doors2(assets, data):
     T = os.path.join(assets, "textures/block")
@@ -1957,24 +2000,17 @@ def gen_doors2(assets, data):
         top.save(os.path.join(T, f"{door}_top.png"))
         bottom.save(os.path.join(T, f"{door}_bottom.png"))
         hatch.save(os.path.join(T, f"{trapdoor}.png"))
-        # the door as an item: drawn for its own size, a narrow leaf standing up with its two panels and emblem
-        field, frame, band, stud, glow = spec[0], spec[1], spec[2], spec[3], spec[4]
-        item = Image.new("RGBA", (16, 16))
-        for y in range(16):
-            for x in range(3, 13):
-                if x in (3, 12) or y in (0, 15): c = shade(frame, 0.7)
-                elif x == 4 or y == 1: c = shade(frame, 1.3)
-                elif x == 11 or y == 14: c = frame
-                elif y in (7, 8): c = band if y == 7 else shade(band, 0.75)
-                else:
-                    c = shade(field, 1.0)
-                    upper = 2 <= y <= 6
-                    if (upper or 9 <= y <= 13) and (x in (5, 10) or y in (2, 9) or y in (6, 13)):
-                        c = shade(frame, 0.95) if x == 5 or y in (2, 9) else shade(field, 1.25)
-                    if upper and 6 <= x <= 9 and 3 <= y <= 5 and (x, y) not in ((6, 3), (9, 3), (6, 5), (9, 5)): c = glow
-                    if not upper and (x, y) in ((7, 11), (8, 11), (7, 10), (8, 12)): c = glow
-                if (x, y) == (10, 8): c = stud
-                item.putpixel((x, y), tuple(c[:3]) + (255,))
+        # the door as an item: the door itself, upper and lower half, drawn small and outlined
+        frame = spec[1]
+        tall = Image.new("RGBA", (16, 32))
+        tall.paste(top, (0, 0))
+        tall.paste(bottom, (0, 16))
+        small = tall.resize((8, 16), Image.NEAREST)
+        item = Image.new("RGBA", (16, 16), (0, 0, 0, 0))
+        item.paste(small, (4, 0))
+        for yy in range(16):
+            for xx in (4, 11):
+                item.putpixel((xx, yy), tuple(shade(frame, 0.55)) + (255,))
         item.save(os.path.join(TI, f"{door}.png"))
         wj(os.path.join(assets, f"blockstates/{door}.json"), _retarget(_template("door"), "minecraft:block/iron_door", f"{MOD}:block/{door}"))
         for part in ("bottom_left", "bottom_left_open", "bottom_right", "bottom_right_open", "top_left", "top_left_open", "top_right", "top_right_open"):
@@ -1991,7 +2027,7 @@ def gen_doors2(assets, data):
         mat = {"bronze": ("minecraft:copper_ingot", "minecraft:gold_nugget"), "sky": (f"{MOD}:olympian_marble", "minecraft:gold_nugget"),
                "sea": ("minecraft:dark_oak_planks", "minecraft:prismarine_shard"), "shade": ("minecraft:crimson_planks", "minecraft:amethyst_shard"),
                "garrison": ("minecraft:dark_oak_planks", "minecraft:iron_nugget"), "verdigris": ("minecraft:oxidized_copper", "minecraft:gold_nugget"),
-               "ivory": ("minecraft:bone_block", "minecraft:gold_nugget")}[key]
+               "ivory": ("minecraft:bone_block", "minecraft:gold_nugget"), "porphyry": (f"{MOD}:polished_porphyry", "minecraft:gold_nugget")}[key]
         wj(os.path.join(data, f"recipe/{door}.json"), {"type": "minecraft:crafting_shaped", "category": "redstone", "key": {"C": mat[0], "G": mat[1]},
                                                        "pattern": ["CC", "CG", "CC"], "result": {"id": f"{MOD}:{door}", "count": 3}})
         wj(os.path.join(data, f"recipe/{trapdoor}.json"), {"type": "minecraft:crafting_shaped", "category": "redstone", "key": {"C": mat[0], "G": mat[1]},
@@ -3042,11 +3078,10 @@ def gen_sprinkler(assets, data):
 
 def gen_sliding_doors(assets, data):
     """
-    Sliding and swinging doors made of panels. A panel knows which of its four edges join another panel of its door,
-    so it is drawn in sixteen ways: the frame runs only round the outside of the whole door, and the door reads as one
-    door whatever its size. A swinging door has iron straps on its hinge edge, a rail where its panels meet one above
-    the other, and a ring to pull at hand height on its free edge; a sliding door has an inlaid line set in from its
-    frame and a pull worked into its leading edge. Drawn with the hinge (or home) side on the left.
+    Sliding doors made of panels. A panel knows which of its four edges join another panel of its door, so it is
+    drawn in sixteen ways: the frame runs only round the outside of the whole door, and the door reads as one door
+    whatever its size - an inlaid line set in from the frame, and a pull worked into its leading edge. Drawn with the
+    home side on the left.
     """
     T = os.path.join(assets, "textures/block")
     TI = os.path.join(assets, "textures/item")
@@ -3059,6 +3094,11 @@ def gen_sliding_doors(assets, data):
         os.remove(old)
     for old in _glob.glob(os.path.join(M, "*_sliding_door*.json")) + _glob.glob(os.path.join(M, "*_swing_door*.json")):
         os.remove(old)
+    # (the swinging doors are gone: nothing of theirs is left behind)
+    for pattern in ("blockstates/*_swing_door.json", "items/*_swing_door.json", "models/item/*_swing_door.json", "textures/item/*_swing_door.png"):
+        for old in _glob.glob(os.path.join(assets, pattern)): os.remove(old)
+    for pattern in ("recipe/*_swing_door.json", "loot_table/blocks/*_swing_door.json"):
+        for old in _glob.glob(os.path.join(data, pattern)): os.remove(old)
     codes = [(tp, bt, nr, fr) for tp in (0, 1) for bt in (0, 1) for nr in (0, 1) for fr in (0, 1)]
     code = lambda c: "c" + "".join(str(v) for v in c)
     BIG = 99
@@ -3082,49 +3122,6 @@ def gen_sliding_doors(assets, data):
         field, frame, band, stud, glow, emblem, style = DOOR_SPECS[key]
         g = grain(311 + n, 0.04)
 
-        def surface(x, y):
-            """The field of a swinging door: boards running up it, or ashlar, or plates."""
-            if style == "planks":
-                if x % 4 == 3: return shade(field, 0.72)
-                if x % 4 == 0: return shade(field, 1.1)
-                return shade(field, g[y][x] * (0.93 if (x * 7 + y * 3) % 11 == 0 else 1.0))
-            if style == "stone":
-                course = y // 4
-                if y % 4 == 3 or (x + (4 if course % 2 else 0)) % 8 == 7: return shade(field, 0.8)
-                return shade(field, g[y][x] * (1.05 if y % 4 == 0 else 1.0))
-            if x % 8 == 0 or y % 8 == 0: return shade(field, 1.15)
-            if x % 8 == 7 or y % 8 == 7: return shade(field, 0.75)
-            if (x % 8, y % 8) in ((2, 2), (5, 2), (2, 5), (5, 5)): return shade(stud, 0.9)
-            return shade(field, g[y][x])
-
-        def swing_face(c):
-            tp, bt, nr, fr = c
-
-            def px(x, y):
-                dl, dr, dt, db = edges(x, y, c)
-                e = min(dl, dr, dt, db)
-                col = frame_px(e, e in (dl, dt) and e not in (dr, db), frame, field) if e <= 3 else surface(x, y)
-                # a rail across where one panel stands on another
-                if bt and y >= 14: col = shade(frame, 1.25) if y == 14 else shade(frame, 1.0)
-                if tp and y <= 1: col = shade(frame, 0.95) if y == 0 else shade(frame, 0.7)
-                # iron straps on the hinge edge, riveted
-                if not nr and (y in (3, 4) or y in (11, 12)) and x <= 6:
-                    top = y in (3, 11)
-                    col = shade(band, 1.2) if top else shade(band, 0.8)
-                    if x in (2, 5) and top: col = stud
-                    if x == 6: col = shade(band, 0.6)
-                # a ring to pull, at hand height on the free edge: on the lowest panel of a taller door, in the middle of a single one
-                ring_y = 1 if (tp and not bt) else 6 if (not tp and not bt) else None
-                if not fr and ring_y is not None:
-                    rx, ry = x - 8, y - ring_y
-                    if 0 <= rx <= 3 and 0 <= ry <= 5:
-                        plate = rx in (1, 2) and ry <= 1
-                        ring = (ry in (2, 5) and rx in (1, 2)) or (rx in (0, 3) and ry in (3, 4))
-                        if plate: col = shade(band, 1.1) if ry == 0 else shade(band, 0.8)
-                        elif ring: col = stud if (rx, ry) in ((0, 3), (1, 2)) else shade(stud, 0.75)
-                return col
-            return paint_hi(px)
-
         def slide_face(c):
             tp, bt, nr, fr = c
 
@@ -3142,7 +3139,7 @@ def gen_sliding_doors(assets, data):
             return paint_hi(px)
 
         # the thin edges: the frame's metal, lit down the middle
-        name, swing = f"{key}_sliding_door", f"{key}_swing_door"
+        name = f"{key}_sliding_door"
 
         def edge(x, y, frame=frame, band=band):
             return shade(band, 1.1) if x in (7, 8) and y % 4 else shade(frame, 1.15) if x in (6, 9) else shade(frame, 0.9)
@@ -3158,33 +3155,12 @@ def gen_sliding_doors(assets, data):
 
         for c in codes:
             slide_face(c).save(os.path.join(T, f"{name}_{code(c)}.png"))
-            swing_face(c).save(os.path.join(T, f"{swing}_{code(c)}.png"))
             # the home or hinge side lies west in a model facing north: the north face is seen with west on its right, so it is flipped
             wj(os.path.join(M, f"{name}_{code(c)}.json"), {"parent": "minecraft:block/block",
                 "textures": {"particle": t(f"{name}_{code(c)}"), "face": t(f"{name}_{code(c)}"), "edge": t(f"{name}_edge")}, "elements": [element(True)]})
-            # a swinging door's panel is three pixels thick against one side of its block, as the game's doors are.
-            # In a model facing north: shut, against the south side, the hinge west (left hand) or east (right hand);
-            # open, against the hinge side, with the hinge edge to the south
-            for hand in ("l", "r"):
-                for opened in (False, True):
-                    if not opened:
-                        fl = hand == "l"
-                        el2 = {"from": [0, 0, 13], "to": [16, 16, 16], "faces": {
-                            "north": {"texture": "#face", "uv": [16, 0, 0, 16] if fl else [0, 0, 16, 16]},
-                            "south": {"texture": "#face", "uv": [0, 0, 16, 16] if fl else [16, 0, 0, 16]},
-                            "east": {"texture": "#edge", "uv": [6, 0, 9, 16]}, "west": {"texture": "#edge", "uv": [6, 0, 9, 16]},
-                            "up": {"texture": "#edge", "uv": [0, 6, 16, 9]}, "down": {"texture": "#edge", "uv": [0, 6, 16, 9]}}}
-                    else:
-                        x0 = 0 if hand == "l" else 13
-                        el2 = {"from": [x0, 0, 0], "to": [x0 + 3, 16, 16], "faces": {
-                            "east": {"texture": "#face", "uv": [0, 0, 16, 16]}, "west": {"texture": "#face", "uv": [16, 0, 0, 16]},
-                            "north": {"texture": "#edge", "uv": [6, 0, 9, 16]}, "south": {"texture": "#edge", "uv": [6, 0, 9, 16]},
-                            "up": {"texture": "#edge", "uv": [6, 0, 9, 16]}, "down": {"texture": "#edge", "uv": [6, 0, 9, 16]}}}
-                    wj(os.path.join(M, f"{swing}_{code(c)}_{hand}{'_open' if opened else ''}.json"), {"parent": "minecraft:block/block",
-                        "textures": {"particle": t(f"{swing}_{code(c)}"), "face": t(f"{swing}_{code(c)}"), "edge": t(f"{name}_edge")}, "elements": [el2]})
         base = {"north": 0, "east": 90, "south": 180, "west": 270}
         b = lambda v: "true" if v else "false"
-        sv, wv = {}, {}
+        sv = {}
         for f, r in base.items():
             for c in codes:
                 tp, bt, nr, fr = c
@@ -3192,18 +3168,11 @@ def gen_sliding_doors(assets, data):
                 for shift in range(5):
                     for powered in ("false", "true"):
                         sv[f"{joins},facing={f},powered={powered},shift={shift}"] = {"model": f"{MOD}:block/{name}_{code(c)}", "y": r}
-                for hinge in ("left", "right"):
-                    for opened in (False, True):
-                        for powered in ("false", "true"):
-                            wv[f"{joins},facing={f},hinge={hinge},open={b(opened)},powered={powered}"] = {
-                                "model": f"{MOD}:block/{swing}_{code(c)}_{hinge[0]}{'_open' if opened else ''}", "y": r}
         wj(os.path.join(assets, f"blockstates/{name}.json"), {"variants": sv})
-        wj(os.path.join(assets, f"blockstates/{swing}.json"), {"variants": wv})
         wj(os.path.join(M, f"{name}.json"), {"parent": f"{MOD}:block/{name}_c0000"})
-        wj(os.path.join(M, f"{swing}.json"), {"parent": f"{MOD}:block/{swing}_c0000_l"})
 
         # as items: the door as it stands, a regular door two panels high, drawn small
-        for item_id, face in ((name, slide_face), (swing, swing_face)):
+        for item_id, face in ((name, slide_face),):
             upper, lower = face((0, 1, 0, 0)), face((1, 0, 0, 0))
             icon = Image.new("RGBA", (16, 16), (0, 0, 0, 0))
             tall = Image.new("RGBA", (16, 32))
@@ -3221,8 +3190,6 @@ def gen_sliding_doors(assets, data):
         m = mats[key]
         wj(os.path.join(data, f"recipe/{name}.json"), {"type": "minecraft:crafting_shaped", "category": "redstone", "key": {"C": m[0], "G": m[1]},
                                                        "pattern": ["CGC", "CCC"], "result": {"id": f"{MOD}:{name}", "count": 4}})
-        wj(os.path.join(data, f"recipe/{swing}.json"), {"type": "minecraft:crafting_shaped", "category": "redstone", "key": {"C": m[0], "G": m[1]},
-                                                        "pattern": ["CC", "CC", "GC"], "result": {"id": f"{MOD}:{swing}", "count": 4}})
 
 def gen_puzzle2(assets, data):
     """The dial hall and the sliding stones: dials, frescoes, carved stones and sockets."""
@@ -3317,3 +3284,280 @@ def gen_puzzle2(assets, data):
         wj(os.path.join(M, f"{nm}.json"), {"parent": "minecraft:block/cube_all", "textures": {"all": t(nm)}})
     wj(os.path.join(assets, "blockstates/stone_socket.json"), {"variants": {"lit=false": {"model": f"{MOD}:block/stone_socket"}, "lit=true": {"model": f"{MOD}:block/stone_socket_lit"}}})
     wj(os.path.join(assets, "items/stone_socket.json"), {"model": {"type": "minecraft:model", "model": f"{MOD}:block/stone_socket"}})
+
+
+def gen_porphyry_adamantine(assets, data):
+    """
+    Porphyry, the purple stone of emperors - rough, polished, bricks, tiles, chiseled, a pillar - and adamantine: an ore
+    in the deepest stone, its raw lumps, scrap and ingots, its block, and the tools made of it. Drawn at 16, one tone
+    step at a time, lit from the top left like the game's own.
+    """
+    T = os.path.join(assets, "textures/block")
+    TI = os.path.join(assets, "textures/item")
+    M = os.path.join(assets, "models/block")
+    MI = os.path.join(assets, "models/item")
+    t = lambda n: f"{MOD}:block/{n}"
+    rnd = random.Random(7331)
+    g = grain(4401, 0.06)
+    # porphyry: a deep imperial purple with pale crystals of feldspar
+    P_O, P_D, P_B, P_L, P_H = (58, 18, 34), (88, 30, 50), (116, 42, 66), (144, 62, 88), (176, 92, 116)
+    SPECK, SPECK2 = (232, 206, 210), (196, 160, 170)
+    specks = {(rnd.randrange(16), rnd.randrange(16)): rnd.random() for _ in range(26)}
+
+    def stone(x, y, k=1.0):
+        c = shade(P_B, g[y][x] * k)
+        v = specks.get((x, y))
+        if v is not None: return SPECK if v > 0.55 else SPECK2
+        if (x * 5 + y * 3) % 13 == 0: return shade(P_D, k)
+        if (x * 3 + y * 7) % 17 == 0: return shade(P_L, k)
+        return c
+
+    def porphyry(x, y):
+        return stone(x, y)
+
+    def polished(x, y):
+        if x == 0 or y == 0: return P_L
+        if x == 15 or y == 15: return P_O
+        if (x, y) in specks and specks[(x, y)] > 0.75: return SPECK2
+        return shade(P_B, 0.97 + 0.05 * g[y][x]) if (x + y) % 9 else shade(P_L, 0.95)
+
+    def bricks(x, y):
+        row = y // 4
+        off = 4 if row % 2 else 0
+        if y % 4 == 3 or (x + off) % 8 == 7: return P_O
+        if y % 4 == 0 or (x + off) % 8 == 0: return P_L
+        return stone(x, y, 0.98)
+
+    def tiles(x, y):
+        if x % 8 == 7 or y % 8 == 7: return P_O
+        if x % 8 == 0 or y % 8 == 0: return P_H
+        dark = ((x // 8) + (y // 8)) % 2
+        return shade(stone(x, y), 0.86 if dark else 1.04)
+
+    def chiseled(x, y):
+        e = min(x, y, 15 - x, 15 - y)
+        if e == 0: return P_O
+        if e == 1: return P_L if (x == 1 or y == 1) else P_D
+        if e == 2: return P_B
+        # a gilt rosette in a sunk square
+        d = abs(x - 7.5) + abs(y - 7.5)
+        if 4.0 <= d < 5.0: return GOLD if (x + y) % 2 else GOLD_LO
+        if d < 1.5: return GOLD_HI
+        if 1.5 <= d < 2.5: return GOLD
+        if e == 3: return P_D if (x == 3 or y == 3) else P_L
+        return shade(P_B, 0.9)
+
+    def pillar_side(x, y):
+        # fluting: grooves running up the shaft, a band at the top and bottom
+        if y in (0, 15): return P_O
+        if y in (1, 14): return P_H if y == 1 else P_D
+        f = x % 4
+        return P_D if f == 0 else P_H if f == 1 else shade(P_B, g[y][x])
+
+    def pillar_top(x, y):
+        r = math.hypot(x - 7.5, y - 7.5)
+        if r > 7.2: return P_O
+        if r > 6.2: return P_L
+        if 3.0 < r < 4.0: return P_D
+        return stone(x, y)
+    for name, fn in (("porphyry", porphyry), ("polished_porphyry", polished), ("porphyry_bricks", bricks), ("porphyry_tiles", tiles),
+                     ("chiseled_porphyry", chiseled), ("porphyry_pillar", pillar_side), ("porphyry_pillar_top", pillar_top)):
+        paint_hi(fn).save(os.path.join(T, f"{name}.png"))
+
+    # adamantine: silver with a cold cyan light and a violet heart
+    A_O, A_D, A_M, A_H, A_W, A_V = (30, 38, 58), (88, 136, 164), (150, 202, 218), (206, 236, 242), (250, 255, 255), (150, 112, 222)
+    DS = ((44, 44, 50), (60, 60, 68), (76, 76, 84), (96, 96, 104))       # deepslate
+
+    def deepslate(x, y):
+        band = (y + (x // 5)) % 4
+        v = g[(y * 3) % 16][(x * 5) % 16]
+        c = DS[1] if band == 0 else DS[2]
+        if (x * 7 + y * 2) % 11 == 0: c = DS[0]
+        if (x * 3 + y * 5) % 19 == 0: c = DS[3]
+        return shade(c, v)
+    crystals = [(4, 4), (11, 6), (6, 11), (12, 12)]
+
+    def ore(x, y):
+        for cx, cy in crystals:
+            d = abs(x - cx) + abs(y - cy)
+            if d == 0: return A_W
+            if d == 1: return A_H if (x <= cx and y <= cy) else A_M
+            if d == 2 and (x - cx) * (y - cy) == 0: return A_D if (x > cx or y > cy) else A_M
+            if d == 2: return A_O
+        if (x, y) in ((5, 5), (12, 11)): return A_V
+        return deepslate(x, y)
+
+    def block(x, y):
+        # four plates, bevelled, a violet rivet where they meet
+        lx, ly = x % 8, y % 8
+        if (x, y) in ((7, 7), (8, 7), (7, 8), (8, 8)): return A_V
+        if lx == 0 or ly == 0: return A_W if (lx == 0 and ly == 0) else A_H
+        if lx == 7 or ly == 7: return A_D
+        if lx == 1 or ly == 1: return shade(A_M, 1.08)
+        return shade(A_M, 0.96 + 0.06 * g[y][x]) if (x + 2 * y) % 7 else A_H
+    paint_hi(ore).save(os.path.join(T, "deepslate_adamantine_ore.png"))
+    paint_hi(block).save(os.path.join(T, "adamantine_block.png"))
+
+    # models, blockstates, items for the cubes and the pillar
+    for name in ("porphyry", "polished_porphyry", "porphyry_bricks", "porphyry_tiles", "chiseled_porphyry", "deepslate_adamantine_ore", "adamantine_block"):
+        wj(os.path.join(M, f"{name}.json"), {"parent": "minecraft:block/cube_all", "textures": {"all": t(name)}})
+        wj(os.path.join(assets, f"blockstates/{name}.json"), {"variants": {"": {"model": f"{MOD}:block/{name}"}}})
+        wj(os.path.join(assets, f"items/{name}.json"), {"model": {"type": "minecraft:model", "model": f"{MOD}:block/{name}"}})
+    wj(os.path.join(M, "porphyry_pillar.json"), {"parent": "minecraft:block/cube_column", "textures": {"end": t("porphyry_pillar_top"), "side": t("porphyry_pillar")}})
+    wj(os.path.join(M, "porphyry_pillar_horizontal.json"), {"parent": "minecraft:block/cube_column_horizontal",
+                                                            "textures": {"end": t("porphyry_pillar_top"), "side": t("porphyry_pillar")}})
+    wj(os.path.join(assets, "blockstates/porphyry_pillar.json"), {"variants": {
+        "axis=y": {"model": f"{MOD}:block/porphyry_pillar"},
+        "axis=z": {"model": f"{MOD}:block/porphyry_pillar_horizontal", "x": 90},
+        "axis=x": {"model": f"{MOD}:block/porphyry_pillar_horizontal", "x": 90, "y": 90}}})
+    wj(os.path.join(assets, "items/porphyry_pillar.json"), {"model": {"type": "minecraft:model", "model": f"{MOD}:block/porphyry_pillar"}})
+
+    # ---- items: drawn from pixel maps. O outline, W white, H light, M mid, D dark, V violet, S/T the wooden handle
+    pal = {"O": A_O, "W": A_W, "H": A_H, "M": A_M, "D": A_D, "V": A_V, "S": (150, 112, 68), "T": (104, 74, 40),
+           "a": (60, 66, 82), "b": (84, 92, 110), "c": (40, 44, 58)}
+    sprites = {
+        "raw_adamantine": [
+            "................", "................", "................", ".....OOOO.......", "...OOHWHMOO.....", "..OHHMMVMMDO....",
+            "..OHMMMMMDDDO...", ".OHMMVMMMDDDO...", ".OMMMMMMDDVDDO..", ".OMMDDDMDDDDDO..", "..ODDDVDDDDDO...", "...OODDDDDOO....",
+            ".....OOOOO......", "................", "................", "................"],
+        "adamantine_scrap": [
+            "................", "................", "................", "......OOOO......", "....OOabbaOO....", "...OabbMbbaaO...",
+            "..ObbHMbaaaacO..", "..ObbMbbaVaacO..", ".OabaabbMHaacO..", ".OaaVaabMbaacO..", "..OcaaabbaaccO..", "...OccaaacccO...",
+            "....OOccccOO....", "......OOOO......", "................", "................"],
+        "adamantine_ingot": [
+            "................", "................", "................", "................", "......OOOO......", "....OOWHHHOO....",
+            "..OOHHHHMMMMOO..", ".OHHHMMMMMMVDDO.", ".OMMMMMMMMDDDDO.", ".OMMMMDDDDDDDDO.", "..OODDDDDDDDOO..", "....OODDDDOO....",
+            "......OOOO......", "................", "................", "................"],
+        "adamantine_sword": [
+            "............OOOO", "...........OWHMO", "..........OWHMDO", ".........OWHMDO.", "........OWHMDO..", ".......OWHMDO...",
+            "......OWHMDO....", "..OO.OWHMDO.....", "..OVOWHMDO......", "...OVHMDO.......", "....OVDO........", "....OTVVO.......",
+            "...OTSOOVO......", "..OTSO..OO......", ".OVVO...........", ".OOO............"],
+        "adamantine_pickaxe": [
+            "................", ".....OOOOOO.....", "...OOWHHHHMOO...", "..OWHMMMMMMDDO..", "..OHMOOOOSODMDO.", "..OOO..OSTO.ODO.",
+            ".......OSTO.ODO.", "......OSTO...OO.", ".....OSTO.......", "....OSTO........", "...OSTO.........", "..OSTO..........",
+            ".OSTO...........", ".OTO............", "..O.............", "................"],
+        "adamantine_axe": [
+            "................", "......OOOO......", ".....OWHMMO.....", "....OWHMMDDO....", "....OHMMMDSOO...", "....OHMMDOSTO...",
+            ".....OMDOSTO....", "......OOSTO.....", ".....OSTO.......", "....OSTO........", "...OSTO.........", "..OSTO..........",
+            ".OSTO...........", ".OTO............", "..O.............", "................"],
+        "adamantine_shovel": [
+            "................", "..........OOO...", ".........OWHMO..", "........OWHMMDO.", "........OHMMMDO.", ".........OMMDO..",
+            "........OSODOO..", ".......OSTOO....", "......OSTO......", ".....OSTO.......", "....OSTO........", "...OSTO.........",
+            "..OSTO..........", ".OSTO...........", ".OTO............", "..O............."],
+        "adamantine_hoe": [
+            "................", ".....OOOOOO.....", "....OWHHHMMO....", "....OHMMOOSMO...", ".....OOOOSTODO..", "........OSTOODO.",
+            ".......OSTO..OO.", "......OSTO......", ".....OSTO.......", "....OSTO........", "...OSTO.........", "..OSTO..........",
+            ".OSTO...........", ".OTO............", "..O.............", "................"],
+    }
+    def drawn(cells):
+        """A sprite from coloured cells, outlined wherever a cell meets empty space."""
+        rows = [["."] * 16 for _ in range(16)]
+        for (x, y), ch in cells.items(): rows[y][x] = ch
+        for (x, y) in list(cells):
+            for dx, dy in ((1, 0), (-1, 0), (0, 1), (0, -1)):
+                nx, ny = x + dx, y + dy
+                if 0 <= nx < 16 and 0 <= ny < 16 and rows[ny][nx] == ".": rows[ny][nx] = "O"
+        return ["".join(r) for r in rows]
+
+    def handle(top_y):
+        """The wooden handle, two pixels wide, from the bottom left up to row top_y."""
+        cells = {}
+        for y in range(top_y, 15):
+            if 0 <= 14 - y < 16: cells[(14 - y, y)] = "S"
+            if 0 <= 15 - y < 16 and y < 14: cells[(15 - y, y)] = "T"
+        return cells
+    # the axe: a broad blade on the upper left of the handle's head, its cutting edge lit
+    axe = handle(3)
+    spans = {1: (7, 9), 2: (5, 10), 3: (4, 10), 4: (4, 9), 5: (4, 8), 6: (5, 7), 7: (6, 6)}
+    for y, (x0, x1) in spans.items():
+        for x in range(x0, x1 + 1):
+            if (x, y) in axe: continue
+            edge = x == x0
+            axe[(x, y)] = "W" if edge and y in (3, 4) else "H" if edge or y == spans and False else ("D" if x >= x1 - 1 else "M")
+    axe[(11, 2)] = "D"
+    axe[(12, 2)] = "M"
+    sprites["adamantine_axe"] = drawn(axe)
+    # the hoe: a bar running left from the top of the handle, its blade turned down at the end
+    hoe = handle(3)
+    for x in range(5, 13):
+        hoe[(x, 2)] = "W" if x < 7 else "H" if x < 10 else "M"
+        if x <= 11: hoe[(x, 3)] = hoe.get((x, 3), "D" if x > 6 else "M")
+    for y in (4, 5):
+        hoe[(5, y)] = "H"
+        hoe[(6, y)] = "D"
+    sprites["adamantine_hoe"] = drawn(hoe)
+    # the shovel: a broad spade at the top of the handle
+    shovel = handle(6)
+    for y in range(0, 8):
+        for x in range(7, 16):
+            d = abs(x - 11.5) + abs(y - 3.0)
+            if d <= 3.6 and x + y >= 12:
+                shovel[(x, y)] = "W" if d > 2.6 and x - y < 8 else "H" if x + y < 15 else "M" if d < 2.6 else "D"
+    sprites["adamantine_shovel"] = drawn(shovel)
+
+    for name, rows in sprites.items():
+        img = Image.new("RGBA", (16, 16), (0, 0, 0, 0))
+        for y, row in enumerate(rows):
+            assert len(row) == 16, (name, y, row)
+            for x, ch in enumerate(row):
+                if ch in pal: img.putpixel((x, y), tuple(pal[ch]) + (255,))
+        img.save(os.path.join(TI, f"{name}.png"))
+        handheld = name.split("_")[-1] in ("sword", "pickaxe", "axe", "shovel", "hoe")
+        wj(os.path.join(MI, f"{name}.json"), {"parent": "minecraft:item/handheld" if handheld else "minecraft:item/generated", "textures": {"layer0": f"{MOD}:item/{name}"}})
+        wj(os.path.join(assets, f"items/{name}.json"), {"model": {"type": "minecraft:model", "model": f"{MOD}:item/{name}"}})
+
+    # ---- recipes
+    R = os.path.join(data, "recipe")
+    shaped = lambda rid, key, pattern, result, count=1, cat="building": wj(os.path.join(R, f"{rid}.json"), {
+        "type": "minecraft:crafting_shaped", "category": cat, "key": key, "pattern": pattern, "result": {"id": f"{MOD}:{result}", "count": count}})
+    wj(os.path.join(R, "porphyry.json"), {"type": "minecraft:crafting_shapeless", "category": "building",
+        "ingredients": ["minecraft:granite", "minecraft:granite", "minecraft:cobbled_deepslate", "minecraft:cobbled_deepslate", "minecraft:amethyst_shard"],
+        "result": {"id": f"{MOD}:porphyry", "count": 4}})
+    shaped("polished_porphyry", {"#": f"{MOD}:porphyry"}, ["##", "##"], "polished_porphyry", 4)
+    shaped("porphyry_bricks", {"#": f"{MOD}:polished_porphyry"}, ["##", "##"], "porphyry_bricks", 4)
+    shaped("porphyry_tiles", {"#": f"{MOD}:porphyry_bricks"}, ["##", "##"], "porphyry_tiles", 4)
+    shaped("chiseled_porphyry", {"#": f"{MOD}:polished_porphyry_slab"}, ["#", "#"], "chiseled_porphyry", 1)
+    shaped("porphyry_pillar", {"#": f"{MOD}:porphyry"}, ["#", "#"], "porphyry_pillar", 2)
+    for out, n in (("polished_porphyry", 1), ("porphyry_bricks", 1), ("porphyry_tiles", 1), ("chiseled_porphyry", 1), ("porphyry_pillar", 1),
+                   ("polished_porphyry_stairs", 1), ("polished_porphyry_slab", 2), ("porphyry_bricks_stairs", 1), ("porphyry_bricks_slab", 2)):
+        wj(os.path.join(R, f"{out}_from_porphyry_stonecutting.json"), {"type": "minecraft:stonecutting", "ingredient": f"{MOD}:porphyry",
+                                                                        "result": {"id": f"{MOD}:{out}", "count": n}})
+    for src in ("raw_adamantine", "deepslate_adamantine_ore"):
+        wj(os.path.join(R, f"adamantine_scrap_from_blasting_{src}.json"), {"type": "minecraft:blasting", "category": "misc", "cookingtime": 400,
+            "experience": 2.0, "group": "adamantine_scrap", "ingredient": f"{MOD}:{src}", "result": {"id": f"{MOD}:adamantine_scrap"}})
+    wj(os.path.join(R, "adamantine_ingot.json"), {"type": "minecraft:crafting_shapeless", "category": "misc", "group": "adamantine_ingot",
+        "ingredients": [f"{MOD}:adamantine_scrap"] * 4 + ["minecraft:netherite_ingot"], "result": {"id": f"{MOD}:adamantine_ingot"}})
+    shaped("adamantine_block", {"#": f"{MOD}:adamantine_ingot"}, ["###", "###", "###"], "adamantine_block", 1)
+    wj(os.path.join(R, "adamantine_ingot_from_adamantine_block.json"), {"type": "minecraft:crafting_shapeless", "category": "misc", "group": "adamantine_ingot",
+        "ingredients": [f"{MOD}:adamantine_block"], "result": {"id": f"{MOD}:adamantine_ingot", "count": 9}})
+    A, S = f"{MOD}:adamantine_ingot", "minecraft:stick"
+    for tool_id, pattern in (("sword", ["A", "A", "S"]), ("pickaxe", ["AAA", " S ", " S "]), ("axe", ["AA", "AS", " S"]),
+                             ("shovel", ["A", "S", "S"]), ("hoe", ["AA", " S", " S"])):
+        shaped(f"adamantine_{tool_id}", {"A": A, "S": S}, pattern, f"adamantine_{tool_id}", 1, "equipment")
+
+    # ---- loot: the ore gives raw adamantine (more with fortune), or itself to silk touch
+    wj(os.path.join(data, "loot_table/blocks/deepslate_adamantine_ore.json"), {"type": "minecraft:block", "pools": [{"rolls": 1, "entries": [{
+        "type": "minecraft:alternatives", "children": [
+            {"type": "minecraft:item", "condition": "minecraft:tool/can_silk_touch", "name": f"{MOD}:deepslate_adamantine_ore"},
+            {"type": "minecraft:item", "name": f"{MOD}:raw_adamantine",
+             "modifier": [{"type": "minecraft:apply_bonus", "enchantment": "minecraft:fortune", "formula": "minecraft:ore_drops"},
+                          {"type": "minecraft:explosion_decay"}]}]}]}], "random_sequence": f"{MOD}:blocks/deepslate_adamantine_ore"})
+
+    # ---- tags
+    MC = RES_DATA_MC(data)
+    wj(os.path.join(data, "tags/item/adamantine_tool_materials.json"), {"values": [f"{MOD}:adamantine_ingot"]})
+    for tool_id, tag in (("sword", "swords"), ("pickaxe", "pickaxes"), ("axe", "axes"), ("shovel", "shovels"), ("hoe", "hoes")):
+        wj(os.path.join(MC, f"tags/item/{tag}.json"), {"replace": False, "values": [f"{MOD}:adamantine_{tool_id}"]})
+    wj(os.path.join(MC, "tags/item/beacon_payment_items.json"), {"replace": False, "values": [f"{MOD}:adamantine_ingot"]})
+    wj(os.path.join(MC, "tags/block/beacon_base_blocks.json"), {"replace": False, "values": [f"{MOD}:adamantine_block"]})
+    wj(os.path.join(MC, "tags/block/needs_diamond_tool.json"), {"replace": False, "values": [f"{MOD}:deepslate_adamantine_ore", f"{MOD}:adamantine_block"]})
+
+    # ---- the ore in the world: small veins, rare, in the deepest stone (below y -40)
+    wj(os.path.join(data, "worldgen/feature/adamantine_ore.json"), {"type": "minecraft:ore", "discard_chance_on_air_exposure": 0.7, "size": 3,
+        "targets": [{"state": f"{MOD}:deepslate_adamantine_ore", "target": {"predicate_type": "minecraft:tag_match", "tag": "minecraft:deepslate_ore_replaceables"}}]})
+    wj(os.path.join(data, "worldgen/placed_feature/adamantine_ore.json"), {"feature": f"{MOD}:adamantine_ore", "placement": [
+        {"type": "minecraft:rarity_filter", "chance": 2}, {"type": "minecraft:in_square"},
+        {"type": "minecraft:height_range", "height": {"type": "minecraft:trapezoid", "min_inclusive": {"absolute": -64}, "max_inclusive": {"absolute": -40}}},
+        {"type": "minecraft:biome"}]})
+    wj(os.path.join(data, "forge/biome_modifier/adamantine_ore.json"), {"type": "forge:add_features", "biomes": "#minecraft:is_overworld",
+                                                                       "features": f"{MOD}:adamantine_ore", "step": "underground_ores"})

@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "redstone",
+  "key": {
+    "C": "realms_of_chaos:polished_porphyry",
+    "G": "minecraft:gold_nugget"
+  },
+  "pattern": [
+    "CC",
+    "CG",
+    "CC"
+  ],
+  "result": {
+    "id": "realms_of_chaos:porphyry_door",
+    "count": 3
+  }
+}

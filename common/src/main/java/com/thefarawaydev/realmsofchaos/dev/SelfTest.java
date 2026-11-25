@@ -198,8 +198,7 @@ public final class SelfTest {
 
     private static boolean open(ServerLevel level, BlockPos p) {
         // (a sliding door is a way through: whoever comes to it can slide it open)
-        if (level.getBlockState(p).getBlock() instanceof com.thefarawaydev.realmsofchaos.block.SlidingDoorBlock
-                || level.getBlockState(p).getBlock() instanceof com.thefarawaydev.realmsofchaos.block.SwingDoorBlock) return true;
+        if (level.getBlockState(p).getBlock() instanceof com.thefarawaydev.realmsofchaos.block.SlidingDoorBlock) return true;
         return level.getBlockState(p).getCollisionShape(level, p).isEmpty();
     }
 
@@ -6966,106 +6965,66 @@ public final class SelfTest {
             }
         });
 
-        step("swinging doors: panels make one leaf of any size that swings a quarter turn on its hinge, seen to swing; treasure rooms are shut behind them", () -> {
-            var SW = ModContent.BRONZE_SWING_DOOR.get();
-            int gy = level.getHeight(net.minecraft.world.level.levelgen.Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, 90, 40) + 3;
-            BlockPos o = new BlockPos(90, gy, 40);
-            BlockPos.betweenClosed(o.offset(-3, -1, -4), o.offset(4, 4, 3)).forEach(at -> level.setBlock(at, at.getY() == o.getY() - 1 ? Blocks.STONE.defaultBlockState() : Blocks.AIR.defaultBlockState(), 2));
-            try {
-                // a leaf two wide and two high, facing north, hung on its west edge
-                BlockState panel = SW.defaultBlockState().setValue(com.thefarawaydev.realmsofchaos.block.SwingDoorBlock.FACING, Direction.NORTH)
-                        .setValue(com.thefarawaydev.realmsofchaos.block.SwingDoorBlock.HINGE, net.minecraft.world.level.block.state.properties.DoorHingeSide.LEFT);
-                for (int x = 0; x < 2; x++) for (int y = 0; y < 2; y++) level.setBlock(o.offset(x, y, 0), panel, 2 | 16);
-                check(com.thefarawaydev.realmsofchaos.block.SwingDoorBlock.door(level, o).size() == 4 && com.thefarawaydev.realmsofchaos.block.SwingDoorBlock.across(panel) == Direction.EAST,
-                        "four panels make one leaf, running east from its hinge");
-                // each panel knows which edges join the door: the frame is drawn only round the outside
-                for (int x = 0; x < 2; x++) for (int y = 0; y < 2; y++) {
-                    BlockPos p = o.offset(x, y, 0);
-                    BlockState j = com.thefarawaydev.realmsofchaos.block.SwingDoorBlock.joined(level, p, level.getBlockState(p));
-                    check(j.getValue(com.thefarawaydev.realmsofchaos.block.SwingDoorBlock.TOP) == (y == 0) && j.getValue(com.thefarawaydev.realmsofchaos.block.SwingDoorBlock.BOTTOM) == (y == 1)
-                            && j.getValue(com.thefarawaydev.realmsofchaos.block.SwingDoorBlock.NEAR) == (x == 1) && j.getValue(com.thefarawaydev.realmsofchaos.block.SwingDoorBlock.FAR) == (x == 0),
-                            "panel " + x + "," + y + " joins its neighbours in the door, and only them");
-                    level.setBlock(p, j, 2 | 16);
-                }
-                // set on its own, a panel is a regular door: two high, the upper panel from the same stack
-                ServerPlayer joiner = fakePlayer(server, level, "RocDoorman");
-                level.addNewPlayer(joiner);
-                try {
-                    BlockPos lone = o.offset(-2, 0, 2);
-                    BlockState single = com.thefarawaydev.realmsofchaos.block.SwingDoorBlock.joined(level, lone, panel);
-                    level.setBlock(lone, single, 3);
-                    ItemStack stack = new ItemStack(SW, 2);
-                    SW.setPlacedBy(level, lone, single, joiner, stack);
-                    check(level.getBlockState(lone.above()).is(SW) && level.getBlockState(lone).getValue(com.thefarawaydev.realmsofchaos.block.SwingDoorBlock.TOP)
-                            && level.getBlockState(lone.above()).getValue(com.thefarawaydev.realmsofchaos.block.SwingDoorBlock.BOTTOM) && stack.getCount() == 1,
-                            "a panel set on its own makes a regular door, two high, paid for with a second panel");
-                    level.setBlock(lone, Blocks.AIR.defaultBlockState(), 2 | 16);
-                    level.setBlock(lone.above(), Blocks.AIR.defaultBlockState(), 2 | 16);
-                } finally {
-                    joiner.remove(net.minecraft.world.entity.Entity.RemovalReason.DISCARDED);
-                }
-                level.setBlock(o.offset(0, 1, -1), Blocks.STONE.defaultBlockState(), 2);
-                check(!com.thefarawaydev.realmsofchaos.block.SwingDoorBlock.swing(level, o, true, false), "something where it would swing holds it shut");
-                level.setBlock(o.offset(0, 1, -1), Blocks.AIR.defaultBlockState(), 2);
-                check(com.thefarawaydev.realmsofchaos.block.SwingDoorBlock.swing(level, o.offset(1, 1, 0), true, false), "used anywhere, the whole leaf swings open");
-                BlockState hinge = level.getBlockState(o), far = level.getBlockState(o.offset(0, 1, -1));
-                check(hinge.is(SW) && hinge.getValue(com.thefarawaydev.realmsofchaos.block.SwingDoorBlock.OPEN) && far.is(SW) && far.getValue(com.thefarawaydev.realmsofchaos.block.SwingDoorBlock.OPEN)
-                        && level.getBlockState(o.offset(1, 0, 0)).isAir() && level.getBlockState(o.offset(1, 1, 0)).isAir(), "a quarter turn on its hinge: it now runs north, and the way is clear");
-                check(hinge.getShape(level, o).bounds().getZsize() > 0.9 && hinge.getShape(level, o).bounds().getXsize() < 0.3, "and its panels stand edge-on to the way through");
-                check(com.thefarawaydev.realmsofchaos.block.SwingDoorBlock.swing(level, o, false, false) && level.getBlockState(o.offset(1, 1, 0)).is(SW)
-                        && !level.getBlockState(o.offset(1, 1, 0)).getValue(com.thefarawaydev.realmsofchaos.block.SwingDoorBlock.OPEN) && level.getBlockState(o.offset(0, 0, -1)).isAir(),
-                        "and swings shut again");
-                // seen to swing: a display block for each panel turns on the hinge, then the door lands
-                check(com.thefarawaydev.realmsofchaos.block.SwingDoorBlock.swing(level, o, true, true), "it swings, seen");
-                List<net.minecraft.world.entity.Display.BlockDisplay> shown = level.getEntitiesOfClass(net.minecraft.world.entity.Display.BlockDisplay.class, new AABB(o).inflate(3), e -> true);
-                check(shown.size() == 4 && level.getBlockState(o.offset(1, 0, 0)).isAir(), "four panels in the air, the leaf lifted off its blocks");
-                advance(server, 3);
-                Scheduler.tick(server);
-                check(shown.stream().allMatch(d -> Math.abs(Math.abs(d.getYRot()) - 90.0F) < 0.01F), "turning a quarter turn on the hinge");
-                advance(server, com.thefarawaydev.realmsofchaos.block.SwingDoorBlock.SWING + 2);
-                Scheduler.tick(server);
-                check(level.getBlockState(o.offset(0, 1, -1)).is(SW) && shown.stream().noneMatch(d -> d.isRemoved()), "it lands, open, the shown leaf still over it for a moment");
-                advance(server, 11);
-                Scheduler.tick(server);
-                check(shown.stream().allMatch(d -> d.isRemoved()), "and then the shown leaf goes: no gap between them");
-                // redstone: a signal by any panel shuts an open door when it goes, and opens a shut one when it comes
-                com.thefarawaydev.realmsofchaos.block.SwingDoorBlock.forget();
-                level.setBlock(o.offset(-1, 0, 0), Blocks.REDSTONE_BLOCK.defaultBlockState(), 3);
-                check(level.getBlockState(o).getValue(com.thefarawaydev.realmsofchaos.block.SwingDoorBlock.POWERED), "a signal reaches the door");
-                check(server.getRecipeManager().byKey(net.minecraft.resources.ResourceKey.create(net.minecraft.core.registries.Registries.RECIPE, RealmsOfChaos.id("sea_swing_door"))).isPresent(),
-                        "swinging doors can be made");
-            } finally {
-                advance(server, 40);
-                Scheduler.tick(server);
-                for (var d : level.getEntitiesOfClass(net.minecraft.world.entity.Display.BlockDisplay.class, new AABB(o).inflate(4), e -> true)) d.discard();
-                BlockPos.betweenClosed(o.offset(-3, -1, -4), o.offset(4, 4, 3)).forEach(p -> level.setBlock(p, Blocks.AIR.defaultBlockState(), 2 | 16));
+        step("adamantine: a rare deep ore, past netherite in every way, its tools; porphyry and its door; plain doors that open as the game's do", () -> {
+            var mat = ModContent.ADAMANTINE;
+            var nether = net.minecraft.world.item.ToolMaterial.NETHERITE;
+            check(mat.durability() > nether.durability() && mat.speed() > nether.speed() && mat.attackDamageBonus() > nether.attackDamageBonus()
+                    && mat.enchantmentValue() > nether.enchantmentValue(), "adamantine outlasts, outdigs, outhits and outenchants netherite");
+            ItemStack pick = new ItemStack(ModContent.ADAMANTINE_PICKAXE.get()), netherPick = new ItemStack(net.minecraft.world.item.Items.NETHERITE_PICKAXE);
+            BlockState obsidian = Blocks.OBSIDIAN.defaultBlockState();
+            check(pick.isCorrectToolForDrops(obsidian) && pick.getDestroySpeed(obsidian) > netherPick.getDestroySpeed(obsidian), "its pickaxe takes obsidian, faster than netherite's");
+            check(pick.getMaxDamage() > netherPick.getMaxDamage() && pick.has(net.minecraft.core.component.DataComponents.DAMAGE_RESISTANT), "and lasts longer, and does not burn");
+            ItemStack sword = new ItemStack(ModContent.ADAMANTINE_SWORD.get());
+            check(sword.is(net.minecraft.tags.ItemTags.SWORDS) && pick.is(net.minecraft.tags.ItemTags.PICKAXES) && new ItemStack(ModContent.ADAMANTINE_AXE.get()).is(net.minecraft.tags.ItemTags.AXES)
+                    && new ItemStack(ModContent.ADAMANTINE_SHOVEL.get()).is(net.minecraft.tags.ItemTags.SHOVELS) && new ItemStack(ModContent.ADAMANTINE_HOE.get()).is(net.minecraft.tags.ItemTags.HOES),
+                    "each tool is known as what it is (and takes that tool's enchantments)");
+            check(new ItemStack(ModContent.ADAMANTINE_INGOT.get()).is(ModContent.ADAMANTINE_TOOL_MATERIALS), "an ingot mends them at an anvil");
+            // the ore: deep, needs a diamond pickaxe or better, gives raw adamantine
+            BlockState ore = ModContent.DEEPSLATE_ADAMANTINE_ORE.get().defaultBlockState();
+            check(ore.is(net.minecraft.tags.BlockTags.NEEDS_DIAMOND_TOOL) && !new ItemStack(net.minecraft.world.item.Items.IRON_PICKAXE).isCorrectToolForDrops(ore)
+                    && new ItemStack(net.minecraft.world.item.Items.DIAMOND_PICKAXE).isCorrectToolForDrops(ore) && ore.getDestroySpeed(level, BlockPos.ZERO) >= 30.0F,
+                    "the ore is hard as ancient debris and wants a diamond pickaxe");
+            var placed = server.registryAccess().lookupOrThrow(net.minecraft.core.registries.Registries.PLACED_FEATURE)
+                    .get(net.minecraft.resources.ResourceKey.create(net.minecraft.core.registries.Registries.PLACED_FEATURE, RealmsOfChaos.id("adamantine_ore")));
+            check(placed.isPresent(), "the ore is placed in the world");
+            var plains = server.registryAccess().lookupOrThrow(net.minecraft.core.registries.Registries.BIOME).getOrThrow(net.minecraft.world.level.biome.Biomes.PLAINS);
+            int ores = net.minecraft.world.level.levelgen.GenerationStep.Decoration.UNDERGROUND_ORES.ordinal();
+            var steps = plains.value().getGenerationSettings().features();
+            check(placed.isPresent() && steps.size() > ores && steps.get(ores).stream().anyMatch(h -> h.is(placed.get().key())),
+                    "and an overworld biome grows it among its ores");
+            // and the feature itself lays adamantine into deepslate
+            BlockPos deep = new BlockPos(200, -56, 200);
+            level.getChunk(deep);
+            BlockPos.betweenClosed(deep.offset(-4, -4, -4), deep.offset(4, 4, 4)).forEach(p -> level.setBlock(p, Blocks.DEEPSLATE.defaultBlockState(), 2));
+            boolean laid = false;
+            for (int tries = 0; tries < 40 && !laid; tries++) {
+                placed.get().value().feature().value().place(level, level.getChunkSource().getGenerator(), level.getRandom(), deep);
+                for (BlockPos p : BlockPos.betweenClosed(deep.offset(-4, -4, -4), deep.offset(4, 4, 4))) if (level.getBlockState(p).is(ModContent.DEEPSLATE_ADAMANTINE_ORE.get())) { laid = true; break; }
             }
-
-            // ---- a treasure room is shut behind its tower's swinging door
-            List<Passages.Plan> built = new ArrayList<>();
+            check(laid, "the vein is laid in deepslate");
+            for (String id : List.of("adamantine_ingot", "adamantine_scrap_from_blasting_raw_adamantine", "adamantine_pickaxe", "adamantine_sword", "adamantine_block",
+                    "porphyry", "porphyry_bricks", "porphyry_door", "porphyry_trapdoor", "porphyry_bricks_stairs", "polished_porphyry_slab"))
+                check(server.getRecipeManager().byKey(net.minecraft.resources.ResourceKey.create(net.minecraft.core.registries.Registries.RECIPE, RealmsOfChaos.id(id))).isPresent(), "a recipe for " + id);
+            // doors: the game's own kind, opened at once by hand - no swinging doors are left
+            check(ModContent.PORPHYRY_DOOR.get() instanceof net.minecraft.world.level.block.DoorBlock && ModContent.PORPHYRY_TRAPDOOR.get() instanceof net.minecraft.world.level.block.TrapDoorBlock,
+                    "porphyry has a door and a trapdoor");
+            check(!net.minecraft.core.registries.BuiltInRegistries.BLOCK.containsKey(RealmsOfChaos.id("sky_swing_door")), "the swinging doors are gone");
+            int gy = level.getHeight(net.minecraft.world.level.levelgen.Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, 110, 40) + 3;
+            BlockPos o = new BlockPos(110, gy, 40);
+            ServerPlayer opener = fakePlayer(server, level, "RocDoorkeeper");
+            level.addNewPlayer(opener);
             try {
-                Object[] found = room(level, Line.POSEIDON, Passages.Kind.TREASURE);
-                Passages.Plan plan = (Passages.Plan) found[0];
-                Passages.Cell cell = (Passages.Cell) found[1];
-                built.add(plan);
-                Passages.build(level, plan);
-                int doors = 0;
-                for (Passages.Cell n : plan.neighbours(cell)) {
-                    if (!plan.connected(cell, n)) continue;
-                    boolean forward = n.x() > cell.x() || n.z() > cell.z();
-                    Passages.Cell from = forward ? cell : n;
-                    int dir = n.x() != cell.x() ? 0 : 1;
-                    int d = forward ? Passages.CORRIDOR_FROM + 1 - (plan.small(cell) ? 1 : 0) : Passages.CORRIDOR_TO - 1 + (plan.small(cell) ? 1 : 0);
-                    BlockPos mid = Passages.along(plan, from, dir, d, 0, 2);
-                    if (!level.getBlockState(mid).is(ModContent.SEA_SWING_DOOR.get())) continue;
-                    doors++;
-                    check(com.thefarawaydev.realmsofchaos.block.SwingDoorBlock.door(level, mid).size() == 9 && !level.getBlockState(mid).getValue(com.thefarawaydev.realmsofchaos.block.SwingDoorBlock.OPEN),
-                            "a swinging door of nine panels, shut across the way in");
-                    check(com.thefarawaydev.realmsofchaos.block.SwingDoorBlock.swing(level, mid, true, false) && level.getBlockState(mid).isAir(), "it has room to swing open, out into the corridor");
-                }
-                check(doors >= 1, "a treasure room is shut behind at least one swinging door: " + doors);
+                level.setBlock(o.below(), Blocks.STONE.defaultBlockState(), 2);
+                BlockState lower = ModContent.PORPHYRY_DOOR.get().defaultBlockState();
+                level.setBlock(o, lower, 3);
+                level.setBlock(o.above(), lower.setValue(net.minecraft.world.level.block.DoorBlock.HALF, net.minecraft.world.level.block.state.properties.DoubleBlockHalf.UPPER), 3);
+                opener.setPos(o.getX() + 0.5, o.getY(), o.getZ() + 2.5);
+                level.getBlockState(o).useWithoutItem(level, opener, new BlockHitResult(Vec3.atCenterOf(o), Direction.SOUTH, o, false));
+                check(level.getBlockState(o).getValue(net.minecraft.world.level.block.DoorBlock.OPEN) && level.getBlockState(o.above()).getValue(net.minecraft.world.level.block.DoorBlock.OPEN),
+                        "a porphyry door opens by hand, at once, both halves");
             } finally {
-                for (Passages.Plan plan : built) Passages.rearm(level, plan);
+                opener.remove(net.minecraft.world.entity.Entity.RemovalReason.DISCARDED);
+                for (BlockPos p : List.of(o, o.above(), o.below())) level.setBlock(p, Blocks.AIR.defaultBlockState(), 2 | 16);
             }
         });
 

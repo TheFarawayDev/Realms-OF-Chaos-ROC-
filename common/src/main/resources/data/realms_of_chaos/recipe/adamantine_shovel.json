@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "key": {
+    "A": "realms_of_chaos:adamantine_ingot",
+    "S": "minecraft:stick"
+  },
+  "pattern": [
+    "A",
+    "S",
+    "S"
+  ],
+  "result": {
+    "id": "realms_of_chaos:adamantine_shovel",
+    "count": 1
+  }
+}
