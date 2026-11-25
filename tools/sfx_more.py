@@ -1,6 +1,7 @@
 """More sound effects: the relics charging and striking, the moves of a fight, the mod's blocks being used, and the
-small idle sounds machines and fires make - short and dry like the game's own sounds, made from synthesised thuds,
-clacks, clangs, whooshes, crackles and hums, with a note-block-like pling where something good happens.
+small idle sounds machines and fires make - short, dry and crunchy like the game's own sounds: synthesised thuds,
+clacks, clangs, whooshes, crackles and hums, each with a gravelly grain layer in it and crushed like an old sample,
+with a note-block-like pling where something good happens.
 
   relics      relic_cast_zeus / _poseidon / _hades   a zap, a splash, a dark whoosh
               relic_shot_zeus / _poseidon / _hades   a relic's shot
@@ -144,7 +145,7 @@ def souls(secs, seed=0):
 # The effects are made the way the game's own are: short, dry (no hall around them), a chunky blow or click or
 # whoosh at the heart, and a note-block "pling" where something good happens. The sounds heard over and over (the
 # hammer, a hit, a pin, a parry) come in a few variants, one picked at random each time, as the game's own do.
-VERSION = 2
+VERSION = 3
 TOP = 7500                       # the game's sounds are a little soft at the very top
 
 
@@ -155,8 +156,30 @@ def mix(*parts):
     return out
 
 
-def dry(x, out=0.05, peak=0.9):
-    return norm(fade(lowpass(x, TOP), 0.002, out), peak)
+def gravel(secs, seed=0, rate=1400, lo=600, hi=7000, decay=14):
+    """The crunch at the heart of the game's sounds: hundreds of tiny grains of noise, like gravel or packed snow
+    giving way, thickest at the blow and thinning out."""
+    rng = np.random.default_rng(seed + 1000)
+    n = int(secs * SR)
+    out = np.zeros(n)
+    k = int(rate * secs)
+    for p, a in zip((rng.random(k) ** 1.8 * n).astype(int), rng.uniform(0.2, 1.0, k)):
+        g = min(int(rng.uniform(0.0006, 0.004) * SR), n - p)
+        if g > 0: out[p:p + g] += a * rng.normal(0, 1, g) * np.exp(-np.arange(g) / g * 4)
+    return bandpass(out, lo, hi) * np.exp(-np.arange(n) / SR * decay)
+
+
+def crush(x, bits=9, hold=2):
+    """An old sampler's grit: fewer levels and held samples (a lower rate, its aliases left in), driven a little."""
+    y = np.repeat(x[::hold], hold)[:len(x)]
+    q = 2 ** (bits - 1)
+    y = np.round(y * q) / q
+    return np.tanh(y * 1.6) / np.tanh(1.6)
+
+
+def dry(x, out=0.05, peak=0.9, bits=9):
+    """Short, dry and crunchy: the top softened, then crushed like an old sample."""
+    return norm(fade(crush(norm(lowpass(x, TOP), 1.0), bits), 0.002, out), peak)
 
 
 def ping(m, secs=0.5, bright=0.6):
@@ -177,19 +200,19 @@ def thud(f0, secs, seed=0, body=1.0):
     t = tvec(secs)
     tone = np.sin(TAU * np.cumsum(f0 * (0.55 + 0.45 * np.exp(-t * 30))) / SR) * np.exp(-t * 14)
     knock = lowpass(noise(secs, seed), 900) * np.exp(-t * 35)
-    return tone * body + knock * 0.9
+    return tone * body + knock * 0.9 + gravel(secs, seed, 1200, 300, 3500, 16) * 1.4
 
 
 def clack(f, secs, seed=0):
     """Wood or stone knocked: a few short resonances and a sharp tick."""
     t = tvec(secs)
     out = sum(a * np.sin(TAU * f * r * t) * np.exp(-t * d) for r, a, d in ((1, 1, 40), (2.3, 0.5, 60), (3.9, 0.3, 90)))
-    return out + bandpass(noise(secs, seed), 1500, 6000) * np.exp(-t * 120) * 1.2
+    return out + bandpass(noise(secs, seed), 1500, 6000) * np.exp(-t * 120) * 1.2 + gravel(secs, seed, 2500, 1200, 7000, 45) * 1.6
 
 
 def clang(f, secs, seed=0):
     """An anvil-like clang: a metal strike cut short."""
-    return metal(f, secs, ratios=(1.0, 2.4, 3.9, 5.6), decay=9, seed=seed, ring=1.0)
+    return metal(f, secs, ratios=(1.0, 2.4, 3.9, 5.6), decay=9, seed=seed, ring=1.0) + gravel(secs, seed, 1500, 1500, 7000, 30) * 0.9
 
 
 def zap(secs, seed=0, f0=2200):
@@ -213,7 +236,7 @@ def splash(secs, seed=0):
 def grains(secs, seed=0, rate=60, lo=200, hi=2500):
     """Stone crumbling: many short knocks of filtered noise, thinning out."""
     t = tvec(secs)
-    return bandpass(crackle(secs, rate, seed, hi) * 3, lo, hi) * np.exp(-t * 3.5)
+    return bandpass(crackle(secs, rate, seed, hi) * 3, lo, hi) * np.exp(-t * 3.5) + gravel(secs, seed, 1800, lo, hi, 4) * 2
 
 
 def mumble(secs, seed=0, base=150):
@@ -252,13 +275,13 @@ def effects():
     x = blank(0.6)
     place(x, ping(79, 0.3), 0.0, 0.8)
     place(x, ping(86, 0.5), 0.09, 1.0)
-    out["relic_ready"] = dry(x, 0.15, 0.8)
+    out["relic_ready"] = dry(x, 0.15, 0.8, bits=11)
     x = thud(90, 0.5, 14, 1.3)
     place(x, clang(520, 0.4, 15) * 0.5, 0.0)
     out["relic_flourish"] = dry(x, 0.12)
     x = blank(0.9)
     for i, m in enumerate((72, 76, 79, 84)): place(x, ping(m, 0.6), i * 0.07, 0.8)
-    out["relic_level"] = dry(x, 0.2, 0.85)
+    out["relic_level"] = dry(x, 0.2, 0.85, bits=11)
     # ---- a fight
     out["parry"] = v3(lambda i: dry(mix(clang(700 + 90 * i, 0.35, 16 + i) * 0.8, clack(300 + 30 * i, 0.2, 20 + i) * 0.6), 0.1))
     x = blank(0.4)
@@ -320,10 +343,10 @@ def effects():
     out["dummy_hit"] = v3(lambda i: dry(mix(lowpass(noise(0.18, 66 + i), 1100 - 100 * i) * np.exp(-tvec(0.18) * 22), thud(130 + 15 * i, 0.15, 69 + i) * 0.5), 0.04))
     x = blank(0.9)
     for i, m in enumerate((74, 78, 81, 86)): place(x, harp(m, 0.5) * 0.7 + ping(m, 0.5) * 0.4, i * 0.09)
-    out["puzzle_solved"] = dry(x, 0.2)
+    out["puzzle_solved"] = dry(x, 0.2, bits=11)
     # ---- idle: short and quiet, played now and then
     def idle(x, secs, inn=0.15, outp=0.3):
-        return norm(fade(lowpass(x[:int(secs * SR)], TOP), inn, outp), 0.6)
+        return norm(fade(crush(norm(lowpass(x[:int(secs * SR)], TOP), 1.0), 10), inn, outp), 0.6)
     out["idle_orb"] = idle(hum(73, 1.6, (1, 0.5, 0.2), 0.8, 72) + ping(86, 1.6) * 0.15, 1.6)
     t = tvec(1.2)
     out["idle_forge"] = idle(lowpass(noise(1.2, 73), 300) * 1.4 + crackle(1.2, 14, 74, 3000) * 1.6, 1.2, 0.1, 0.3)

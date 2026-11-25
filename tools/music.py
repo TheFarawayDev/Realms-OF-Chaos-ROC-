@@ -317,14 +317,14 @@ TRACK_IDS = ["hub", "hermitage", "olympus", "olympus_peak", "abyss", "abyss_tren
              "arena", "trial", "summit", "wrath", "titan", "oracle", "citadel", "citadel_sea", "citadel_shade", "gate"]
 EFFECT_IDS = ["orb_make", "orb_core", "orb_pattern", "orb_ichor", "shrine_awaken", "keystone_set", "gate_awaken", "ui_click"]
 # bump to write every track and effect again
-SCORE_VERSION = 7
+SCORE_VERSION = 8
 
 
 def render(name):
     """A track, composed around its harmony and played by real instruments (harmony.py, through FluidSynth and the
     FluidR3 GM soundfont) - the Ruined Gate's the synthesised one - all brought to the same loudness."""
-    import craft
-    x = craft.TRACKS[name]()
+    import ambient
+    x = ambient.TRACKS[name]()
     rms = np.sqrt(np.mean(x ** 2)) + 1e-9
     x = x * (0.17 / rms)
     return np.tanh(x * 1.1) / np.tanh(1.1)

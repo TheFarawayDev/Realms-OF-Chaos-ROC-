@@ -16,35 +16,38 @@ The current build is an **Alpha**.
 
 ## What's in 1.2.0
 
-* **Nineteen tracks in the manner of Minecraft's own music.** The score was written again (`tools/craft.py`) to sit
-  beside the game's music: a soft felt piano, warm synth pads, an electric piano, a celesta or music box catching the
-  light, slow tempos, lots of room and whole phrases of silence; for the fights, synths and electronic drums rather
-  than an orchestra. All of it original. The harmony engine underneath is the same one (`tools/harmony.py`): each
-  track follows a chord progression in one key, its pads are voice-led and stop at each chord change, its bass keeps
-  to the root, and its melodies are built in phrases with chord tones on the strong beats (measured: notes a
-  semitone apart sound together 0-4% of the time, all passing notes). Played by FluidSynth with the Fluid (R3)
+* **Nineteen tracks in the manner of Minecraft's original soundtrack.** The score was written again
+  (`tools/ambient.py`), all of it original, the way the game's own first music was made: a felt piano played by hand -
+  a little loose in time and touch, its notes left ringing under the pedal - chords spread wide across the keys
+  with their sevenths and added ninths, short simple motifs with long silences between them, soft analogue-sounding
+  synths; and the whole put to tape, with a slow wobble in pitch, a little saturation, a soft top and a breath of
+  hiss. The fights are the electronic side of that sound: synth arpeggios, a round analogue bass and a crunchy old
+  drum machine. Each part is played into its own stem so the piano can be softened like felt, a lead rounded off like
+  an old synth, the drums crushed like an old sampler. The harmony engine underneath (`tools/harmony.py`) keeps every
+  track in one key, chord tones on the strong beats and every held note stopping at the chord change (measured: notes
+  a half-step apart sound together 0-5% of the time, all passing notes). Played by FluidSynth with the Fluid (R3)
   General MIDI SoundFont by Frank Wen (MIT licence; its notice is in `assets/realms_of_chaos/sounds/credits.txt`).
   The Ruined Gate keeps its synthesised track. All are brought to the same loudness.
 
   | Track | Plays | Instruments | Key, time |
   | --- | --- | --- | --- |
-  | The Hub | the hub | felt piano and electric piano over a warm pad | D major, 72 bpm |
-  | The Hermitage | your Hermitage island | a music box and piano, a soft pad, birdsong | F major, 62 bpm |
-  | Olympus | floors 1-10 of Zeus's tower | bright piano and glockenspiel, an airy pad | G lydian, 84 bpm, 3/4 |
-  | The Storm on the Peak | floors 11-15 of Zeus's tower | synth strings and running piano over a soft beat | E minor, 96 bpm |
-  | The Abyss | floors 1-10 of Poseidon's tower | vibraphone and electric piano, a watery pad | B minor, slow 6/8 |
-  | The Trench | floors 11-15 of Poseidon's tower | a deep bowed pad and low piano notes far apart, echoes | F# minor, 50 bpm |
-  | The Underworld | floors 1-10 of Hades's tower | dark piano, a choir pad and a metallic one, embers crackling | C minor, 56 bpm |
-  | Tartarus | floors 11-15 of Hades's tower | a synth bass pulsing under metallic pads, low piano | C# minor, 66 bpm, 5/4 |
-  | The Passages | any passage level | kalimba and electric piano over a ticking beat | D minor, 92 bpm |
-  | The War Dance | fighting a passage's guardians | square-wave lead, synth bass, 808 drums | D hijaz, 9/8 (2+2+2+3) |
-  | A God's Trial | any god's trial | saw lead, a pulsing synth bass, square arpeggios, a choir pad, driving drums | D minor, 140 bpm |
-  | The Last Stand | a god driven to its wrath phase | fast saw arpeggios in 12/8, synth bass, 808 drums, choir pad | E harmonic minor |
-  | The King on the Summit | a tower king's trial | choir pad, synth brass theme, bells, big drums and tom fills | B minor, 128 bpm |
-  | The Fallen Titan | fighting a roused Titan | heavy synth bass, kick and toms, a metallic pad | C minor, 7/8 (2+2+3) |
+  | The Hub | the hub | felt piano over a warm pad | D major, 70 bpm |
+  | The Hermitage | your Hermitage island | a music box over a slow piano, birdsong | F major, 60 bpm |
+  | Olympus | floors 1-10 of Zeus's tower | a piano waltz, glockenspiel, a round pulse-wave lead | G lydian, 84 bpm, 3/4 |
+  | The Storm on the Peak | floors 11-15 of Zeus's tower | running piano, synth strings, a saw lead, a soft kick | E minor, 96 bpm |
+  | The Abyss | floors 1-10 of Poseidon's tower | electric piano in chorus, vibraphone, a watery pad | B minor, slow 6/8 |
+  | The Trench | floors 11-15 of Poseidon's tower | a deep bowed pad, low piano notes far apart, echoes | F# minor, 50 bpm |
+  | The Underworld | floors 1-10 of Hades's tower | low piano in the dark, drones of voices and metal, embers | C minor, 54 bpm |
+  | Tartarus | floors 11-15 of Hades's tower | a crushed synth bass pulsing under metal pads, low piano | C# minor, 66 bpm, 5/4 |
+  | The Passages | any passage level | kalimba arpeggios, electric piano, a ticking drum machine | D minor, 92 bpm |
+  | The War Dance | fighting a passage's guardians | pulse-wave lead, synth bass, drum machine | D hijaz, 9/8 (2+2+2+3) |
+  | A God's Trial | any god's trial | saw lead, square arpeggios, pulsing bass, choir pad, drums | D minor, 140 bpm |
+  | The Last Stand | a god driven to its wrath phase | fast saw arpeggios, synth bass, drum machine, choir pad | E harmonic minor, 12/8 |
+  | The King on the Summit | a tower king's trial | choir pad, synth brass, bells, big drums | B minor, 128 bpm |
+  | The Fallen Titan | fighting a roused Titan | heavy synth bass, kick and toms, a metal pad | C minor, 7/8 (2+2+3) |
   | The Oracle's Flame | by the Oracle in the hub | celesta and piano over a halo pad | E dorian, 58 bpm, 3/4 |
-  | The Citadel of the Sky | near the Citadel of the Sky | synth brass and piano, a soft snare march | Bb major, 96 bpm |
-  | The Citadel of the Tides | near the Citadel of the Tides | electric piano rocking in six, a pad like a tide | G major, slow 6/8 |
+  | The Citadel of the Sky | near the Citadel of the Sky | synth brass and piano, a soft drum machine | Bb major, 96 bpm |
+  | The Citadel of the Tides | near the Citadel of the Tides | electric piano rocking in six, a pad, the sea | G major, slow 6/8 |
   | The Citadel of the Shades | near the Citadel of the Shades | low piano and a bowed pad | F minor, 60 bpm, 3/4 |
   | The Ruined Gate | at the Ruined Gate | choir, glass harmonics, deep swells (synthesised) | Ab lydian, no beat |
 
@@ -68,8 +71,10 @@ The current build is an **Alpha**.
   horns answering and the timpani under them; the orb blooms with a celesta and glockenspiel run, a harp glissando and
   voices; a core rises through a sweep into a taiko and a brass swell; a pattern rings crystal and vibraphone out of a
   short reversed cymbal; ichor falls down a kalimba with voices and bubbles; the screens click with a woodblock.
-* **Forty more sound effects, made like the game's own.** (`tools/sfx_more.py`) Short and dry, with no hall around
-  them: a chunky blow, click or whoosh at the heart, and a note-block-like pling when something good happens. The
+* **Forty more sound effects, made like the game's own.** (`tools/sfx_more.py`) Short, dry and crunchy, with no
+  hall around them: a blow, click or whoosh at the heart with a gravelly grain layer in it (hundreds of tiny grains,
+  like gravel or snow giving way), crushed like an old sample; and a note-block-like pling when something good
+  happens. The
   sounds heard over and over - the hammer, a parry, a dodge, a seal struck, a dummy hit, a lock's pin - come in three
   variants each, one picked at random every time, as the game does with its own.
   * *Relics:* casting a move gives a zap and a thump for Zeus's relics, a splash with bubbles for Poseidon's, a dark
