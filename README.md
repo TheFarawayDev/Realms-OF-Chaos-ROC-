@@ -26,7 +26,7 @@ The current build is an **Alpha**.
   together 40-50% of the time; the new one 1-6%, the rest passing notes.) The instruments are those of an ancient,
   mythic world - harps, lyre-like guitar, pan flute and reeds, orchestral strings, horns and drums, choirs - played
   by FluidSynth with the Fluid (R3) General MIDI SoundFont by Frank Wen (MIT licence; its notice is in
-  `assets/realms_of_chaos/sounds/CREDITS.txt`). The Ruined Gate keeps its earlier, synthesised track. All are brought
+  `assets/realms_of_chaos/sounds/credits.txt`). The Ruined Gate keeps its earlier, synthesised track. All are brought
   to the same loudness.
 
   | Track | Plays | Instruments | Key, time |
