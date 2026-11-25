@@ -145,6 +145,18 @@ public final class ModContent {
     public static final Ref<Item> STORM_GLASS = new Ref<>(), ABYSSAL_PEARL = new Ref<>(), RAW_STYGIAN_IRON = new Ref<>(),
             CELESTIAL_BRONZE_INGOT = new Ref<>(), ORICHALCUM_INGOT = new Ref<>(), STYGIAN_IRON_INGOT = new Ref<>(),
             THUNDER_CORE = new Ref<>(), TIDE_CORE = new Ref<>(), SHADE_CORE = new Ref<>(), DIVINE_ICHOR = new Ref<>();
+    /** The mod's own sounds: its music, and the voices of the shrine and the gate. */
+    public static final java.util.List<String> SOUND_IDS = java.util.List.of("music.hub", "music.olympus", "music.abyss", "music.underworld",
+            "orb_make", "orb_core", "orb_pattern", "orb_ichor", "shrine_awaken", "keystone_set", "gate_awaken", "ui_click");
+    public static final Map<String, Ref<net.minecraft.sounds.SoundEvent>> SOUNDS = new java.util.LinkedHashMap<>();
+    static {
+        for (String id : SOUND_IDS) SOUNDS.put(id, new Ref<>());
+    }
+
+    public static net.minecraft.sounds.SoundEvent sound(String id) {
+        return SOUNDS.get(id).get();
+    }
+
     /** What the Orb of Plenty remembers. */
     public static final Ref<net.minecraft.world.level.block.entity.BlockEntityType<com.thefarawaydev.realmsofchaos.block.OrbBlockEntity>> ORB_ENTITY = new Ref<>();
 
@@ -204,6 +216,18 @@ public final class ModContent {
         return new net.minecraft.world.inventory.MenuType<>(com.thefarawaydev.realmsofchaos.ui.PageMenu::new, net.minecraft.world.flag.FeatureFlags.VANILLA_SET);
     }
 
+    /** The menu types of the two screens that hold real items: the Orb of Plenty's and the Keystone Pedestal's. */
+    public static final Ref<net.minecraft.world.inventory.MenuType<com.thefarawaydev.realmsofchaos.ui.OrbMenu>> ORB_MENU = new Ref<>();
+    public static final Ref<net.minecraft.world.inventory.MenuType<com.thefarawaydev.realmsofchaos.ui.PedestalMenu>> PEDESTAL_MENU = new Ref<>();
+
+    public static net.minecraft.world.inventory.MenuType<com.thefarawaydev.realmsofchaos.ui.OrbMenu> createOrbMenuType() {
+        return new net.minecraft.world.inventory.MenuType<>(com.thefarawaydev.realmsofchaos.ui.OrbMenu::new, net.minecraft.world.flag.FeatureFlags.VANILLA_SET);
+    }
+
+    public static net.minecraft.world.inventory.MenuType<com.thefarawaydev.realmsofchaos.ui.PedestalMenu> createPedestalMenuType() {
+        return new net.minecraft.world.inventory.MenuType<>(com.thefarawaydev.realmsofchaos.ui.PedestalMenu::new, net.minecraft.world.flag.FeatureFlags.VANILLA_SET);
+    }
+
     public static final Ref<EntityType<GodBoss>> GOD_BOSS = new Ref<>();
     public static final Ref<EntityType<com.thefarawaydev.realmsofchaos.entity.Titan>> TITAN = new Ref<>();
 
@@ -243,7 +267,9 @@ public final class ModContent {
                 unbreakable(key).mapColor(MapColor.QUARTZ).lightLevel(s -> 14).sound(SoundType.AMETHYST)));
 
         block("gate_pedestal", GATE_PEDESTAL, key -> new com.thefarawaydev.realmsofchaos.block.GatePedestalBlock(
-                unbreakable(key).mapColor(MapColor.STONE).lightLevel(s -> 8).noOcclusion().sound(SoundType.STONE)));
+                unbreakable(key).mapColor(MapColor.STONE).noOcclusion().sound(SoundType.STONE).lightLevel(s -> 6
+                        + (s.getValue(com.thefarawaydev.realmsofchaos.block.GatePedestalBlock.ZEUS) ? 2 : 0) + (s.getValue(com.thefarawaydev.realmsofchaos.block.GatePedestalBlock.POSEIDON) ? 2 : 0)
+                        + (s.getValue(com.thefarawaydev.realmsofchaos.block.GatePedestalBlock.HADES) ? 2 : 0) + (s.getValue(com.thefarawaydev.realmsofchaos.block.GatePedestalBlock.AWAKE) ? 3 : 0))));
         block("oracle", ORACLE, key -> new com.thefarawaydev.realmsofchaos.block.OracleBlock(
                 unbreakable(key).mapColor(MapColor.COLOR_PURPLE).lightLevel(s -> 15).noOcclusion().sound(SoundType.AMETHYST)));
 

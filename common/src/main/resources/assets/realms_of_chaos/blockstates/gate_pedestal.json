@@ -1,7 +1,41 @@
 {
-  "variants": {
-    "": {
-      "model": "realms_of_chaos:block/gate_pedestal"
+  "multipart": [
+    {
+      "apply": {
+        "model": "realms_of_chaos:block/gate_pedestal"
+      }
+    },
+    {
+      "when": {
+        "poseidon": "true"
+      },
+      "apply": {
+        "model": "realms_of_chaos:block/gate_pedestal_gem_poseidon"
+      }
+    },
+    {
+      "when": {
+        "zeus": "true"
+      },
+      "apply": {
+        "model": "realms_of_chaos:block/gate_pedestal_gem_zeus"
+      }
+    },
+    {
+      "when": {
+        "hades": "true"
+      },
+      "apply": {
+        "model": "realms_of_chaos:block/gate_pedestal_gem_hades"
+      }
+    },
+    {
+      "when": {
+        "awake": "true"
+      },
+      "apply": {
+        "model": "realms_of_chaos:block/gate_pedestal_awake"
+      }
     }
-  }
+  ]
 }

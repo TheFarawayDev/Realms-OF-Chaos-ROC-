@@ -22,8 +22,11 @@ public final class PlentyBlocks {
 
     private PlentyBlocks() {}
 
-    /** The Plinth of Plenty: an altar of porphyry and gold. It glows when the shrine it belongs to is whole. */
-    public static class Plinth extends Block {
+    /**
+     * The Plinth of Plenty: an altar of porphyry and gold. It glows when the shrine it belongs to is whole. A hopper
+     * reaches the orb on it through it: feeding it cores and ichor from the side, taking what it makes from below.
+     */
+    public static class Plinth extends Block implements net.minecraft.world.WorldlyContainerHolder {
         public Plinth(Properties properties) {
             super(properties);
             registerDefaultState(stateDefinition.any().setValue(LIT, false));
@@ -32,6 +35,11 @@ public final class PlentyBlocks {
         @Override
         protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
             builder.add(LIT);
+        }
+
+        @Override
+        public net.minecraft.world.WorldlyContainer getContainer(BlockState state, net.minecraft.world.level.LevelAccessor level, BlockPos pos) {
+            return level.getBlockEntity(pos.above()) instanceof OrbBlockEntity orb ? orb : null;
         }
     }
 

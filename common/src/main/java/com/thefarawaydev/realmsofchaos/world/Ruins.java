@@ -31,40 +31,32 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.levelgen.Heightmap;
 
 /**
- * The way into the realms lies in the Overworld. Scattered across it, at places worked out from the world seed, are
- * <b>Ruined Gates</b> - and three kinds of shrine, each keeping one of the keystones a gate needs: the Shrine of
- * the Sky, of the Tides and of the Shades. A ruin is raised on the surface the first time a player comes near it.
+ * The way into the realms lies in the Overworld. Each world has one <b>Ruined Gate</b>, a short walk from where the
+ * world began - and one each of three citadels, further out in three different directions, each keeping one of the
+ * keystones the gate needs: the Citadel of the Sky, of the Tides and of the Shades. Where they stand is worked out
+ * from the world seed, and all four are raised soon after the world is first opened, so they are there to be found.
  *
- * A Ruined Gate holds the story so far and three seekers, compasses that each point to the nearest shrine of one
- * keystone. Set the three keystones in the arch (right-click the pedestal) and the gate wakes.
+ * A Ruined Gate holds the story so far and three seekers, compasses that each point to one citadel. Lay the three
+ * keystones in the pedestal's cradles (its screen, or a hopper) and the gate wakes.
  */
 public final class Ruins {
-    public static final int VERSION = 3;
-    /** How close a player has to come before a ruin is raised: a citadel is raised sooner, being seen from further off. */
+    public static final int VERSION = 4;
+    /** How close a player has to come before a ruin not yet raised is raised at once: a citadel sooner, being seen from further off. */
     public static final int RAISE_DISTANCE = 96, CITADEL_RAISE_DISTANCE = 144;
-    /**
-     * The three citadels share one grid of squares this wide, one citadel to a square, the three kinds taking turns
-     * so that no two of a kind are neighbours. A citadel stands in the middle half of its square, so any two are at
-     * least half a square apart. The Ruined Gates have a grid of their own, as wide, set half a square off, and
-     * stand in the middle quarter of their squares: never near a citadel.
-     */
-    public static final int CITADEL_SPACING = 1024, CITADEL_MARGIN = 256, GATE_MARGIN = 384;
+    /** How far from the world's origin the gate stands, and the citadels. */
+    public static final int GATE_NEAR = 160, GATE_FAR = 288, CITADEL_NEAR = 640, CITADEL_FAR = 1024;
     private static final String HUD = "hud." + RealmsOfChaos.MOD_ID + ".";
 
     public enum Kind {
-        GATE(null, CITADEL_SPACING, 0x6A7E, 10), SKY(Line.ZEUS, CITADEL_SPACING, 0x51C7, Citadels.HALF), SEA(Line.POSEIDON, CITADEL_SPACING, 0x5EA5, Citadels.HALF),
-        SHADE(Line.HADES, CITADEL_SPACING, 0x5AADE, Citadels.HALF);
+        GATE(null, 0x6A7E, 10), SKY(Line.ZEUS, 0x51C7, Citadels.HALF), SEA(Line.POSEIDON, 0x5EA5, Citadels.HALF), SHADE(Line.HADES, 0x5AADE, Citadels.HALF);
 
         /** The tower whose keystone a shrine keeps; null for the gate itself. */
         public final Line line;
-        /** Ruins of a kind lie one to a square of this many blocks. */
-        public final int spacing;
         final long salt;
         public final int radius;
 
-        Kind(Line line, int spacing, long salt, int radius) {
+        Kind(Line line, long salt, int radius) {
             this.line = line;
-            this.spacing = spacing;
             this.salt = salt;
             this.radius = radius;
         }
@@ -82,54 +74,42 @@ public final class Ruins {
         }
     }
 
-    /** One ruin: its kind, the square of the world it belongs to, and where in that square it stands. */
-    public record Site(Kind kind, int rx, int rz, int x, int z) {}
+    /** One ruin: its kind, and where it stands. */
+    public record Site(Kind kind, int x, int z) {}
 
     private Ruins() {}
 
     // ---- where the ruins are ---------------------------------------------------------------------------------
 
-    /** Where a square's ruin lies. A citadel square's position is the same whichever kind asks: see {@link #holder}. */
-    public static Site site(long seed, Kind kind, int rx, int rz) {
-        boolean gate = kind == Kind.GATE;
-        long salt = gate ? kind.salt : 0x5C17ADE1L;
-        Random random = new Random(seed ^ (salt * 0x9E3779B97F4A7C15L) ^ (rx * 341873128712L) ^ (rz * 132897987541L));
-        int margin = gate ? GATE_MARGIN : CITADEL_MARGIN, room = kind.spacing - 2 * margin, offset = gate ? kind.spacing / 2 : 0;
-        return new Site(kind, rx, rz, rx * kind.spacing + offset + margin + random.nextInt(room), rz * kind.spacing + offset + margin + random.nextInt(room));
-    }
-
-    /** Which citadel stands in a square: the three take turns, so any three squares side by side hold one of each. */
-    public static Kind holder(long seed, int rx, int rz) {
-        Kind[] citadels = {Kind.SKY, Kind.SEA, Kind.SHADE};
-        return citadels[Math.floorMod(rx + 2 * rz + (int) Math.floorMod(seed, 3L), 3)];
-    }
-
-    /** The square a place lies in, on a kind's grid. */
-    public static int square(Kind kind, double coordinate) {
-        return Math.floorDiv((int) Math.floor(coordinate) - (kind == Kind.GATE ? kind.spacing / 2 : 0), kind.spacing);
-    }
-
-    /** The ruin of this kind closest to a place. There is always one within a square or two. */
-    public static Site nearest(long seed, Kind kind, double x, double z) {
-        int rx = square(kind, x), rz = square(kind, z), reach = kind == Kind.GATE ? 1 : 2;
-        Site best = null;
-        double bestDist = Double.MAX_VALUE;
-        for (int dx = -reach; dx <= reach; dx++) {
-            for (int dz = -reach; dz <= reach; dz++) {
-                if (kind != Kind.GATE && holder(seed, rx + dx, rz + dz) != kind) continue;
-                Site s = site(seed, kind, rx + dx, rz + dz);
-                double d = (s.x - x) * (s.x - x) + (s.z - z) * (s.z - z);
-                if (d < bestDist) {
-                    bestDist = d;
-                    best = s;
-                }
-            }
+    /**
+     * Where a world's one ruin of a kind stands. The gate lies a short walk from the origin; the three citadels much
+     * further out, a third of the way round from one another, and none of them on the gate's side.
+     */
+    public static Site site(long seed, Kind kind) {
+        Random random = new Random(seed ^ 0x5EED6A7EL * 0x9E3779B97F4A7C15L);
+        double turn = random.nextDouble() * Math.PI * 2;
+        int gate = GATE_NEAR + random.nextInt(GATE_FAR - GATE_NEAR);
+        if (kind == Kind.GATE) return at(kind, turn, gate);
+        Site out = null;
+        for (int k = 0; k < 3; k++) {
+            double a = turn + Math.PI / 3 + k * Math.PI * 2 / 3 + (random.nextDouble() - 0.5) * 0.7;
+            int d = CITADEL_NEAR + random.nextInt(CITADEL_FAR - CITADEL_NEAR);
+            if (k == kind.ordinal() - 1) out = at(kind, a, d);
         }
-        return best;
+        return out;
+    }
+
+    private static Site at(Kind kind, double angle, int distance) {
+        return new Site(kind, (int) Math.round(Math.cos(angle) * distance), (int) Math.round(Math.sin(angle) * distance));
+    }
+
+    /** The ruin of a kind - there is only one in a world, wherever the asker stands. */
+    public static Site nearest(long seed, Kind kind, double x, double z) {
+        return site(seed, kind);
     }
 
     private static String key(Site site) {
-        return "ruin/" + site.kind + "/" + site.rx + "/" + site.rz + "@" + VERSION + "/y=";
+        return "ruin/" + site.kind + "@" + VERSION + "/y=";
     }
 
     /** The centre of a raised ruin (its floor block), or null if it has not been raised yet. */
@@ -142,9 +122,13 @@ public final class Ruins {
 
     private static int ticker;
 
-    /** Raises the ruins players come near. */
+    /**
+     * Raises the world's ruins: one every two seconds from when the world is opened, until all four stand - and at
+     * once, any a player comes near before then.
+     */
     public static void tick(MinecraftServer server) {
         if (++ticker % 40 != 0) return;
+        pregenerate(server);
         for (ServerPlayer player : server.getPlayerList().getPlayers()) {
             if (!(player.level() instanceof ServerLevel level) || level.dimension() != Level.OVERWORLD || Realm.of(level.dimension()) != null) continue;
             for (Kind kind : Kind.values()) {
@@ -160,6 +144,21 @@ public final class Ruins {
                 if (kind == Kind.GATE && dx * dx + dz * dz <= 40 * 40) com.thefarawaydev.realmsofchaos.ui.Tutorial.tip(player, com.thefarawaydev.realmsofchaos.ui.Tutorial.Tip.RUIN);
             }
         }
+    }
+
+    /** Raises the next of the world's four ruins not yet standing, if any. @return true if one was raised */
+    public static boolean pregenerate(MinecraftServer server) {
+        ServerLevel level = server.overworld();
+        if (level == null || ProgressData.get(server).findBuilt("ruins/all@" + VERSION) != null) return false;
+        for (Kind kind : Kind.values()) {
+            Site site = site(level.getSeed(), kind);
+            if (centre(level, site) != null) continue;
+            BlockPos c = ensure(level, site);
+            org.slf4j.LoggerFactory.getLogger(RealmsOfChaos.MOD_ID).info("Raised the {} at {}", kind, c);
+            return true;
+        }
+        ProgressData.get(server).markBuilt("ruins/all@" + VERSION);
+        return false;
     }
 
     /** Raises a ruin if it is not standing yet. @return its centre. */
@@ -268,9 +267,14 @@ public final class Ruins {
         return centre.offset(0, 1, -1);
     }
 
+    /** Where a tower's keystone sits, left to right: Poseidon's to the west, Zeus's in the middle, Hades's to the east. */
+    public static int cradle(Line line) {
+        return line == Line.POSEIDON ? -1 : line == Line.ZEUS ? 0 : 1;
+    }
+
     /** The socket in the arch's lintel that takes this tower's keystone. */
     public static BlockPos socket(BlockPos pedestal, Line line) {
-        return pedestal.offset(line == Line.POSEIDON ? -1 : line == Line.ZEUS ? 0 : 1, LINTEL_UP, ARCH_BACK);
+        return pedestal.offset(cradle(line), LINTEL_UP, ARCH_BACK);
     }
 
     public static Block socketFill(Line line) {
@@ -439,47 +443,25 @@ public final class Ruins {
         return level.getBlockState(opening(pedestal).get(0)).is(ModContent.GATE_HUB.get());
     }
 
-    /**
-     * Right-clicking the pedestal. With a keystone in hand it is set in its socket; otherwise the pedestal says what
-     * the gate still wants. @return true if a keystone was set.
-     */
-    public static boolean usePedestal(ServerLevel level, BlockPos pedestal, ServerPlayer player, ItemStack held) {
-        if (!hasArch(level, pedestal)) {
-            Hud.actionBar(player, Hud.colored(Component.translatable(HUD + "pedestal.nogate"), 0xFF5555));
-            return false;
-        }
-        Line offered = null;
-        for (Line line : Line.values()) if (held.is(ModContent.keystoneItem(line))) offered = line;
-        if (offered != null && !isSet(level, pedestal, offered)) {
-            if (!player.hasInfiniteMaterials()) held.shrink(1);
-            BlockPos socket = socket(pedestal, offered);
-            set(level, socket, socketFill(offered));
-            level.sendParticles(Signature.spark(offered), socket.getX() + 0.5, socket.getY() + 0.5, socket.getZ() + 0.5, 40, 0.4, 0.4, 0.4, 0.1);
-            level.playSound(null, socket, SoundEvents.RESPAWN_ANCHOR_CHARGE, SoundSource.BLOCKS, 1.2F, 0.8F + 0.2F * keystonesSet(level, pedestal));
-            int set = keystonesSet(level, pedestal);
-            Hud.actionBar(player, Hud.colored(Component.translatable(HUD + "pedestal.set", new ItemStack(ModContent.keystoneItem(offered)).getHoverName(), set), offered.color()));
-            if (set == Line.values().length) wake(level, pedestal);
-            return true;
-        }
-        if (offered != null) {
-            Hud.actionBar(player, Hud.colored(Component.translatable(HUD + "pedestal.already"), 0xAAAAAA));
-            return false;
-        }
-        if (keystonesSet(level, pedestal) == Line.values().length) {
-            if (!awake(level, pedestal)) wake(level, pedestal);
-            Hud.actionBar(player, Hud.colored(Component.translatable(HUD + "pedestal.awake"), 0x55FF55));
-            return false;
-        }
-        net.minecraft.network.chat.MutableComponent missing = Component.empty();
-        boolean first = true;
-        for (Line line : Line.values()) {
-            if (isSet(level, pedestal, line)) continue;
-            if (!first) missing.append(Component.literal(", "));
-            missing.append(new ItemStack(ModContent.keystoneItem(line)).getHoverName());
-            first = false;
-        }
-        Hud.actionBar(player, Hud.colored(Component.translatable(HUD + "pedestal.need", missing), 0xFFFF55));
-        return false;
+    /** Sets a keystone in its socket in the arch, and in its cradle on the pedestal; the third wakes the gate. */
+    public static void setKeystone(ServerLevel level, BlockPos pedestal, Line line) {
+        if (!hasArch(level, pedestal) || isSet(level, pedestal, line)) return;
+        BlockPos socket = socket(pedestal, line);
+        set(level, socket, socketFill(line));
+        level.sendParticles(Signature.spark(line), socket.getX() + 0.5, socket.getY() + 0.5, socket.getZ() + 0.5, 40, 0.4, 0.4, 0.4, 0.1);
+        level.sendParticles(com.thefarawaydev.realmsofchaos.fx.RocParticles.GLINT.type(), pedestal.getX() + 0.5 + cradle(line) * 0.28, pedestal.getY() + 1.0, pedestal.getZ() + 0.5, 12, 0.1, 0.1, 0.1, 0.02);
+        level.playSound(null, pedestal, ModContent.sound("keystone_set"), SoundSource.BLOCKS, 1.0F, 0.9F + 0.1F * keystonesSet(level, pedestal));
+        showPedestal(level, pedestal);
+        if (keystonesSet(level, pedestal) == Line.values().length) wake(level, pedestal);
+    }
+
+    /** Brings the pedestal's look into step with the arch: a lit keystone in each cradle whose socket is set. */
+    public static void showPedestal(ServerLevel level, BlockPos pedestal) {
+        BlockState state = level.getBlockState(pedestal);
+        if (!(state.getBlock() instanceof com.thefarawaydev.realmsofchaos.block.GatePedestalBlock)) return;
+        BlockState now = state.setValue(com.thefarawaydev.realmsofchaos.block.GatePedestalBlock.AWAKE, awake(level, pedestal));
+        for (Line line : Line.values()) now = now.setValue(com.thefarawaydev.realmsofchaos.block.GatePedestalBlock.set(line), isSet(level, pedestal, line));
+        if (now != state) level.setBlock(pedestal, now, 3);
     }
 
     /** All three keystones are set: the arch fills with the gate to the hub. */
@@ -494,7 +476,8 @@ public final class Ruins {
         }
         level.sendParticles(com.thefarawaydev.realmsofchaos.fx.RocParticles.CHAOS_MOTE.type(), mid.getX() + 0.5, mid.getY() + 0.5, mid.getZ() + 0.5, 200, 1.0, 1.5, 0.3, 0.6);
         level.sendParticles(com.thefarawaydev.realmsofchaos.fx.RocParticles.GLINT.type(), mid.getX() + 0.5, mid.getY() + 0.5, mid.getZ() + 0.5, 60, 1.0, 1.5, 0.3, 0.1);
-        level.playSound(null, mid, SoundEvents.END_PORTAL_SPAWN, SoundSource.BLOCKS, 0.6F, 1.2F);
+        level.playSound(null, mid, ModContent.sound("gate_awaken"), SoundSource.BLOCKS, 1.4F, 1.0F);
+        showPedestal(level, pedestal);
         for (ServerPlayer p : level.getEntitiesOfClass(ServerPlayer.class, new net.minecraft.world.phys.AABB(mid).inflate(32), e -> true)) {
             Hud.title(p, Hud.colored(Component.translatable(HUD + "gate.wakes"), 0xA55AD6), Hud.colored(Component.translatable(HUD + "gate.wakes.sub"), 0xCCCCCC));
         }

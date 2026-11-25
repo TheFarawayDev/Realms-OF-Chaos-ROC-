@@ -2211,52 +2211,31 @@ public final class SelfTest {
             }
         });
 
-        step("the way in: ruins lie across the Overworld at places fixed by the seed", () -> {
+        step("the way in: one Ruined Gate and one of each citadel in a world, at places fixed by the seed", () -> {
             long seed = level.getSeed();
             java.util.Random random = new java.util.Random(7);
-            for (Ruins.Kind kind : Ruins.Kind.values()) {
-                for (int i = 0; i < 40; i++) {
-                    int rx = random.nextInt(41) - 20, rz = random.nextInt(41) - 20;
-                    Ruins.Site a = Ruins.site(seed, kind, rx, rz);
-                    check(a.equals(Ruins.site(seed, kind, rx, rz)), "a ruin stays where it is");
-                    int off = kind == Ruins.Kind.GATE ? kind.spacing / 2 : 0, margin = kind == Ruins.Kind.GATE ? Ruins.GATE_MARGIN : Ruins.CITADEL_MARGIN;
-                    check(Ruins.square(kind, a.x()) == rx && Ruins.square(kind, a.z()) == rz && a.x() >= rx * kind.spacing + off + margin && a.x() < (rx + 1) * kind.spacing + off - margin
-                            && a.z() >= rz * kind.spacing + off + margin && a.z() < (rz + 1) * kind.spacing + off - margin, "a ruin lies inside its own square, clear of the edges");
-                }
-                // the nearest ruin really is the nearest, and never further than a long journey
-                for (int i = 0; i < 60; i++) {
-                    double x = random.nextInt(40000) - 20000, z = random.nextInt(40000) - 20000;
-                    Ruins.Site near = Ruins.nearest(seed, kind, x, z);
-                    double best = Double.MAX_VALUE;
-                    int rx = Ruins.square(kind, x), rz = Ruins.square(kind, z);
-                    for (int dx = -3; dx <= 3; dx++) {
-                        for (int dz = -3; dz <= 3; dz++) {
-                            if (kind != Ruins.Kind.GATE && Ruins.holder(seed, rx + dx, rz + dz) != kind) continue;
-                            Ruins.Site o = Ruins.site(seed, kind, rx + dx, rz + dz);
-                            best = Math.min(best, Math.hypot(o.x() - x, o.z() - z));
-                        }
+            for (long world : new long[]{seed, 1L, 42L, -7L, 123456789L, Long.MIN_VALUE + 3}) {
+                Ruins.Site gate = Ruins.site(world, Ruins.Kind.GATE);
+                check(gate.equals(Ruins.site(world, Ruins.Kind.GATE)), "a ruin stays where it is");
+                double out = Math.hypot(gate.x(), gate.z());
+                check(out >= Ruins.GATE_NEAR - 1 && out <= Ruins.GATE_FAR + 1, "the gate lies a short walk from the world's origin: " + (int) out);
+                List<Ruins.Site> citadels = new ArrayList<>();
+                for (Ruins.Kind kind : new Ruins.Kind[]{Ruins.Kind.SKY, Ruins.Kind.SEA, Ruins.Kind.SHADE}) {
+                    Ruins.Site site = Ruins.site(world, kind);
+                    check(site != null && site.kind() == kind, kind + ": there is one");
+                    double d = Math.hypot(site.x(), site.z());
+                    check(d >= Ruins.CITADEL_NEAR - 1 && d <= Ruins.CITADEL_FAR + 1, kind + ": a citadel lies further out: " + (int) d);
+                    check(Math.hypot(site.x() - gate.x(), site.z() - gate.z()) >= 300, kind + ": never near the gate");
+                    for (int i = 0; i < 10; i++) {
+                        double x = random.nextInt(40000) - 20000, z = random.nextInt(40000) - 20000;
+                        check(site.equals(Ruins.nearest(world, kind, x, z)), kind + ": the only one, wherever the asker stands");
                     }
-                    check(Math.abs(Math.hypot(near.x() - x, near.z() - z) - best) < 1e-6, kind + ": nearest is nearest");
-                    check(best <= kind.spacing * 1.9, kind + ": one is always within reach, was " + (int) best);
+                    citadels.add(site);
                 }
+                for (int i = 0; i < 3; i++) for (int j = i + 1; j < 3; j++)
+                    check(Math.hypot(citadels.get(i).x() - citadels.get(j).x(), citadels.get(i).z() - citadels.get(j).z()) >= 600, "the three citadels lie far apart");
             }
-            // spread out: any two citadels at least half a square apart, two of a kind never neighbours, a gate never near one
-            for (int i = 0; i < 200; i++) {
-                int rx = random.nextInt(41) - 20, rz = random.nextInt(41) - 20;
-                Ruins.Site a = Ruins.site(seed, Ruins.holder(seed, rx, rz), rx, rz);
-                for (int dx = -1; dx <= 1; dx++) {
-                    for (int dz = -1; dz <= 1; dz++) {
-                        if (dx == 0 && dz == 0) continue;
-                        Ruins.Site b = Ruins.site(seed, Ruins.holder(seed, rx + dx, rz + dz), rx + dx, rz + dz);
-                        check(Math.hypot(a.x() - b.x(), a.z() - b.z()) >= Ruins.CITADEL_SPACING / 2.0, "two citadels at least half a square apart");
-                        if (Math.abs(dx) + Math.abs(dz) == 1) check(a.kind() != b.kind(), "no two citadels of a kind side by side");
-                    }
-                }
-                Ruins.Site gate = Ruins.nearest(seed, Ruins.Kind.GATE, a.x(), a.z());
-                check(Math.hypot(a.x() - gate.x(), a.z() - gate.z()) >= 150, "a Ruined Gate never stands near a citadel");
-            }
-            check(!Ruins.site(seed, Ruins.Kind.SKY, 0, 0).equals(Ruins.site(seed + 1, Ruins.Kind.SKY, 0, 0))
-                    || !Ruins.site(seed, Ruins.Kind.SKY, 1, 0).equals(Ruins.site(seed + 1, Ruins.Kind.SKY, 1, 0)), "another world, other places");
+            check(!Ruins.site(seed, Ruins.Kind.SKY).equals(Ruins.site(seed + 1, Ruins.Kind.SKY)), "another world, other places");
             check(Ruins.directionKey(0, 10).endsWith("south") && Ruins.directionKey(0, -10).endsWith("north") && Ruins.directionKey(10, 0).endsWith(".east")
                     && Ruins.directionKey(-10, 0).endsWith(".west") && Ruins.directionKey(10, -10).endsWith("north_east"), "compass directions");
         });
@@ -2280,7 +2259,6 @@ public final class SelfTest {
                 com.thefarawaydev.realmsofchaos.world.Scanner.reset();
 
                 // the Ruined Gate is raised once, where the seed says
-                check(Ruins.centre(level, gateSite) == null, "not raised until someone comes");
                 BlockPos c = Ruins.ensure(level, gateSite);
                 check(c.getX() == gateSite.x() && c.getZ() == gateSite.z() && c.equals(Ruins.ensure(level, gateSite)) && c.equals(Ruins.centre(level, gateSite)), "raised once, and remembered");
                 BlockPos pedestal = Ruins.pedestalPos(c);
@@ -2370,19 +2348,30 @@ public final class SelfTest {
                 for (net.minecraft.world.entity.item.ItemEntity dropped : level.getEntitiesOfClass(net.minecraft.world.entity.item.ItemEntity.class, new AABB(skyAt).inflate(30), e -> true)) dropped.discard();
                 hero.setPos(was.x, was.y, was.z);
 
-                // the pedestal: it says what is missing, takes each keystone once, and wakes the gate at three
-                hero.setItemInHand(InteractionHand.MAIN_HAND, ItemStack.EMPTY);
-                check(!Ruins.usePedestal(level, pedestal, hero, hero.getMainHandItem()) && Ruins.keystonesSet(level, pedestal) == 0, "an empty hand sets nothing");
+                // the pedestal's screen: a cradle for each keystone, each taken once; the third wakes the gate
                 hero.setItemInHand(InteractionHand.MAIN_HAND, new ItemStack(ModContent.keystoneItem(Line.ZEUS), 2));
-                level.getBlockState(pedestal).useItemOn(hero.getMainHandItem(), level, hero, InteractionHand.MAIN_HAND,
-                        new BlockHitResult(Vec3.atCenterOf(pedestal), net.minecraft.core.Direction.UP, pedestal, false));
-                check(Ruins.isSet(level, pedestal, Line.ZEUS) && hero.getMainHandItem().getCount() == 1, "right-clicking the pedestal sets the keystone held");
-                check(level.getBlockState(Ruins.socket(pedestal, Line.ZEUS)).is(Blocks.GOLD_BLOCK), "its socket lights");
-                check(!Ruins.usePedestal(level, pedestal, hero, hero.getMainHandItem()) && hero.getMainHandItem().getCount() == 1, "a keystone already set is not taken again");
+                var cradles = new com.thefarawaydev.realmsofchaos.ui.PedestalMenu(0, hero.getInventory(), level, pedestal);
+                int held = -1;
+                for (int i = 3; i < cradles.slots.size(); i++) if (cradles.getSlot(i).getItem() == hero.getMainHandItem()) held = i;
+                check(held >= 3 && Ruins.keystonesSet(level, pedestal) == 0 && cradles.data(com.thefarawaydev.realmsofchaos.ui.PedestalMenu.ARCH) == 1, "the screen opens on three empty cradles");
+                cradles.clicked(held, 0, net.minecraft.world.inventory.ContainerInput.QUICK_MOVE, hero);
+                check(Ruins.isSet(level, pedestal, Line.ZEUS) && hero.getMainHandItem().getCount() == 1, "shift-clicked from the pack, a keystone is laid in its cradle and set");
+                check(level.getBlockState(Ruins.socket(pedestal, Line.ZEUS)).is(Blocks.GOLD_BLOCK)
+                        && level.getBlockState(pedestal).getValue(com.thefarawaydev.realmsofchaos.block.GatePedestalBlock.ZEUS), "its socket lights, and it shows on the pedestal");
+                cradles.clicked(held, 0, net.minecraft.world.inventory.ContainerInput.QUICK_MOVE, hero);
+                check(hero.getMainHandItem().getCount() == 1 && !cradles.getSlot(0).mayPickup(hero), "a keystone already set is not taken again - nor given back");
                 check(!Ruins.awake(level, pedestal), "one keystone does not wake it");
                 ItemStack tides = new ItemStack(ModContent.keystoneItem(Line.POSEIDON)), shades = new ItemStack(ModContent.keystoneItem(Line.HADES));
-                check(Ruins.usePedestal(level, pedestal, hero, tides) && tides.isEmpty() && !Ruins.awake(level, pedestal), "two");
-                check(Ruins.usePedestal(level, pedestal, hero, shades) && Ruins.keystonesSet(level, pedestal) == 3 && Ruins.awake(level, pedestal), "three keystones wake the gate");
+                var sockets = ((net.minecraft.world.WorldlyContainerHolder) ModContent.GATE_PEDESTAL.get()).getContainer(level.getBlockState(pedestal), level, pedestal);
+                check(!sockets.canPlaceItemThroughFace(Line.POSEIDON.ordinal(), new ItemStack(net.minecraft.world.item.Items.DIAMOND), net.minecraft.core.Direction.UP)
+                        && !sockets.canPlaceItemThroughFace(Line.POSEIDON.ordinal(), shades, net.minecraft.core.Direction.UP), "a cradle takes nothing but its own keystone");
+                ItemStack rest = net.minecraft.world.level.block.entity.HopperBlockEntity.addItem(null, sockets, tides, net.minecraft.core.Direction.UP);
+                check(rest.isEmpty() && Ruins.isSet(level, pedestal, Line.POSEIDON) && !Ruins.awake(level, pedestal), "a hopper can lay a keystone in too");
+                cradles.setCarried(shades);
+                cradles.clicked(Line.HADES.ordinal(), 0, net.minecraft.world.inventory.ContainerInput.PICKUP, hero);
+                check(cradles.getCarried().isEmpty() && Ruins.keystonesSet(level, pedestal) == 3 && Ruins.awake(level, pedestal)
+                        && cradles.data(com.thefarawaydev.realmsofchaos.ui.PedestalMenu.AWAKE) == 1, "three keystones wake the gate");
+                check(level.getBlockState(pedestal).getValue(com.thefarawaydev.realmsofchaos.block.GatePedestalBlock.AWAKE), "and the pedestal knows it");
                 for (BlockPos o : Ruins.opening(pedestal)) check(level.getBlockState(o).is(ModContent.GATE_HUB.get()), "the arch fills with the gate");
                 for (var bolt : level.getEntitiesOfClass(net.minecraft.world.entity.LightningBolt.class, new AABB(c).inflate(16), e -> true)) bolt.discard();
 
@@ -2405,7 +2394,10 @@ public final class SelfTest {
                 BlockPos lone = c.offset(40, 2, 40);
                 level.setBlock(lone, ModContent.GATE_PEDESTAL.get().defaultBlockState(), 2);
                 ItemStack spare = new ItemStack(ModContent.keystoneItem(Line.ZEUS));
-                check(!Ruins.usePedestal(level, lone, hero, spare) && spare.getCount() == 1, "a pedestal without an arch takes nothing");
+                var loneSockets = ((net.minecraft.world.WorldlyContainerHolder) ModContent.GATE_PEDESTAL.get()).getContainer(level.getBlockState(lone), level, lone);
+                spare = net.minecraft.world.level.block.entity.HopperBlockEntity.addItem(null, loneSockets, spare, net.minecraft.core.Direction.UP);
+                check(spare.getCount() == 1 && new com.thefarawaydev.realmsofchaos.ui.PedestalMenu(0, hero.getInventory(), level, lone).data(com.thefarawaydev.realmsofchaos.ui.PedestalMenu.ARCH) == 0,
+                        "a pedestal without an arch takes nothing, and says so");
                 level.setBlock(lone, Blocks.AIR.defaultBlockState(), 2);
             } finally {
                 Realm.testAlias(Level.OVERWORLD, Realm.OLYMPUS);
@@ -7075,50 +7067,76 @@ public final class SelfTest {
                         && lower.getValue(com.thefarawaydev.realmsofchaos.block.PlentyBlocks.LIT) && level.getBlockState(horn.below()).getValue(com.thefarawaydev.realmsofchaos.block.PlentyBlocks.LIT)
                         && lower.getValue(com.thefarawaydev.realmsofchaos.block.PlentyBlocks.Column.BASE) && !lower.getValue(com.thefarawaydev.realmsofchaos.block.PlentyBlocks.Column.CAPITAL)
                         && upper.getValue(com.thefarawaydev.realmsofchaos.block.PlentyBlocks.Column.CAPITAL), "whole, the columns and the plinth light; each column wears its base and capital");
-                ItemStack thunder = new ItemStack(ModContent.THUNDER_CORE.get());
-                smith.setItemInHand(net.minecraft.world.InteractionHand.MAIN_HAND, thunder);
-                level.getBlockState(horn).useItemOn(thunder, level, smith, net.minecraft.world.InteractionHand.MAIN_HAND, new BlockHitResult(Vec3.atCenterOf(horn), Direction.UP, horn, false));
-                check(level.getBlockState(horn).getValue(com.thefarawaydev.realmsofchaos.block.CornucopiaBlock.CORE) == com.thefarawaydev.realmsofchaos.block.CornucopiaBlock.Core.STORM
-                        && thunder.isEmpty() && com.thefarawaydev.realmsofchaos.ui.BlockLabel.at(level, horn) != null, "a thunder core set in the horn; a panel over it tells how the shrine stands");
+                // a hopper at the plinth's side feeds the orb its core
+                ItemStack thunder = new ItemStack(ModContent.THUNDER_CORE.get(), 2);
+                var plinth = ((net.minecraft.world.WorldlyContainerHolder) ModContent.PLENTY_PLINTH.get()).getContainer(level.getBlockState(horn.below()), level, horn.below());
+                check(plinth != null, "the plinth reaches the orb on it");
+                // (a hopper passes one item at a time)
+                ItemStack left = net.minecraft.world.level.block.entity.HopperBlockEntity.addItem(null, plinth, thunder.split(1), Direction.EAST);
+                ItemStack second = net.minecraft.world.level.block.entity.HopperBlockEntity.addItem(null, plinth, thunder.copy(), Direction.EAST);
+                check(left.isEmpty() && second.getCount() == 1, "the core goes in; a second is refused");
+                check(level.getBlockState(horn).getValue(com.thefarawaydev.realmsofchaos.block.CornucopiaBlock.CORE) == com.thefarawaydev.realmsofchaos.block.CornucopiaBlock.Core.STORM && thunder.getCount() == 1,
+                        "a thunder core fed in through the plinth is set in the orb - one, not two");
+                check(com.thefarawaydev.realmsofchaos.ui.BlockLabel.at(level, horn) == null, "nothing floats over the orb: it has a screen");
                 ItemStack made = com.thefarawaydev.realmsofchaos.block.CornucopiaBlock.produce(level, horn, level.getRandom());
                 var chest = (net.minecraft.world.Container) level.getBlockEntity(horn.below().north());
                 int stored = 0;
                 for (int i = 0; i < chest.getContainerSize(); i++) if (chest.getItem(i).is(made.getItem())) stored += chest.getItem(i).getCount();
                 check((made.is(ModContent.STORM_GLASS.get()) || made.is(ModContent.RAW_ADAMANTINE.get())) && stored == made.getCount() && made.getCount() >= 1,
                         "it brings forth storm glass, into the chest beside the plinth: " + made);
-                // ---- shown anything, and paid in ichor, the orb makes that, given time
+                // ---- in its screen: shown anything, and paid in ichor, the orb makes that, given time
                 var orb = com.thefarawaydev.realmsofchaos.block.CornucopiaBlock.orb(level, horn);
-                check(orb != null, "the orb remembers what it is shown");
+                check(orb != null, "the orb holds what it is given");
+                var screen = new com.thefarawaydev.realmsofchaos.ui.OrbMenu(0, smith.getInventory(), orb);
                 ItemStack diamond = new ItemStack(net.minecraft.world.item.Items.DIAMOND, 3);
-                level.getBlockState(horn).useItemOn(diamond, level, smith, net.minecraft.world.InteractionHand.MAIN_HAND, new BlockHitResult(Vec3.atCenterOf(horn), Direction.UP, horn, false));
-                check(orb.pattern() == net.minecraft.world.item.Items.DIAMOND && diamond.getCount() == 3, "shown a diamond, it takes it as its pattern - and gives it back");
-                ItemStack ichor = new ItemStack(ModContent.DIVINE_ICHOR.get(), 5);
-                level.getBlockState(horn).useItemOn(ichor, level, smith, net.minecraft.world.InteractionHand.MAIN_HAND, new BlockHitResult(Vec3.atCenterOf(horn), Direction.UP, horn, false));
-                check(orb.ichor() == 5 && ichor.isEmpty(), "ichor is poured in to pay for it");
+                screen.setCarried(diamond);
+                screen.clicked(com.thefarawaydev.realmsofchaos.block.OrbBlockEntity.PATTERN, 0, net.minecraft.world.inventory.ContainerInput.PICKUP, smith);
+                check(orb.pattern() == net.minecraft.world.item.Items.DIAMOND && screen.getCarried().getCount() == 3, "shown a diamond in its pattern slot, it takes it as its pattern - and the diamonds stay in hand");
+                screen.setCarried(new ItemStack(ModContent.DIVINE_ICHOR.get(), 5));
+                screen.clicked(com.thefarawaydev.realmsofchaos.block.OrbBlockEntity.ICHOR, 0, net.minecraft.world.inventory.ContainerInput.PICKUP, smith);
+                check(orb.ichor() == 5 && screen.getCarried().isEmpty(), "ichor is laid in to pay for it");
+                screen.setCarried(ItemStack.EMPTY);
                 int cost = com.thefarawaydev.realmsofchaos.block.OrbBlockEntity.cost(new ItemStack(net.minecraft.world.item.Items.DIAMOND));
                 check(cost == 2 && com.thefarawaydev.realmsofchaos.block.OrbBlockEntity.cost(new ItemStack(net.minecraft.world.item.Items.DIAMOND_BLOCK)) == 4
                         && com.thefarawaydev.realmsofchaos.block.OrbBlockEntity.cost(new ItemStack(net.minecraft.world.item.Items.COBBLESTONE)) == 1, "a diamond costs two ichor, a block of them four, cobblestone one");
+                int[] report = com.thefarawaydev.realmsofchaos.ui.OrbMenu.report(level, horn);
+                check(report[com.thefarawaydev.realmsofchaos.ui.OrbMenu.MODE] == com.thefarawaydev.realmsofchaos.ui.OrbMenu.MAKING && report[com.thefarawaydev.realmsofchaos.ui.OrbMenu.COST] == 2 && (report[com.thefarawaydev.realmsofchaos.ui.OrbMenu.SHRINE] & com.thefarawaydev.realmsofchaos.ui.OrbMenu.WHOLE) != 0,
+                        "its screen says what it makes and what each costs");
                 for (int i = 0; i < chest.getContainerSize(); i++) chest.setItem(i, ItemStack.EMPTY);
                 orb.addWork(com.thefarawaydev.realmsofchaos.block.OrbBlockEntity.steps(new ItemStack(net.minecraft.world.item.Items.DIAMOND)));
                 level.getBlockState(horn).tick(level, horn, level.getRandom());
                 int diamonds = 0;
                 for (int i = 0; i < chest.getContainerSize(); i++) if (chest.getItem(i).is(net.minecraft.world.item.Items.DIAMOND)) diamonds += chest.getItem(i).getCount();
                 check(diamonds == 1 && orb.ichor() == 5 - cost && orb.work() == 0, "its time come, it makes one, paid in ichor: " + diamonds + " made, " + orb.ichor() + " ichor left");
+                // with nowhere beside it to go, what it makes waits in the orb, for a hopper under the plinth to take
+                level.setBlock(horn.below().north(), Blocks.AIR.defaultBlockState(), 3);
+                orb.addWork(com.thefarawaydev.realmsofchaos.block.OrbBlockEntity.steps(new ItemStack(net.minecraft.world.item.Items.DIAMOND)));
+                level.getBlockState(horn).tick(level, horn, level.getRandom());
+                check(orb.getItem(com.thefarawaydev.realmsofchaos.block.OrbBlockEntity.OUT).is(net.minecraft.world.item.Items.DIAMOND) && orb.ichor() == 5 - 2 * cost, "with no chest by it, the diamond waits in the orb");
+                check(java.util.Arrays.stream(plinth.getSlotsForFace(Direction.DOWN)).anyMatch(i -> i == com.thefarawaydev.realmsofchaos.block.OrbBlockEntity.OUT)
+                        && plinth.canTakeItemThroughFace(com.thefarawaydev.realmsofchaos.block.OrbBlockEntity.OUT, orb.getItem(com.thefarawaydev.realmsofchaos.block.OrbBlockEntity.OUT), Direction.DOWN)
+                        && !plinth.canTakeItemThroughFace(com.thefarawaydev.realmsofchaos.block.OrbBlockEntity.ICHOR, orb.getItem(com.thefarawaydev.realmsofchaos.block.OrbBlockEntity.ICHOR), Direction.DOWN)
+                        && level.getBlockState(horn).getAnalogOutputSignal(level, horn, Direction.UP) > 0, "a hopper under the plinth takes what it made, not its ichor; a comparator reads it");
                 orb.spend(orb.ichor());
                 orb.addWork(100);
                 level.getBlockState(horn).tick(level, horn, level.getRandom());
-                check(orb.work() >= 100, "with no ichor left, it waits");
+                check(orb.work() >= 100 && com.thefarawaydev.realmsofchaos.ui.OrbMenu.report(level, horn)[com.thefarawaydev.realmsofchaos.ui.OrbMenu.MODE] == com.thefarawaydev.realmsofchaos.ui.OrbMenu.WAITING, "with no ichor left, it waits - and says so");
                 check(!com.thefarawaydev.realmsofchaos.block.OrbBlockEntity.replicable(new ItemStack(net.minecraft.world.item.Items.BEDROCK))
                         && !com.thefarawaydev.realmsofchaos.block.OrbBlockEntity.replicable(new ItemStack(ModContent.WEAPONS.get("zeus").get()))
                         && !com.thefarawaydev.realmsofchaos.block.OrbBlockEntity.replicable(new ItemStack(ModContent.essenceItem(Line.ZEUS)))
                         && !com.thefarawaydev.realmsofchaos.block.OrbBlockEntity.replicable(new ItemStack(ModContent.DIVINE_ICHOR.get()))
                         && com.thefarawaydev.realmsofchaos.block.OrbBlockEntity.replicable(new ItemStack(net.minecraft.world.item.Items.NETHER_STAR)),
                         "it will not make bedrock, a god's relic, an essence or ichor itself - but anything won in the world");
-                smith.setShiftKeyDown(true);
-                level.getBlockState(horn).useWithoutItem(level, smith, new BlockHitResult(Vec3.atCenterOf(horn), Direction.UP, horn, false));
-                smith.setShiftKeyDown(false);
+                screen.setCarried(new ItemStack(net.minecraft.world.item.Items.BEDROCK));
+                screen.clicked(com.thefarawaydev.realmsofchaos.block.OrbBlockEntity.PATTERN, 0, net.minecraft.world.inventory.ContainerInput.PICKUP, smith);
+                check(orb.pattern() == net.minecraft.world.item.Items.DIAMOND && screen.data(com.thefarawaydev.realmsofchaos.ui.OrbMenu.REFUSED) > 0, "shown bedrock, it keeps its pattern and says it will not");
+                screen.setCarried(ItemStack.EMPTY);
+                screen.clicked(com.thefarawaydev.realmsofchaos.block.OrbBlockEntity.PATTERN, 0, net.minecraft.world.inventory.ContainerInput.PICKUP, smith);
                 check(orb.pattern() == null && level.getBlockState(horn).getValue(com.thefarawaydev.realmsofchaos.block.CornucopiaBlock.CORE) != com.thefarawaydev.realmsofchaos.block.CornucopiaBlock.Core.NONE,
-                        "sneaking with an empty hand forgets the pattern first, and keeps the core");
+                        "clicked with an empty hand, the pattern is forgotten and the core kept");
+                screen.clicked(com.thefarawaydev.realmsofchaos.block.OrbBlockEntity.CORE, 0, net.minecraft.world.inventory.ContainerInput.PICKUP, smith);
+                check(screen.getCarried().is(ModContent.THUNDER_CORE.get()) && level.getBlockState(horn).getValue(com.thefarawaydev.realmsofchaos.block.CornucopiaBlock.CORE) == com.thefarawaydev.realmsofchaos.block.CornucopiaBlock.Core.NONE, "the core can be taken back out");
+                screen.setCarried(ItemStack.EMPTY);
                 check(server.getRecipeManager().byKey(net.minecraft.resources.ResourceKey.create(net.minecraft.core.registries.Registries.RECIPE, RealmsOfChaos.id("divine_ichor"))).isPresent(),
                         "divine ichor can be made");
                 check(!com.thefarawaydev.realmsofchaos.block.CornucopiaBlock.atHome(level, horn, com.thefarawaydev.realmsofchaos.block.CornucopiaBlock.Core.SHADE),

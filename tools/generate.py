@@ -17,6 +17,8 @@ import divine_pro
 import divine_models
 import armor_art
 import particle_art
+import music
+import station_ui
 from PIL import Image
 
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
@@ -2037,6 +2039,8 @@ def gen_lang():
     lang.update(panoply_art.lang())
     lang.update(divine_art.lang())
     lang.update(divine_pro.lang())
+    lang.update({f"subtitles.{MOD}.{k}": v for k, v in music.SUBTITLES.items()})
+    lang.update(station_ui.lang())
     wj(os.path.join(ASSETS, "lang/en_us.json"), lang)
 
 # ----------------------------------------------------------------------------
@@ -5136,6 +5140,8 @@ if __name__ == "__main__":
     divine_models.gen(ASSETS, DATA, wj)
     armor_art.gen(ASSETS, wj)
     particle_art.gen(ASSETS, wj)
+    music.gen(ASSETS, wj)
+    station_ui.gen(ASSETS, wj)
     gen_recipes()
     gen_field_data()
     gen_tags()

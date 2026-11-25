@@ -53,6 +53,11 @@ public class RealmsOfChaosFabric implements ModInitializer {
             def.ref().bind(() -> item);
         }
 
+        for (var entry : ModContent.SOUNDS.entrySet()) {
+            Identifier sid = RealmsOfChaos.id(entry.getKey());
+            var event = Registry.register(BuiltInRegistries.SOUND_EVENT, sid, net.minecraft.sounds.SoundEvent.createVariableRangeEvent(sid));
+            entry.getValue().bind(() -> event);
+        }
         var orbType = Registry.register(BuiltInRegistries.BLOCK_ENTITY_TYPE, RealmsOfChaos.id("orb_of_plenty"), ModContent.createOrbEntityType());
         ModContent.ORB_ENTITY.bind(() -> orbType);
 
@@ -67,6 +72,10 @@ public class RealmsOfChaosFabric implements ModInitializer {
             ModContent.MENUS.get(panel.id()).bind(() -> menuType);
         }
 
+        var orbMenu = Registry.register(BuiltInRegistries.MENU, RealmsOfChaos.id("orb_of_plenty"), ModContent.createOrbMenuType());
+        ModContent.ORB_MENU.bind(() -> orbMenu);
+        var pedestalMenu = Registry.register(BuiltInRegistries.MENU, RealmsOfChaos.id("keystone_pedestal"), ModContent.createPedestalMenuType());
+        ModContent.PEDESTAL_MENU.bind(() -> pedestalMenu);
         var pageType = ModContent.createPageType();
         Registry.register(BuiltInRegistries.MENU, RealmsOfChaos.id("page"), pageType);
         ModContent.PAGE.bind(() -> pageType);

@@ -28,6 +28,9 @@ public final class RealmsOfChaosForgeClient {
         }
         // and the written screens - the Codex, the handbook, the chronicle, the altar - are pages of the mod's own
         net.minecraft.client.gui.screens.MenuScreens.register(ModContent.PAGE.get(), com.thefarawaydev.realmsofchaos.client.PageScreen::new);
+        // the Orb of Plenty's screen and the Keystone Pedestal's
+        net.minecraft.client.gui.screens.MenuScreens.register(ModContent.ORB_MENU.get(), com.thefarawaydev.realmsofchaos.client.OrbScreen::new);
+        net.minecraft.client.gui.screens.MenuScreens.register(ModContent.PEDESTAL_MENU.get(), com.thefarawaydev.realmsofchaos.client.PedestalScreen::new);
     }
 
     /** The mod's own particles, each drawn from its own sprites. */
@@ -36,6 +39,12 @@ public final class RealmsOfChaosForgeClient {
         for (com.thefarawaydev.realmsofchaos.fx.RocParticles kind : com.thefarawaydev.realmsofchaos.fx.RocParticles.values()) {
             event.registerSpriteSet(kind.type(), sprites -> com.thefarawaydev.realmsofchaos.client.RocQuadParticle.provider(kind, sprites));
         }
+    }
+
+    /** The realms' own music. */
+    @SubscribeEvent
+    public static void clientTick(net.minecraftforge.event.TickEvent.ClientTickEvent.Post event) {
+        com.thefarawaydev.realmsofchaos.client.RocMusic.tick(net.minecraft.client.Minecraft.getInstance());
     }
 
     /** The HUD is drawn by the mod: the boss panel, the floor plaque, cards, the combat meter. */

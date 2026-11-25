@@ -34,6 +34,7 @@ public final class RealmsOfChaosForge {
     private static final DeferredRegister<Block> BLOCKS = DeferredRegister.create(ForgeRegistries.BLOCKS, RealmsOfChaos.MOD_ID);
     private static final DeferredRegister<Item> ITEMS = DeferredRegister.create(ForgeRegistries.ITEMS, RealmsOfChaos.MOD_ID);
     private static final DeferredRegister<EntityType<?>> ENTITIES = DeferredRegister.create(Registries.ENTITY_TYPE, RealmsOfChaos.MOD_ID);
+    private static final DeferredRegister<net.minecraft.sounds.SoundEvent> SOUNDS = DeferredRegister.create(Registries.SOUND_EVENT, RealmsOfChaos.MOD_ID);
     private static final DeferredRegister<net.minecraft.world.level.block.entity.BlockEntityType<?>> BLOCK_ENTITIES = DeferredRegister.create(Registries.BLOCK_ENTITY_TYPE, RealmsOfChaos.MOD_ID);
     private static final DeferredRegister<CreativeModeTab> TABS = DeferredRegister.create(Registries.CREATIVE_MODE_TAB, RealmsOfChaos.MOD_ID);
     private static final DeferredRegister<net.minecraft.world.inventory.MenuType<?>> MENUS = DeferredRegister.create(Registries.MENU, RealmsOfChaos.MOD_ID);
@@ -49,6 +50,11 @@ public final class RealmsOfChaosForge {
         for (ModContent.Def<Item> def : ModContent.ITEM_DEFS) {
             RegistryObject<Item> ro = ITEMS.register(def.id(), () -> def.factory().apply(ITEMS.key(def.id())));
             def.ref().bind(ro);
+        }
+        for (var entry : ModContent.SOUNDS.entrySet()) {
+            RegistryObject<net.minecraft.sounds.SoundEvent> sound = SOUNDS.register(entry.getKey(),
+                    () -> net.minecraft.sounds.SoundEvent.createVariableRangeEvent(RealmsOfChaos.id(entry.getKey())));
+            entry.getValue().bind(sound);
         }
         RegistryObject<net.minecraft.world.level.block.entity.BlockEntityType<?>> orb = BLOCK_ENTITIES.register("orb_of_plenty", ModContent::createOrbEntityType);
         ModContent.ORB_ENTITY.bind(() -> {
@@ -95,6 +101,18 @@ public final class RealmsOfChaosForge {
                 return type;
             });
         }
+        RegistryObject<net.minecraft.world.inventory.MenuType<?>> orbMenu = MENUS.register("orb_of_plenty", ModContent::createOrbMenuType);
+        ModContent.ORB_MENU.bind(() -> {
+            @SuppressWarnings("unchecked")
+            net.minecraft.world.inventory.MenuType<com.thefarawaydev.realmsofchaos.ui.OrbMenu> type = (net.minecraft.world.inventory.MenuType<com.thefarawaydev.realmsofchaos.ui.OrbMenu>) orbMenu.get();
+            return type;
+        });
+        RegistryObject<net.minecraft.world.inventory.MenuType<?>> pedestalMenu = MENUS.register("keystone_pedestal", ModContent::createPedestalMenuType);
+        ModContent.PEDESTAL_MENU.bind(() -> {
+            @SuppressWarnings("unchecked")
+            net.minecraft.world.inventory.MenuType<com.thefarawaydev.realmsofchaos.ui.PedestalMenu> type = (net.minecraft.world.inventory.MenuType<com.thefarawaydev.realmsofchaos.ui.PedestalMenu>) pedestalMenu.get();
+            return type;
+        });
         RegistryObject<net.minecraft.world.inventory.MenuType<?>> page = MENUS.register("page", ModContent::createPageType);
         ModContent.PAGE.bind(() -> {
             @SuppressWarnings("unchecked")
@@ -111,6 +129,7 @@ public final class RealmsOfChaosForge {
         ITEMS.register(modBus);
         ENTITIES.register(modBus);
         BLOCK_ENTITIES.register(modBus);
+        SOUNDS.register(modBus);
         TABS.register(modBus);
 
         EntityAttributeCreationEvent.BUS.addListener(event -> {

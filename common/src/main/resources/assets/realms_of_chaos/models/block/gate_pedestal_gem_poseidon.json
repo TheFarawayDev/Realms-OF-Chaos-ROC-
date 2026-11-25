@@ -1,0 +1,50 @@
+{
+  "textures": {
+    "gem": "realms_of_chaos:block/gate_pedestal_gem_poseidon",
+    "particle": "realms_of_chaos:block/gate_pedestal_gem_poseidon"
+  },
+  "elements": [
+    {
+      "from": [
+        2.5,
+        14.6,
+        7
+      ],
+      "to": [
+        4.5,
+        16.6,
+        9
+      ],
+      "faces": {
+        "north": {
+          "texture": "#gem"
+        },
+        "south": {
+          "texture": "#gem"
+        },
+        "east": {
+          "texture": "#gem"
+        },
+        "west": {
+          "texture": "#gem"
+        },
+        "up": {
+          "texture": "#gem"
+        },
+        "down": {
+          "texture": "#gem"
+        }
+      },
+      "rotation": {
+        "angle": 45,
+        "axis": "y",
+        "origin": [
+          3.5,
+          15.6,
+          8
+        ]
+      },
+      "light_emission": 15
+    }
+  ]
+}

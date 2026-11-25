@@ -16,13 +16,48 @@ The current build is an **Alpha**.
 
 ## What's in 1.2.0
 
-* **The Orb of Plenty makes anything - for time and ichor.** Show the orb any item (right-click it with the item -
-  it is remembered, not taken) and pour in **Divine Ichor**, and a whole shrine with a core set in it makes that item,
+* **The world's one way in, waiting from the start.** Each world now has exactly one **Ruined Gate** - a short walk
+  (160 to 290 blocks) from the world's origin - and one each of the three citadels, 640 to 1,020 blocks out in three
+  different directions, none on the gate's side. All four are raised in the first seconds after a world is first
+  opened (a one-time pause of a few seconds while their ground is generated), so they are already standing when you
+  get there. The compass, the seekers and the scanner all point at these. Ruins raised in an older world by an
+  earlier build are left where they stand, but the compasses now lead to the new ones.
+* **The Keystone Pedestal has a screen.** Use the pedestal to open it: the gate's arch drawn above three cradles, one
+  for each keystone in the order they sit in the lintel - the Tides on the left, the Sky in the middle, the Shades on
+  the right. Lay a keystone in its cradle (click, or shift-click it from your pack) and it is set in the arch at once;
+  its socket lights in the drawing and in the world, and a lit gem appears in that cradle on the pedestal itself.
+  The screen says which keystones are still wanted, and the arch on it fills with light once the gate wakes. A
+  **hopper** can set keystones too, and a comparator reads five per keystone set. The pedestal's model was rebuilt
+  with three gold cradles on a broader top, its shaft band lighting when the gate is awake.
+  (`art/renders/pedestal-screen.png`, `art/renders/keystone-pedestal.png`)
+* **The Orb of Plenty has a screen, and works with hoppers.** Use the orb to open it: the core's slot and the ichor's
+  on the left, the **pattern** in the middle inside a ring of lights that fills as the next one comes, and four slots
+  on the right for what it has made. Click the pattern slot with any item to have the orb make that - the item stays
+  in your hand - or with an empty hand to clear it. Under them the orb says what it is doing and how long until the
+  next: whether the shrine is whole (and what is missing), what it is making and what each costs, or that it is
+  waiting for ichor or will not make what it was shown. Empty slots show a faint picture of what goes in them, and
+  say so when you point at them. What it makes still goes into a chest (or hopper) beside or under the plinth;
+  with none there it waits in the orb's own four slots. **Hoppers** reach the orb through the orb itself or through
+  its plinth: from above or the side they feed it cores and ichor, from below they take what it made (never the
+  ichor or the core); a comparator reads how full it is. Breaking the orb drops what it holds.
+  (`art/renders/orb-screen.png`)
+* **No more floating text.** The panels that hung over the orb and the messages the pedestal put on the action bar
+  are gone - both say everything in their screens.
+* **Music of the realms, and new sounds.** Each realm has an original track of its own, written for the mod in the
+  spirit of slow, patient building music: calm, unhurried pieces that take their time to grow - the hub (and the
+  hermitage) in D dorian, Olympus bright in G lydian, the Abyss slow and deep in E aeolian, the Underworld dark in
+  C phrygian, each about two minutes, plucked and bell-like over soft pads, with a quiet of about forty seconds
+  between plays. In the realms they replace the game's own music; back in the Overworld the game's music returns.
+  New sound effects (each with a subtitle): the orb making something, a core set, a pattern shown, ichor laid in,
+  a shrine waking, a keystone set, the gate waking, and a soft click. All of it is synthesised by
+  `tools/music.py` (numpy, written to Ogg Vorbis with ffmpeg), not sampled from anything.
+* **The Orb of Plenty makes anything - for time and ichor.** Show the orb any item (put it in the pattern slot of
+  the orb's screen - it is remembered, not taken) and lay in **Divine Ichor**, and a whole shrine with a core set in it makes that item,
   one at a time: five minutes for a common thing, ten for uncommon, fifteen for rare, twenty for epic (half that where
   its core is at home), paid in ichor - one for a common thing, two uncommon, four rare, eight epic; twice that for an
   ingot or gem, four times for a block of metal or gems. Out of ichor, it waits. The orb holds up to 64 ichor. It will
   not make what cannot be had in survival, the gods' relics and essences, the panoply, the cores, ichor, or its own
-  shrine. Sneak with an empty hand to forget the pattern (and again to take the core back). **Divine Ichor**, the
+  shrine. Click the pattern slot with an empty hand to forget the pattern; take the core out of its slot. **Divine Ichor**, the
   golden blood of the gods, comes four at a time from a tower's essence, four gold ingots and four glistering melon
   slices. (`art/renders/orb-making.png`)
 * **The orb, remade.** A shell of glass tinted by its core - its texture laid by where each face lies, so it is never
@@ -865,15 +900,16 @@ The current build is an **Alpha**.
 * **The way in has to be found.** The gates were broken on purpose. Until a gate knows you, the realms are closed
   and the **Compass of Chaos** scans for the nearest **Ruined Gate** in the Overworld.
   * A Ruined Gate is a ruined temple round a dead arch, with a campfire still smoking. Its chest holds the story so
-    far and three **seekers** - compasses that each point to the nearest shrine of one keystone.
+    far and three **seekers** - compasses that each point to the citadel that keeps one keystone.
   * The three **keystones** lie in three kinds of shrine elsewhere in the world: the **Shrine of the Sky** (a
     white temple), the **Shrine of the Tides** (a ring of prismarine round a pool) and the **Shrine of the Shades**
     (standing stones round a crypt you walk down into).
-  * Right-click the gate's **pedestal** with each keystone to set it in the arch. Three keystones wake the gate
+  * Lay each keystone in its cradle in the gate's **pedestal** screen (or feed it in with a hopper) to set it in
+    the arch. Three keystones wake the gate
     (for everyone); stepping through it **attunes** you: from then on every gate lets you through and a Waygate
     Obelisk will send you to the hub.
-  * Ruins are placed from the world seed - there is always a Ruined Gate within about 800 blocks and each kind of
-    shrine within about 700 - and are raised on the surface when a player first comes near. Players who had
+  * There is one Ruined Gate in a world, a short walk from its origin, and one of each citadel further out; where
+    is worked out from the world seed, and all four are raised soon after the world is first opened. Players who had
     already woken a god before this update, and players in creative mode, are let in without a gate.
 * **A livelier hub.** The Oracle's Flame burns at its heart. Beside each tower gate stand two **echoes** of its
   gods - the first you will meet and the king at the top - which hold their relics and turn their heads to watch
@@ -1065,8 +1101,8 @@ Signature moves, floor by floor:
 ## How to play
 
 1. Join a world. You are given the Codex, the Compass of Chaos, a Field Tower Bag and the Oracle's letter. Read
-   the letter, then right-click the **Compass of Chaos** and follow its scan to the nearest **Ruined Gate**. Take
-   the three seekers from its chest, follow each to its shrine for a keystone, set the keystones at the pedestal
+   the letter, then right-click the **Compass of Chaos** and follow its scan to the **Ruined Gate**. Take
+   the three seekers from its chest, follow each to its citadel for a keystone, lay the keystones in the pedestal's cradles
    and step through the gate. (To come back later, walk through the gate again or set down a Waygate Obelisk near
    home and channel at it.)
 2. In the hub, walk into a tower gate. You arrive on the floor you are working on.

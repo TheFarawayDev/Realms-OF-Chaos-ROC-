@@ -572,7 +572,7 @@ public final class Citadels {
     // ---- the garrison ----------------------------------------------------------------------------------------
 
     private static String wokenKey(Ruins.Site site) {
-        return "citadel/woken/" + site.kind() + "/" + site.rx() + "/" + site.rz();
+        return "citadel/woken/" + site.kind() + "/" + site.x() + "/" + site.z();
     }
 
     public static boolean woken(ServerLevel level, Ruins.Site site) {
@@ -594,7 +594,7 @@ public final class Citadels {
         mob.snapTo(at.getX() + 0.5, at.getY(), at.getZ() + 0.5, level.getRandom().nextFloat() * 360.0F, 0.0F);
         mob.setPersistenceRequired();
         mob.addTag(CITADEL_TAG);
-        mob.addTag(CITADEL_TAG + "/" + site.kind() + "/" + site.rx() + "/" + site.rz());
+        mob.addTag(CITADEL_TAG + "/" + site.kind() + "/" + site.x() + "/" + site.z());
         level.addFreshEntity(mob);
         return mob;
     }

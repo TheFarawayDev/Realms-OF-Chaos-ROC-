@@ -1,0 +1,50 @@
+{
+  "textures": {
+    "gem": "realms_of_chaos:block/gate_pedestal_gem_zeus",
+    "particle": "realms_of_chaos:block/gate_pedestal_gem_zeus"
+  },
+  "elements": [
+    {
+      "from": [
+        7.0,
+        14.6,
+        7
+      ],
+      "to": [
+        9.0,
+        16.6,
+        9
+      ],
+      "faces": {
+        "north": {
+          "texture": "#gem"
+        },
+        "south": {
+          "texture": "#gem"
+        },
+        "east": {
+          "texture": "#gem"
+        },
+        "west": {
+          "texture": "#gem"
+        },
+        "up": {
+          "texture": "#gem"
+        },
+        "down": {
+          "texture": "#gem"
+        }
+      },
+      "rotation": {
+        "angle": 45,
+        "axis": "y",
+        "origin": [
+          8.0,
+          15.6,
+          8
+        ]
+      },
+      "light_emission": 15
+    }
+  ]
+}

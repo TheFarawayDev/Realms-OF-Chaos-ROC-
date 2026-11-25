@@ -1,0 +1,82 @@
+{
+  "music.hub": {
+    "sounds": [
+      {
+        "name": "realms_of_chaos:music/hub",
+        "stream": true
+      }
+    ]
+  },
+  "music.olympus": {
+    "sounds": [
+      {
+        "name": "realms_of_chaos:music/olympus",
+        "stream": true
+      }
+    ]
+  },
+  "music.abyss": {
+    "sounds": [
+      {
+        "name": "realms_of_chaos:music/abyss",
+        "stream": true
+      }
+    ]
+  },
+  "music.underworld": {
+    "sounds": [
+      {
+        "name": "realms_of_chaos:music/underworld",
+        "stream": true
+      }
+    ]
+  },
+  "orb_make": {
+    "sounds": [
+      "realms_of_chaos:fx/orb_make"
+    ],
+    "subtitle": "subtitles.realms_of_chaos.orb_make"
+  },
+  "orb_core": {
+    "sounds": [
+      "realms_of_chaos:fx/orb_core"
+    ],
+    "subtitle": "subtitles.realms_of_chaos.orb_core"
+  },
+  "orb_pattern": {
+    "sounds": [
+      "realms_of_chaos:fx/orb_pattern"
+    ],
+    "subtitle": "subtitles.realms_of_chaos.orb_pattern"
+  },
+  "orb_ichor": {
+    "sounds": [
+      "realms_of_chaos:fx/orb_ichor"
+    ],
+    "subtitle": "subtitles.realms_of_chaos.orb_ichor"
+  },
+  "shrine_awaken": {
+    "sounds": [
+      "realms_of_chaos:fx/shrine_awaken"
+    ],
+    "subtitle": "subtitles.realms_of_chaos.shrine_awaken"
+  },
+  "keystone_set": {
+    "sounds": [
+      "realms_of_chaos:fx/keystone_set"
+    ],
+    "subtitle": "subtitles.realms_of_chaos.keystone_set"
+  },
+  "gate_awaken": {
+    "sounds": [
+      "realms_of_chaos:fx/gate_awaken"
+    ],
+    "subtitle": "subtitles.realms_of_chaos.gate_awaken"
+  },
+  "ui_click": {
+    "sounds": [
+      "realms_of_chaos:fx/ui_click"
+    ],
+    "subtitle": "subtitles.realms_of_chaos.ui_click"
+  }
+}
