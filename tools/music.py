@@ -1,4 +1,9 @@
-"""The mod's own music and sound effects, composed and synthesised here: unhurried tracks that take their time to
+"""The mod's music and sound effects: what gen() writes, and the sounds.json for them. The tracks and effects
+themselves are composed in compose.py and played by FluidSynth with the FluidR3 GM soundfont; the instruments below
+(the first, synthesised score) are kept for the effects' sub-bass layers and for reference.
+
+The original description of the synthesised score follows:
+The mod's own music and sound effects, composed and synthesised here: unhurried tracks that take their time to
 build - a pad, then a harp's arpeggio, then a melody on a lyre over soft brushed drums, then back down - in the
 modes of each realm, and the sounds of the shrine and the gate.
 
@@ -311,12 +316,13 @@ def sfx():
 TRACK_IDS = ["hub", "hermitage", "olympus", "abyss", "underworld", "passage", "trial", "citadel", "gate"]
 EFFECT_IDS = ["orb_make", "orb_core", "orb_pattern", "orb_ichor", "shrine_awaken", "keystone_set", "gate_awaken", "ui_click"]
 # bump to write every track and effect again
-SCORE_VERSION = 2
+SCORE_VERSION = 4
 
 
 def render(name):
-    import score
-    return track(**TRACKS[name]) if name == "hub" else score.COMPOSED[name]()
+    """A track, played by real instruments (compose.py: FluidSynth and the FluidR3 GM soundfont)."""
+    import compose
+    return compose.TRACKS[name]()
 
 
 def gen(assets, wj, only_missing=True):
@@ -334,8 +340,8 @@ def gen(assets, wj, only_missing=True):
         path = os.path.join(base, "fx", f"{name}.ogg")
         if fresh or not (only_missing and os.path.exists(path)):
             if effects is None:
-                import score
-                effects = score.sfx()
+                import compose
+                effects = compose.effects()
             write_ogg(effects[name], path, quality=5)
         sounds[name] = {"sounds": [f"realms_of_chaos:fx/{name}"], "subtitle": f"subtitles.realms_of_chaos.{name}"}
     wj(os.path.join(assets, "sounds.json"), sounds)

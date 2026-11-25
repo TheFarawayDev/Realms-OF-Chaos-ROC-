@@ -16,23 +16,25 @@ The current build is an **Alpha**.
 
 ## What's in 1.2.0
 
-* **Nine tracks, each its own.** The music was rewritten so no two tracks share a key, a register, a tempo, a metre or
-  instruments, and there are five new ones. Each plays where it belongs - the server says which, every second:
+* **Nine tracks, each its own - played by real instruments.** The music is written as MIDI (`tools/compose.py`)
+  and played by sampled instruments: FluidSynth with the Fluid (R3) General MIDI SoundFont by Frank Wen (MIT licence;
+  its notice is in `assets/realms_of_chaos/sounds/CREDITS.txt`). No two tracks share a lead instrument, a key, a
+  tempo or a metre, and each has its own hall. Each plays where it belongs - the server says which, every second:
 
-  | Track | Plays | Key and register | Time | Instruments |
-  | --- | --- | --- | --- | --- |
-  | The Hub | the hub | D dorian, middle | 76 bpm, 4/4 swung | lyre, harp, brushes |
-  | The Hermitage | your Hermitage island | F major pentatonic, high | 66 bpm, 4/4, loose | music box, kalimba, strings, no drums |
-  | Olympus | Zeus's tower | G lydian, high | 112 bpm, 3/4 waltz | flute, pizzicato strings, celesta, horns, triangle |
-  | The Abyss | Poseidon's tower | B aeolian, low | 54, 6/8 rolling | marimba, choir "oo", whale song, drips |
-  | The Underworld | Hades's tower | C# phrygian, lowest | 46 bpm, 5/4 | taiko, organ, low choir, cello, gong, bell |
-  | The Passages | any passage level | A hijaz, middle | 7/8 (2+2+3) | oud, frame drum, shaker, ney flute, ticking |
-  | A God's Trial | while a god's trial is on, anywhere | E minor, low-middle | 138 bpm, 4/4 | driving strings, taiko, snare, brass, choir |
-  | The Citadels | near any of the three citadels | Bb mixolydian, middle | 84 bpm, march | horns, snare drum, timpani, low strings |
-  | The Ruined Gate | at the Ruined Gate | Ab lydian, highest | no beat | choir, glass harmonics, deep swells, gong |
+  | Track | Plays | Instruments | Key, time |
+  | --- | --- | --- | --- |
+  | The Hub | the hub | Rhodes electric piano, nylon guitar, walking upright bass, brushed jazz kit | D dorian, 76 bpm, swung 4/4 |
+  | The Hermitage | your Hermitage island | music box, kalimba, ocarina, warm pad, birdsong | F major, 66 bpm, loose 4/4 |
+  | Olympus | Zeus's tower | flute, harp, pizzicato strings, French horns, glockenspiel, triangle | G lydian, 112 bpm waltz |
+  | The Abyss | Poseidon's tower | marimba, vibraphone, fretless bass, voices "oo", the sound of the sea | B minor, rolling 6/8 |
+  | The Underworld | Hades's tower | church organ, cello, contrabass, choir, a timpani heartbeat, tubular bells | C# phrygian, 46 bpm, 5/4 |
+  | The Passages | any passage level | sitar and its drone, shakuhachi, hammered dulcimer, darbuka and riq | A hijaz, 7/8 (2+2+3) |
+  | A God's Trial | while a god's trial is on, anywhere | strings in sixteenths, brass section, trombones, horns, taiko, orchestra hits, snare | E minor, 138 bpm |
+  | The Citadels | near any of the three citadels | Highland bagpipes over their drone, fife, trumpet calls, tuba, snare and bass drum | Bb mixolydian, 84 bpm march |
+  | The Ruined Gate | at the Ruined Gate | halo and crystal pads, celesta, koto, voices, reversed cymbals, atmosphere | Ab lydian, no beat |
 
-  Each is two to two and a half minutes, with about forty seconds of quiet between plays; anywhere else the game's
-  own music plays. All of it is synthesised (`tools/music.py`, `tools/score.py`): nothing is sampled.
+  Each is about two minutes, with about forty seconds of quiet between plays; anywhere else the game's own music
+  plays. (Making them again needs `fluidsynth` and the `fluid-soundfont-gm` package; the made files are in the repo.)
 * **A music disc for every track, to be found.** Nine discs (TheFarawayDev - The Hub, Olympus, ...), each its own
   label colour and mark, playable in any jukebox (each gives a different comparator signal) (`art/renders/music-disc-jukebox.png`):
   * The Ruined Gate's disc is in the gate's chest; the Citadels' is with each keystone, and the Hub's among each
@@ -42,11 +44,13 @@ The current build is an **Alpha**.
     Passages' disc as often.
   * A God's Trial is dropped by a tower's king the first time it falls, and now and then (15%) by any other god the
     first time.
-* **Sound effects with weight.** The orb, shrine, keystone and gate sounds were rebuilt from bells into layered
-  effects: the gate waking draws the air in with a rising rush, lands with a blow that shakes the ground, a gong and
-  a taiko, then a full choir and horns with glass light pouring over it; the shrine wakes with a gong, a rising choir
-  and glass; a keystone is a great struck stone answered by horns and voices; a core rises through a hum to a blow;
-  the orb draws a breath and blooms into a chord of voices and harp; ichor pours thickly with bubbles and a warm swell.
+* **Sound effects with weight, from real instruments.** The gate waking draws the air in with a reversed cymbal
+  and a timpani roll, then lands on a timpani blow, a taiko, an orchestra hit and a crash, the brass section and a
+  full choir in A-flat, tubular bells ringing out over them and a synthesised sub-bass blow under it all; a shrine
+  wakes with a harp sweeping up into a swelling choir and a bell; a keystone is a great tubular bell struck with the
+  horns answering and the timpani under them; the orb blooms with a celesta and glockenspiel run, a harp glissando and
+  voices; a core rises through a sweep into a taiko and a brass swell; a pattern rings crystal and vibraphone out of a
+  short reversed cymbal; ichor falls down a kalimba with voices and bubbles; the screens click with a woodblock.
 * **Seven creative tabs.** The one long tab is now: *Realms of Chaos* (the Codex, compass, keystones, seekers,
   cores, ichor, the orbs and their shrine, waygates and relays), *Chaos: Relics & Arms*, *Chaos: Materials*, *Chaos: Building Blocks*
   (stone, tile, glass, stairs, slabs and doors), *Chaos: Furniture*, *Chaos: Curios & Music* (discs, tarot, dolls) and *Chaos: Realm
