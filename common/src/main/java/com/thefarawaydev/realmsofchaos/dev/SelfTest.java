@@ -4364,30 +4364,37 @@ public final class SelfTest {
             BlockPos m = plan.centre(well);
             for (int y = 1; y <= Passages.TALL; y++) check(level.getBlockState(m.offset(0, y, 2)).isAir(), "the stairwell is open to its full height at " + y);
             check(!level.getBlockState(m.offset(0, Passages.TALL + 1, 2)).isAir() && !level.getBlockState(m.offset(6, 2, 3)).isAir(), "under a ceiling, inside walls");
-            check(level.getBlockState(m.offset(5, 1, 2)).isAir() && level.getBlockState(m.offset(-5, 1, 2)).isAir(), "and a step wider than an ordinary room");
-            check(well.equals(plan.cellAt(m.offset(5, 1, 2))) && well.equals(plan.cellAt(m.offset(-5, 5, -5))) && plan.cellAt(m.offset(6, 1, 2)) == null, "all of it counts as the room");
+            check(level.getBlockState(m.offset(5, 1, 0)).isAir() && level.getBlockState(m.offset(-5, 1, 0)).isAir(), "and a step wider than an ordinary room");
+            check(well.equals(plan.cellAt(m.offset(5, 1, 0))) && well.equals(plan.cellAt(m.offset(-5, 5, -5))) && plan.cellAt(m.offset(6, 1, 2)) == null, "all of it counts as the room");
+            int far = plan.half(well), ly = Passages.LOFT_Y;
             for (int side = -1; side <= 1; side += 2) {
-                for (int step = 1; step <= 4; step++) {
-                    BlockState stair = level.getBlockState(m.offset(side * (step + 1), step, -2));
+                for (int step = 1; step <= ly; step++) {
+                    BlockPos at = m.offset(side * far, step, Passages.GALLERY_TO + 1 + ly - step);
+                    BlockState stair = level.getBlockState(at);
                     check(stair.getBlock() instanceof net.minecraft.world.level.block.StairBlock
-                            && stair.getValue(net.minecraft.world.level.block.StairBlock.FACING) == (side > 0 ? net.minecraft.core.Direction.EAST : net.minecraft.core.Direction.WEST),
-                            "step " + step + " of the " + (side > 0 ? "east" : "west") + " flight rises outward");
-                    check(level.getBlockState(m.offset(side * (step + 1), step + 1, -2)).isAir() && level.getBlockState(m.offset(side * (step + 1), step + 2, -2)).isAir(), "with room to climb it");
-                    if (step > 1) check(solid(level, m.offset(side * (step + 1), step - 1, -2)), "and something under it");
+                            && stair.getValue(net.minecraft.world.level.block.StairBlock.FACING) == net.minecraft.core.Direction.NORTH,
+                            "step " + step + " of the " + (side > 0 ? "east" : "west") + " flight climbs the wall northward");
+                    check(level.getBlockState(at.above()).isAir() && level.getBlockState(at.above(2)).isAir(), "with room to climb it");
+                    if (step > 1) check(solid(level, at.below()), "and something under it");
                 }
-                check(solid(level, m.offset(side * 5, 4, -3)) && level.getBlockState(m.offset(side * 5, 5, -3)).isAir(), "the flight comes out on to the loft");
+                BlockPos top = m.offset(side * far, ly, Passages.GALLERY_TO);
+                check(solid(level, top) && level.getBlockState(top.above()).isAir() && level.getBlockState(top.above(2)).isAir(), "the flight comes out on to the gallery");
+                for (int dz = -far; dz <= Passages.GALLERY_TO; dz++) {
+                    check(solid(level, m.offset(side * far, ly, dz)) && level.getBlockState(m.offset(side * far, ly + 1, dz)).isAir(), "the gallery runs on along the wall at " + dz);
+                }
+                for (int dz = -1; dz <= 1; dz++) for (int y = 1; y <= 3; y++) check(level.getBlockState(m.offset(side * far, y, dz)).isAir(), "and the way in under it is clear");
             }
-            for (int dx = -5; dx <= 5; dx++) {
-                for (int dz = -5; dz <= -3; dz++) check(solid(level, m.offset(dx, 4, dz)), "the loft's floor is whole at " + dx + "," + dz);
+            for (int dx = -far; dx <= far; dx++) {
+                for (int dz = -far; dz <= Passages.LOFT_EDGE; dz++) check(solid(level, m.offset(dx, ly, dz)), "the loft's floor is whole at " + dx + "," + dz);
             }
+            check(level.getBlockState(m.offset(1, ly + 1, Passages.LOFT_EDGE)).getBlock() instanceof net.minecraft.world.level.block.WallBlock
+                    && level.getBlockState(m.offset(1, ly + 1, Passages.LOFT_EDGE)).getValue(net.minecraft.world.level.block.state.properties.BlockStateProperties.EAST_WALL)
+                    != net.minecraft.world.level.block.state.properties.WallSide.NONE, "a railing runs along the upper floor's edge, joined up");
             for (int y = 1; y <= 3; y++) check(level.getBlockState(m.offset(0, y, -4)).isAir(), "the way through under the loft is clear");
-            BlockState chest = level.getBlockState(m.offset(0, 6, -4));
-            check(chest.is(ModContent.PASSAGE_CACHE.get()) && solid(level, m.offset(0, 5, -4)), "a cache stands on a dais on the loft");
-            check(chest.getValue(com.thefarawaydev.realmsofchaos.block.CacheBlock.FACING) == net.minecraft.core.Direction.SOUTH
-                    && chest.getValue(com.thefarawaydev.realmsofchaos.block.CacheBlock.TOWER) == plan.line.ordinal(), "facing the room, in its tower's colours");
-            check(level.getBlockState(m.offset(1, 5, -3)).getBlock() instanceof net.minecraft.world.level.block.WallBlock
-                    && level.getBlockState(m.offset(1, 5, -3)).getValue(net.minecraft.world.level.block.state.properties.BlockStateProperties.EAST_WALL) != net.minecraft.world.level.block.state.properties.WallSide.NONE,
-                    "a balustrade runs along the loft's edge, joined up");
+            BlockPos cachePos = m.offset(0, ly + 1, -far);
+            BlockState chest = level.getBlockState(cachePos);
+            check(chest.is(ModContent.PASSAGE_CACHE.get()) && chest.getValue(com.thefarawaydev.realmsofchaos.block.CacheBlock.FACING) == net.minecraft.core.Direction.SOUTH
+                    && chest.getValue(com.thefarawaydev.realmsofchaos.block.CacheBlock.TOWER) == plan.line.ordinal(), "a cache stands on the loft, facing the hall, in its tower's colours");
             int wallBraziers = 0, standing = 0;
             for (BlockPos at : BlockPos.betweenClosed(m.offset(-6, 0, -6), m.offset(6, Passages.TALL, 6))) {
                 BlockState b = level.getBlockState(at);
@@ -4395,16 +4402,15 @@ public final class SelfTest {
                 var mount = b.getValue(com.thefarawaydev.realmsofchaos.block.BrazierBlock.MOUNT);
                 if (mount == com.thefarawaydev.realmsofchaos.block.BrazierBlock.Mount.WALL) {
                     wallBraziers++;
-                    var f = b.getValue(com.thefarawaydev.realmsofchaos.block.BrazierBlock.FACING);
-                    check(solid(level, at.relative(f.getOpposite())), "a wall brazier hangs on a wall: " + at.subtract(m));
+                    check(solid(level, at.relative(b.getValue(com.thefarawaydev.realmsofchaos.block.BrazierBlock.FACING).getOpposite())), "a wall brazier hangs on a wall: " + at.subtract(m));
                 }
                 if (mount == com.thefarawaydev.realmsofchaos.block.BrazierBlock.Mount.STANDING) standing++;
             }
-            check(wallBraziers >= 8 && standing >= 4, "braziers on its walls and standing on its floors: " + wallBraziers + " / " + standing);
+            check(wallBraziers == 2 && standing == 4, "braziers on the wall and standing, no more: " + wallBraziers + " / " + standing);
             Item prize = ModContent.materialItem(plan.line, plan.tier);
             int had = count(hero, prize);
-            check(Passages.loot(level, m.offset(0, 6, -4), hero) && count(hero, prize) > had, "and it pays whoever climbs to it");
-            check(!Passages.loot(level, m.offset(0, 6, -4), hero), "once");
+            check(Passages.loot(level, cachePos, hero) && count(hero, prize) > had, "and it pays whoever climbs to it");
+            check(!Passages.loot(level, cachePos, hero), "once");
             check(level.getBlockState(m.offset(0, 0, 0)).isCollisionShapeFullBlock(level, m) && level.getBlockState(m.above()).isAir(), "the ways through the room stay open");
 
             // ---- the other shapes, wherever this tower has them

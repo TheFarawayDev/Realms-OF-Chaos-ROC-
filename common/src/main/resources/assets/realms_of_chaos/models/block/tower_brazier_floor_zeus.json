@@ -1,6 +1,5 @@
 {
   "parent": "minecraft:block/block",
-  "ambientocclusion": false,
   "textures": {
     "particle": "realms_of_chaos:block/brazier_metal_zeus",
     "metal": "realms_of_chaos:block/brazier_metal_zeus",
@@ -10,77 +9,13 @@
   "elements": [
     {
       "from": [
-        5,
-        0,
-        5
-      ],
-      "to": [
-        11,
-        1.5,
-        11
-      ],
-      "faces": {
-        "north": {
-          "texture": "#metal"
-        },
-        "south": {
-          "texture": "#metal"
-        },
-        "east": {
-          "texture": "#metal"
-        },
-        "west": {
-          "texture": "#metal"
-        },
-        "up": {
-          "texture": "#metal"
-        },
-        "down": {
-          "texture": "#metal"
-        }
-      }
-    },
-    {
-      "from": [
-        7,
-        1.5,
-        7
-      ],
-      "to": [
-        9,
-        5,
-        9
-      ],
-      "faces": {
-        "north": {
-          "texture": "#metal"
-        },
-        "south": {
-          "texture": "#metal"
-        },
-        "east": {
-          "texture": "#metal"
-        },
-        "west": {
-          "texture": "#metal"
-        },
-        "up": {
-          "texture": "#metal"
-        },
-        "down": {
-          "texture": "#metal"
-        }
-      }
-    },
-    {
-      "from": [
         4,
-        5,
+        0,
         4
       ],
       "to": [
         12,
-        7,
+        2,
         12
       ],
       "faces": {
@@ -106,14 +41,14 @@
     },
     {
       "from": [
-        3,
-        7,
-        3
+        2,
+        2,
+        2
       ],
       "to": [
-        13,
-        9.5,
-        13
+        14,
+        7,
+        14
       ],
       "faces": {
         "north": {
@@ -138,141 +73,13 @@
     },
     {
       "from": [
-        2.5,
-        8.5,
-        2.5
-      ],
-      "to": [
-        13.5,
-        10.5,
-        3.5
-      ],
-      "faces": {
-        "north": {
-          "texture": "#metal"
-        },
-        "south": {
-          "texture": "#metal"
-        },
-        "east": {
-          "texture": "#metal"
-        },
-        "west": {
-          "texture": "#metal"
-        },
-        "up": {
-          "texture": "#metal"
-        },
-        "down": {
-          "texture": "#metal"
-        }
-      }
-    },
-    {
-      "from": [
-        2.5,
-        8.5,
-        12.5
-      ],
-      "to": [
-        13.5,
-        10.5,
-        13.5
-      ],
-      "faces": {
-        "north": {
-          "texture": "#metal"
-        },
-        "south": {
-          "texture": "#metal"
-        },
-        "east": {
-          "texture": "#metal"
-        },
-        "west": {
-          "texture": "#metal"
-        },
-        "up": {
-          "texture": "#metal"
-        },
-        "down": {
-          "texture": "#metal"
-        }
-      }
-    },
-    {
-      "from": [
-        2.5,
-        8.5,
-        3.5
-      ],
-      "to": [
-        3.5,
-        10.5,
-        12.5
-      ],
-      "faces": {
-        "north": {
-          "texture": "#metal"
-        },
-        "south": {
-          "texture": "#metal"
-        },
-        "east": {
-          "texture": "#metal"
-        },
-        "west": {
-          "texture": "#metal"
-        },
-        "up": {
-          "texture": "#metal"
-        },
-        "down": {
-          "texture": "#metal"
-        }
-      }
-    },
-    {
-      "from": [
-        12.5,
-        8.5,
-        3.5
-      ],
-      "to": [
-        13.5,
-        10.5,
-        12.5
-      ],
-      "faces": {
-        "north": {
-          "texture": "#metal"
-        },
-        "south": {
-          "texture": "#metal"
-        },
-        "east": {
-          "texture": "#metal"
-        },
-        "west": {
-          "texture": "#metal"
-        },
-        "up": {
-          "texture": "#metal"
-        },
-        "down": {
-          "texture": "#metal"
-        }
-      }
-    },
-    {
-      "from": [
-        3,
-        9.5,
+        2,
+        6,
         8
       ],
       "to": [
-        13,
-        17,
+        14,
+        18,
         8
       ],
       "faces": {
@@ -307,13 +114,13 @@
     },
     {
       "from": [
-        3,
-        9.5,
+        2,
+        6,
         8
       ],
       "to": [
-        13,
-        17,
+        14,
+        18,
         8
       ],
       "faces": {

@@ -38,10 +38,10 @@ public class BrazierBlock extends Block {
     public static final EnumProperty<Mount> MOUNT = EnumProperty.create("mount", Mount.class);
     /** For a wall brazier, the way it faces out from its wall. */
     public static final EnumProperty<Direction> FACING = BlockStateProperties.HORIZONTAL_FACING;
-    private static final VoxelShape FLOOR = Block.box(3, 0, 3, 13, 11, 13), STANDING = Shapes.or(Block.box(2, 11, 2, 14, 16, 14), Block.box(4, 0, 4, 12, 11, 12));
+    private static final VoxelShape FLOOR = Block.box(2, 0, 2, 14, 7, 14), STANDING = Shapes.or(Block.box(2, 10, 2, 14, 15, 14), Block.box(4, 0, 4, 12, 10, 12));
     private static final java.util.Map<Direction, VoxelShape> WALL = java.util.Map.of(
-            Direction.NORTH, Block.box(4, 4, 3, 12, 13, 16), Direction.SOUTH, Block.box(4, 4, 0, 12, 13, 13),
-            Direction.EAST, Block.box(0, 4, 4, 13, 13, 12), Direction.WEST, Block.box(3, 4, 4, 16, 13, 12));
+            Direction.NORTH, Block.box(3, 3, 3, 13, 11, 16), Direction.SOUTH, Block.box(3, 3, 0, 13, 11, 13),
+            Direction.EAST, Block.box(0, 3, 3, 13, 11, 13), Direction.WEST, Block.box(3, 3, 3, 16, 11, 13));
 
     public BrazierBlock(Properties properties) {
         super(properties);
@@ -77,9 +77,9 @@ public class BrazierBlock extends Block {
     /** Where the fire burns, in the block. */
     private static double[] fire(BlockState state) {
         return switch (state.getValue(MOUNT)) {
-            case FLOOR -> new double[]{0.5, 0.75, 0.5};
-            case STANDING -> new double[]{0.5, 1.0, 0.5};
-            case WALL -> new double[]{0.5, 0.85, 0.5};
+            case FLOOR -> new double[]{0.5, 0.5, 0.5};
+            case STANDING -> new double[]{0.5, 0.98, 0.5};
+            case WALL -> new double[]{0.5, 0.72, 0.5};
         };
     }
 

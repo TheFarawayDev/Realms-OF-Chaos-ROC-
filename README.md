@@ -104,22 +104,20 @@ The current build is an **Alpha**.
   * Smart and veil glass do not change all at once: the change runs through the window block by block from where it
     started, two ticks a block. (`art/renders/glass-veil-smart.png`, `art/videos/smart-glass-ripple.mp4` - an arrow in
     a target block beside it)
-* **Treasure caches redone.** A modelled chest now, not a cube: banded wood with a domed lid and a gold lock, in its
-  tower's wood and metal - pale cedar and gold for Zeus, sea-wood and silver for Poseidon, black wood and violet for
-  Hades. Every cache is turned to face the middle of its room. When someone takes their share, the lid swings up on
-  its hinge over a bed of coins and falls shut a couple of seconds later. (`art/renders/caches-and-braziers.png`)
-* **Braziers three ways.** The tower brazier comes as a low **bowl** on a foot, a tall **standing** brazier on four
-  legs, and a **wall** brazier held out on an iron bracket - each in its tower's metal (bronze, verdigris, black
-  iron) with a bed of embers and a flickering, animated flame in its tower's fire. Set one on a floor and it stands;
-  set it against a wall and it hangs there. Sanctums and room corners now have standing braziers.
-  (`art/renders/braziers-wall-standing.png`)
-* **The two-storey stairwell, rebuilt.** A loft across the north end, floored in the tower's panels and edged in
-  trim, carried on two pillars with an arch springing either side of each; a balustrade along its edge with a
-  brazier burning on each end post; a flight of steps up either side. Up on the loft the cache stands on a dais
-  with standing braziers either side, wall braziers and the tower's reliefs on the wall behind, a runner along it
-  and urns at its ends. Below: a medallion let into the floor, braziers in brackets on the walls, standing braziers
-  either side of the medallion, and barrels, urns and more brackets tucked under the loft.
-  (`art/renders/stairwell-two-storey.png`, `stairwell-loft.png`)
+* **Treasure caches redone.** A chest in the game's own manner - a chunky box, a lid and a gold latch, its faces
+  flat boards with a metal rim - in its tower's wood and metal: cedar and gold for Zeus, sea-wood and silver for
+  Poseidon, black wood and violet for Hades. Every cache is turned to face the middle of its room, and when someone
+  takes their share its lid swings up over a bed of coins and falls shut a couple of seconds later.
+  (`art/renders/caches-and-braziers.png`)
+* **Braziers three ways.** The tower brazier comes as a low **bowl**, a **standing** brazier on a post, and a
+  **wall** brazier on a bracket - each a few plain boxes of its tower's metal (bronze, verdigris, black iron), a bed
+  of embers, and a flat, flickering campfire-style flame in its tower's fire. Set one on a floor and it stands; set it
+  against a wall and it hangs there. Sanctums and room corners now have standing braziers.
+* **The two-storey stairwell, rebuilt.** A straight flight of steps climbs each side wall to an upper floor that runs
+  along both side walls and across the north end, with one railing round its inner edge; two pillars carry the north
+  end, and the hall below is left open, a runner of inlay up its middle. Upstairs the cache stands against the north
+  wall between two standing braziers, two more on the wall above it.
+  (`art/renders/stairwell-two-storey.png`, `stairwell-stairs.png`, `stairwell-loft.png`)
 * **Veil glass in the puzzles.** Smart and veil glass hold back light while shaded and let it through once clear,
   so a lamp behind them lights a room only when they open.
   * **Shutter Hall** - a new puzzle room: four lanterns in its quarters, each a lamp in a case of veil glass. Shoot

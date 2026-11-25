@@ -71,7 +71,7 @@ public final class Passages {
     public static final int TALL = 8;
     public static final int MAX_SIZE = 6;
     public static final int X0 = 600, PITCH = 160;
-    public static final int LAYOUT_VERSION = 25;
+    public static final int LAYOUT_VERSION = 26;
     public static final String GUARDIAN_TAG = "realms_of_chaos_guardian";
     private static final String HUD = "hud." + RealmsOfChaos.MOD_ID + ".passage.";
 
@@ -1641,97 +1641,65 @@ public final class Passages {
                 .of(plan.line.ordinal(), mount, facing == null ? net.minecraft.core.Direction.NORTH : facing);
     }
 
-    /** The loft of a stairwell: how high its floor is, and how far south its edge comes (it runs north to the wall). */
-    public static final int LOFT_Y = 4, LOFT_EDGE = -3;
+    /** The stairwell's upper floor: how high it is, how far south the loft along the north wall comes, and where its
+     *  side galleries run (along the east and west walls, two wide). */
+    public static final int LOFT_Y = 4, LOFT_EDGE = -3, GALLERY_TO = 1;
 
     /**
-     * A stairwell: a two-storey hall. Across its north end a loft three deep, floored in the tower's panels and edged in
-     * trim, carried on two pillars with arches either side of each; a balustrade along its edge with a brazier on each
-     * end post; a flight of steps up to it at either side. Up there the cache stands on a dais with standing braziers
-     * either side, the tower's fire burning in brackets on the wall behind, a runner along it and urns at its ends.
-     * Below, a medallion in the floor, braziers on the walls, and stores tucked under the loft.
+     * A stairwell: a hall two storeys high. A straight flight of steps climbs each side wall from the south, northward,
+     * to a gallery that runs along both side walls and across the north end - one railing along its inner edge, so
+     * the whole upper floor can be seen from the hall. On the north side of it the cache stands between two braziers.
+     * Below, two pillars carry the north end; the hall itself is left open.
      */
     private static void buildStairwell(ServerLevel level, Plan plan, Cell c, TowerBuilder.Palette p) {
         BlockPos m = plan.centre(c);
-        int far = plan.half(c), wall = far + 1;
+        int far = plan.half(c);
         Mason.Stone stone = Mason.of(p.wall());
         var N = net.minecraft.core.Direction.NORTH;
         var S = net.minecraft.core.Direction.SOUTH;
-        var E = net.minecraft.core.Direction.EAST;
-        var W = net.minecraft.core.Direction.WEST;
         var STANDING = com.thefarawaydev.realmsofchaos.block.BrazierBlock.Mount.STANDING;
         var WALL = com.thefarawaydev.realmsofchaos.block.BrazierBlock.Mount.WALL;
-        var FLOOR = com.thefarawaydev.realmsofchaos.block.BrazierBlock.Mount.FLOOR;
-        // ---- the loft: panels framed in trim
+        // ---- the upper floor: the loft across the north end, galleries two wide down each side
         for (int dx = -far; dx <= far; dx++) {
-            for (int dz = -far; dz <= LOFT_EDGE; dz++) {
-                boolean edge = dz == LOFT_EDGE || Math.abs(dx) == far;
+            for (int dz = -far; dz <= GALLERY_TO; dz++) {
+                boolean loft = dz <= LOFT_EDGE, gallery = Math.abs(dx) >= far - 1;
+                if (!loft && !gallery) continue;
+                boolean edge = (loft && dz == LOFT_EDGE && Math.abs(dx) < far - 1) || (gallery && !loft && Math.abs(dx) == far - 1);
                 set(level, m.offset(dx, LOFT_Y, dz), edge ? p.trim() : floorPanel(plan.line));
             }
         }
-        // carried on two pillars, an arch springing either side of each (the middle left open: the way north runs under it)
-        for (int side = -1; side <= 1; side += 2) {
-            for (int y = 1; y < LOFT_Y; y++) set(level, m.offset(side * 3, y, LOFT_EDGE), y == 1 ? p.trim() : p.pillar());
-            level.setBlock(m.offset(side * 2, LOFT_Y - 1, LOFT_EDGE), Mason.stair(stone.stairs(), side > 0 ? E : W, true), 2);
-            level.setBlock(m.offset(side * 4, LOFT_Y - 1, LOFT_EDGE), Mason.stair(stone.stairs(), side > 0 ? W : E, true), 2);
-        }
-        // ---- the balustrade, open at either end where the stairs arrive; a post at its middle and ends, a brazier on each end post
+        // ---- one railing round its inner edge, posts at the corners and the ends
         List<BlockPos> rail = new ArrayList<>();
-        for (int dx = -(far - 1); dx <= far - 1; dx++) {
-            BlockPos at = m.offset(dx, LOFT_Y + 1, LOFT_EDGE);
-            if (Math.abs(dx) == far - 1 || dx == 0) set(level, at, p.pillar());
-            else {
-                level.setBlock(at, stone.wall().defaultBlockState(), 2);
-                rail.add(at);
-            }
+        for (int dx = -(far - 1); dx <= far - 1; dx++) rail.add(m.offset(dx, LOFT_Y + 1, LOFT_EDGE));
+        for (int side = -1; side <= 1; side += 2) for (int dz = LOFT_EDGE + 1; dz <= GALLERY_TO; dz++) rail.add(m.offset(side * (far - 1), LOFT_Y + 1, dz));
+        for (BlockPos at : rail) {
+            int dx = at.getX() - m.getX(), dz = at.getZ() - m.getZ();
+            boolean post = (Math.abs(dx) == far - 1 && (dz == LOFT_EDGE || dz == GALLERY_TO)) || (dx == 0 && dz == LOFT_EDGE);
+            if (post) set(level, at, p.pillar());
+            else level.setBlock(at, stone.wall().defaultBlockState(), 2);
         }
-        for (int side = -1; side <= 1; side += 2) level.setBlock(m.offset(side * (far - 1), LOFT_Y + 2, LOFT_EDGE), brazier(plan, FLOOR, null), 2);
         Mason.join(level, rail);
-        // ---- a flight of steps up either side, each step on its own wall
+        // ---- a straight flight up each side wall, against it, from the south end northward to the gallery
         for (int side = -1; side <= 1; side += 2) {
             for (int step = 1; step <= LOFT_Y; step++) {
-                int dx = side * (step + 1);
-                for (int y = 1; y < step; y++) set(level, m.offset(dx, y, LOFT_EDGE + 1), p.wall());
-                level.setBlock(m.offset(dx, step, LOFT_EDGE + 1), stairs(plan.line, side > 0 ? E : W), 2);
+                int dz = GALLERY_TO + 1 + (LOFT_Y - step);                       // the top step meets the gallery
+                for (int y = 1; y < step; y++) set(level, m.offset(side * far, y, dz), p.wall());
+                level.setBlock(m.offset(side * far, step, dz), stairs(plan.line, N), 2);
             }
         }
-        // ---- up on the loft: the cache on a dais, braziers either side, the tower's fire on the wall behind, a runner, urns
-        BlockPos dais = m.offset(0, LOFT_Y + 1, -4);
-        set(level, dais, p.trim());
-        level.setBlock(dais.east(), Mason.stair(stone.stairs(), W, false), 2);
-        level.setBlock(dais.west(), Mason.stair(stone.stairs(), E, false), 2);
-        level.setBlock(dais.north(), Mason.slab(stone.slab(), false), 2);
-        set(level, dais.above(), ModContent.PASSAGE_CACHE.get());
-        Block runner = Blocks.CARPET.pick(plan.line == Line.ZEUS ? net.minecraft.world.item.DyeColor.YELLOW
-                : plan.line == Line.POSEIDON ? net.minecraft.world.item.DyeColor.CYAN : net.minecraft.world.item.DyeColor.PURPLE);
+        // ---- two pillars carry the loft's edge (the middle left open: the way north runs under it)
         for (int side = -1; side <= 1; side += 2) {
-            level.setBlock(m.offset(side * 2, LOFT_Y + 1, -5), brazier(plan, STANDING, null), 2);
-            set(level, m.offset(side * 4, LOFT_Y + 1, -5), ModContent.ANCIENT_URN.get());
-            for (int dx = 2; dx <= far; dx++) set(level, m.offset(side * dx, LOFT_Y + 1, -4), runner);
+            for (int y = 1; y < LOFT_Y; y++) set(level, m.offset(side * 2, y, LOFT_EDGE), y == 1 ? p.trim() : p.pillar());
+        }
+        // ---- up on the loft: the cache against the north wall between two braziers, a pair of wall braziers over it
+        set(level, m.offset(0, LOFT_Y + 1, -far), ModContent.PASSAGE_CACHE.get());
+        for (int side = -1; side <= 1; side += 2) {
+            level.setBlock(m.offset(side * 2, LOFT_Y + 1, -far), brazier(plan, STANDING, null), 2);
             level.setBlock(m.offset(side * 3, LOFT_Y + 3, -far), brazier(plan, WALL, S), 2);
-            set(level, m.offset(side * 3, LOFT_Y + 2, -wall), Passages.relief(plan.line));
         }
-        // ---- below: a medallion in the floor, a runner from it to the foot of the loft
-        for (int dz = -2; dz <= 0; dz++) set(level, m.offset(0, 0, dz), p.inlay());
-        for (int dx = -2; dx <= 2; dx++) {
-            for (int dz = 1; dz <= 5; dz++) {
-                int ring = Math.max(Math.abs(dx), Math.abs(dz - 3));
-                set(level, m.offset(dx, 0, dz), ring == 0 ? p.light() : ring == 1 ? p.trim() : p.inlay());
-            }
-        }
-        // braziers in brackets on the walls of the open half, and standing ones either side of the medallion
-        for (int side = -1; side <= 1; side += 2) {
-            level.setBlock(m.offset(side * far, 3, 3), brazier(plan, WALL, side > 0 ? W : E), 2);
-            level.setBlock(m.offset(side * 3, 3, far), brazier(plan, WALL, N), 2);
-            level.setBlock(m.offset(side * 3, 1, 3), brazier(plan, STANDING, null), 2);
-        }
-        // under the loft, out of the way: barrels and an urn against the north wall, a bracket of fire over them
-        for (int side = -1; side <= 1; side += 2) {
-            set(level, m.offset(side * far, 1, -far), Blocks.BARREL);
-            set(level, m.offset(side * far, 2, -far), Blocks.BARREL);
-            set(level, m.offset(side * (far - 1), 1, -far), ModContent.ANCIENT_URN.get());
-            level.setBlock(m.offset(side * 2, 2, -far), brazier(plan, WALL, S), 2);
-        }
+        // ---- below: a runner of the tower's inlay up the middle, a brazier either side of the way in
+        for (int dz = -far; dz <= far; dz++) set(level, m.offset(0, 0, dz), p.inlay());
+        for (int side = -1; side <= 1; side += 2) level.setBlock(m.offset(side * 2, 1, far), brazier(plan, STANDING, null), 2);
     }
 
     /**
