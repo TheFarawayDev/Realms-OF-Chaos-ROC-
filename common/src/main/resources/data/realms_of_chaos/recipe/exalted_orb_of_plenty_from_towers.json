@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "ZPH",
+    "AOA",
+    "ZPH"
+  ],
+  "key": {
+    "Z": "realms_of_chaos:material_zeus_2",
+    "P": "realms_of_chaos:material_poseidon_2",
+    "H": "realms_of_chaos:material_hades_2",
+    "A": "realms_of_chaos:adamantine_block",
+    "O": "realms_of_chaos:greater_orb_of_plenty"
+  },
+  "result": {
+    "id": "realms_of_chaos:exalted_orb_of_plenty"
+  }
+}

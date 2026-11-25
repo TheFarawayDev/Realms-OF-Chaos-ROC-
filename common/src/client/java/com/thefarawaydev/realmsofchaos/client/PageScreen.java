@@ -57,6 +57,8 @@ public class PageScreen extends AbstractContainerScreen<PageMenu> {
     /** The buttons along the foot of the page, always in view: the way out, and - when a page has only one or two things to do - those too. */
     private final List<Button> footer = new ArrayList<>();
     private int columns = 1, contentHeight, scroll, accent = GOLD;
+    /** How tall the grid's buttons are: one line of name, or two when a name needs them. */
+    private int gridH = BUTTON_H;
     private boolean laidOut;
     private String theme = "codex";
     private Look look = LOOKS.get("codex");
@@ -138,9 +140,13 @@ public class PageScreen extends AbstractContainerScreen<PageMenu> {
             for (Button button : buttons) fits &= this.font.width(button.label) <= buttonWidth() - 8;
             if (!fits) columns--;
         }
+        // a name that still does not fit its button on one line gets a second line, never cut short
+        int lines = 1;
+        for (Button button : buttons) lines = Math.max(lines, Math.min(2, this.font.split(button.label, buttonWidth() - 8).size()));
+        gridH = BUTTON_H + (lines - 1) * 10;
         contentHeight = 0;
         for (Paragraph paragraph : paragraphs) contentHeight += paragraph.height + PARAGRAPH_GAP;
-        if (!buttons.isEmpty()) contentHeight += 6 + ((buttons.size() + columns - 1) / columns) * (BUTTON_H + GAP);
+        if (!buttons.isEmpty()) contentHeight += 6 + ((buttons.size() + columns - 1) / columns) * (gridH + GAP);
         scroll = Math.max(0, Math.min(scroll, Math.max(0, contentHeight - viewHeight())));
     }
 
@@ -162,7 +168,7 @@ public class PageScreen extends AbstractContainerScreen<PageMenu> {
     private int[] buttonAt(int n) {
         int y = panelTop() + HEADER + 4 - scroll + 6;
         for (Paragraph paragraph : paragraphs) y += paragraph.height + PARAGRAPH_GAP;
-        return new int[]{panelLeft() + PAD + (n % columns) * (buttonWidth() + GAP), y + (n / columns) * (BUTTON_H + GAP)};
+        return new int[]{panelLeft() + PAD + (n % columns) * (buttonWidth() + GAP), y + (n / columns) * (gridH + GAP)};
     }
 
     /** Where a button of the foot stands, and how wide it is: they share the row, the way out last. */
@@ -171,17 +177,30 @@ public class PageScreen extends AbstractContainerScreen<PageMenu> {
         return new int[]{panelLeft() + (WIDTH - all) / 2 + n * (w + GAP), panelTop() + panelHeight() - FOOTER + 6, w};
     }
 
-    private void drawButton(GuiGraphicsExtractor g, int x, int y, int w, Component label, boolean hover) {
-        g.fill(x, y, x + w, y + BUTTON_H, STONE_EDGE);
-        g.fill(x + 1, y + 1, x + w - 1, y + BUTTON_H - 1, hover ? look.hover : look.button);
+    private void drawButton(GuiGraphicsExtractor g, int x, int y, int w, int h, Component label, boolean hover) {
+        g.fill(x, y, x + w, y + h, STONE_EDGE);
+        g.fill(x + 1, y + 1, x + w - 1, y + h - 1, hover ? look.hover : look.button);
         g.fill(x + 1, y + 1, x + w - 1, y + 2, hover ? GOLD : look.rule);
-        g.fill(x + 1, y + BUTTON_H - 2, x + w - 1, y + BUTTON_H - 1, 0x66000000);
+        g.fill(x + 1, y + h - 2, x + w - 1, y + h - 1, 0x66000000);
         if (hover) {
-            g.fill(x, y, x + 1, y + BUTTON_H, GOLD);
-            g.fill(x + w - 1, y, x + w, y + BUTTON_H, GOLD);
+            g.fill(x, y, x + 1, y + h, GOLD);
+            g.fill(x + w - 1, y, x + w, y + h, GOLD);
         }
         List<FormattedCharSequence> rows = this.font.split(label, w - 8);
-        if (!rows.isEmpty()) g.centeredText(this.font, rows.get(0), x + w / 2, y + 5, hover ? 0xFFFFFFFF : INK);
+        int most = Math.max(1, (h - 8) / 10), count = Math.min(most, rows.size()), first = y + (h - count * 10) / 2 + 1;
+        for (int i = 0; i < count; i++) {
+            if (i == count - 1 && rows.size() > count) {
+                // (more than there is room for: what is left, cut to the button with "...")
+                StringBuilder rest = new StringBuilder();
+                for (int k = i; k < rows.size(); k++) {
+                    if (k > i) rest.append(' ');
+                    rows.get(k).accept((index, style, cp) -> { rest.appendCodePoint(cp); return true; });
+                }
+                g.centeredText(this.font, RocHud.fit(this.font, rest.toString(), w - 8), x + w / 2, first + i * 10, hover ? 0xFFFFFFFF : INK);
+            } else {
+                g.centeredText(this.font, rows.get(i), x + w / 2, first + i * 10, hover ? 0xFFFFFFFF : INK);
+            }
+        }
     }
 
     @Override
@@ -196,8 +215,11 @@ public class PageScreen extends AbstractContainerScreen<PageMenu> {
         g.blit(net.minecraft.client.renderer.RenderPipelines.GUI_TEXTURED, art, x - EDGE, y - EDGE + head, 0.0F, ART_H - foot, ART_W, foot, ART_W, ART_H);
         if (look.headingInk != 0) {
             // (a heading written on a note is in dark ink, whatever colour it came in)
-            String plain = heading.getString();
+            String plain = RocHud.fit(this.font, heading.getString(), WIDTH - 24);
             g.text(this.font, plain, x + (WIDTH - this.font.width(plain)) / 2, y + 8, look.headingInk, false);
+        } else if (this.font.width(heading) > WIDTH - 24) {
+            // (a heading too long for the header is cut to it, in its own colour)
+            g.centeredText(this.font, RocHud.fit(this.font, heading.getString(), WIDTH - 24), x + WIDTH / 2, y + 8, accent);
         } else {
             g.centeredText(this.font, heading, x + WIDTH / 2, y + 8, 0xFFFFFFFF);
         }
@@ -221,8 +243,8 @@ public class PageScreen extends AbstractContainerScreen<PageMenu> {
         Button over = null;
         for (int n = 0; n < buttons.size(); n++) {
             int[] spot = buttonAt(n);
-            boolean hover = mouseY >= top && mouseY < top + view && isHovering(spot[0], spot[1], buttonWidth(), BUTTON_H, mouseX, mouseY);
-            if (spot[1] + BUTTON_H >= top && spot[1] <= top + view) drawButton(g, spot[0], spot[1], buttonWidth(), buttons.get(n).label, hover);
+            boolean hover = mouseY >= top && mouseY < top + view && isHovering(spot[0], spot[1], buttonWidth(), gridH, mouseX, mouseY);
+            if (spot[1] + gridH >= top && spot[1] <= top + view) drawButton(g, spot[0], spot[1], buttonWidth(), gridH, buttons.get(n).label, hover);
             if (hover) over = buttons.get(n);
         }
         g.disableScissor();
@@ -236,7 +258,7 @@ public class PageScreen extends AbstractContainerScreen<PageMenu> {
         for (int n = 0; n < footer.size(); n++) {
             int[] spot = footerAt(n);
             boolean hover = isHovering(spot[0], spot[1], spot[2], BUTTON_H, mouseX, mouseY);
-            drawButton(g, spot[0], spot[1], spot[2], footer.get(n).label, hover);
+            drawButton(g, spot[0], spot[1], spot[2], BUTTON_H, footer.get(n).label, hover);
             // (what the page is for is marked out from the way out of it)
             if (!footer.get(n).exit) g.fill(spot[0] + 1, spot[1] + 1, spot[0] + spot[2] - 1, spot[1] + 2, accent);
             if (hover) over = footer.get(n);
@@ -275,7 +297,7 @@ public class PageScreen extends AbstractContainerScreen<PageMenu> {
             if (event.y() >= top && event.y() < top + viewHeight()) {
                 for (int n = 0; n < buttons.size(); n++) {
                     int[] spot = buttonAt(n);
-                    if (isHovering(spot[0], spot[1], buttonWidth(), BUTTON_H, event.x(), event.y())) {
+                    if (isHovering(spot[0], spot[1], buttonWidth(), gridH, event.x(), event.y())) {
                         press(buttons.get(n));
                         return true;
                     }

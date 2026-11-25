@@ -14,60 +14,6 @@
           "condition": "minecraft:survives_explosion"
         }
       ]
-    },
-    {
-      "rolls": 1,
-      "entries": [
-        {
-          "type": "minecraft:item",
-          "name": "realms_of_chaos:thunder_core"
-        }
-      ],
-      "conditions": [
-        {
-          "condition": "minecraft:block_state_property",
-          "block": "realms_of_chaos:cornucopia",
-          "properties": {
-            "core": "storm"
-          }
-        }
-      ]
-    },
-    {
-      "rolls": 1,
-      "entries": [
-        {
-          "type": "minecraft:item",
-          "name": "realms_of_chaos:tide_core"
-        }
-      ],
-      "conditions": [
-        {
-          "condition": "minecraft:block_state_property",
-          "block": "realms_of_chaos:cornucopia",
-          "properties": {
-            "core": "tide"
-          }
-        }
-      ]
-    },
-    {
-      "rolls": 1,
-      "entries": [
-        {
-          "type": "minecraft:item",
-          "name": "realms_of_chaos:shade_core"
-        }
-      ],
-      "conditions": [
-        {
-          "condition": "minecraft:block_state_property",
-          "block": "realms_of_chaos:cornucopia",
-          "properties": {
-            "core": "shade"
-          }
-        }
-      ]
     }
   ]
 }

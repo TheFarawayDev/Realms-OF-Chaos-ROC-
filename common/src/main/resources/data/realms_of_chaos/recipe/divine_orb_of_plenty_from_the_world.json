@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "NAN",
+    "AOA",
+    "NAN"
+  ],
+  "key": {
+    "N": "minecraft:nether_star",
+    "A": "realms_of_chaos:adamantine_block",
+    "O": "realms_of_chaos:exalted_orb_of_plenty"
+  },
+  "result": {
+    "id": "realms_of_chaos:divine_orb_of_plenty"
+  }
+}

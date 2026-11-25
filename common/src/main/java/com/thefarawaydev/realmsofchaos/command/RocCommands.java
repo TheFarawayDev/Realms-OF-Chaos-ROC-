@@ -133,6 +133,9 @@ public final class RocCommands {
                             com.thefarawaydev.realmsofchaos.ui.Cards.clear(p);
                             com.thefarawaydev.realmsofchaos.ui.Cards.tip(p, "A tip is a small card at the top of the screen, with up to three lines on it.");
                             com.thefarawaydev.realmsofchaos.ui.Cards.notice(p, "A notice", "This one has a heading, and waits its turn behind the tip.");
+                            // and the longest line the mod writes above the hotbar, to see it wrapped to the screen
+                            com.thefarawaydev.realmsofchaos.ui.Hud.actionBar(p, com.thefarawaydev.realmsofchaos.ui.Hud.colored(
+                                    net.minecraft.network.chat.Component.translatable("hud." + com.thefarawaydev.realmsofchaos.RealmsOfChaos.MOD_ID + ".dummy.dodge.sub"), 0xFFE08A));
                         })))
                         .then(Commands.literal("art").executes(ctx -> ui(ctx.getSource().getPlayerOrException(), com.thefarawaydev.realmsofchaos.ui.HudArt::demo))))
                 // what the buttons of the custom screens run

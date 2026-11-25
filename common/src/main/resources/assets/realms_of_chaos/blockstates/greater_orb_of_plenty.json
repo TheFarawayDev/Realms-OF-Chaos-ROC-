@@ -1,0 +1,68 @@
+{
+  "variants": {
+    "core=none,facing=north": {
+      "model": "realms_of_chaos:block/greater_orb_of_plenty_none",
+      "y": 0
+    },
+    "core=none,facing=east": {
+      "model": "realms_of_chaos:block/greater_orb_of_plenty_none",
+      "y": 90
+    },
+    "core=none,facing=south": {
+      "model": "realms_of_chaos:block/greater_orb_of_plenty_none",
+      "y": 180
+    },
+    "core=none,facing=west": {
+      "model": "realms_of_chaos:block/greater_orb_of_plenty_none",
+      "y": 270
+    },
+    "core=storm,facing=north": {
+      "model": "realms_of_chaos:block/greater_orb_of_plenty_storm",
+      "y": 0
+    },
+    "core=storm,facing=east": {
+      "model": "realms_of_chaos:block/greater_orb_of_plenty_storm",
+      "y": 90
+    },
+    "core=storm,facing=south": {
+      "model": "realms_of_chaos:block/greater_orb_of_plenty_storm",
+      "y": 180
+    },
+    "core=storm,facing=west": {
+      "model": "realms_of_chaos:block/greater_orb_of_plenty_storm",
+      "y": 270
+    },
+    "core=tide,facing=north": {
+      "model": "realms_of_chaos:block/greater_orb_of_plenty_tide",
+      "y": 0
+    },
+    "core=tide,facing=east": {
+      "model": "realms_of_chaos:block/greater_orb_of_plenty_tide",
+      "y": 90
+    },
+    "core=tide,facing=south": {
+      "model": "realms_of_chaos:block/greater_orb_of_plenty_tide",
+      "y": 180
+    },
+    "core=tide,facing=west": {
+      "model": "realms_of_chaos:block/greater_orb_of_plenty_tide",
+      "y": 270
+    },
+    "core=shade,facing=north": {
+      "model": "realms_of_chaos:block/greater_orb_of_plenty_shade",
+      "y": 0
+    },
+    "core=shade,facing=east": {
+      "model": "realms_of_chaos:block/greater_orb_of_plenty_shade",
+      "y": 90
+    },
+    "core=shade,facing=south": {
+      "model": "realms_of_chaos:block/greater_orb_of_plenty_shade",
+      "y": 180
+    },
+    "core=shade,facing=west": {
+      "model": "realms_of_chaos:block/greater_orb_of_plenty_shade",
+      "y": 270
+    }
+  }
+}

@@ -31,6 +31,8 @@ public class RealmsOfChaosFabricClient implements ClientModInitializer {
         // the Orb of Plenty's screen and the Keystone Pedestal's
         net.minecraft.client.gui.screens.MenuScreens.register(ModContent.ORB_MENU.get(), com.thefarawaydev.realmsofchaos.client.OrbScreen::new);
         net.minecraft.client.gui.screens.MenuScreens.register(ModContent.PEDESTAL_MENU.get(), com.thefarawaydev.realmsofchaos.client.PedestalScreen::new);
+        // tooltips kept on the screen
+        net.fabricmc.fabric.api.client.item.v1.ItemTooltipCallback.EVENT.register((stack, context, flag, lines) -> com.thefarawaydev.realmsofchaos.client.RocTooltips.wrap(stack, lines));
         // the realms' own music
         net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents.END_CLIENT_TICK.register(com.thefarawaydev.realmsofchaos.client.RocMusic::tick);
         // and the HUD is drawn by the mod: the boss panel, the floor plaque, cards, the combat meter

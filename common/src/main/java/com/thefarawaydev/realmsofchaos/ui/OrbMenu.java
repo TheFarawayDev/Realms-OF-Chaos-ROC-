@@ -28,7 +28,7 @@ import net.minecraft.world.item.ItemStack;
  */
 public class OrbMenu extends AbstractContainerMenu {
     /** The numbers the screen is sent. */
-    public static final int SHRINE = 0, MODE = 1, PROGRESS = 2, SECONDS = 3, COST = 4, REFUSED = 5, DATA = 6;
+    public static final int SHRINE = 0, MODE = 1, PROGRESS = 2, SECONDS = 3, COST = 4, REFUSED = 5, RANK = 6, DATA = 7;
     /** {@link #SHRINE}'s bits: whole, on its plinth, at home; and how many of its four columns stand, from bit 3. */
     public static final int WHOLE = 1, PLINTH = 2, HOME = 4, COLUMNS_SHIFT = 3;
     /** What the orb is doing. */
@@ -199,7 +199,8 @@ public class OrbMenu extends AbstractContainerMenu {
 
     @Override
     public boolean stillValid(Player player) {
-        return stillValid(access, player, ModContent.CORNUCOPIA.get());
+        return access.evaluate((level, pos) -> level.getBlockState(pos).getBlock() instanceof CornucopiaBlock
+                && player.distanceToSqr(pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5) <= 64.0, true);
     }
 
     @Override
@@ -245,16 +246,18 @@ public class OrbMenu extends AbstractContainerMenu {
         int columns = 0;
         for (BlockPos c : CornucopiaBlock.columns(pos)) if (level.getBlockState(c).is(ModContent.PLENTY_COLUMN.get())) columns++;
         boolean plinth = level.getBlockState(pos.below()).is(ModContent.PLENTY_PLINTH.get()), whole = plinth && columns == 8;
+        int rank = CornucopiaBlock.rank(state);
+        out[RANK] = rank;
         CornucopiaBlock.Core core = orb.core();
         boolean home = core != CornucopiaBlock.Core.NONE && CornucopiaBlock.atHome(level, pos, core);
         out[SHRINE] = (whole ? WHOLE : 0) | (plinth ? PLINTH : 0) | (home ? HOME : 0) | (columns / 2) << COLUMNS_SHIFT;
         if (core == CornucopiaBlock.Core.NONE) return out;
-        int speed = home ? 2 : 1;
+        int speed = CornucopiaBlock.speed(rank) * (home ? 2 : 1);
         // (the shrine steps forward on the clock: the seconds left count from the next step)
         int toStep = (int) (CornucopiaBlock.STEP - level.getGameTime() % CornucopiaBlock.STEP);
         if (orb.pattern() != null) {
             ItemStack pattern = new ItemStack(orb.pattern());
-            int steps = OrbBlockEntity.steps(pattern), cost = OrbBlockEntity.cost(pattern);
+            int steps = OrbBlockEntity.steps(pattern), cost = OrbBlockEntity.cost(pattern, rank);
             out[COST] = cost;
             boolean waiting = orb.work() >= steps && orb.ichor() < cost;
             out[MODE] = waiting ? WAITING : MAKING;

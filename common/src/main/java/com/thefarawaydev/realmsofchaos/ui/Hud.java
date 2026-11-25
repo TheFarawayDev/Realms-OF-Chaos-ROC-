@@ -23,8 +23,11 @@ public final class Hud {
         title(player, title, subtitle, 10, 60, 20);
     }
 
-    /** The most letters a title and the line under it may have before they are written on a card instead. */
-    public static final int TITLE_LETTERS = 16, SUBTITLE_LETTERS = 34;
+    /**
+     * The most letters a title and the line under it may have before they are written on a card instead: what fits
+     * the narrowest screen the game lays out (320 wide), at four and at two times the size of writing.
+     */
+    public static final int TITLE_LETTERS = 13, SUBTITLE_LETTERS = 30;
 
     /**
      * A title is drawn four times the size of ordinary writing, and the line under it twice: on a small window a
@@ -44,6 +47,10 @@ public final class Hud {
         player.connection.send(new ClientboundSetSubtitleTextPacket(subtitle == null ? Component.empty() : subtitle));
         player.connection.send(new ClientboundSetTitleTextPacket(title));
     }
+
+    /** The longest line the game's own action bar is left to write: what fits a screen 320 wide. */
+    public static final int ACTION_LETTERS = 50;
+    private static int spoken;
 
     /** The same words are not written above a player's hotbar again within this many ticks. */
     public static final int REPEAT_TICKS = 20;
@@ -80,6 +87,12 @@ public final class Hud {
         }
         said++;
         if (player.connection == null) return;
+        // (the game writes its action bar on one line, and a long one runs off a small screen: the mod's HUD writes
+        // it instead, wrapped to the screen - unless the player has the drawn interface turned off)
+        if (Words.of(text).length() > ACTION_LETTERS && Options.on(player, Options.Option.ART)) {
+            HudFeed.set(player, HudFeed.SAY, ++spoken, text);
+            return;
+        }
         player.connection.send(new ClientboundSetActionBarTextPacket(text));
     }
 }

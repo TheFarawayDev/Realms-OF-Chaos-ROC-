@@ -75,9 +75,7 @@ public final class RocHud {
             String theirs = text(board, feed, HudFeed.BUILD).getString();
             if (!theirs.isEmpty() && !theirs.equals(RealmsOfChaos.version())) {
                 Component warn = Component.translatable("hud." + RealmsOfChaos.MOD_ID + ".build.differs", RealmsOfChaos.version(), theirs);
-                int w = font.width(warn);
-                g.fill(middle - w / 2 - 4, height - 78, middle + w / 2 + 4, height - 66, 0xD0400000);
-                g.centeredText(font, warn, middle, height - 76, 0xFFFFD0D0);
+                strip(g, font, middle, height - 100, warn, width, 320, 0xD0400000, 0xFFFF6060, 0xFFFFD0D0, 3);
             }
         }
         // with the drawn interface switched off the game's own bars and text are used: nothing is drawn over them
@@ -91,28 +89,95 @@ public final class RocHud {
         } else {
             castingId = -1;
             if (feed != null && board.getPlayerScoreInfo(ScoreHolder.forNameOnly(HudFeed.FLOOR), feed) != null) {
-                top = plaque(g, font, middle, top, number(board, feed, HudFeed.FLOOR, 0), text(board, feed, HudFeed.FLOOR));
+                top = plaque(g, font, middle, top, width, number(board, feed, HudFeed.FLOOR, 0), text(board, feed, HudFeed.FLOOR));
                 if (board.getPlayerScoreInfo(ScoreHolder.forNameOnly(HudFeed.ILL), feed) != null) {
                     // what weighs on this level: in its own colour, or greyed while a shrine holds it off
                     boolean held = (number(board, feed, HudFeed.ILL, 0) & HudFeed.ILL_HELD) != 0;
                     Component ill = text(board, feed, HudFeed.ILL);
-                    int w = font.width(ill);
-                    g.fill(middle - w / 2 - 4, top, middle + w / 2 + 4, top + 11, 0xC0170B22);
-                    g.fill(middle - w / 2 - 4, top + 10, middle + w / 2 + 4, top + 11, held ? 0xFF6E6A78 : 0xFFB45CFF);
-                    g.centeredText(font, ill, middle, top + 1, held ? 0xFF9A96A6 : 0xFFD9A8FF);
-                    top += 12;
+                    top = strip(g, font, middle, top, ill, width, 300, 0xC0170B22, held ? 0xFF6E6A78 : 0xFFB45CFF, held ? 0xFF9A96A6 : 0xFFD9A8FF, 2) + 1;
                 }
             }
         }
+        int centreHalf = god != null ? 130 : PLAQUE_W / 2 + 6;
         if (feed != null && board.getPlayerScoreInfo(ScoreHolder.forNameOnly(HudFeed.CARD), feed) != null) {
             card(g, font, middle, top + 3, number(board, feed, HudFeed.CARD, 0), text(board, feed, HudFeed.CARD));
+            top += 3 + CARD_H;
+            centreHalf = Math.max(centreHalf, CARD_W / 2);
         }
+        // a long line over the hotbar: where its top will be, so nothing else is drawn down into it
+        boolean saying = feed != null && board.getPlayerScoreInfo(ScoreHolder.forNameOnly(HudFeed.SAY), feed) != null;
+        int sayTop = saying ? sayTop(font, width, height, number(board, feed, HudFeed.SAY, 0), text(board, feed, HudFeed.SAY)) : height;
         if (feed != null && board.getPlayerScoreInfo(ScoreHolder.forNameOnly(HudFeed.COMPASS), feed) != null) {
-            compass(g, font, mc, width, height, number(board, feed, HudFeed.COMPASS, 0), text(board, feed, HudFeed.COMPASS));
+            // (on a narrow screen the tab would reach in over what is in the middle: it comes out below that instead)
+            int clear = width - TAB_W - 4 < middle + centreHalf ? top + 4 : 0;
+            compass(g, font, mc, width, height, clear, sayTop - 2, number(board, feed, HudFeed.COMPASS, 0), text(board, feed, HudFeed.COMPASS));
         }
+        if (saying) say(g, font, middle, width, height, text(board, feed, HudFeed.SAY));
         if (feed != null && (options & HudFeed.OPT_COMBAT) != 0 && board.getPlayerScoreInfo(ScoreHolder.forNameOnly(HudFeed.METER), feed) != null) {
             meter(g, middle, height - 62, number(board, feed, HudFeed.METER, 0));
         }
+    }
+
+    private static int sayValue = Integer.MIN_VALUE;
+    private static long sayAt;
+    /** How long a long line stays over the hotbar, and how long it takes to fade. */
+    private static final int SAY_MS = 4500, SAY_FADE_MS = 600;
+
+    /** Where the top of a long line over the hotbar is while it shows, or the foot of the screen when none is showing. */
+    private static int sayTop(Font font, int width, int height, int value, Component words) {
+        long now = System.currentTimeMillis();
+        if (value != sayValue) {
+            sayValue = value;
+            sayAt = now;
+        }
+        if (now - sayAt > SAY_MS) return height;
+        int rows = Math.min(3, font.split(words, Math.min(340, width - 20)).size());
+        return height - 62 - rows * 10;
+    }
+
+    /** A line too long for the action bar, written where the action bar would be, wrapped to the screen. */
+    private static void say(GuiGraphicsExtractor g, Font font, int middle, int width, int height, Component words) {
+        long age = System.currentTimeMillis() - sayAt;
+        if (age > SAY_MS) return;
+        float fade = age > SAY_MS - SAY_FADE_MS ? (SAY_MS - age) / (float) SAY_FADE_MS : 1.0F;
+        int alpha = Math.max(8, Math.round(255 * fade));
+        int rows = Math.min(3, font.split(words, Math.min(340, width - 20)).size());
+        strip(g, font, middle, height - 62 - rows * 10, words, width, 340, (Math.round(0xB0 * fade) << 24) | 0x05040B, (alpha << 24) | 0x7A6532,
+                (alpha << 24) | 0xFFFFFF, 3);
+    }
+
+    /** A line cut to a width, ending in "..." when it had to be cut: nothing the HUD writes runs past its room. */
+    static String fit(Font font, String text, int max) {
+        if (font.width(text) <= max) return text;
+        return font.plainSubstrByWidth(text, Math.max(0, max - font.width("..."))) + "...";
+    }
+
+    /**
+     * A strip of words across the screen under what is above it: wrapped to the room there is (never wider than the
+     * screen less a margin), at most a few lines, the last cut short if it must be. @return the y under it
+     */
+    private static int strip(GuiGraphicsExtractor g, Font font, int middle, int y, Component text, int screenWidth, int widest, int back, int edge, int ink, int most) {
+        int room = Math.min(widest, screenWidth - 20);
+        java.util.List<net.minecraft.util.FormattedCharSequence> rows = font.split(text, room);
+        int count = Math.min(most, rows.size()), w = 0;
+        for (int i = 0; i < count; i++) w = Math.max(w, font.width(rows.get(i)));
+        int h = count * 10 + 2;
+        g.fill(middle - w / 2 - 5, y, middle + w / 2 + 5, y + h, back);
+        g.fill(middle - w / 2 - 5, y + h - 1, middle + w / 2 + 5, y + h, edge);
+        for (int i = 0; i < count; i++) {
+            if (i == count - 1 && rows.size() > count) {
+                // (the last line shown, when more would not fit: what is left of the words, cut to the room)
+                StringBuilder restOf = new StringBuilder();
+                for (int k = i; k < rows.size(); k++) {
+                    if (k > i) restOf.append(' ');
+                    rows.get(k).accept((index, style, cp) -> { restOf.appendCodePoint(cp); return true; });
+                }
+                g.centeredText(font, fit(font, restOf.toString(), room), middle, y + 1 + i * 10, ink);
+            } else {
+                g.centeredText(font, rows.get(i), middle, y + 1 + i * 10, ink);
+            }
+        }
+        return y + h;
     }
 
     private static int number(Scoreboard board, Objective feed, String line, int otherwise) {
@@ -204,7 +269,11 @@ public final class RocHud {
         // (dead centre when that clears both sides; otherwise in the middle of the room there is)
         int nameX = middle - nameW / 2;
         if (nameX < freeLeft || nameX + nameW > freeRight) nameX = Math.max(freeLeft, freeLeft + (freeRight - freeLeft - nameW) / 2);
-        g.text(font, name, nameX, top + 3, INK);
+        if (nameW > freeRight - freeLeft) {
+            g.text(font, fit(font, name.getString(), freeRight - freeLeft), freeLeft, top + 3, INK);
+        } else {
+            g.text(font, name, nameX, top + 3, INK);
+        }
         int below = top + PANEL_H + 2;
         // the move it is winding up, for those who have asked to see it: a second, thinner bar under the panel
         if (boss.isCasting()) {
@@ -220,7 +289,7 @@ public final class RocHud {
                 g.fill(cx, below + 2, cx + 132, below + 12, 0xFF18142C);
                 g.fill(cx, below + 2, cx + Math.round(132 * wound), below + 12, 0xFF7A5A1E);
                 Component move = boss.hudCastKind() == 2 ? Component.translatable("cast." + RealmsOfChaos.MOD_ID + "." + line.id()) : god.moveName();
-                g.centeredText(font, move, middle, below + 3, 0xFFFFE08A);
+                g.centeredText(font, fit(font, move.getString(), 128), middle, below + 3, 0xFFFFE08A);
                 below += 16;
             }
         } else if (castingId == boss.getId()) {
@@ -230,7 +299,7 @@ public final class RocHud {
     }
 
     /** The plaque of the floor or passage: what it is, and how far along. */
-    private static int plaque(GuiGraphicsExtractor g, Font font, int middle, int top, int value, Component words) {
+    private static int plaque(GuiGraphicsExtractor g, Font font, int middle, int top, int width, int value, Component words) {
         int x = middle - PLAQUE_W / 2, line = value & 3, done = (value >> 4) & 255, of = (value >> 12) & 255;
         g.blit(RenderPipelines.GUI_TEXTURED, PLAQUE, x, top, 0.0F, 0.0F, PLAQUE_W, PLAQUE_H, PLAQUE_W, PLAQUE_H);
         int colour = 0xFF000000 | Line.values()[Math.min(line, Line.values().length - 1)].color();
@@ -247,11 +316,7 @@ public final class RocHud {
         if (font.width(head) <= room) g.centeredText(font, head, middle, top + 3, INK);
         else rest = all;
         if (rest.isEmpty()) return top + PLAQUE_H + 2;
-        int w = font.width(rest), sy = top + PLAQUE_H + 2;
-        g.fill(middle - w / 2 - 6, sy, middle + w / 2 + 6, sy + 13, 0xC005040B);
-        g.fill(middle - w / 2 - 6, sy + 12, middle + w / 2 + 6, sy + 13, 0xFF7A6532);
-        g.centeredText(font, rest, middle, sy + 2, 0xFFD8CBB0);
-        return sy + 15;
+        return strip(g, font, middle, top + PLAQUE_H + 2, Component.literal(rest), width, 300, 0xC005040B, 0xFF7A6532, 0xFFD8CBB0, 2) + 2;
     }
 
     /** A card: its artwork, and its lines - the first in the card's colour when it is a heading. */
@@ -263,7 +328,7 @@ public final class RocHud {
         String[] lines = words.getString().split("\n");
         int count = Math.min(3, lines.length), first = top + 14 + (3 - count) * 5;
         for (int i = 0; i < count; i++) {
-            g.centeredText(font, lines[i], middle, first + i * 10, headed && i == 0 ? CARD_INK[kind] : 0xFFFFFFFF);
+            g.centeredText(font, fit(font, lines[i], CARD_W - 16), middle, first + i * 10, headed && i == 0 ? CARD_INK[kind] : 0xFFFFFFFF);
         }
     }
 
@@ -304,7 +369,7 @@ public final class RocHud {
      * and slides away. A dial whose needle keeps to its bearing as the player turns; what it points at; how far; the
      * signal; and, during a scan, the time left and how far along it is.
      */
-    private static void compass(GuiGraphicsExtractor g, Font font, Minecraft mc, int width, int height, int value, Component words) {
+    private static void compass(GuiGraphicsExtractor g, Font font, Minecraft mc, int width, int height, int clear, int floor, int value, Component words) {
         long nowMs = System.currentTimeMillis();
         String said = words.getString();
         if (value != tabValue || !said.equals(tabText)) {
@@ -325,7 +390,12 @@ public final class RocHud {
         boolean icon = left > 0 || holding || age < KEEP_ICON_MS;
         float out = age < TAB_SLIDE_MS ? ease(age / (float) TAB_SLIDE_MS) : age > TAB_SHOW_MS ? 1.0F - ease((age - TAB_SHOW_MS) / (float) TAB_SLIDE_MS) : 1.0F;
         if (age > TAB_SHOW_MS + TAB_SLIDE_MS) out = 0.0F;
-        int y = Math.max(28, height / 3 - TAB_H / 2);
+        int y = Math.min(height - TAB_H - 70, Math.max(Math.max(28, clear), height / 3 - TAB_H / 2));
+        // (with no room left above a long line over the hotbar, the tab stays folded to its icon until the line has gone)
+        if (y + TAB_H > floor) {
+            out = 0.0F;
+            y = Math.min(y, floor - TAB_H / 2 - ICON / 2 - 2);
+        }
         if (out <= 0.02F) {
             if (icon) compassIcon(g, mc, width, y + TAB_H / 2 - ICON / 2, value, words, nowMs, left);
             return;
@@ -398,12 +468,21 @@ public final class RocHud {
         // (a reading has its distance under its name; a line with no distance may run on to a second line)
         int rows = notice ? 3 : distance.getString().isEmpty() ? 2 : 1;
         for (int i = 0; i < Math.min(rows, lines.size()); i++) {
-            g.text(font, lines.get(i), tx0, row, 0xFFF5E6C8, false);
+            if (i == rows - 1 && lines.size() > rows) {
+                StringBuilder restOf = new StringBuilder();
+                for (int k = i; k < lines.size(); k++) {
+                    if (k > i) restOf.append(' ');
+                    lines.get(k).accept((index, style, cp) -> { restOf.appendCodePoint(cp); return true; });
+                }
+                g.text(font, fit(font, restOf.toString(), room), tx0, row, 0xFFF5E6C8, false);
+            } else {
+                g.text(font, lines.get(i), tx0, row, 0xFFF5E6C8, false);
+            }
             row += 10;
         }
         if (!notice) {
-            g.text(font, distance, tx0, y + 27, 0xFFFFFFFF, false);
-            if (!status.getString().isEmpty()) g.text(font, status, tx0, y + 38, stateColour, false);
+            g.text(font, fit(font, distance.getString(), room), tx0, y + 27, 0xFFFFFFFF, false);
+            if (!status.getString().isEmpty()) g.text(font, fit(font, status.getString(), room - 24), tx0, y + 38, stateColour, false);
             // the signal, five bars rising
             int q = com.thefarawaydev.realmsofchaos.ui.CompassTab.quality(value);
             for (int i = 0; i < 5; i++) {

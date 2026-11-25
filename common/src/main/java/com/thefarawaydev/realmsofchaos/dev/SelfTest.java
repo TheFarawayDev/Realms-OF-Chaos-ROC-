@@ -7137,6 +7137,40 @@ public final class SelfTest {
                 screen.clicked(com.thefarawaydev.realmsofchaos.block.OrbBlockEntity.CORE, 0, net.minecraft.world.inventory.ContainerInput.PICKUP, smith);
                 check(screen.getCarried().is(ModContent.THUNDER_CORE.get()) && level.getBlockState(horn).getValue(com.thefarawaydev.realmsofchaos.block.CornucopiaBlock.CORE) == com.thefarawaydev.realmsofchaos.block.CornucopiaBlock.Core.NONE, "the core can be taken back out");
                 screen.setCarried(ItemStack.EMPTY);
+                // ---- the orb's ranks: each faster than the last, the last two thriftier, each made from the one before two ways
+                check(ModContent.PLENTY_ORBS.size() == com.thefarawaydev.realmsofchaos.block.CornucopiaBlock.RANKS, "four ranks of orb");
+                for (int rank = 2; rank <= com.thefarawaydev.realmsofchaos.block.CornucopiaBlock.RANKS; rank++) {
+                    for (String way : new String[]{"from_towers", "from_the_world"}) {
+                        var recipe = server.getRecipeManager().byKey(net.minecraft.resources.ResourceKey.create(net.minecraft.core.registries.Registries.RECIPE,
+                                RealmsOfChaos.id(com.thefarawaydev.realmsofchaos.block.CornucopiaBlock.id(rank) + "_" + way)));
+                        check(recipe.isPresent(), "rank " + rank + " can be made " + way.replace('_', ' '));
+                        ItemStack last = new ItemStack(ModContent.PLENTY_ORBS.get(rank - 2).get());
+                        boolean needsLast = recipe.get().value() instanceof net.minecraft.world.item.crafting.ShapedRecipe shaped
+                                && shaped.getIngredients().stream().anyMatch(i -> i.isPresent() && i.get().test(last));
+                        check(needsLast, "rank " + rank + " is made from the rank before it");
+                    }
+                    check(!com.thefarawaydev.realmsofchaos.block.OrbBlockEntity.replicable(new ItemStack(ModContent.PLENTY_ORBS.get(rank - 1).get())), "the orb will not make an orb");
+                }
+                ItemStack block = new ItemStack(net.minecraft.world.item.Items.DIAMOND_BLOCK);
+                check(com.thefarawaydev.realmsofchaos.block.OrbBlockEntity.cost(block, 1) == 4 && com.thefarawaydev.realmsofchaos.block.OrbBlockEntity.cost(block, 2) == 4 && com.thefarawaydev.realmsofchaos.block.OrbBlockEntity.cost(block, 3) == 3 && com.thefarawaydev.realmsofchaos.block.OrbBlockEntity.cost(block, 4) == 2
+                        && com.thefarawaydev.realmsofchaos.block.OrbBlockEntity.cost(new ItemStack(net.minecraft.world.item.Items.COBBLESTONE), 4) == 1, "the third rank pays three quarters of the ichor, the fourth half, never less than one");
+                // a Divine Orb set in the same shrine: four times as fast, and it says so
+                BlockState kept = level.getBlockState(horn);
+                level.setBlock(horn.offset(-1, 0, -1), ModContent.PLENTY_COLUMN.get().defaultBlockState(), 3);
+                var first = com.thefarawaydev.realmsofchaos.block.CornucopiaBlock.orb(level, horn);
+                first.setItem(com.thefarawaydev.realmsofchaos.block.OrbBlockEntity.CORE, new ItemStack(ModContent.THUNDER_CORE.get()));
+                level.setBlock(horn, kept.setValue(com.thefarawaydev.realmsofchaos.block.CornucopiaBlock.PROGRESS, 0).setValue(com.thefarawaydev.realmsofchaos.block.CornucopiaBlock.CORE, com.thefarawaydev.realmsofchaos.block.CornucopiaBlock.Core.STORM), 3);
+                int slow = com.thefarawaydev.realmsofchaos.ui.OrbMenu.report(level, horn)[com.thefarawaydev.realmsofchaos.ui.OrbMenu.SECONDS];
+                first.clearContent();
+                level.setBlock(horn, ModContent.PLENTY_ORBS.get(3).get().defaultBlockState(), 3);
+                var divine = com.thefarawaydev.realmsofchaos.block.CornucopiaBlock.orb(level, horn);
+                check(divine != null, "a higher orb has the orb's insides");
+                divine.setItem(com.thefarawaydev.realmsofchaos.block.OrbBlockEntity.CORE, new ItemStack(ModContent.THUNDER_CORE.get()));
+                int[] divineReport = com.thefarawaydev.realmsofchaos.ui.OrbMenu.report(level, horn);
+                check(divineReport[com.thefarawaydev.realmsofchaos.ui.OrbMenu.RANK] == 4 && divineReport[com.thefarawaydev.realmsofchaos.ui.OrbMenu.MODE] == com.thefarawaydev.realmsofchaos.ui.OrbMenu.BRINGING && divineReport[com.thefarawaydev.realmsofchaos.ui.OrbMenu.SECONDS] * 3 < slow,
+                        "a divine orb brings forth its yield about four times as soon: " + divineReport[com.thefarawaydev.realmsofchaos.ui.OrbMenu.SECONDS] + "s against " + slow + "s");
+                divine.clearContent();
+                level.setBlock(horn, kept, 3);
                 check(server.getRecipeManager().byKey(net.minecraft.resources.ResourceKey.create(net.minecraft.core.registries.Registries.RECIPE, RealmsOfChaos.id("divine_ichor"))).isPresent(),
                         "divine ichor can be made");
                 check(!com.thefarawaydev.realmsofchaos.block.CornucopiaBlock.atHome(level, horn, com.thefarawaydev.realmsofchaos.block.CornucopiaBlock.Core.SHADE),

@@ -21,12 +21,13 @@ import net.minecraft.world.item.ItemStack;
 public class OrbScreen extends AbstractContainerScreen<OrbMenu> {
     private static final Identifier TEXTURE = RealmsOfChaos.id("textures/gui/screen_orb.png");
     private static final String KEY = "screen." + RealmsOfChaos.MOD_ID + ".orb.";
+    private static final int PIPS_X = 136;
     private static final int RING_X = 88, RING_Y = 45, RING_R = 19, LIGHTS = 32;
     private static final int INK = 0xFFF5E6C8, GOOD = 0xFF9FF0C8, WAIT = 0xFFF0D070, BAD = 0xFFFF8A6A, DIM = 0xFF5A5288;
 
     public OrbScreen(OrbMenu menu, Inventory inventory, Component title) {
         super(menu, inventory, title, 176, 186);
-        this.inventoryLabelY = OrbMenu.INVENTORY_Y - 11;
+        this.inventoryLabelY = OrbMenu.INVENTORY_Y - 10;
     }
 
     @Override
@@ -59,14 +60,23 @@ public class OrbScreen extends AbstractContainerScreen<OrbMenu> {
 
     @Override
     protected void extractLabels(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
-        graphics.text(font, title, titleLabelX, titleLabelY, INK, false);
-        graphics.text(font, playerInventoryTitle, inventoryLabelX, inventoryLabelY, 0xFF4A3B28, false);
+        graphics.text(font, RocHud.fit(font, title.getString(), PIPS_X - titleLabelX - 4), titleLabelX, titleLabelY, 0xFFF4D28A, false);
+        graphics.text(font, playerInventoryTitle, inventoryLabelX, inventoryLabelY, 0xFFE8C88A, false);
+        // its rank, as four gems in the header's corner: lit as high as it goes
+        int rank = Math.max(1, menu.data(OrbMenu.RANK));
+        for (int i = 0; i < 4; i++) {
+            int gx = PIPS_X + i * 8, gy = 5;
+            int c = i < rank ? 0xFFF4D28A : 0xFF4A1C28;
+            graphics.fill(gx + 2, gy, gx + 3, gy + 5, c);
+            graphics.fill(gx + 1, gy + 1, gx + 4, gy + 4, c);
+            graphics.fill(gx, gy + 2, gx + 5, gy + 3, c);
+            if (i < rank) graphics.fill(gx + 2, gy + 1, gx + 3, gy + 2, 0xFFFFFFFF);
+        }
         List<Component> lines = status();
         int colour = colour();
         for (int i = 0; i < lines.size(); i++) {
             Component line = lines.get(i);
-            if (font.width(line) > 164) line = Component.literal(font.plainSubstrByWidth(line.getString(), 158) + "...");
-            graphics.centeredText(font, line, imageWidth / 2, 74 + i * 9, i == 0 ? colour : 0xFFB8B0D8);
+            graphics.centeredText(font, RocHud.fit(font, line.getString(), imageWidth - 14), imageWidth / 2, 72 + i * 9, i == 0 ? colour : 0xFFB8B0D8);
         }
     }
 
@@ -107,6 +117,12 @@ public class OrbScreen extends AbstractContainerScreen<OrbMenu> {
 
     @Override
     protected void extractTooltip(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
+        int rank = Math.max(1, menu.data(OrbMenu.RANK));
+        if (menu.getCarried().isEmpty() && isHovering(PIPS_X - 1, 3, 33, 9, mouseX, mouseY)) {
+            graphics.setComponentTooltipForNextFrame(font, List.of(Component.translatable(KEY + "rank", rank),
+                    Component.translatable(KEY + "rank.tip", CornucopiaBlock.speed(rank), CornucopiaBlock.ichorShare(rank)).withStyle(s -> s.withColor(0xA8A0C8))), mouseX, mouseY);
+            return;
+        }
         // an empty slot says what it is for
         if (hoveredSlot != null && hoveredSlot.index < OrbBlockEntity.SIZE && menu.getCarried().isEmpty()
                 && (!hoveredSlot.hasItem() || hoveredSlot.index == OrbBlockEntity.PATTERN)) {

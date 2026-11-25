@@ -1,0 +1,20 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "BNR",
+    "AOA",
+    "BSR"
+  ],
+  "key": {
+    "B": "realms_of_chaos:celestial_bronze_ingot",
+    "R": "realms_of_chaos:orichalcum_ingot",
+    "S": "realms_of_chaos:stygian_iron_ingot",
+    "N": "minecraft:nether_star",
+    "A": "realms_of_chaos:adamantine_block",
+    "O": "realms_of_chaos:greater_orb_of_plenty"
+  },
+  "result": {
+    "id": "realms_of_chaos:exalted_orb_of_plenty"
+  }
+}

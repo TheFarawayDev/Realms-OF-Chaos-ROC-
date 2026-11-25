@@ -121,6 +121,11 @@ public class OrbBlockEntity extends BlockEntity implements WorldlyContainer {
         return c;
     }
 
+    /** What one copy costs an orb of a rank: its share of the full cost, never less than one. */
+    public static int cost(ItemStack stack, int rank) {
+        return Math.max(1, (cost(stack) * CornucopiaBlock.ichorShare(rank) + 99) / 100);
+    }
+
     /** How many steps of the shrine one copy takes: five minutes for a common thing, longer the rarer it is. */
     public static int steps(ItemStack stack) {
         Rarity r = stack.getRarity();

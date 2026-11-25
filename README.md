@@ -16,6 +16,38 @@ The current build is an **Alpha**.
 
 ## What's in 1.2.0
 
+* **Four ranks of Orb of Plenty.** Above the Orb of Plenty stand the **Greater**, **Exalted** and **Divine Orb of
+  Plenty**, each set in the same shrine and each made from the rank below it - harder every time. Each rank can be
+  made two ways: from what the gods of the towers drop, or from what the Overworld (and the Nether) gives.
+
+  | Rank | Works | Ichor paid | Core yield | From the towers | From the world |
+  | --- | --- | --- | --- | --- | --- |
+  | I - Orb of Plenty | 1x | all | 1-2 | (as before: god-metals, a nether star, a heart of the sea) | |
+  | II - Greater | 2x | all | 2-3 | the orb, 2 each of floors 1-5's materials of all three towers, 2 gold blocks | the orb, 2 storm glass, an abyssal pearl, 2 diamond blocks, 2 raw stygian iron, fulgurite |
+  | III - Exalted | 3x | 75% | 3-4 | the Greater orb, 2 each of floors 6-10's materials, 2 adamantine blocks | the Greater orb, 2 celestial bronze, 2 orichalcum, a stygian iron ingot, a nether star, 2 adamantine blocks |
+  | IV - Divine | 4x | 50% | 4-5 | the Exalted orb, floors 11-14's materials of each tower, the three summit essences, 2 nether stars | the Exalted orb, 4 nether stars, 4 adamantine blocks |
+
+  The chance of raw adamantine rises with rank too (8% to 17%). Each rank has its own metal - gold, celestial bronze,
+  orichalcum, adamantine - a third ring from the second rank, a crown with a gem from the third, and a halo of four
+  gems at the fourth (`art/renders/divine-orb.png`). An orb's tooltip says its rank and what it does; its screen shows
+  the rank as four gems in the corner (point at them for the numbers). Breaking an orb no longer drops its core twice.
+* **Screens of their own.** The Orb's screen is now dressed in the shrine's own porphyry and gold, with a gold key
+  pattern under the hotbar; the Keystone Pedestal's in the Ruined Gate's worn stone, ivy on the arch, over slate - no
+  longer the purple-and-parchment panel of the mod's other menus. (`art/renders/orb-screen.png`,
+  `art/renders/pedestal-screen.png`)
+* **No clipped or runaway text.** Every screen and the HUD were checked at the smallest layout the game uses (320 by
+  240) and at the default:
+  * Item tooltips - lore, a menu icon's description - are wrapped to the screen (never wider than 220, or half the
+    screen) instead of running off its edge.
+  * A line too long for the game's action bar (most of a room's hint, a god's warning) is written by the mod's HUD
+    above the hotbar instead, wrapped to two or three lines, and fades after a few seconds; the compass tab folds to
+    its icon while one shows rather than overlap it. (`art/renders/hud-narrow.png`)
+  * On a narrow screen the compass tab comes out below the floor plaque and card instead of over them.
+  * The strips under the floor plaque (an affliction, a long passage name) wrap to the screen; a card's lines, a boss
+    name and a move being wound up are fitted to their panels.
+  * Big titles are kept to what fits 320 wide (13 letters; 30 under them) - longer ones become cards.
+  * In page screens a heading too long for the header is fitted to it, and a button whose name will not fit on one
+    line gets a second line instead of being cut off. Menu titles stop short of the emblem in their corner.
 * **The world's one way in, waiting from the start.** Each world now has exactly one **Ruined Gate** - a short walk
   (160 to 290 blocks) from the world's origin - and one each of the three citadels, 640 to 1,020 blocks out in three
   different directions, none on the gate's side. All four are raised in the first seconds after a world is first

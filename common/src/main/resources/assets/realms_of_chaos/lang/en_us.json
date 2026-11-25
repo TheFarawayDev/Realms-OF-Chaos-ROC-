@@ -1942,5 +1942,14 @@
   "screen.realms_of_chaos.pedestal.tower.poseidon": "Tides",
   "screen.realms_of_chaos.pedestal.tower.hades": "Shades",
   "screen.realms_of_chaos.pedestal.cradle.empty": "Lay this keystone here to set it in the arch",
-  "screen.realms_of_chaos.pedestal.cradle.set": "Set in the arch"
+  "screen.realms_of_chaos.pedestal.cradle.set": "Set in the arch",
+  "block.realms_of_chaos.greater_orb_of_plenty": "Greater Orb of Plenty",
+  "block.realms_of_chaos.exalted_orb_of_plenty": "Exalted Orb of Plenty",
+  "block.realms_of_chaos.divine_orb_of_plenty": "Divine Orb of Plenty",
+  "block.realms_of_chaos.orb_rank.rank": "Rank %s of 4",
+  "block.realms_of_chaos.orb_rank.speed": "Works %sx as fast as the first",
+  "block.realms_of_chaos.orb_rank.ichor": "Pays %s%% of the ichor",
+  "block.realms_of_chaos.orb_rank.yield": "Brings forth %s more of its core's resource",
+  "screen.realms_of_chaos.orb.rank": "Rank %s",
+  "screen.realms_of_chaos.orb.rank.tip": "%sx as fast, %s%% of the ichor"
 }

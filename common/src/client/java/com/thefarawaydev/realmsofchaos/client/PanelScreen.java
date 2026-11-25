@@ -37,7 +37,9 @@ public class PanelScreen extends AbstractContainerScreen<ChestMenu> {
     @Override
     protected void extractLabels(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
         // the name on the header in the panel's own ink, the inventory's on the parchment in a dark one
-        graphics.text(this.font, this.title, this.titleLabelX, this.titleLabelY, 0xFFF5E6C8, false);
+        // (a name too long for the header stops short of the emblem in its corner)
+        if (this.font.width(this.title) > 148) graphics.text(this.font, RocHud.fit(this.font, this.title.getString(), 148), this.titleLabelX, this.titleLabelY, 0xFFF5E6C8, false);
+        else graphics.text(this.font, this.title, this.titleLabelX, this.titleLabelY, 0xFFF5E6C8, false);
         graphics.text(this.font, this.playerInventoryTitle, this.inventoryLabelX, this.inventoryLabelY, 0xFF4A3B28, false);
     }
 }

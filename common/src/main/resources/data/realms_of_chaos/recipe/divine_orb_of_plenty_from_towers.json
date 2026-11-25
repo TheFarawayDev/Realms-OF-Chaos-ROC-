@@ -1,0 +1,22 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "ZPH",
+    "1O2",
+    "N3N"
+  ],
+  "key": {
+    "Z": "realms_of_chaos:material_zeus_3",
+    "P": "realms_of_chaos:material_poseidon_3",
+    "H": "realms_of_chaos:material_hades_3",
+    "1": "realms_of_chaos:essence_zeus",
+    "2": "realms_of_chaos:essence_poseidon",
+    "3": "realms_of_chaos:essence_hades",
+    "N": "minecraft:nether_star",
+    "O": "realms_of_chaos:exalted_orb_of_plenty"
+  },
+  "result": {
+    "id": "realms_of_chaos:divine_orb_of_plenty"
+  }
+}

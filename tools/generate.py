@@ -19,6 +19,7 @@ import armor_art
 import particle_art
 import music
 import station_ui
+import orb_ranks
 from PIL import Image
 
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
@@ -2041,6 +2042,7 @@ def gen_lang():
     lang.update(divine_pro.lang())
     lang.update({f"subtitles.{MOD}.{k}": v for k, v in music.SUBTITLES.items()})
     lang.update(station_ui.lang())
+    lang.update(orb_ranks.lang())
     wj(os.path.join(ASSETS, "lang/en_us.json"), lang)
 
 # ----------------------------------------------------------------------------
@@ -5151,6 +5153,7 @@ if __name__ == "__main__":
     gen_pack()
     gen_data()
     gen_advancements()
+    orb_ranks.gen(ASSETS, DATA, wj)
     gen_icon(previews)
     gen_site(first, previews)
     gen_promo(first, {k: v for k, v in previews.items()})

@@ -28,7 +28,7 @@ public class PedestalScreen extends AbstractContainerScreen<PedestalMenu> {
 
     public PedestalScreen(PedestalMenu menu, Inventory inventory, Component title) {
         super(menu, inventory, title, 176, 186);
-        this.inventoryLabelY = PedestalMenu.INVENTORY_Y - 11;
+        this.inventoryLabelY = PedestalMenu.INVENTORY_Y - 10;
     }
 
     @Override
@@ -61,8 +61,8 @@ public class PedestalScreen extends AbstractContainerScreen<PedestalMenu> {
 
     @Override
     protected void extractLabels(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
-        graphics.text(font, title, titleLabelX, titleLabelY, 0xFFF5E6C8, false);
-        graphics.text(font, playerInventoryTitle, inventoryLabelX, inventoryLabelY, 0xFF4A3B28, false);
+        graphics.text(font, RocHud.fit(font, title.getString(), imageWidth - 16), titleLabelX, titleLabelY, 0xFF2E2A24, false);
+        graphics.text(font, playerInventoryTitle, inventoryLabelX, inventoryLabelY, 0xFFC8CCD6, false);
         List<Component> lines = new ArrayList<>();
         int colour;
         if (menu.data(PedestalMenu.ARCH) == 0) {
@@ -87,7 +87,8 @@ public class PedestalScreen extends AbstractContainerScreen<PedestalMenu> {
             lines.add(Component.translatable(KEY + "missing", missing));
             colour = 0xFFF0D070;
         }
-        for (int i = 0; i < lines.size(); i++) graphics.centeredText(font, lines.get(i), imageWidth / 2, 72 + i * 9, i == 0 ? colour : 0xFFB8B0D8);
+        for (int i = 0; i < lines.size(); i++)
+            graphics.centeredText(font, RocHud.fit(font, lines.get(i).getString(), imageWidth - 18), imageWidth / 2, 72 + i * 9, i == 0 ? colour : 0xFFB8B0D8);
     }
 
     @Override

@@ -84,10 +84,51 @@ public class CornucopiaBlock extends Block implements net.minecraft.world.level.
     /** The chance a yield is raw adamantine instead. */
     public static final float ADAMANTINE_CHANCE = 0.08F;
     private static final VoxelShape SHAPE = Block.box(1, 0, 1, 15, 15, 15);
+    /** How many ranks of orb there are. */
+    public static final int RANKS = 4;
+    private static final String[] IDS = {"cornucopia", "greater_orb_of_plenty", "exalted_orb_of_plenty", "divine_orb_of_plenty"};
+    /** This orb's rank, 1 to {@link #RANKS}: each rank works faster than the last, and from the third pays less ichor. */
+    public final int rank;
 
-    public CornucopiaBlock(Properties properties) {
+    public CornucopiaBlock(int rank, Properties properties) {
         super(properties);
+        this.rank = rank;
         registerDefaultState(stateDefinition.any().setValue(CORE, Core.NONE).setValue(FACING, Direction.NORTH).setValue(FORMED, false).setValue(PROGRESS, 0));
+    }
+
+    /** The block id of an orb of a rank. */
+    public static String id(int rank) {
+        return IDS[rank - 1];
+    }
+
+    /** How many times as fast as the first an orb of a rank works: one, two, three, four. */
+    public static int speed(int rank) {
+        return rank;
+    }
+
+    /** What share of the ichor an orb of a rank pays, in percent: all of it at the first two ranks, three quarters at the third, half at the fourth. */
+    public static int ichorShare(int rank) {
+        return rank >= 4 ? 50 : rank == 3 ? 75 : 100;
+    }
+
+    /** How many more of its core's resource an orb of a rank brings forth each time. */
+    public static int extraYield(int rank) {
+        return rank - 1;
+    }
+
+    public static int rank(BlockState state) {
+        return state.getBlock() instanceof CornucopiaBlock orb ? orb.rank : 1;
+    }
+
+    /** The lines under an orb's name: its rank, and what the rank does. */
+    public net.minecraft.world.item.component.ItemLore lore() {
+        String key = "block." + com.thefarawaydev.realmsofchaos.RealmsOfChaos.MOD_ID + ".orb_rank.";
+        java.util.List<net.minecraft.network.chat.Component> lines = new java.util.ArrayList<>();
+        lines.add(net.minecraft.network.chat.Component.translatable(key + "rank", rank).withStyle(net.minecraft.ChatFormatting.GOLD));
+        lines.add(net.minecraft.network.chat.Component.translatable(key + "speed", speed(rank)).withStyle(net.minecraft.ChatFormatting.GRAY));
+        lines.add(net.minecraft.network.chat.Component.translatable(key + "ichor", ichorShare(rank)).withStyle(net.minecraft.ChatFormatting.GRAY));
+        if (rank > 1) lines.add(net.minecraft.network.chat.Component.translatable(key + "yield", extraYield(rank)).withStyle(net.minecraft.ChatFormatting.GRAY));
+        return new net.minecraft.world.item.component.ItemLore(lines);
     }
 
     @Override
@@ -186,13 +227,13 @@ public class CornucopiaBlock extends Block implements net.minecraft.world.level.
             // making a pattern: it comes with time, and costs ichor
             ItemStack pattern = new ItemStack(orb.pattern());
             int steps = OrbBlockEntity.steps(pattern);
-            if (level.getGameTime() % STEP < CHECK && orb.work() < steps) orb.addWork(atHome(level, pos, state.getValue(CORE)) ? 2 : 1);
-            if (orb.work() >= steps && orb.spend(OrbBlockEntity.cost(pattern))) deliver(level, pos, state.getValue(CORE), pattern);
+            if (level.getGameTime() % STEP < CHECK && orb.work() < steps) orb.addWork(speed(rank) * (atHome(level, pos, state.getValue(CORE)) ? 2 : 1));
+            if (orb.work() >= steps && orb.spend(OrbBlockEntity.cost(pattern, rank))) deliver(level, pos, state.getValue(CORE), pattern);
             if (now != state) level.setBlock(pos, now, 3);
             return;
         }
         if (formed && state.getValue(CORE) != Core.NONE && level.getGameTime() % STEP < CHECK) {
-            int progress = state.getValue(PROGRESS) + (atHome(level, pos, state.getValue(CORE)) ? 2 : 1);
+            int progress = state.getValue(PROGRESS) + speed(rank) * (atHome(level, pos, state.getValue(CORE)) ? 2 : 1);
             if (progress >= STEPS) {
                 level.setBlock(pos, now.setValue(PROGRESS, 0), 3);
                 produce(level, pos, random);
@@ -219,7 +260,9 @@ public class CornucopiaBlock extends Block implements net.minecraft.world.level.
         BlockState state = level.getBlockState(pos);
         if (!(state.getBlock() instanceof CornucopiaBlock) || state.getValue(CORE) == Core.NONE) return ItemStack.EMPTY;
         Core core = state.getValue(CORE);
-        ItemStack out = random.nextFloat() < ADAMANTINE_CHANCE ? new ItemStack(ModContent.RAW_ADAMANTINE.get()) : new ItemStack(core.yield(), 1 + random.nextInt(2));
+        int rank = rank(state);
+        ItemStack out = random.nextFloat() < ADAMANTINE_CHANCE + 0.03F * (rank - 1) ? new ItemStack(ModContent.RAW_ADAMANTINE.get())
+                : new ItemStack(core.yield(), 1 + random.nextInt(2) + extraYield(rank));
         ItemStack made = out.copy();
         deliver(level, pos, core, out);
         return made;

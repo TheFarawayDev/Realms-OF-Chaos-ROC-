@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "ZPH",
+    "GOG",
+    "ZPH"
+  ],
+  "key": {
+    "Z": "realms_of_chaos:material_zeus_1",
+    "P": "realms_of_chaos:material_poseidon_1",
+    "H": "realms_of_chaos:material_hades_1",
+    "G": "minecraft:gold_block",
+    "O": "realms_of_chaos:cornucopia"
+  },
+  "result": {
+    "id": "realms_of_chaos:greater_orb_of_plenty"
+  }
+}

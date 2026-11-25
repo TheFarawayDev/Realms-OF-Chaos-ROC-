@@ -41,6 +41,12 @@ public final class RealmsOfChaosForgeClient {
         }
     }
 
+    /** Tooltips kept on the screen. */
+    @SubscribeEvent
+    public static void tooltip(net.minecraftforge.event.entity.player.ItemTooltipEvent event) {
+        com.thefarawaydev.realmsofchaos.client.RocTooltips.wrap(event.getItemStack(), event.getToolTip());
+    }
+
     /** The realms' own music. */
     @SubscribeEvent
     public static void clientTick(net.minecraftforge.event.TickEvent.ClientTickEvent.Post event) {

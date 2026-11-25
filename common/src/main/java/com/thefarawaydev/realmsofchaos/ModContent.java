@@ -139,6 +139,8 @@ public final class ModContent {
             PORPHYRY_TILES = new Ref<>(), PORPHYRY_PILLAR = new Ref<>(), PORPHYRY_DOOR = new Ref<>(), PORPHYRY_TRAPDOOR = new Ref<>(),
             DEEPSLATE_ADAMANTINE_ORE = new Ref<>(), ADAMANTINE_BLOCK = new Ref<>();
     /** What is won from the world itself: fulgurite where lightning strikes sand, clams that grow pearls, iron from the soul valleys; and the Cornucopia. */
+    /** The Orb of Plenty's four ranks, the first first. */
+    public static final List<Ref<Block>> PLENTY_ORBS = new ArrayList<>();
     public static final Ref<Block> FULGURITE = new Ref<>(), GIANT_CLAM = new Ref<>(), STYGIAN_IRON_ORE = new Ref<>(), CORNUCOPIA = new Ref<>(),
             PLENTY_PLINTH = new Ref<>(), PLENTY_COLUMN = new Ref<>();
     /** The resources, the god-metals forged from them, and the cores that the relics and the Cornucopia are made with. */
@@ -161,7 +163,7 @@ public final class ModContent {
     public static final Ref<net.minecraft.world.level.block.entity.BlockEntityType<com.thefarawaydev.realmsofchaos.block.OrbBlockEntity>> ORB_ENTITY = new Ref<>();
 
     public static net.minecraft.world.level.block.entity.BlockEntityType<com.thefarawaydev.realmsofchaos.block.OrbBlockEntity> createOrbEntityType() {
-        return new net.minecraft.world.level.block.entity.BlockEntityType<>(com.thefarawaydev.realmsofchaos.block.OrbBlockEntity::new, java.util.Set.of(CORNUCOPIA.get()));
+        return new net.minecraft.world.level.block.entity.BlockEntityType<>(com.thefarawaydev.realmsofchaos.block.OrbBlockEntity::new, PLENTY_ORBS.stream().map(Ref::get).collect(java.util.stream.Collectors.toSet()));
     }
     /** The four armour sets, by set and then by piece. */
     public static final Map<com.thefarawaydev.realmsofchaos.item.ArmorSets.Set, Map<net.minecraft.world.item.equipment.ArmorType, Ref<Item>>> ARMOR = new java.util.EnumMap<>(com.thefarawaydev.realmsofchaos.item.ArmorSets.Set.class);
@@ -418,10 +420,16 @@ public final class ModContent {
                 .mapColor(MapColor.COLOR_LIGHT_BLUE).strength(2.0F).sound(SoundType.CORAL_BLOCK).noOcclusion().randomTicks()));
         block("stygian_iron_ore", STYGIAN_IRON_ORE, key -> new net.minecraft.world.level.block.DropExperienceBlock(net.minecraft.util.valueproviders.UniformInt.of(3, 7),
                 BlockBehaviour.Properties.of().setId(key).mapColor(MapColor.COLOR_BROWN).requiresCorrectToolForDrops().strength(20.0F, 1200.0F).sound(SoundType.NETHER_ORE)));
-        block("cornucopia", CORNUCOPIA, key -> new com.thefarawaydev.realmsofchaos.block.CornucopiaBlock(BlockBehaviour.Properties.of().setId(key)
-                .mapColor(MapColor.GOLD).requiresCorrectToolForDrops().strength(50.0F, 1200.0F).sound(SoundType.METAL).noOcclusion()
-                .lightLevel(st -> st.getValue(com.thefarawaydev.realmsofchaos.block.CornucopiaBlock.CORE) == com.thefarawaydev.realmsofchaos.block.CornucopiaBlock.Core.NONE ? 0
-                        : st.getValue(com.thefarawaydev.realmsofchaos.block.CornucopiaBlock.FORMED) ? 13 : 7)));
+        // the Orb of Plenty and its three greater ranks: one block each, the same shrine, each faster and thriftier
+        for (int rank = 1; rank <= com.thefarawaydev.realmsofchaos.block.CornucopiaBlock.RANKS; rank++) {
+            final int r = rank;
+            Ref<Block> ref = rank == 1 ? CORNUCOPIA : new Ref<>();
+            PLENTY_ORBS.add(ref);
+            block(com.thefarawaydev.realmsofchaos.block.CornucopiaBlock.id(rank), ref, key -> new com.thefarawaydev.realmsofchaos.block.CornucopiaBlock(r, BlockBehaviour.Properties.of().setId(key)
+                    .mapColor(MapColor.GOLD).requiresCorrectToolForDrops().strength(50.0F, 1200.0F).sound(SoundType.METAL).noOcclusion()
+                    .lightLevel(st -> st.getValue(com.thefarawaydev.realmsofchaos.block.CornucopiaBlock.CORE) == com.thefarawaydev.realmsofchaos.block.CornucopiaBlock.Core.NONE ? 0
+                            : st.getValue(com.thefarawaydev.realmsofchaos.block.CornucopiaBlock.FORMED) ? 13 : 7)));
+        }
         block("plinth_of_plenty", PLENTY_PLINTH, key -> new com.thefarawaydev.realmsofchaos.block.PlentyBlocks.Plinth(BlockBehaviour.Properties.of().setId(key)
                 .mapColor(MapColor.COLOR_PURPLE).requiresCorrectToolForDrops().strength(5.0F, 1200.0F).sound(SoundType.STONE)
                 .lightLevel(st -> st.getValue(com.thefarawaydev.realmsofchaos.block.PlentyBlocks.LIT) ? 10 : 0)));
@@ -536,7 +544,13 @@ public final class ModContent {
         for (Def<Block> b : BLOCK_DEFS) {
             Ref<Item> ref = new Ref<>();
             BLOCK_ITEMS.put(b.id(), ref);
-            item(b.id(), ref, key -> new BlockItem(b.ref().get(), new Item.Properties().setId(key).useBlockDescriptionPrefix()));
+            item(b.id(), ref, key -> {
+                Item.Properties properties = new Item.Properties().setId(key).useBlockDescriptionPrefix();
+                // an orb says what rank it is, and what that rank does
+                if (b.ref().get() instanceof com.thefarawaydev.realmsofchaos.block.CornucopiaBlock orb) properties = properties.rarity(orb.rank >= 3
+                        ? net.minecraft.world.item.Rarity.EPIC : net.minecraft.world.item.Rarity.RARE).component(net.minecraft.core.component.DataComponents.LORE, orb.lore());
+                return new BlockItem(b.ref().get(), properties);
+            });
         }
     }
 
