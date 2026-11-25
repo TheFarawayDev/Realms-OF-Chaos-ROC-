@@ -35,7 +35,7 @@ public class CacheBlock extends Block {
     public static final IntegerProperty TOWER = IntegerProperty.create("tower", 0, 2);
     public static final EnumProperty<Direction> FACING = BlockStateProperties.HORIZONTAL_FACING;
     public static final BooleanProperty OPEN = BlockStateProperties.OPEN, LOCKED = BooleanProperty.create("locked");
-    private static final VoxelShape SHAPE = Block.box(1, 0, 1, 15, 14, 15);
+    private static final VoxelShape SHAPE = Block.box(1, 0, 1, 15, 15, 15);
 
     public CacheBlock(Properties properties) {
         super(properties);

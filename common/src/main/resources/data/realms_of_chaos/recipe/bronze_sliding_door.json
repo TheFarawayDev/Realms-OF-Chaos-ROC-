@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "redstone",
+  "key": {
+    "C": "minecraft:copper_ingot",
+    "G": "minecraft:gold_nugget"
+  },
+  "pattern": [
+    "CGC",
+    "CCC"
+  ],
+  "result": {
+    "id": "realms_of_chaos:bronze_sliding_door",
+    "count": 4
+  }
+}

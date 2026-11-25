@@ -608,6 +608,7 @@ def run(assets, data=None):
         gen_particles(assets)
         gen_sprinkler(assets, data)
         gen_puzzle2(assets, data)
+        gen_sliding_doors(assets, data)
         for floor in ("sunstone_panel", "pearl_panel", "ember_panel", "sky_mosaic", "sea_mosaic", "shade_mosaic"):
             connected_breaks(assets, floor)
 
@@ -2613,103 +2614,154 @@ def gen_cache_brazier(assets):
     def save(name, fn):
         paint_hi(fn).save(os.path.join(T, name + ".png"))
 
-    # ---- the caches: a chest in the game's manner, drawn face by face. A tower's wood in five tones and its metal in
-    # four: a dark outline, boards with their seams, a lit edge along the top of each part, iron corners on the body,
-    # straps over the lid, a latch - and, on a locked one, a padlock.
-    woods = {"zeus": ((70, 44, 22), (128, 88, 48), (168, 120, 70), (196, 150, 94), (220, 182, 124)),
-             "poseidon": ((18, 46, 50), (34, 82, 88), (52, 112, 118), (74, 140, 144), (110, 176, 176)),
-             "hades": ((22, 14, 26), (44, 30, 52), (64, 46, 74), (86, 64, 98), (116, 92, 130))}
-    metals = {"zeus": ((96, 62, 18), (176, 128, 40), (232, 186, 74), (255, 230, 140)),
-              "poseidon": ((70, 78, 86), (140, 150, 160), (196, 206, 214), (242, 246, 250)),
-              "hades": ((54, 28, 78), (110, 66, 160), (160, 110, 214), (214, 180, 250))}
+    # ---- the caches: a chest built up in layers, the game's way - a box of boards set on a metal plinth, iron guards on
+    # its corners, a lid that overhangs it by a pixel, two straps over the lid, a hasp hanging from it, and on a locked
+    # one a padlock. Each part is its own box standing proud of the one under it, so the chest has depth from every
+    # side; and each texture is drawn one texel to one model pixel: a tower's wood in five tones, its metal in four.
+    woods = {"zeus": ((62, 38, 20), (120, 80, 42), (160, 112, 64), (192, 146, 90), (222, 184, 126)),
+             "poseidon": ((16, 42, 48), (32, 78, 86), (48, 108, 114), (72, 138, 142), (112, 178, 176)),
+             "hades": ((20, 12, 24), (42, 28, 50), (62, 44, 72), (86, 64, 98), (118, 94, 132))}
+    metals = {"zeus": ((92, 58, 16), (170, 122, 36), (228, 182, 70), (255, 232, 146)),
+              "poseidon": ((62, 70, 80), (132, 144, 156), (192, 204, 214), (244, 248, 252)),
+              "hades": ((50, 24, 74), (104, 62, 154), (156, 106, 212), (216, 182, 252))}
+    gems = {"zeus": ((40, 90, 200), (120, 180, 255)), "poseidon": ((20, 140, 120), (120, 240, 210)), "hades": ((150, 20, 40), (240, 90, 100))}
     for line in LINES3:
         o, d, b, l, h = woods[line]
         mo, md, mb, mh = metals[line]
 
-        def boards(x, y, top, o=o, d=d, b=b, l=l, h=h):
-            if y == top: return h                       # the lit edge
-            if (y - top) % 4 == 0: return d             # seams between boards
-            if (x * 5 + y * 3) % 13 == 0: return l
-            if (x * 7 + y) % 17 == 0: return d
+        # boards: four-pixel planks laid across, a lit edge at the top of each and a dark seam under it, butt joints
+        # staggered from plank to plank, a little grain and the odd knot
+        def wood(x, y, o=o, d=d, b=b, l=l, h=h):
+            plank, r = y // 4, y % 4
+            if r == 3: return o if x % 5 == 0 else d
+            if x == (plank * 7 + 3) % 16: return d                     # a butt joint
+            if x == (plank * 7 + 4) % 16 and r == 0: return h
+            if r == 0: return l
+            if (x * 3 + plank * 5) % 11 == 0 and r == 1: return d      # a knot
+            if (x + plank * 3) % 6 == 0: return l if r == 1 else b
             return b
+        save(f"cache_wood_{line}", wood)
 
-        # the body's sides: boards between an outline, iron at the bottom corners (the face is x 1..14, y 6..15)
-        def body(x, y, o=o, mo=mo, md=md, mb=mb, mh=mh):
-            if x in (1, 14) or y == 15: return o
-            if y < 6: return o
-            if (x in (2, 3, 12, 13)) and y >= 13: return mh if (x in (2, 12) and y == 13) else mb if y == 13 else md
-            return boards(x, y, 6)
-        save(f"cache_body_{line}", body)
+        # the lid's top: the same boards running front to back, and a lit rim
+        def lid_top(x, y, o=o, d=d, b=b, l=l, h=h):
+            if y in (1, 14) or x in (1, 14): return o
+            if y == 2: return h
+            return wood(y, x)
+        save(f"cache_top_{line}", lid_top)
 
-        # the lid's sides (x 1..14, y 1..4): boards, a lit top edge, a dark lip along the bottom
-        def lid(x, y, o=o, d=d):
-            if x in (1, 14) or y == 0: return o
-            if y == 5 or y == 4: return d if y == 4 else o
-            return boards(x, y, 1)
-        save(f"cache_lid_{line}", lid)
+        # metal for the upright guards and straps: a lit stripe, a shadowed one, rivets every few pixels
+        def strap(x, y, mo=mo, md=md, mb=mb, mh=mh):
+            lit = x % 2 == 0
+            if y % 5 == 2: return mh if lit else mo
+            if y % 5 == 3: return mb if lit else mo
+            return mb if lit else md
+        save(f"cache_strap_{line}", strap)
 
-        # the lid's top: boards running the long way, two metal straps across, a rivet where each meets the rim
-        def top(x, y, o=o, mo=mo, md=md, mb=mb, mh=mh):
-            if x in (1, 14) or y in (1, 14): return o
-            if x in (4, 11):
-                if y in (2, 13): return mh
-                return mb if x == 4 else md
-            if x in (3, 12): return mo
-            return boards(y, x, 2)
-        save(f"cache_top_{line}", top)
+        # metal for the plinth and other bands lying flat: lit along the top, shadowed below, rivets along it
+        def band(x, y, mo=mo, md=md, mb=mb, mh=mh):
+            r = y % 2
+            if x % 4 == 1: return mh if r == 0 else mo
+            return mb if r == 0 else md
+        save(f"cache_band_{line}", band)
 
-        # the latch: a gold plate with a keyhole; and a padlock for a locked cache
-        def latch(x, y, mo=mo, md=md, mb=mb, mh=mh):
-            if x in (0, 3) or y in (0, 5): return mo
-            if x == 1 and y < 4: return mh
-            if x in (1, 2) and y in (2, 3): return (20, 14, 10)
-            return mb
-        save(f"cache_latch_{line}", latch)
+        # the hasp: a plate four wide and five tall with a gem set in it and a slot for the lock's shackle
+        gd, gl = gems[line]
+
+        def hasp(x, y, mo=mo, md=md, mb=mb, mh=mh, gd=gd, gl=gl):
+            if x > 3 or y > 4: return mb
+            if y == 0: return mh if 0 < x < 3 else mb
+            if x == 0: return mb
+            if x == 3 or y == 4: return mo
+            if y == 1 or y == 2: return gl if (x, y) == (1, 1) else gd
+            return (16, 12, 10)                                          # the slot
+        save(f"cache_latch_{line}", hasp)
+
+    # the padlock: a steel body with a keyhole, lit on its left; its shackle an arch above it
+    steel = ((36, 36, 42), (104, 108, 120), (164, 168, 182), (228, 232, 240))
 
     def padlock(x, y):
-        steel = ((40, 40, 46), (110, 112, 124), (168, 172, 184), (226, 230, 238))
-        if y <= 4:                                       # the shackle
-            if x in (1, 6) or (y == 0 and 1 <= x <= 6): return steel[2] if x == 1 or y == 0 else steel[1]
-            return None
-        if x == 0 or x == 7 or y == 15: return steel[0]
-        if x == 1 or y == 5: return steel[3]
-        if x in (3, 4) and y in (8, 9, 10): return (16, 14, 18)
+        if y <= 2:                                       # the shackle (x 0..3, y 0..2)
+            if x > 3: return None
+            if y == 0: return steel[2] if x in (1, 2) else None
+            return steel[3] if x == 0 else steel[1] if x == 3 else None
+        if x > 3 or y > 7: return None                   # the body (x 0..3, y 3..7)
+        if y == 3: return steel[3]
+        if y == 7: return steel[0]
+        if x == 0: return steel[3] if y == 4 else steel[2]
+        if x == 3: return steel[1]
+        if (x, y) in ((1, 5), (2, 5)): return (14, 12, 16)
+        if (x, y) == (1, 6): return (14, 12, 16)
         return steel[2]
     img = Image.new("RGBA", (16, 16), (0, 0, 0, 0))
     for y in range(16):
-        for x in range(8):
+        for x in range(16):
             c = padlock(x, y)
             if c: img.putpixel((x, y), tuple(c) + (255,))
     img.save(os.path.join(T, "cache_padlock.png"))
-    # what lies inside: coins on dark velvet
-    rnd_c = random.Random(229)
-    coin = {(rnd_c.randrange(16), rnd_c.randrange(16)) for _ in range(60)}
-    save("cache_inside", lambda x, y: GOLD_HI if (x, y) in coin and (x + y) % 3 == 0 else GOLD if (x, y) in coin else (110, 28, 36) if (x + y) % 2 else (90, 22, 30))
-    for old in ("cache_wood_zeus", "cache_wood_poseidon", "cache_wood_hades", "cache_lock"):
-        if os.path.exists(os.path.join(T, old + ".png")): os.remove(os.path.join(T, old + ".png"))
 
-    def face_box(a, b, side, side_uv, up=None, up_uv=None, down=None, down_uv=None, rot=None):
-        faces = {dd: {"texture": f"#{side}", "uv": list(side_uv)} for dd in ("north", "south", "east", "west")}
-        faces["up"] = {"texture": f"#{up or side}", "uv": list(up_uv or side_uv)}
-        faces["down"] = {"texture": f"#{down or side}", "uv": list(down_uv or side_uv)}
+    # what lies inside: a heap of coins on dark velvet, highest in the middle, a gem or two in it, in a rim of wood
+    rnd_c = random.Random(229)
+    heap = {}
+    for _ in range(120):
+        cx, cy = rnd_c.gauss(7.5, 2.6), rnd_c.gauss(7.5, 2.6)
+        heap[(int(cx), int(cy))] = rnd_c.random()
+
+    def inside(x, y):
+        if x in (2, 13) or y in (2, 13): return (52, 34, 22)
+        if (x, y) in ((6, 6), (9, 8)): return (120, 200, 255) if (x, y) == (6, 6) else (240, 90, 100)
+        v = heap.get((x, y))
+        if v is not None:
+            centre = math.hypot(x - 7.5, y - 7.5)
+            if v > 0.75 or centre < 2: return GOLD_HI
+            return GOLD if v > 0.3 else GOLD_LO
+        return (104, 26, 34) if (x + y) % 2 else (86, 20, 28)
+    save("cache_inside", inside)
+    for line in LINES3:
+        for old in (f"cache_body_{line}", f"cache_lid_{line}"):
+            if os.path.exists(os.path.join(T, old + ".png")): os.remove(os.path.join(T, old + ".png"))
+    if os.path.exists(os.path.join(T, "cache_lock.png")): os.remove(os.path.join(T, "cache_lock.png"))
+
+    def part(a, b, tex, uvs, rot=None):
+        """A box: uvs gives the uv of each face, by name, or of every side face at once under "side"."""
+        faces = {}
+        for f in ("north", "south", "east", "west", "up", "down"):
+            k = f if f in uvs else ("side" if f in ("north", "south", "east", "west") else "flat")
+            if k not in uvs: continue
+            uv = uvs[k]
+            faces[f] = {"texture": f"#{uv[1] if isinstance(uv, tuple) else tex}", "uv": list(uv[0] if isinstance(uv, tuple) else uv)}
         el = {"from": list(a), "to": list(b), "faces": faces}
         if rot: el["rotation"] = rot
         return el
 
     def chest(line, open_, locked):
-        tx = {"particle": t(f"cache_body_{line}"), "body": t(f"cache_body_{line}"), "lid": t(f"cache_lid_{line}"), "top": t(f"cache_top_{line}"),
-              "latch": t(f"cache_latch_{line}"), "in": t("cache_inside"), "lock": t("cache_padlock")}
+        tx = {"particle": t(f"cache_wood_{line}"), "wood": t(f"cache_wood_{line}"), "top": t(f"cache_top_{line}"),
+              "strap": t(f"cache_strap_{line}"), "band": t(f"cache_band_{line}"), "hasp": t(f"cache_latch_{line}"),
+              "in": t("cache_inside"), "lock": t("cache_padlock")}
         hinge = {"origin": [8, 10, 15], "axis": "x", "angle": 45.0} if open_ else None
-        els = [face_box((1, 0, 1), (15, 10, 15), "body", [1, 6, 15, 16], "in", [1, 1, 15, 15], "top", [1, 1, 15, 15]),
-               face_box((1, 10, 1), (15, 15, 15), "lid", [1, 0, 15, 5], "top", [1, 1, 15, 15], "top", [1, 1, 15, 15], hinge),
-               face_box((7, 8, 0), (9, 12, 1), "latch", [0, 0, 2, 4], "latch", [0, 0, 2, 1], "latch", [0, 0, 2, 1], hinge)]
+        els = [
+            # the plinth, a metal band all round the foot
+            part((1, 0, 1), (15, 2, 15), "band", {"side": [1, 0, 15, 2], "down": [1, 1, 15, 15]}),
+            # the box of boards, a pixel in from the plinth and the guards; its top is the inside, seen with the lid up
+            part((2, 2, 2), (14, 10, 14), "wood", {"side": [2, 4, 14, 12], "up": ([2, 2, 14, 14], "in")}),
+            # the lid, overhanging the box by a pixel all round, boards on its sides and its top
+            part((1, 10, 1), (15, 14, 15), "wood", {"side": [1, 0, 15, 4], "up": ([1, 1, 15, 15], "top"), "down": [1, 1, 15, 15]}, hinge),
+            # two straps over the lid, proud of it on the front, the top and the back
+            part((3, 10, 0), (5, 15, 16), "strap", {"side": [0, 0, 2, 5], "east": [0, 0, 16, 5], "west": [0, 0, 16, 5], "up": [0, 0, 2, 16]}, hinge),
+            part((11, 10, 0), (13, 15, 16), "strap", {"side": [0, 0, 2, 5], "east": [0, 0, 16, 5], "west": [0, 0, 16, 5], "up": [0, 0, 2, 16]}, hinge),
+            # the hasp, hanging from the lid's front over the box
+            part((6, 7, 0), (10, 12, 1), "hasp", {"north": [0, 0, 4, 5], "south": [0, 0, 4, 5], "east": [3, 0, 4, 5], "west": [0, 0, 1, 5],
+                                                  "up": [0, 0, 4, 1], "down": [0, 4, 4, 5]}, hinge),
+        ]
+        # iron guards up the four corners, between the plinth and the lid
+        for gx in (1, 13):
+            for gz in (1, 13):
+                els.append(part((gx, 2, gz), (gx + 2, 10, gz + 2), "strap", {"side": [0, 1, 2, 9]}))
         if locked:
-            els.append({"from": [6, 4, -1], "to": [10, 9, 0], "faces": {
-                "north": {"texture": "#lock", "uv": [0, 5, 4, 10]}, "south": {"texture": "#lock", "uv": [0, 5, 4, 10]},
-                "east": {"texture": "#lock", "uv": [0, 5, 1, 10]}, "west": {"texture": "#lock", "uv": [0, 5, 1, 10]},
-                "up": {"texture": "#lock", "uv": [0, 5, 4, 6]}, "down": {"texture": "#lock", "uv": [0, 14, 4, 15]}}})
-            els.append({"from": [6.5, 9, -0.5], "to": [9.5, 11, -0.5], "faces": {
-                "north": {"texture": "#lock", "uv": [1, 0, 7, 4]}, "south": {"texture": "#lock", "uv": [1, 0, 7, 4]}}})
+            # the padlock hangs from the hasp: its body below, its shackle through the slot
+            els.append(part((6, 3, -1), (10, 8, 0), "lock", {"north": [0, 3, 4, 8], "south": [0, 3, 4, 8], "east": [3, 3, 4, 8], "west": [0, 3, 1, 8],
+                                                             "up": [0, 3, 4, 4], "down": [0, 7, 4, 8]}))
+            els.append({"from": [6, 8, -0.5], "to": [10, 11, -0.5], "faces": {
+                "north": {"texture": "#lock", "uv": [0, 0, 4, 3]}, "south": {"texture": "#lock", "uv": [0, 0, 4, 3]}}})
         return {"parent": "minecraft:block/block", "textures": tx, "elements": els}
     variants = {}
     for i, line in enumerate(LINES3):
@@ -2986,6 +3038,55 @@ def gen_sprinkler(assets, data):
     wj(os.path.join(data, "recipe/sprinkler.json"), {"type": "minecraft:crafting_shaped", "category": "building",
                                                      "key": {"C": "minecraft:copper_ingot", "I": "minecraft:iron_bars"}, "pattern": [" C ", "CIC"],
                                                      "result": {"id": f"{MOD}:sprinkler", "count": 2}})
+
+
+def gen_sliding_doors(assets, data):
+    """Sliding doors: a panel a block square, coffered, that stacks with others into a door of any size."""
+    T = os.path.join(assets, "textures/block")
+    M = os.path.join(assets, "models/block")
+    t = lambda n: f"{MOD}:block/{n}"
+    mats = {"bronze": ("minecraft:copper_ingot", "minecraft:gold_nugget"), "sky": (f"{MOD}:olympian_marble", "minecraft:gold_nugget"),
+            "sea": ("minecraft:prismarine_bricks", "minecraft:prismarine_shard"), "shade": ("minecraft:polished_blackstone", "minecraft:amethyst_shard")}
+    for n, key in enumerate(("bronze", "sky", "sea", "shade")):
+        field, frame, band, stud, glow, emblem, style = DOOR_SPECS[key]
+        g = grain(311 + n, 0.04)
+        name = f"{key}_sliding_door"
+
+        # the face: a frame lit on its top and left and shadowed on its bottom and right, so that panels set side by
+        # side meet in a groove; a band inside it; a sunk panel; a rosette in the middle; studs at the corners
+        def face(x, y, field=field, frame=frame, band=band, stud=stud, glow=glow, g=g):
+            e = min(x, y, 15 - x, 15 - y)
+            if e == 0: return shade(frame, 1.3) if (x == 0 or y == 0) and x != 15 and y != 15 else shade(frame, 0.7)
+            if e == 1: return band if (x + y) % 2 else shade(band, 0.86)
+            if (x, y) in ((2, 2), (13, 2), (2, 13), (13, 13)): return stud
+            if e == 2: return shade(frame, 1.0)
+            if e == 3: return shade(frame, 0.82) if (x == 3 or y == 3) else shade(field, 1.22)
+            dd = abs(x - 7.5) + abs(y - 7.5)
+            if dd < 1.5: return shade(glow, 1.12)
+            if 3.0 <= dd < 4.0: return glow
+            return shade(field, g[y][x] * 0.92)
+        paint_hi(face).save(os.path.join(T, f"{name}.png"))
+
+        # the edge: the frame's metal, lit down its middle
+        def edge(x, y, frame=frame, band=band):
+            return shade(band, 1.1) if x in (7, 8) and y % 4 else shade(frame, 1.15) if x in (6, 9) else shade(frame, 0.9)
+        paint_hi(edge).save(os.path.join(T, f"{name}_edge.png"))
+        el = {"from": [0, 0, 6], "to": [16, 16, 10], "faces": {
+            "north": {"texture": "#face", "uv": [0, 0, 16, 16]}, "south": {"texture": "#face", "uv": [0, 0, 16, 16]},
+            "east": {"texture": "#edge", "uv": [6, 0, 10, 16]}, "west": {"texture": "#edge", "uv": [6, 0, 10, 16]},
+            "up": {"texture": "#edge", "uv": [0, 6, 16, 10], "rotation": 90}, "down": {"texture": "#edge", "uv": [0, 6, 16, 10], "rotation": 90}}}
+        wj(os.path.join(M, f"{name}.json"), {"parent": "minecraft:block/block",
+                                             "textures": {"particle": t(name), "face": t(name), "edge": t(f"{name}_edge")}, "elements": [el]})
+        variants = {}
+        for f, r in {"north": 0, "east": 90, "south": 180, "west": 270}.items():
+            for shift in range(5):
+                for powered in ("false", "true"):
+                    variants[f"facing={f},powered={powered},shift={shift}"] = {"model": f"{MOD}:block/{name}", "y": r}
+        wj(os.path.join(assets, f"blockstates/{name}.json"), {"variants": variants})
+        wj(os.path.join(assets, f"items/{name}.json"), {"model": {"type": "minecraft:model", "model": f"{MOD}:block/{name}"}})
+        m = mats[key]
+        wj(os.path.join(data, f"recipe/{name}.json"), {"type": "minecraft:crafting_shaped", "category": "redstone", "key": {"C": m[0], "G": m[1]},
+                                                       "pattern": ["CGC", "CCC"], "result": {"id": f"{MOD}:{name}", "count": 4}})
 
 
 def gen_puzzle2(assets, data):

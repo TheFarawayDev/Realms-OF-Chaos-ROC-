@@ -108,6 +108,8 @@ public final class ModContent {
             TARTARUS_STONE = new Ref<>(), THRONE_TILE = new Ref<>(), PORTAL_FRAME_SKY = new Ref<>(), PORTAL_FRAME_SEA = new Ref<>(),
             PORTAL_FRAME_SHADE = new Ref<>(), PORTAL_FRAME_HUB = new Ref<>(), ARRIVAL_SIGIL = new Ref<>();
     public static final Ref<Block> TOWER_BRAZIER = new Ref<>(), SPRINKLER = new Ref<>();
+    /** Sliding doors: bronze, and one in each tower's stone. */
+    public static final Ref<Block> BRONZE_SLIDING_DOOR = new Ref<>(), SKY_SLIDING_DOOR = new Ref<>(), SEA_SLIDING_DOOR = new Ref<>(), SHADE_SLIDING_DOOR = new Ref<>();
     /** The dial hall's and the sliding stones' blocks. */
     public static final Ref<Block> DIAL_STONE = new Ref<>(), FRESCO_TILE = new Ref<>(), SLIDE_STONE = new Ref<>(), STONE_SOCKET = new Ref<>();
     /** Sparring dummies, the barracks' furniture, three more doors, and the mod's glass. */
@@ -314,6 +316,10 @@ public final class ModContent {
         block("slide_stone", SLIDE_STONE, key -> new com.thefarawaydev.realmsofchaos.block.PuzzleBlocks.SlideStone(unbreakable(key).mapColor(MapColor.STONE).sound(SoundType.STONE)));
         block("stone_socket", STONE_SOCKET, key -> new com.thefarawaydev.realmsofchaos.block.PuzzleBlocks.Socket(unbreakable(key).mapColor(MapColor.STONE)
                 .lightLevel(s -> s.getValue(com.thefarawaydev.realmsofchaos.block.PuzzleBlocks.LIT) ? 11 : 2)));
+        block("bronze_sliding_door", BRONZE_SLIDING_DOOR, key -> new com.thefarawaydev.realmsofchaos.block.SlidingDoorBlock(decor(key).mapColor(MapColor.COLOR_ORANGE).sound(SoundType.COPPER).noOcclusion()));
+        block("sky_sliding_door", SKY_SLIDING_DOOR, key -> new com.thefarawaydev.realmsofchaos.block.SlidingDoorBlock(decor(key).mapColor(MapColor.QUARTZ).noOcclusion()));
+        block("sea_sliding_door", SEA_SLIDING_DOOR, key -> new com.thefarawaydev.realmsofchaos.block.SlidingDoorBlock(decor(key).mapColor(MapColor.WARPED_WART_BLOCK).noOcclusion()));
+        block("shade_sliding_door", SHADE_SLIDING_DOOR, key -> new com.thefarawaydev.realmsofchaos.block.SlidingDoorBlock(decor(key).mapColor(MapColor.COLOR_BLACK).noOcclusion()));
         block("sprinkler", SPRINKLER, key -> new com.thefarawaydev.realmsofchaos.block.SprinklerBlock(decor(key).mapColor(MapColor.COLOR_ORANGE).sound(SoundType.COPPER).noOcclusion()));
         block("arena_sand", ARENA_SAND, key -> new Block(decor(key).mapColor(MapColor.SAND).sound(SoundType.SAND).strength(1.0F)));
         block("war_drum", WAR_DRUM, key -> new com.thefarawaydev.realmsofchaos.block.WarDrumBlock(decor(key).mapColor(MapColor.COLOR_RED).sound(SoundType.WOOD).strength(1.5F).noOcclusion()));

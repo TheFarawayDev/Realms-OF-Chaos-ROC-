@@ -197,6 +197,8 @@ public final class SelfTest {
     }
 
     private static boolean open(ServerLevel level, BlockPos p) {
+        // (a sliding door is a way through: whoever comes to it can slide it open)
+        if (level.getBlockState(p).getBlock() instanceof com.thefarawaydev.realmsofchaos.block.SlidingDoorBlock) return true;
         return level.getBlockState(p).getCollisionShape(level, p).isEmpty();
     }
 
@@ -6864,6 +6866,102 @@ public final class SelfTest {
             } finally {
                 for (Passages.Plan plan : built) Passages.rearm(level, plan);
                 hero.remove(net.minecraft.world.entity.Entity.RemovalReason.DISCARDED);
+            }
+        });
+
+        step("sliding doors: a door of panels glides its width into a pocket and back, by hand or redstone; puzzle rooms are shut behind them; chests built in layers", () -> {
+            // ---- glides one block at a time, every panel together, and lands
+            java.util.function.BiConsumer<List<BlockPos>, Direction> land = (panels, d) -> {
+                for (BlockPos p : panels) if (level.getBlockEntity(p.relative(d)) instanceof net.minecraft.world.level.block.piston.PistonMovingBlockEntity glide) glide.finalTick();
+            };
+            int gy = level.getHeight(net.minecraft.world.level.levelgen.Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, 70, 40) + 3;
+            BlockPos o = new BlockPos(70, gy, 40);
+            BlockPos.betweenClosed(o.offset(-2, -1, -2), o.offset(8, 5, 2)).forEach(at -> level.setBlock(at, at.getY() == o.getY() - 1 ? Blocks.STONE.defaultBlockState() : Blocks.AIR.defaultBlockState(), 2));
+            try {
+                // a door two wide and two high, facing north: it opens to the east
+                BlockState panel = ModContent.BRONZE_SLIDING_DOOR.get().defaultBlockState().setValue(com.thefarawaydev.realmsofchaos.block.SlidingDoorBlock.FACING, Direction.NORTH);
+                for (int x = 0; x < 2; x++) for (int y = 0; y < 2; y++) level.setBlock(o.offset(x, y, 0), panel, 2 | 16);
+                check(com.thefarawaydev.realmsofchaos.block.SlidingDoorBlock.door(level, o).size() == 4 && com.thefarawaydev.realmsofchaos.block.SlidingDoorBlock.travel(level, o) == 2
+                        && com.thefarawaydev.realmsofchaos.block.SlidingDoorBlock.opens(panel) == Direction.EAST, "four panels make one door, two wide: it travels two");
+                BlockPos at = o;
+                for (int step = 0; step < 2; step++) {
+                    List<BlockPos> panels = com.thefarawaydev.realmsofchaos.block.SlidingDoorBlock.door(level, at);
+                    check(com.thefarawaydev.realmsofchaos.block.SlidingDoorBlock.move(level, at, true, false), "it glides open a block: step " + (step + 1));
+                    if (step == 0) check(level.getBlockState(o.offset(2, 0, 0)).is(Blocks.MOVING_PISTON), "gliding, not jumping");
+                    land.accept(panels, Direction.EAST);
+                    at = at.east();
+                }
+                check(!com.thefarawaydev.realmsofchaos.block.SlidingDoorBlock.move(level, at, true, false), "and stops when it has moved its width");
+                check(level.getBlockState(o).isAir() && level.getBlockState(o.offset(1, 1, 0)).isAir() && level.getBlockState(o.offset(2, 0, 0)).is(ModContent.BRONZE_SLIDING_DOOR.get())
+                        && level.getBlockState(o.offset(3, 1, 0)).getValue(com.thefarawaydev.realmsofchaos.block.SlidingDoorBlock.SHIFT) == 2, "the way is clear, the door two blocks over");
+                level.setBlock(o.offset(1, 0, 0), Blocks.STONE.defaultBlockState(), 2);
+                check(!com.thefarawaydev.realmsofchaos.block.SlidingDoorBlock.move(level, at, false, false), "something in its way holds it open");
+                level.setBlock(o.offset(1, 0, 0), Blocks.AIR.defaultBlockState(), 2);
+                for (int step = 0; step < 2; step++) {
+                    List<BlockPos> panels = com.thefarawaydev.realmsofchaos.block.SlidingDoorBlock.door(level, at);
+                    check(com.thefarawaydev.realmsofchaos.block.SlidingDoorBlock.move(level, at, false, false), "it glides shut: step " + (step + 1));
+                    land.accept(panels, Direction.WEST);
+                    at = at.west();
+                }
+                check(level.getBlockState(o).is(ModContent.BRONZE_SLIDING_DOOR.get()) && level.getBlockState(o).getValue(com.thefarawaydev.realmsofchaos.block.SlidingDoorBlock.SHIFT) == 0
+                        && level.getBlockState(o.offset(2, 0, 0)).isAir() && !com.thefarawaydev.realmsofchaos.block.SlidingDoorBlock.move(level, o, false, false), "and is back where it was shut");
+                // a redstone signal beside any panel opens the whole door
+                com.thefarawaydev.realmsofchaos.block.SlidingDoorBlock.forget();
+                level.setBlock(o.offset(-1, 0, 0), Blocks.REDSTONE_BLOCK.defaultBlockState(), 3);
+                boolean all = true;
+                for (BlockPos p : com.thefarawaydev.realmsofchaos.block.SlidingDoorBlock.door(level, o)) all &= level.getBlockState(p).getValue(com.thefarawaydev.realmsofchaos.block.SlidingDoorBlock.POWERED);
+                check(all, "a redstone signal reaches every panel, and the door sets off");
+                check(server.getRecipeManager().byKey(net.minecraft.resources.ResourceKey.create(net.minecraft.core.registries.Registries.RECIPE, RealmsOfChaos.id("sky_sliding_door"))).isPresent(),
+                        "sliding doors can be made");
+            } finally {
+                BlockPos.betweenClosed(o.offset(-2, -1, -2), o.offset(8, 5, 2)).forEach(p -> level.setBlock(p, Blocks.AIR.defaultBlockState(), 2 | 16));
+            }
+
+            // ---- a puzzle room is shut behind its tower's sliding door, with a pocket in the wall beside it
+            List<Passages.Plan> built = new ArrayList<>();
+            try {
+                Object[] found = room(level, Line.HADES, Passages.Kind.DIALS);
+                Passages.Plan plan = (Passages.Plan) found[0];
+                Passages.Cell cell = (Passages.Cell) found[1];
+                built.add(plan);
+                Passages.build(level, plan);
+                int doors = 0;
+                for (Passages.Cell n : plan.neighbours(cell)) {
+                    if (!plan.connected(cell, n)) continue;
+                    boolean forward = n.x() > cell.x() || n.z() > cell.z();
+                    Passages.Cell from = forward ? cell : n;
+                    int dir = n.x() != cell.x() ? 0 : 1;
+                    int d = forward ? Passages.CORRIDOR_FROM + 1 - (plan.small(cell) ? 1 : 0) : Passages.CORRIDOR_TO - 1 + (plan.small(cell) ? 1 : 0);
+                    BlockPos mid = Passages.along(plan, from, dir, d, 0, 2);
+                    BlockState st = level.getBlockState(mid);
+                    if (!st.is(ModContent.SHADE_SLIDING_DOOR.get())) continue;
+                    doors++;
+                    check(com.thefarawaydev.realmsofchaos.block.SlidingDoorBlock.door(level, mid).size() == 9 && st.getValue(com.thefarawaydev.realmsofchaos.block.SlidingDoorBlock.SHIFT) == 0,
+                            "a sliding door of nine panels, shut across the way in");
+                    Direction way = com.thefarawaydev.realmsofchaos.block.SlidingDoorBlock.opens(st);
+                    BlockPos pocket = mid.relative(way, 2);
+                    check(level.getBlockState(pocket).isAir() && level.getBlockState(pocket.relative(way, 2)).isAir() && !level.getBlockState(pocket.relative(way, 3)).isAir(),
+                            "with a pocket three deep in the wall beside it");
+                    BlockPos lead = mid;
+                    for (int step = 0; step < 3; step++) {
+                        List<BlockPos> panels = com.thefarawaydev.realmsofchaos.block.SlidingDoorBlock.door(level, lead);
+                        check(com.thefarawaydev.realmsofchaos.block.SlidingDoorBlock.move(level, lead, true, false), "it glides into the wall: step " + (step + 1));
+                        land.accept(panels, way);
+                        lead = lead.relative(way);
+                    }
+                    check(level.getBlockState(mid).isAir() && level.getBlockState(mid.relative(way.getOpposite())).isAir() && level.getBlockState(mid.relative(way)).isAir()
+                            && level.getBlockState(pocket).is(ModContent.SHADE_SLIDING_DOOR.get()), "open, the doorway is clear and the door is in its pocket");
+                }
+                check(doors >= 1, "a dial hall is shut behind at least one sliding door: " + doors);
+            } finally {
+                for (Passages.Plan plan : built) Passages.rearm(level, plan);
+            }
+
+            // ---- the chest is built in layers: a plinth, the box, guards on its corners, an overhanging lid, straps, a hasp
+            try (var in = SelfTest.class.getResourceAsStream("/assets/" + RealmsOfChaos.MOD_ID + "/models/block/passage_cache_zeus_locked.json")) {
+                check(in != null, "the chest's model is there");
+                var json = com.google.gson.JsonParser.parseReader(new java.io.InputStreamReader(in)).getAsJsonObject();
+                check(json.getAsJsonArray("elements").size() >= 12, "a chest of " + json.getAsJsonArray("elements").size() + " parts, each standing proud of the one under it");
             }
         });
 

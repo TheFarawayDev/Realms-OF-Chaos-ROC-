@@ -1,0 +1,164 @@
+{
+  "variants": {
+    "facing=north,powered=false,shift=0": {
+      "model": "realms_of_chaos:block/bronze_sliding_door",
+      "y": 0
+    },
+    "facing=north,powered=true,shift=0": {
+      "model": "realms_of_chaos:block/bronze_sliding_door",
+      "y": 0
+    },
+    "facing=north,powered=false,shift=1": {
+      "model": "realms_of_chaos:block/bronze_sliding_door",
+      "y": 0
+    },
+    "facing=north,powered=true,shift=1": {
+      "model": "realms_of_chaos:block/bronze_sliding_door",
+      "y": 0
+    },
+    "facing=north,powered=false,shift=2": {
+      "model": "realms_of_chaos:block/bronze_sliding_door",
+      "y": 0
+    },
+    "facing=north,powered=true,shift=2": {
+      "model": "realms_of_chaos:block/bronze_sliding_door",
+      "y": 0
+    },
+    "facing=north,powered=false,shift=3": {
+      "model": "realms_of_chaos:block/bronze_sliding_door",
+      "y": 0
+    },
+    "facing=north,powered=true,shift=3": {
+      "model": "realms_of_chaos:block/bronze_sliding_door",
+      "y": 0
+    },
+    "facing=north,powered=false,shift=4": {
+      "model": "realms_of_chaos:block/bronze_sliding_door",
+      "y": 0
+    },
+    "facing=north,powered=true,shift=4": {
+      "model": "realms_of_chaos:block/bronze_sliding_door",
+      "y": 0
+    },
+    "facing=east,powered=false,shift=0": {
+      "model": "realms_of_chaos:block/bronze_sliding_door",
+      "y": 90
+    },
+    "facing=east,powered=true,shift=0": {
+      "model": "realms_of_chaos:block/bronze_sliding_door",
+      "y": 90
+    },
+    "facing=east,powered=false,shift=1": {
+      "model": "realms_of_chaos:block/bronze_sliding_door",
+      "y": 90
+    },
+    "facing=east,powered=true,shift=1": {
+      "model": "realms_of_chaos:block/bronze_sliding_door",
+      "y": 90
+    },
+    "facing=east,powered=false,shift=2": {
+      "model": "realms_of_chaos:block/bronze_sliding_door",
+      "y": 90
+    },
+    "facing=east,powered=true,shift=2": {
+      "model": "realms_of_chaos:block/bronze_sliding_door",
+      "y": 90
+    },
+    "facing=east,powered=false,shift=3": {
+      "model": "realms_of_chaos:block/bronze_sliding_door",
+      "y": 90
+    },
+    "facing=east,powered=true,shift=3": {
+      "model": "realms_of_chaos:block/bronze_sliding_door",
+      "y": 90
+    },
+    "facing=east,powered=false,shift=4": {
+      "model": "realms_of_chaos:block/bronze_sliding_door",
+      "y": 90
+    },
+    "facing=east,powered=true,shift=4": {
+      "model": "realms_of_chaos:block/bronze_sliding_door",
+      "y": 90
+    },
+    "facing=south,powered=false,shift=0": {
+      "model": "realms_of_chaos:block/bronze_sliding_door",
+      "y": 180
+    },
+    "facing=south,powered=true,shift=0": {
+      "model": "realms_of_chaos:block/bronze_sliding_door",
+      "y": 180
+    },
+    "facing=south,powered=false,shift=1": {
+      "model": "realms_of_chaos:block/bronze_sliding_door",
+      "y": 180
+    },
+    "facing=south,powered=true,shift=1": {
+      "model": "realms_of_chaos:block/bronze_sliding_door",
+      "y": 180
+    },
+    "facing=south,powered=false,shift=2": {
+      "model": "realms_of_chaos:block/bronze_sliding_door",
+      "y": 180
+    },
+    "facing=south,powered=true,shift=2": {
+      "model": "realms_of_chaos:block/bronze_sliding_door",
+      "y": 180
+    },
+    "facing=south,powered=false,shift=3": {
+      "model": "realms_of_chaos:block/bronze_sliding_door",
+      "y": 180
+    },
+    "facing=south,powered=true,shift=3": {
+      "model": "realms_of_chaos:block/bronze_sliding_door",
+      "y": 180
+    },
+    "facing=south,powered=false,shift=4": {
+      "model": "realms_of_chaos:block/bronze_sliding_door",
+      "y": 180
+    },
+    "facing=south,powered=true,shift=4": {
+      "model": "realms_of_chaos:block/bronze_sliding_door",
+      "y": 180
+    },
+    "facing=west,powered=false,shift=0": {
+      "model": "realms_of_chaos:block/bronze_sliding_door",
+      "y": 270
+    },
+    "facing=west,powered=true,shift=0": {
+      "model": "realms_of_chaos:block/bronze_sliding_door",
+      "y": 270
+    },
+    "facing=west,powered=false,shift=1": {
+      "model": "realms_of_chaos:block/bronze_sliding_door",
+      "y": 270
+    },
+    "facing=west,powered=true,shift=1": {
+      "model": "realms_of_chaos:block/bronze_sliding_door",
+      "y": 270
+    },
+    "facing=west,powered=false,shift=2": {
+      "model": "realms_of_chaos:block/bronze_sliding_door",
+      "y": 270
+    },
+    "facing=west,powered=true,shift=2": {
+      "model": "realms_of_chaos:block/bronze_sliding_door",
+      "y": 270
+    },
+    "facing=west,powered=false,shift=3": {
+      "model": "realms_of_chaos:block/bronze_sliding_door",
+      "y": 270
+    },
+    "facing=west,powered=true,shift=3": {
+      "model": "realms_of_chaos:block/bronze_sliding_door",
+      "y": 270
+    },
+    "facing=west,powered=false,shift=4": {
+      "model": "realms_of_chaos:block/bronze_sliding_door",
+      "y": 270
+    },
+    "facing=west,powered=true,shift=4": {
+      "model": "realms_of_chaos:block/bronze_sliding_door",
+      "y": 270
+    }
+  }
+}

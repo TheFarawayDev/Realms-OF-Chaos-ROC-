@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "redstone",
+  "key": {
+    "C": "realms_of_chaos:olympian_marble",
+    "G": "minecraft:gold_nugget"
+  },
+  "pattern": [
+    "CGC",
+    "CCC"
+  ],
+  "result": {
+    "id": "realms_of_chaos:sky_sliding_door",
+    "count": 4
+  }
+}

@@ -16,6 +16,21 @@ The current build is an **Alpha**.
 
 ## What's in 1.2.0
 
+* **Sliding doors.** Four of them - bronze, and one in each tower's stone: Sky, Sea and Shade. Each block is a
+  coffered panel; set panels side by side and on top of each other and they make one door, of any size up to 64
+  panels. Use it, or give any panel a redstone signal, and the whole door glides sideways a block at a time until it
+  has moved its own width (four blocks at most) or meets something in the way; use it again, or take the signal
+  away, and it glides back. It slides to the right of whoever set it - set it while sneaking to have it slide left.
+  Crafted from the tower's stone or bronze with a nugget or shard in the middle of the top row, four at a time.
+* **Puzzle rooms behind sliding doors.** The vault, chime room, beam room, trembling floor, shutter hall, dial hall
+  and sliding stones are now shut behind a sliding door of their tower's stone, three wide and three high, that
+  slides into a pocket in the corridor wall when used. (`art/renders/sliding-door.png`, `art/videos/sliding-door.mp4`)
+* **Chests built in layers.** The treasure cache is now built up the way the game's own blocks are: a box of boards on
+  a metal plinth, iron guards up its four corners, a lid that overhangs the box by a pixel all round, two straps over
+  the lid, and a hasp hanging from it with a gem set in it - each part standing proud of the one under it, so the
+  chest has depth from every side. The boards are redrawn as staggered planks with knots and grain; inside lies a
+  heap of coins with a gem or two in it; and the padlock on a locked cache hangs from the hasp.
+  (`art/renders/chests-layered.png`)
 * **The mod's own particles.** Sixteen particles drawn for the mod at 8x8, the size of the game's own, each a few
   frames that play out over its life: storm sparks for Zeus, sea spray for Poseidon, soul wisps for Hades, a flame
   in each tower's colour for its braziers, a twinkle for treasure and solved puzzles, glyphs of the old script for

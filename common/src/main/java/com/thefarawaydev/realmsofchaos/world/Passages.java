@@ -71,7 +71,7 @@ public final class Passages {
     public static final int TALL = 8;
     public static final int MAX_SIZE = 6;
     public static final int X0 = 600, PITCH = 160;
-    public static final int LAYOUT_VERSION = 29;
+    public static final int LAYOUT_VERSION = 30;
     public static final String GUARDIAN_TAG = "realms_of_chaos_guardian";
     private static final String HUD = "hud." + RealmsOfChaos.MOD_ID + ".passage.";
 
@@ -980,6 +980,9 @@ public final class Passages {
                     // a special room is entered through double doors of bronze, thrown open against the walls
                     if (entrance(plan.kind(c))) doors(level, plan, c, dir, CORRIDOR_FROM + 1 - (plan.small(c) ? 1 : 0), door(plan, plan.kind(c)));
                     if (entrance(plan.kind(next))) doors(level, plan, c, dir, CORRIDOR_TO - 1 + (plan.small(next) ? 1 : 0), door(plan, plan.kind(next)));
+                    // a puzzle room is shut behind a sliding door of its tower's stone, that glides into the wall when used
+                    if (sliding(plan.kind(c))) slidingDoor(level, plan, c, dir, CORRIDOR_FROM + 1 - (plan.small(c) ? 1 : 0), slider(plan.line));
+                    if (sliding(plan.kind(next))) slidingDoor(level, plan, c, dir, CORRIDOR_TO - 1 + (plan.small(next) ? 1 : 0), slider(plan.line));
                 }
             }
         });
@@ -1205,6 +1208,57 @@ public final class Passages {
     static boolean entrance(Kind kind) {
         return kind == Kind.STORE || kind == Kind.ARMORY || kind == Kind.LIBRARY || kind == Kind.SANCTUM || kind == Kind.OBSERVATORY
                 || kind == Kind.SHRINE || kind == Kind.BATHS || kind == Kind.BARRACKS || kind == Kind.SMITHY || kind == Kind.WAR_ROOM;
+    }
+
+    /** The rooms shut behind a sliding door: the puzzle rooms. */
+    public static boolean sliding(Kind kind) {
+        return kind == Kind.VAULT || kind == Kind.CHIMES || kind == Kind.BEAM || kind == Kind.PLATES || kind == Kind.SHUTTERS
+                || kind == Kind.DIALS || kind == Kind.SLIDES;
+    }
+
+    /** A tower's own sliding door. */
+    public static Block slider(Line line) {
+        return switch (line) {
+            case ZEUS -> ModContent.SKY_SLIDING_DOOR.get();
+            case POSEIDON -> ModContent.SEA_SLIDING_DOOR.get();
+            case HADES -> ModContent.SHADE_SLIDING_DOOR.get();
+        };
+    }
+
+    /** The side of the corridor a sliding door {@code d} along it slides into (1 or -1), or 0 if neither wall is solid enough to take it. */
+    public static int pocketSide(ServerLevel level, Plan plan, Cell c, int dir, int d) {
+        for (int side = 1; side >= -1; side -= 2) {
+            boolean ok = true;
+            // the pocket and the stone round it: three deep into the wall, three high, walled in front, behind, above and below
+            for (int k = 2; k <= 5 && ok; k++) {
+                for (int y = 0; y <= 4 && ok; y++) {
+                    for (int dd = -1; dd <= 1 && ok; dd++) {
+                        boolean inside = k <= 4 && y >= 1 && y <= 3 && dd == 0;
+                        BlockState s = level.getBlockState(along(plan, c, dir, d + dd, k * side, y));
+                        if (!inside && (s.isAir() || s.canBeReplaced())) ok = false;
+                        if (inside && s.isAir()) ok = false;
+                    }
+                }
+            }
+            if (ok) return side;
+        }
+        return 0;
+    }
+
+    /**
+     * A sliding door three wide and three high across a corridor, {@code d} along it, shut; and the pocket in the wall
+     * beside it that it slides into. Where neither wall is solid enough to hide a pocket, there is no door.
+     */
+    static void slidingDoor(ServerLevel level, Plan plan, Cell c, int dir, int d, Block door) {
+        int side = pocketSide(level, plan, c, dir, d);
+        if (side == 0) return;
+        net.minecraft.core.Direction across = dir == 0 ? (side > 0 ? net.minecraft.core.Direction.SOUTH : net.minecraft.core.Direction.NORTH)
+                : (side > 0 ? net.minecraft.core.Direction.EAST : net.minecraft.core.Direction.WEST);
+        BlockState panel = door.defaultBlockState().setValue(com.thefarawaydev.realmsofchaos.block.SlidingDoorBlock.FACING, across.getCounterClockWise());
+        for (int y = 1; y <= 3; y++) {
+            for (int k = -1; k <= 1; k++) level.setBlock(along(plan, c, dir, d, k, y), panel, 2 | 16);
+            for (int k = 2; k <= 4; k++) level.setBlock(along(plan, c, dir, d, k * side, y), Blocks.AIR.defaultBlockState(), 2 | 16);
+        }
     }
 
     /** A pair of bronze doors either side of a corridor's middle line, {@code d} along it, open against the walls. */
