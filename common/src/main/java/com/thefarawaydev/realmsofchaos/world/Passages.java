@@ -2524,7 +2524,15 @@ public final class Passages {
             loot.add(new ItemStack(random.nextBoolean() ? Items.GOLDEN_APPLE : Items.TOTEM_OF_UNDYING, 1));
         }
         // now and then a disc: the tower's own music, or the passages'
-        if (random.nextFloat() < DISC_CHANCE) loot.add(new ItemStack(ModContent.disc(plan.line == Line.ZEUS ? "olympus" : plan.line == Line.POSEIDON ? "abyss" : "underworld")));
+        if (random.nextFloat() < DISC_CHANCE) {
+            // the tower's own music - or, in the passages of its upper floors, the music of its heights
+            boolean high = plan.tier >= 3;
+            loot.add(new ItemStack(ModContent.disc(switch (plan.line) {
+                case ZEUS -> high ? "olympus_peak" : "olympus";
+                case POSEIDON -> high ? "abyss_trench" : "abyss";
+                case HADES -> high ? "tartarus" : "underworld";
+            })));
+        }
         if (random.nextFloat() < DISC_CHANCE) loot.add(new ItemStack(ModContent.disc("passage")));
         if (plan.line == Line.HADES && random.nextFloat() < 0.5F) {
             Tarot card = Tarot.values()[random.nextInt(Tarot.values().length)];

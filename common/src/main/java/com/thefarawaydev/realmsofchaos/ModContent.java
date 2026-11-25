@@ -152,7 +152,8 @@ public final class ModContent {
             THUNDER_CORE = new Ref<>(), TIDE_CORE = new Ref<>(), SHADE_CORE = new Ref<>(), DIVINE_ICHOR = new Ref<>();
     /** The mod's own sounds: its music, and the voices of the shrine and the gate. */
     /** The mod's own music, a track for each place: each has a disc of its own, to be found. */
-    public static final java.util.List<String> TRACKS = java.util.List.of("hub", "hermitage", "olympus", "abyss", "underworld", "passage", "trial", "citadel", "gate");
+    public static final java.util.List<String> TRACKS = java.util.List.of("hub", "hermitage", "olympus", "olympus_peak", "abyss", "abyss_trench", "underworld",
+            "tartarus", "passage", "trial", "summit", "titan", "citadel", "gate");
     public static final java.util.List<String> SOUND_IDS = java.util.stream.Stream.concat(TRACKS.stream().map(t -> "music." + t),
             java.util.stream.Stream.of("orb_make", "orb_core", "orb_pattern", "orb_ichor", "shrine_awaken", "keystone_set", "gate_awaken", "ui_click")).toList();
     /** A music disc for each track, by track. */

@@ -1,0 +1,8 @@
+{
+  "sound_event": "realms_of_chaos:music.abyss_trench",
+  "description": {
+    "translate": "jukebox_song.realms_of_chaos.abyss_trench"
+  },
+  "length_in_seconds": 150.1,
+  "comparator_output": 6
+}

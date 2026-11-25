@@ -1,4 +1,7 @@
-"""The mod's score, written as MIDI and played by real sampled instruments: FluidSynth with the FluidR3 General MIDI
+"""The MIDI machinery (Score, render) the score is written with, and the sound effects. (The tracks below were the
+first version played by real instruments; the score now in use is composed in harmony.py.)
+
+The mod's score, written as MIDI and played by real sampled instruments: FluidSynth with the FluidR3 General MIDI
 soundfont (by Frank Wen, released under the MIT licence - Debian/Ubuntu package fluid-soundfont-gm). Every track has
 its own instruments - no two share a lead - its own key, register, tempo and metre, and its own hall:
 

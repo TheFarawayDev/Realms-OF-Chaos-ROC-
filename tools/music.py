@@ -313,16 +313,21 @@ def sfx():
 
 
 # every track, in order: the hub's is composed here, the rest in score.py
-TRACK_IDS = ["hub", "hermitage", "olympus", "abyss", "underworld", "passage", "trial", "citadel", "gate"]
+TRACK_IDS = ["hub", "hermitage", "olympus", "olympus_peak", "abyss", "abyss_trench", "underworld", "tartarus", "passage",
+             "trial", "summit", "titan", "citadel", "gate"]
 EFFECT_IDS = ["orb_make", "orb_core", "orb_pattern", "orb_ichor", "shrine_awaken", "keystone_set", "gate_awaken", "ui_click"]
 # bump to write every track and effect again
-SCORE_VERSION = 4
+SCORE_VERSION = 5
 
 
 def render(name):
-    """A track, played by real instruments (compose.py: FluidSynth and the FluidR3 GM soundfont)."""
-    import compose
-    return compose.TRACKS[name]()
+    """A track, composed around its harmony and played by real instruments (harmony.py, through FluidSynth and the
+    FluidR3 GM soundfont) - the Ruined Gate's the synthesised one - all brought to the same loudness."""
+    import harmony
+    x = harmony.TRACKS[name]()
+    rms = np.sqrt(np.mean(x ** 2)) + 1e-9
+    x = x * (0.17 / rms)
+    return np.tanh(x * 1.1) / np.tanh(1.1)
 
 
 def gen(assets, wj, only_missing=True):
@@ -338,7 +343,8 @@ def gen(assets, wj, only_missing=True):
     effects = None
     for name in EFFECT_IDS:
         path = os.path.join(base, "fx", f"{name}.ogg")
-        if fresh or not (only_missing and os.path.exists(path)):
+        # (the effects are kept as they are once made: only a missing one is made again)
+        if not os.path.exists(path):
             if effects is None:
                 import compose
                 effects = compose.effects()

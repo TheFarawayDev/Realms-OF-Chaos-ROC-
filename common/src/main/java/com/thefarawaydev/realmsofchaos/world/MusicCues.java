@@ -16,22 +16,30 @@ import net.minecraft.world.level.Level;
 public final class MusicCues {
     /** How near the Ruined Gate, and how far out from a citadel's walls, its music is heard. */
     public static final int GATE_REACH = 48, CITADEL_REACH = 40;
+    /** From this floor of a tower up, its upper music plays. */
+    public static final int UPPER_FLOOR = 11;
 
     private MusicCues() {}
 
     /** The track for where a player stands, or null for the game's own music. */
     public static String cue(ServerPlayer player) {
         if (!(player.level() instanceof ServerLevel level)) return null;
-        if (!level.getEntitiesOfClass(GodBoss.class, player.getBoundingBox().inflate(40), GodBoss::inTrial).isEmpty()) return "trial";
+        // a fight: a tower's king on its summit, any other god's trial, a fallen Titan roused on its keep
+        var trials = level.getEntitiesOfClass(GodBoss.class, player.getBoundingBox().inflate(40), GodBoss::inTrial);
+        if (!trials.isEmpty()) return trials.stream().anyMatch(g -> Tower.floorOf(g.god()) >= Tower.FLOORS) ? "summit" : "trial";
+        if (!level.getEntitiesOfClass(com.thefarawaydev.realmsofchaos.entity.Titan.class, player.getBoundingBox().inflate(48),
+                t -> t.isAlive() && t.getTarget() instanceof net.minecraft.world.entity.player.Player).isEmpty()) return "titan";
         if (Hermitage.isIn(level)) return "hermitage";
         Realm realm = Realm.of(level.dimension());
         if (realm != null) {
             if (Passages.locate(player) != null) return "passage";
             if (realm.line() == null) return "hub";
+            // a tower's own music, and from its upper floors on, the music of its heights (or depths)
+            boolean high = Tower.floorAt(player.getY()) >= UPPER_FLOOR;
             return switch (realm.line()) {
-                case ZEUS -> "olympus";
-                case POSEIDON -> "abyss";
-                case HADES -> "underworld";
+                case ZEUS -> high ? "olympus_peak" : "olympus";
+                case POSEIDON -> high ? "abyss_trench" : "abyss";
+                case HADES -> high ? "tartarus" : "underworld";
             };
         }
         if (level.dimension() != Level.OVERWORLD) return null;

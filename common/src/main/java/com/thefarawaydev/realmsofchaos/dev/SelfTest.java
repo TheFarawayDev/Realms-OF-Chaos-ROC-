@@ -7231,8 +7231,10 @@ public final class SelfTest {
                 hero.setPos((gateSite.x() + sky.x()) / 2.0 + 2000, 100, (gateSite.z() + sky.z()) / 2.0 - 2000);
                 check(com.thefarawaydev.realmsofchaos.world.MusicCues.cue(hero) == null, "out in the wilds, the game's own music");
                 Realm.testAlias(Level.OVERWORLD, Realm.OLYMPUS);
-                hero.setPos(5000.5, 100, 5000.5);
-                check("olympus".equals(com.thefarawaydev.realmsofchaos.world.MusicCues.cue(hero)), "in Zeus's realm, Olympus's music: " + com.thefarawaydev.realmsofchaos.world.MusicCues.cue(hero));
+                hero.setPos(5000.5, com.thefarawaydev.realmsofchaos.world.Tower.arrival(12).y, 5000.5);
+                check("olympus_peak".equals(com.thefarawaydev.realmsofchaos.world.MusicCues.cue(hero)), "high in Zeus's tower, the storm on the peak: " + com.thefarawaydev.realmsofchaos.world.MusicCues.cue(hero));
+                hero.setPos(5000.5, com.thefarawaydev.realmsofchaos.world.Tower.arrival(2).y, 5000.5);
+                check("olympus".equals(com.thefarawaydev.realmsofchaos.world.MusicCues.cue(hero)), "low in Zeus's tower, Olympus's music: " + com.thefarawaydev.realmsofchaos.world.MusicCues.cue(hero));
                 com.thefarawaydev.realmsofchaos.world.MusicCues.tell(hero);
                 check(Integer.valueOf(ModContent.TRACKS.indexOf("olympus") + 1).equals(com.thefarawaydev.realmsofchaos.ui.HudFeed.value(hero, com.thefarawaydev.realmsofchaos.ui.HudFeed.MUSIC)),
                         "and the player's game is told");

@@ -661,6 +661,8 @@ public final class Citadels {
         mob.spawnAtLocation(level, new ItemStack(ModContent.materialItem(titan.line, 2), 4 + level.getRandom().nextInt(4)));
         mob.spawnAtLocation(level, new ItemStack(Items.EXPERIENCE_BOTTLE, 6));
         if (!first) return ItemStack.EMPTY;
+        // the first time a Titan falls to somebody, its music on a disc
+        mob.spawnAtLocation(level, new ItemStack(ModContent.disc("titan")));
         Panoply.Piece[] pieces = Panoply.Piece.values();
         ItemStack gift = pieces[level.getRandom().nextInt(pieces.length)].stack();
         mob.spawnAtLocation(level, gift.copy());

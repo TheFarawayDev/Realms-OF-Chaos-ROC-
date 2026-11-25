@@ -16,34 +16,48 @@ The current build is an **Alpha**.
 
 ## What's in 1.2.0
 
-* **Nine tracks, each its own - played by real instruments.** The music is written as MIDI (`tools/compose.py`)
-  and played by sampled instruments: FluidSynth with the Fluid (R3) General MIDI SoundFont by Frank Wen (MIT licence;
-  its notice is in `assets/realms_of_chaos/sounds/CREDITS.txt`). No two tracks share a lead instrument, a key, a
-  tempo or a metre, and each has its own hall. Each plays where it belongs - the server says which, every second:
+* **Fourteen tracks, composed around their harmony and played by real instruments.** The score was written
+  again (`tools/harmony.py`) so that everything sounding at once belongs together: each track follows a chord
+  progression in one key; its pads and sustained parts are voice-led from chord to chord and stop at each change
+  rather than ringing into the next; its bass keeps to the chord's root; its melodies are built in phrases - a motif,
+  repeated and answered - with the notes on the strong beats always tones of the chord under them and the notes
+  between stepping through the key; a theme played again later lands on the same chords; and the pitched drums
+  (taiko, toms, timpani) are tuned to each chord's root. (Measured: the old arrangement had clashing notes sounding
+  together 40-50% of the time; the new one 1-6%, the rest passing notes.) The instruments are those of an ancient,
+  mythic world - harps, lyre-like guitar, pan flute and reeds, orchestral strings, horns and drums, choirs - played
+  by FluidSynth with the Fluid (R3) General MIDI SoundFont by Frank Wen (MIT licence; its notice is in
+  `assets/realms_of_chaos/sounds/CREDITS.txt`). The Ruined Gate keeps its earlier, synthesised track. All are brought
+  to the same loudness.
 
   | Track | Plays | Instruments | Key, time |
   | --- | --- | --- | --- |
-  | The Hub | the hub | Rhodes electric piano, nylon guitar, walking upright bass, brushed jazz kit | D dorian, 76 bpm, swung 4/4 |
-  | The Hermitage | your Hermitage island | music box, kalimba, ocarina, warm pad, birdsong | F major, 66 bpm, loose 4/4 |
-  | Olympus | Zeus's tower | flute, harp, pizzicato strings, French horns, glockenspiel, triangle | G lydian, 112 bpm waltz |
-  | The Abyss | Poseidon's tower | marimba, vibraphone, fretless bass, voices "oo", the sound of the sea | B minor, rolling 6/8 |
-  | The Underworld | Hades's tower | church organ, cello, contrabass, choir, a timpani heartbeat, tubular bells | C# phrygian, 46 bpm, 5/4 |
-  | The Passages | any passage level | sitar and its drone, shakuhachi, hammered dulcimer, darbuka and riq | A hijaz, 7/8 (2+2+3) |
-  | A God's Trial | while a god's trial is on, anywhere | strings in sixteenths, brass section, trombones, horns, taiko, orchestra hits, snare | E minor, 138 bpm |
-  | The Citadels | near any of the three citadels | Highland bagpipes over their drone, fife, trumpet calls, tuba, snare and bass drum | Bb mixolydian, 84 bpm march |
-  | The Ruined Gate | at the Ruined Gate | halo and crystal pads, celesta, koto, voices, reversed cymbals, atmosphere | Ab lydian, no beat |
+  | The Hub | the hub | harp, lyre-like guitar, flute, soft strings, cello, frame drum | D major, 80 bpm |
+  | The Hermitage | your Hermitage island | pan flute, harp, cello, soft strings, birdsong | F major, 66 bpm |
+  | Olympus | floors 1-10 of Zeus's tower | stately waltz: pizzicato strings, harp, flute and oboe in thirds, horns, glockenspiel | G lydian, 96 bpm, 3/4 |
+  | The Storm on the Peak | floors 11-15 of Zeus's tower | tremolo strings, driving cellos, horns and brass, choir, timpani thunder | E minor, 116 bpm |
+  | The Abyss | floors 1-10 of Poseidon's tower | harp in waves, strings, voices, clarinet, celesta, the sea | B minor, rolling 6/8 |
+  | The Trench | floors 11-15 of Poseidon's tower | low strings and basses, English horn, voices, a bowed shimmer | F# minor, 52 bpm |
+  | The Underworld | floors 1-10 of Hades's tower | trombone and tuba chorale, low strings, choir, cello, low harp, tolling bell, a heartbeat | C minor, 54 bpm |
+  | Tartarus | floors 11-15 of Hades's tower | low brass, tremolo strings, choir, pounding taiko, timpani rolls | C# minor, 84 bpm |
+  | The Passages | any passage level | pizzicato strings tiptoeing, harp, clarinet and bassoon, celesta, a ticking clock | D minor, 100 bpm |
+  | A God's Trial | any god's trial | full orchestra: spiccato strings, driving low strings, a heroic horn theme doubled by brass at the climax, choir, taiko, timpani rolls, snare, crashes, orchestra hits; built in sections with a breakdown | D minor, 148 bpm |
+  | The King on the Summit | a tower king's trial | a great choir over the full orchestra, the horn chant, tubular bells, the drums of war | B minor, 132 bpm |
+  | The Fallen Titan | fighting a roused Titan | taiko and toms, low brass and basses, tremolo strings, a roaring choir | C minor, 92 bpm |
+  | The Citadels | near the three citadels | a march: trumpet theme with horns in thirds, striding strings, tuba, snare and timpani | Bb major, 104 bpm |
+  | The Ruined Gate | at the Ruined Gate | choir, glass harmonics, deep swells (synthesised) | Ab lydian, no beat |
 
   Each is about two minutes, with about forty seconds of quiet between plays; anywhere else the game's own music
   plays. (Making them again needs `fluidsynth` and the `fluid-soundfont-gm` package; the made files are in the repo.)
-* **A music disc for every track, to be found.** Nine discs (TheFarawayDev - The Hub, Olympus, ...), each its own
+* **A music disc for every track, to be found.** Fourteen discs (TheFarawayDev - The Hub, Olympus, ...), each its own
   label colour and mark, playable in any jukebox (each gives a different comparator signal) (`art/renders/music-disc-jukebox.png`):
   * The Ruined Gate's disc is in the gate's chest; the Citadels' is with each keystone, and the Hub's among each
     citadel's stores.
   * The Hermitage's is in the chest of each new Hermitage island.
-  * A passage cache holds its tower's disc (Olympus, the Abyss or the Underworld) one time in fourteen, and the
-    Passages' disc as often.
-  * A God's Trial is dropped by a tower's king the first time it falls, and now and then (15%) by any other god the
-    first time.
+  * A passage cache holds its tower's disc one time in fourteen (on the upper floors, the Storm on the Peak, the
+    Trench or Tartarus), and the Passages' disc as often.
+  * The King on the Summit is dropped by a tower's king the first time it falls; A God's Trial by the gods of floors
+    5 and 10 the first time, and now and then (15%) by any other god the first time.
+  * The Fallen Titan drops from a Titan the first time it falls to you.
 * **Sound effects with weight, from real instruments.** The gate waking draws the air in with a reversed cymbal
   and a timpani roll, then lands on a timpani blow, a taiko, an orchestra hit and a crash, the brass section and a
   full choir in A-flat, tubular bells ringing out over them and a synthesised sub-bass blow under it all; a shrine

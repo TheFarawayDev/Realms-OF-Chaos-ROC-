@@ -5,7 +5,7 @@ again four times larger (`@4x`). `index.json` maps every texture name to its col
 
 | Atlas | Tiles | Tile size | What |
 | --- | --- | --- | --- |
-| `items.png` | 164 | 16 x 16 | every item texture (first frame of animated ones) |
+| `items.png` | 169 | 16 x 16 | every item texture (first frame of animated ones) |
 | `weapon-designs.png` | 21 | 16 x 16 | weapon designs drawn ahead for future mythologies |
 | `blocks.png` | 987 | 16 x 16 | every block texture (first frame) |
 | `skins.png` | 267 | 64 x 64 | the raw 64x64 skins of the gods (one for each phase of a trial) and the passage sentinels |

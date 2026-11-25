@@ -23,6 +23,14 @@
       }
     ]
   },
+  "music.olympus_peak": {
+    "sounds": [
+      {
+        "name": "realms_of_chaos:music/olympus_peak",
+        "stream": true
+      }
+    ]
+  },
   "music.abyss": {
     "sounds": [
       {
@@ -31,10 +39,26 @@
       }
     ]
   },
+  "music.abyss_trench": {
+    "sounds": [
+      {
+        "name": "realms_of_chaos:music/abyss_trench",
+        "stream": true
+      }
+    ]
+  },
   "music.underworld": {
     "sounds": [
       {
         "name": "realms_of_chaos:music/underworld",
+        "stream": true
+      }
+    ]
+  },
+  "music.tartarus": {
+    "sounds": [
+      {
+        "name": "realms_of_chaos:music/tartarus",
         "stream": true
       }
     ]
@@ -51,6 +75,22 @@
     "sounds": [
       {
         "name": "realms_of_chaos:music/trial",
+        "stream": true
+      }
+    ]
+  },
+  "music.summit": {
+    "sounds": [
+      {
+        "name": "realms_of_chaos:music/summit",
+        "stream": true
+      }
+    ]
+  },
+  "music.titan": {
+    "sounds": [
+      {
+        "name": "realms_of_chaos:music/titan",
         "stream": true
       }
     ]
