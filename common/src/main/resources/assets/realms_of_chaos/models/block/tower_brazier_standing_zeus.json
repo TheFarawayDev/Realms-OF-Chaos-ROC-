@@ -1,73 +1,283 @@
 {
   "parent": "minecraft:block/block",
   "textures": {
-    "particle": "realms_of_chaos:block/brazier_metal_zeus",
+    "particle": "realms_of_chaos:block/brazier_bowl_zeus",
     "metal": "realms_of_chaos:block/brazier_metal_zeus",
+    "bowl": "realms_of_chaos:block/brazier_bowl_zeus",
     "coals": "realms_of_chaos:block/brazier_coals_zeus",
+    "plate": "realms_of_chaos:block/brazier_plate_zeus",
     "flame": "realms_of_chaos:block/brazier_flame_zeus"
   },
   "elements": [
     {
       "from": [
-        4,
+        3,
         0,
-        4
+        3
       ],
       "to": [
-        12,
-        2,
-        12
+        13,
+        1,
+        13
       ],
       "faces": {
         "north": {
-          "texture": "#metal"
+          "texture": "#metal",
+          "uv": [
+            0,
+            0,
+            10,
+            1
+          ]
         },
         "south": {
-          "texture": "#metal"
+          "texture": "#metal",
+          "uv": [
+            0,
+            0,
+            10,
+            1
+          ]
         },
         "east": {
-          "texture": "#metal"
+          "texture": "#metal",
+          "uv": [
+            0,
+            0,
+            10,
+            1
+          ]
         },
         "west": {
-          "texture": "#metal"
+          "texture": "#metal",
+          "uv": [
+            0,
+            0,
+            10,
+            1
+          ]
         },
         "up": {
-          "texture": "#metal"
+          "texture": "#metal",
+          "uv": [
+            0,
+            2,
+            10,
+            12
+          ]
         },
         "down": {
-          "texture": "#metal"
+          "texture": "#metal",
+          "uv": [
+            0,
+            0,
+            10,
+            1
+          ]
         }
       }
     },
     {
       "from": [
-        6,
-        2,
-        6
+        5,
+        1,
+        5
       ],
       "to": [
-        10,
-        10,
-        10
+        11,
+        2,
+        11
       ],
       "faces": {
         "north": {
-          "texture": "#metal"
+          "texture": "#metal",
+          "uv": [
+            0,
+            0,
+            6,
+            1
+          ]
         },
         "south": {
-          "texture": "#metal"
+          "texture": "#metal",
+          "uv": [
+            0,
+            0,
+            6,
+            1
+          ]
         },
         "east": {
-          "texture": "#metal"
+          "texture": "#metal",
+          "uv": [
+            0,
+            0,
+            6,
+            1
+          ]
         },
         "west": {
-          "texture": "#metal"
+          "texture": "#metal",
+          "uv": [
+            0,
+            0,
+            6,
+            1
+          ]
         },
         "up": {
-          "texture": "#metal"
+          "texture": "#metal",
+          "uv": [
+            0,
+            2,
+            6,
+            8
+          ]
         },
         "down": {
-          "texture": "#metal"
+          "texture": "#metal",
+          "uv": [
+            0,
+            0,
+            6,
+            1
+          ]
+        }
+      }
+    },
+    {
+      "from": [
+        6.5,
+        2,
+        6.5
+      ],
+      "to": [
+        9.5,
+        10,
+        9.5
+      ],
+      "faces": {
+        "north": {
+          "texture": "#metal",
+          "uv": [
+            0,
+            1,
+            3,
+            9
+          ]
+        },
+        "south": {
+          "texture": "#metal",
+          "uv": [
+            0,
+            1,
+            3,
+            9
+          ]
+        },
+        "east": {
+          "texture": "#metal",
+          "uv": [
+            0,
+            1,
+            3,
+            9
+          ]
+        },
+        "west": {
+          "texture": "#metal",
+          "uv": [
+            0,
+            1,
+            3,
+            9
+          ]
+        },
+        "up": {
+          "texture": "#metal",
+          "uv": [
+            0,
+            1,
+            3,
+            9
+          ]
+        },
+        "down": {
+          "texture": "#metal",
+          "uv": [
+            0,
+            1,
+            3,
+            9
+          ]
+        }
+      }
+    },
+    {
+      "from": [
+        5.5,
+        7,
+        5.5
+      ],
+      "to": [
+        10.5,
+        8,
+        10.5
+      ],
+      "faces": {
+        "north": {
+          "texture": "#metal",
+          "uv": [
+            0,
+            0,
+            5,
+            1
+          ]
+        },
+        "south": {
+          "texture": "#metal",
+          "uv": [
+            0,
+            0,
+            5,
+            1
+          ]
+        },
+        "east": {
+          "texture": "#metal",
+          "uv": [
+            0,
+            0,
+            5,
+            1
+          ]
+        },
+        "west": {
+          "texture": "#metal",
+          "uv": [
+            0,
+            0,
+            5,
+            1
+          ]
+        },
+        "up": {
+          "texture": "#metal",
+          "uv": [
+            0,
+            2,
+            5,
+            7
+          ]
+        },
+        "down": {
+          "texture": "#metal",
+          "uv": [
+            0,
+            0,
+            5,
+            1
+          ]
         }
       }
     },
@@ -84,22 +294,58 @@
       ],
       "faces": {
         "north": {
-          "texture": "#metal"
+          "texture": "#bowl",
+          "uv": [
+            2,
+            0,
+            14,
+            5
+          ]
         },
         "south": {
-          "texture": "#metal"
+          "texture": "#bowl",
+          "uv": [
+            2,
+            0,
+            14,
+            5
+          ]
         },
         "east": {
-          "texture": "#metal"
+          "texture": "#bowl",
+          "uv": [
+            2,
+            0,
+            14,
+            5
+          ]
         },
         "west": {
-          "texture": "#metal"
+          "texture": "#bowl",
+          "uv": [
+            2,
+            0,
+            14,
+            5
+          ]
         },
         "up": {
-          "texture": "#coals"
+          "texture": "#coals",
+          "uv": [
+            2,
+            2,
+            14,
+            14
+          ]
         },
         "down": {
-          "texture": "#metal"
+          "texture": "#metal",
+          "uv": [
+            0,
+            2,
+            12,
+            14
+          ]
         }
       }
     },
@@ -142,7 +388,9 @@
         ],
         "axis": "y",
         "angle": 45.0
-      }
+      },
+      "shade": false,
+      "light_emission": 15
     },
     {
       "from": [
@@ -183,7 +431,9 @@
         ],
         "axis": "y",
         "angle": -45.0
-      }
+      },
+      "shade": false,
+      "light_emission": 15
     }
   ]
 }

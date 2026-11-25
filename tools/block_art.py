@@ -2644,48 +2644,116 @@ def gen_cache_brazier(assets):
     wj(os.path.join(M, "passage_cache.json"), {"parent": f"{MOD}:block/passage_cache_zeus"})
     wj(os.path.join(assets, "items/passage_cache.json"), {"model": {"type": "minecraft:model", "model": f"{MOD}:block/passage_cache_zeus"}})
 
-    # ---- braziers: the tower's metal, a bed of embers, a flat flame of three tones (two frames, like a campfire's)
-    bmetal = {"zeus": (176, 112, 52), "poseidon": (84, 152, 128), "hades": (62, 56, 72)}
-    fires = {"zeus": ((255, 240, 150), (255, 176, 48), (214, 96, 24)), "poseidon": ((214, 255, 246), (90, 220, 210), (30, 140, 150)),
-             "hades": ((234, 214, 255), (160, 112, 240), (96, 52, 170))}
-    flame_rows = ["......#.........", ".....##.....#...", ".....##....##...", "....###....##...", "....###...###...", "...####...####..",
-                  "...#####.#####..", "..#####O#######.", "..####OO######..", ".####OOOO#####..", ".###OOOOOOO###..", ".##OOOO@@OOOO##.",
-                  ".##OOO@@@@OOO##.", "..#OO@@@@@@OO#..", "..#OO@@@@@@OO#..", "...###@@@@###..."]
+    # ---- braziers: drawn one texture pixel to one model pixel. Each tower's metal in five tones - outline, shadow,
+    # base, light, and an accent for its rivets - a lip that catches the light round the bowl, coals glowing in it,
+    # and a flame of four frames in four tones of the tower's fire.
+    pal = {"zeus": ((64, 36, 18), (122, 72, 34), (176, 112, 52), (224, 164, 90), (255, 232, 140)),
+           "poseidon": ((24, 58, 52), (48, 100, 86), (84, 152, 128), (138, 204, 176), (226, 232, 236)),
+           "hades": ((20, 16, 28), (40, 34, 52), (68, 60, 82), (108, 98, 128), (176, 120, 240))}
+    fires = {"zeus": ((255, 252, 214), (255, 230, 120), (250, 168, 52), (196, 88, 26)),
+             "poseidon": ((236, 255, 250), (150, 246, 232), (60, 200, 196), (24, 120, 136)),
+             "hades": ((246, 236, 255), (204, 170, 255), (140, 92, 230), (78, 40, 150))}
     for line in LINES3:
-        mc = bmetal[line]
-        save(f"brazier_metal_{line}", lambda x, y, m=mc: shade(m, 0.72) if x in (0, 15) or y in (0, 15) else shade(m, 1.15) if y == 1 else m)
-        hot, mid, deep = fires[line]
-        save(f"brazier_coals_{line}", lambda x, y, h=hot, d=deep: h if (x * 3 + y * 5) % 6 == 0 else d if (x + y) % 3 else (60, 40, 36))
+        out_, dark, base, light, acc = pal[line]
+        core, hot, mid, deep = fires[line]
+
+        # the bowl's sides, read from the top: the lip lit, its shadow line, rivets along the band, the base in shadow
+        def bowl(x, y, out_=out_, dark=dark, base=base, light=light, acc=acc):
+            if y == 0: return light
+            if y == 1: return out_
+            if y == 2: return acc if x % 4 == 1 else base
+            if y == 3: return base
+            return dark
+        save(f"brazier_bowl_{line}", bowl)
+
+        ember_rnd = random.Random(223)
+        ember = [[ember_rnd.random() for _ in range(16)] for _ in range(16)]
+
+        # its top: the lip round the edge (2..13), coals within, hottest at the middle
+        def coals(x, y, out_=out_, light=light, base=base, hot=hot, mid=mid, deep=deep, core=core, ember=ember):
+            if x in (2, 13) or y in (2, 13): return light if x == 2 or y == 2 else base
+            if x in (3, 12) or y in (3, 12): return out_
+            r = math.hypot(x - 7.5, y - 7.5)
+            k = ember[y][x]
+            if r < 2.2 and k < 0.6: return core
+            if r < 3.6 and k < 0.6: return hot
+            if k < 0.35: return mid
+            if k < 0.7: return deep
+            return (52, 34, 30)
+        save(f"brazier_coals_{line}", coals)
+
+        # posts, feet and arms: lit down the left, shadowed down the right, a band at the top
+        def metal(x, y, out_=out_, dark=dark, base=base, light=light):
+            if y == 0: return light
+            if x % 16 == 0: return light
+            if x % 16 >= 2 and (x % 3 == 2): return dark
+            return base
+        save(f"brazier_metal_{line}", metal)
+
+        # the wall plate: framed, a rivet at each corner
+        def plate(x, y, out_=out_, dark=dark, base=base, light=light, acc=acc):
+            if x in (0, 5) or y in (0, 9): return out_
+            if (x, y) in ((1, 1), (4, 1), (1, 8), (4, 8)): return acc
+            if x == 1 or y == 1: return light
+            if x == 4 or y == 8: return dark
+            return base
+        save(f"brazier_plate_{line}", plate)
+
+        # the flame: three tongues, rising and falling frame to frame
         frames = []
-        for f in range(2):
+        tongues = [[(5.0, 10, 3.2), (8.5, 15, 4.0), (11.5, 9, 2.8)], [(5.5, 12, 3.0), (8.0, 13, 3.8), (11.0, 11, 3.0)],
+                   [(4.5, 9, 3.0), (8.5, 14, 4.2), (11.5, 12, 2.8)], [(5.0, 11, 3.2), (9.0, 15, 3.6), (11.0, 10, 3.0)]]
+        for f in range(4):
             img = Image.new("RGBA", (16, 16), (0, 0, 0, 0))
-            for y, row in enumerate(flame_rows):
-                for x, ch in enumerate(row):
-                    xx = x if f == 0 else 15 - x                 # (the second frame is the first, mirrored)
-                    if ch == "#": img.putpixel((xx, y), deep + (255,))
-                    elif ch == "O": img.putpixel((xx, y), mid + (255,))
-                    elif ch == "@": img.putpixel((xx, y), hot + (255,))
+            for y in range(16):
+                yy = 15 - y
+                for x in range(16):
+                    heat = 0.0
+                    for cx, H, W in tongues[f]:
+                        if yy >= H: continue
+                        half = W * (1 - yy / H) ** 0.75 + 0.4
+                        dx = abs(x + 0.5 - cx)
+                        if dx <= half: heat = max(heat, 1.0 - dx / half * 0.55 - yy / H * 0.5)
+                    if heat <= 0: continue
+                    c = core if heat > 0.78 else hot if heat > 0.58 else mid if heat > 0.36 else deep
+                    img.putpixel((x, y), c + (255,))
             frames.append(img)
-        strip = Image.new("RGBA", (16, 32))
-        for i, fr in enumerate(frames): strip.paste(fr, (0, i * 16))
+        strip = Image.new("RGBA", (16, 64))
+        for k, fr in enumerate(frames): strip.paste(fr, (0, k * 16))
         strip.save(os.path.join(T, f"brazier_flame_{line}.png"))
-        wj(os.path.join(T, f"brazier_flame_{line}.png.mcmeta"), {"animation": {"frametime": 6}})
+        wj(os.path.join(T, f"brazier_flame_{line}.png.mcmeta"), {"animation": {"frametime": 4}})
+
+    def box(a, b, side, side_uv, top=None, top_uv=None, bottom=None, bottom_uv=None):
+        faces = {d: {"texture": f"#{side}", "uv": list(side_uv)} for d in ("north", "south", "east", "west")}
+        faces["up"] = {"texture": f"#{top or side}", "uv": list(top_uv or side_uv)}
+        faces["down"] = {"texture": f"#{bottom or side}", "uv": list(bottom_uv or side_uv)}
+        return {"from": list(a), "to": list(b), "faces": faces}
 
     def flames(x0, x1, y0, y1):
         out = []
         for ang in (45.0, -45.0):
             el = _el((x0, y0, 8), (x1, y1, 8), {"north": "flame", "south": "flame"}, {"origin": [8, 8, 8], "axis": "y", "angle": ang})
             for face in el["faces"].values(): face["uv"] = [0, 0, 16, 16]
+            el["shade"] = False
+            el["light_emission"] = 15                          # (fire is its own light)
             out.append(el)
         return out
 
     for line in LINES3:
-        tx = {"particle": t(f"brazier_metal_{line}"), "metal": t(f"brazier_metal_{line}"), "coals": t(f"brazier_coals_{line}"), "flame": t(f"brazier_flame_{line}")}
-        floor = [_el((4, 0, 4), (12, 2, 12), _all("metal")), _el((2, 2, 2), (14, 7, 14), _all("metal", up="coals"))] + flames(2, 14, 6, 18)
-        standing = [_el((4, 0, 4), (12, 2, 12), _all("metal")), _el((6, 2, 6), (10, 10, 10), _all("metal")),
-                    _el((2, 10, 2), (14, 15, 14), _all("metal", up="coals"))] + flames(2, 14, 14, 26)
-        wall = [_el((5, 3, 14), (11, 11, 16), _all("metal")), _el((7, 5, 9), (9, 7, 14), _all("metal")),
-                _el((3, 7, 3), (13, 11, 13), _all("metal", up="coals"))] + flames(3, 13, 10, 20)
+        tx = {"particle": t(f"brazier_bowl_{line}"), "metal": t(f"brazier_metal_{line}"), "bowl": t(f"brazier_bowl_{line}"),
+              "coals": t(f"brazier_coals_{line}"), "plate": t(f"brazier_plate_{line}"), "flame": t(f"brazier_flame_{line}")}
+        bowl_top = [2, 2, 14, 14]
+        floor = [box((4, 0, 4), (12, 2, 12), "metal", [0, 0, 8, 2], "metal", [0, 2, 8, 10]),
+                 box((2, 2, 2), (14, 7, 14), "bowl", [2, 0, 14, 5], "coals", bowl_top, "metal", [0, 2, 12, 14])] + flames(2, 14, 6, 18)
+        standing = [box((3, 0, 3), (13, 1, 13), "metal", [0, 0, 10, 1], "metal", [0, 2, 10, 12]),
+                    box((5, 1, 5), (11, 2, 11), "metal", [0, 0, 6, 1], "metal", [0, 2, 6, 8]),
+                    box((6.5, 2, 6.5), (9.5, 10, 9.5), "metal", [0, 1, 3, 9]),
+                    box((5.5, 7, 5.5), (10.5, 8, 10.5), "metal", [0, 0, 5, 1], "metal", [0, 2, 5, 7]),
+                    box((2, 10, 2), (14, 15, 14), "bowl", [2, 0, 14, 5], "coals", bowl_top, "metal", [0, 2, 12, 14])] + flames(2, 14, 14, 26)
+        wall = [box((5, 2, 14), (11, 12, 16), "plate", [0, 0, 6, 10], "metal", [0, 0, 6, 2], "metal", [0, 0, 6, 2]),
+                box((7, 6, 6), (9, 8, 14), "metal", [0, 0, 8, 2], "metal", [0, 0, 2, 8]),
+                box((7, 3, 12), (9, 6, 14), "metal", [0, 0, 2, 3]),
+                box((2, 8, 2), (14, 12, 14), "bowl", [2, 0, 14, 4], "coals", bowl_top, "metal", [0, 2, 12, 14])] + flames(2, 14, 11, 21)
         for name, els in (("floor", floor), ("standing", standing), ("wall", wall)):
             wj(os.path.join(M, f"tower_brazier_{name}_{line}.json"), {"parent": "minecraft:block/block", "textures": tx, "elements": els})
     variants = {}

@@ -71,13 +71,13 @@ public final class Passages {
     public static final int TALL = 8;
     public static final int MAX_SIZE = 6;
     public static final int X0 = 600, PITCH = 160;
-    public static final int LAYOUT_VERSION = 26;
+    public static final int LAYOUT_VERSION = 27;
     public static final String GUARDIAN_TAG = "realms_of_chaos_guardian";
     private static final String HUD = "hud." + RealmsOfChaos.MOD_ID + ".passage.";
 
     public enum Kind { START, EXIT, SEAL, TREASURE, SHRINE, HALL, ROOM, TRAP, GARDEN, LIBRARY, POOL, ARENA, VAULT, CHIMES, BEAM, PLATES, CRUSHER, DARTS,
         SPIKES, FLAMES, BLADES, STAIRWELL, ARC, GAS, CELLS, STORE, GAUNTLET, OBSERVATORY, ARMORY, BATHS, SANCTUM,
-        PROVING, BARRACKS, DUEL, AMBUSH, OVERLOOK, SHUTTERS }
+        PROVING, BARRACKS, DUEL, AMBUSH, OVERLOOK, SHUTTERS, SMITHY, CRYPT, WAR_ROOM }
 
     /** How the corridor between two rooms runs: straight, round a baffle to one side or either, or past a nook. */
     public static final int RUN_STRAIGHT = 0, RUN_BEND_LOW = 1, RUN_BEND_HIGH = 2, RUN_SPLIT = 3, RUN_NOOK_LOW = 4, RUN_NOOK_HIGH = 5, RUN_GALLERY = 6, RUN_CAUSEWAY = 7;
@@ -247,6 +247,14 @@ public final class Passages {
                     case TREASURE -> h = random.nextBoolean() ? 7 : HEADROOM;
                     case ARENA, STAIRWELL, PROVING -> {
                         h = TALL;
+                        wide = true;
+                    }
+                    case SMITHY, CRYPT -> {
+                        h = random.nextBoolean() ? 7 : HEADROOM;
+                        wide = random.nextFloat() < 0.5F;
+                    }
+                    case WAR_ROOM -> {
+                        h = 7;
                         wide = true;
                     }
                     case BARRACKS, DUEL -> {
@@ -522,9 +530,10 @@ public final class Passages {
             // the rest, as a stronghold is laid out: corridors and crossings between rooms, no two rooms of a kind
             // joined by a doorway, and a kind already used on the level less likely to be used again
             Kind[] common = {Kind.HALL, Kind.ROOM, Kind.TRAP, Kind.CRUSHER, Kind.DARTS, Kind.SPIKES, Kind.FLAMES, Kind.BLADES, Kind.ARC, Kind.GAS,
-                    Kind.GARDEN, Kind.LIBRARY, Kind.POOL, Kind.CELLS, Kind.STORE, Kind.GAUNTLET, Kind.OBSERVATORY, Kind.ARMORY, Kind.BATHS, Kind.SANCTUM, Kind.BARRACKS, Kind.DUEL, Kind.AMBUSH, Kind.OVERLOOK};
-            float[] weight = {2.4F, 1.8F, 0.4F, 0.22F, 0.22F, 0.22F, 0.22F, 0.22F, 0.22F, 0.22F, 0.9F, 0.8F, 0.7F, 0.7F, 0.7F, 3.9F, 0.55F, 0.55F, 0.55F, 0.55F, 0.6F,
-                    0.45F, 0.5F, 0.5F};
+                    Kind.GARDEN, Kind.LIBRARY, Kind.POOL, Kind.CELLS, Kind.STORE, Kind.GAUNTLET, Kind.OBSERVATORY, Kind.ARMORY, Kind.BATHS, Kind.SANCTUM, Kind.BARRACKS, Kind.DUEL, Kind.AMBUSH, Kind.OVERLOOK,
+                    Kind.SMITHY, Kind.CRYPT, Kind.WAR_ROOM};
+            float[] weight = {2.4F, 1.8F, 0.4F, 0.22F, 0.22F, 0.22F, 0.22F, 0.22F, 0.22F, 0.22F, 0.9F, 0.8F, 0.7F, 0.7F, 0.7F, 4.5F, 0.55F, 0.55F, 0.55F, 0.55F, 0.6F,
+                    0.45F, 0.5F, 0.5F, 0.5F, 0.5F, 0.45F};
             // the trap halls this level is dangerous enough for, in an order of its own: no hall twice on a level
             List<Gauntlet.Variant> halls = new ArrayList<>();
             for (Gauntlet.Variant v : Gauntlet.Variant.values()) if (v.threat <= threat) halls.add(v);
@@ -610,6 +619,9 @@ public final class Passages {
                         case DUEL -> 'D';
                         case AMBUSH -> 'Y';
                         case OVERLOOK -> 'L';
+                        case SMITHY -> 'F';
+                        case CRYPT -> 'C';
+                        case WAR_ROOM -> 'M';
                     });
                     if (x + 1 < size) rooms.append(east[x][z] ? "--" : "  ");
                     below.append(z + 1 < size && south[x][z] ? "|  " : "   ");
@@ -1168,7 +1180,8 @@ public final class Passages {
     /** The doors a room is entered by: bronze for the working rooms, the tower's own for the rest. */
     static Block door(Plan plan, Kind kind) {
         if (kind == Kind.STORE || kind == Kind.ARMORY) return ModContent.BRONZE_DOOR.get();
-        if (kind == Kind.BARRACKS) return ModContent.GARRISON_DOOR.get();
+        if (kind == Kind.BARRACKS || kind == Kind.WAR_ROOM) return ModContent.GARRISON_DOOR.get();
+        if (kind == Kind.SMITHY) return ModContent.BRONZE_DOOR.get();
         return switch (plan.line) {
             case ZEUS -> ModContent.SKY_DOOR.get();
             case POSEIDON -> ModContent.SEA_DOOR.get();
@@ -1188,7 +1201,7 @@ public final class Passages {
     /** The rooms entered through a pair of doors. */
     static boolean entrance(Kind kind) {
         return kind == Kind.STORE || kind == Kind.ARMORY || kind == Kind.LIBRARY || kind == Kind.SANCTUM || kind == Kind.OBSERVATORY
-                || kind == Kind.SHRINE || kind == Kind.BATHS || kind == Kind.BARRACKS;
+                || kind == Kind.SHRINE || kind == Kind.BATHS || kind == Kind.BARRACKS || kind == Kind.SMITHY || kind == Kind.WAR_ROOM;
     }
 
     /** A pair of bronze doors either side of a corridor's middle line, {@code d} along it, open against the walls. */
@@ -1541,6 +1554,9 @@ public final class Passages {
             case DUEL -> buildDuel(level, plan, c, p, random);
             case AMBUSH -> buildAmbush(level, plan, c, p, random);
             case OVERLOOK -> buildOverlook(level, plan, c, p, random);
+            case SMITHY -> buildSmithy(level, plan, c, p, random);
+            case CRYPT -> buildCrypt(level, plan, c, p, random);
+            case WAR_ROOM -> buildWarRoom(level, plan, c, p, random);
             case SANCTUM -> {
                 // a quiet room: its whole floor one framed mosaic of the tower, its walls lined in the tower's panels, a
                 // brazier of the tower's fire in each corner, a chaos lamp hung over the middle
@@ -1612,7 +1628,8 @@ public final class Passages {
     private static void extras(ServerLevel level, Plan plan, Cell c, Random random) {
         Kind kind = plan.kind(c);
         if (kind != Kind.ROOM && kind != Kind.GARDEN && kind != Kind.LIBRARY && kind != Kind.POOL && kind != Kind.ARENA && kind != Kind.SHRINE && kind != Kind.STORE
-                && kind != Kind.OBSERVATORY && kind != Kind.ARMORY && kind != Kind.BATHS && kind != Kind.SANCTUM && kind != Kind.BARRACKS && kind != Kind.DUEL && kind != Kind.AMBUSH) return;
+                && kind != Kind.OBSERVATORY && kind != Kind.ARMORY && kind != Kind.BATHS && kind != Kind.SANCTUM && kind != Kind.BARRACKS && kind != Kind.DUEL && kind != Kind.AMBUSH
+                && kind != Kind.SMITHY && kind != Kind.CRYPT && kind != Kind.WAR_ROOM) return;
         BlockPos m = plan.centre(c);
         // against the walls, clear of the lanes that run door to door
         int w = plan.half(c);
@@ -1639,6 +1656,119 @@ public final class Passages {
     static BlockState brazier(Plan plan, com.thefarawaydev.realmsofchaos.block.BrazierBlock.Mount mount, net.minecraft.core.Direction facing) {
         return ((com.thefarawaydev.realmsofchaos.block.BrazierBlock) ModContent.TOWER_BRAZIER.get())
                 .of(plan.line.ordinal(), mount, facing == null ? net.minecraft.core.Direction.NORTH : facing);
+    }
+
+    /** Hangs braziers on a room's two side walls, a third of the way along each, facing in. */
+    private static void sideBraziers(ServerLevel level, Plan plan, Cell c) {
+        BlockPos m = plan.centre(c);
+        int far = plan.half(c);
+        for (int sx = -1; sx <= 1; sx += 2) {
+            for (int dz = -3; dz <= 3; dz += 6) {
+                if (cut(plan, c, sx * far, dz)) continue;
+                BlockPos at = m.offset(sx * far, 3, dz);
+                if (level.getBlockState(at).isAir()) level.setBlock(at, brazier(plan, com.thefarawaydev.realmsofchaos.block.BrazierBlock.Mount.WALL,
+                        sx > 0 ? net.minecraft.core.Direction.WEST : net.minecraft.core.Direction.EAST), 2);
+            }
+        }
+    }
+
+    /**
+     * A smithy: a hearth of brick in one quarter with its fires burning in two bowls, an anvil, a grindstone and a
+     * smithing table in the next, a cauldron of water to quench in; ore and coal heaped in a third, racks of finished
+     * arms in the fourth. Braziers on the walls.
+     */
+    private static void buildSmithy(ServerLevel level, Plan plan, Cell c, TowerBuilder.Palette p, Random random) {
+        BlockPos m = plan.centre(c);
+        int far = plan.half(c);
+        var FLOOR = com.thefarawaydev.realmsofchaos.block.BrazierBlock.Mount.FLOOR;
+        // the hearth, two by two, its fires on top; a hood of brick stairs over it
+        for (int dx = 2; dx <= 3; dx++) {
+            for (int dz = 2; dz <= 3; dz++) {
+                set(level, m.offset(dx, 1, dz), Blocks.BRICKS);
+                level.setBlock(m.offset(dx, 2, dz), (dx + dz) % 2 == 0 ? brazier(plan, FLOOR, null) : Blocks.AIR.defaultBlockState(), 2);
+            }
+        }
+        for (int dx = 2; dx <= 3; dx++) for (int dz = 2; dz <= 3; dz++) set(level, m.offset(dx, 4, dz), Blocks.BRICKS);
+        for (int y = 5; y <= plan.height(c); y++) set(level, m.offset(3, y, 3), Blocks.BRICKS);
+        set(level, m.offset(4, 1, 4), Blocks.BARREL);
+        // the anvil and its tools
+        set(level, m.offset(3, 1, -3), Blocks.ANVIL);
+        level.setBlock(m.offset(2, 1, -2), Blocks.WATER_CAULDRON.defaultBlockState().setValue(net.minecraft.world.level.block.LayeredCauldronBlock.LEVEL, 3), 2);
+        set(level, m.offset(4, 1, -2), Blocks.GRINDSTONE);
+        set(level, m.offset(2, 1, -4), Blocks.SMITHING_TABLE);
+        // ore and coal, heaped
+        Block[] heap = {Blocks.COAL_BLOCK, Blocks.RAW_IRON_BLOCK, Blocks.COAL_BLOCK, Blocks.RAW_COPPER_BLOCK};
+        int n = 0;
+        for (int dx = -4; dx <= -2; dx++) for (int dz = -4; dz <= -2; dz++) if (Math.max(-dx, -dz) >= 3 && dx >= -far && dz >= -far) set(level, m.offset(dx, 1, dz), heap[n++ % heap.length]);
+        set(level, m.offset(-4, 2, -4), Blocks.COAL_BLOCK);
+        // racks of finished arms on the walls of the last quarter
+        var racks = (com.thefarawaydev.realmsofchaos.block.WeaponRackBlock) ModContent.WEAPON_RACK.get();
+        for (int d = 2; d < far; d++) {
+            if (!cut(plan, c, -far, d)) level.setBlock(m.offset(-far, 2, d), racks.facing(net.minecraft.core.Direction.EAST), 2);
+            if (!cut(plan, c, -d, far)) level.setBlock(m.offset(-d, 2, far), racks.facing(net.minecraft.core.Direction.NORTH), 2);
+        }
+        sideBraziers(level, plan, c);
+    }
+
+    /**
+     * A crypt: four stone coffins in its quarters, lidded, candles burning on them; a standing brazier in each corner,
+     * cobwebs in the corners above.
+     */
+    private static void buildCrypt(ServerLevel level, Plan plan, Cell c, TowerBuilder.Palette p, Random random) {
+        BlockPos m = plan.centre(c);
+        int far = plan.half(c), h = plan.height(c);
+        Mason.Stone stone = Mason.of(p.wall());
+        for (int sx = -1; sx <= 1; sx += 2) {
+            for (int sz = -1; sz <= 1; sz += 2) {
+                // a coffin two long, its head to the wall
+                for (int v = 2; v <= 3; v++) {
+                    BlockPos at = m.offset(sx * 3, 1, sz * v);
+                    set(level, at, p.wall());
+                    level.setBlock(at.above(), Mason.slab(stone.slab(), false), 2);
+                }
+                level.setBlock(m.offset(sx * 3, 2, sz * 2).above(), Blocks.CANDLE.defaultBlockState().setValue(net.minecraft.world.level.block.CandleBlock.LIT, true)
+                        .setValue(net.minecraft.world.level.block.CandleBlock.CANDLES, 1 + random.nextInt(3)), 2);
+                if (!cut(plan, c, sx * far, sz * far)) level.setBlock(m.offset(sx * far, 1, sz * far), brazier(plan, com.thefarawaydev.realmsofchaos.block.BrazierBlock.Mount.STANDING, null), 2);
+                set(level, m.offset(sx * far, h, sz * far), Blocks.COBWEB);
+            }
+        }
+        // an aisle of the tower's inlay between them
+        for (int d = -far; d <= far; d++) set(level, m.offset(0, 0, d), p.inlay());
+    }
+
+    /**
+     * A war room: a long table across the middle of one half, chairs drawn up along both sides, a lectern at its head
+     * for the orders; the tower's standards on plinths in the corners; braziers on the walls.
+     */
+    private static void buildWarRoom(ServerLevel level, Plan plan, Cell c, TowerBuilder.Palette p, Random random) {
+        BlockPos m = plan.centre(c);
+        int far = plan.half(c);
+        for (int sz = -1; sz <= 1; sz += 2) {
+            // a table in each half, clear of the lanes: three long, chairs facing it
+            for (int dx = 2; dx <= 4; dx++) {
+                for (int sx = -1; sx <= 1; sx += 2) {
+                    set(level, m.offset(sx * dx, 1, sz * 3), ModContent.TABLE.get());
+                    level.setBlock(m.offset(sx * dx, 1, sz * 2), ModContent.CHAIR.get().defaultBlockState()
+                            .setValue(com.thefarawaydev.realmsofchaos.block.Furniture.FACING, sz > 0 ? net.minecraft.core.Direction.SOUTH : net.minecraft.core.Direction.NORTH), 2);
+                    if (far >= 5) level.setBlock(m.offset(sx * dx, 1, sz * 4), ModContent.CHAIR.get().defaultBlockState()
+                            .setValue(com.thefarawaydev.realmsofchaos.block.Furniture.FACING, sz > 0 ? net.minecraft.core.Direction.NORTH : net.minecraft.core.Direction.SOUTH), 2);
+                }
+            }
+            level.setBlock(m.offset(3, 2, sz * 3), Blocks.CANDLE.defaultBlockState().setValue(net.minecraft.world.level.block.CandleBlock.LIT, true)
+                    .setValue(net.minecraft.world.level.block.CandleBlock.CANDLES, 2), 2);
+            level.setBlock(m.offset(-3, 2, sz * 3), Blocks.CANDLE.defaultBlockState().setValue(net.minecraft.world.level.block.CandleBlock.LIT, true), 2);
+        }
+        // the tower's standards in the corners, on plinths
+        for (int sx = -1; sx <= 1; sx += 2) {
+            for (int sz = -1; sz <= 1; sz += 2) {
+                if (cut(plan, c, sx * far, sz * far)) continue;
+                set(level, m.offset(sx * far, 1, sz * far), p.trim());
+                level.setBlock(m.offset(sx * far, 2, sz * far), ModContent.WAR_STANDARD.get().defaultBlockState()
+                        .setValue(com.thefarawaydev.realmsofchaos.block.WarStandardBlock.FACING, sx > 0 ? net.minecraft.core.Direction.WEST : net.minecraft.core.Direction.EAST), 2);
+            }
+        }
+        set(level, m.offset(far, 1, 2), Blocks.LECTERN);
+        sideBraziers(level, plan, c);
     }
 
     /** The stairwell's upper floor: how high it is, how far south the loft along the north wall comes, and where its
@@ -2807,6 +2937,9 @@ public final class Passages {
                     case DUEL -> "duel";
                     case AMBUSH -> "ambush";
                     case OVERLOOK -> "overlook";
+                    case SMITHY -> "smithy";
+                    case CRYPT -> "crypt";
+                    case WAR_ROOM -> "war_room";
                     case EXIT -> sealsLeft(level, plan) > 0 ? "exit.sealed" : plan.last() ? "exit.open" : "exit.deeper";
                     default -> null;
                 };

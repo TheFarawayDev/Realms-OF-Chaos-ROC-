@@ -341,6 +341,14 @@ public final class SelfTest {
         check(solid(level, new BlockPos(22, y0 + 2, 0)), at + "outer wall");
         if (floor < Tower.FLOORS) check(solid(level, new BlockPos(5, y0 + Tower.ROOM_HEIGHT + 1, 5)), at + "roof");
 
+        int hung = 0;
+        for (BlockPos spot : BlockPos.betweenClosed(-22, y0 + 3, -22, 22, y0 + 3, 22)) {
+            BlockState b = level.getBlockState(spot);
+            if (!b.is(ModContent.TOWER_BRAZIER.get())) continue;
+            check(solid(level, spot.relative(b.getValue(com.thefarawaydev.realmsofchaos.block.BrazierBlock.FACING).getOpposite())), at + "a wall brazier hangs on the wall at " + spot);
+            hung++;
+        }
+        check(hung >= 5, at + "braziers hang round the wall: " + hung);
         int ring = Tower.FIGHT_RADIUS - 1;
         for (int x = -ring; x <= ring; x++) {
             for (int z = -ring; z <= ring; z++) {
@@ -6687,6 +6695,34 @@ public final class SelfTest {
             } finally {
                 if (hall != null) Passages.rearm(level, hall);
                 hero.remove(net.minecraft.world.entity.Entity.RemovalReason.DISCARDED);
+            }
+        });
+
+        step("more rooms: a smithy at its hearth, a crypt of lidded coffins, a war room round its tables - each lit by braziers", () -> {
+            Realm.testAlias(Level.OVERWORLD, Realm.OLYMPUS);
+            for (Passages.Kind kind : List.of(Passages.Kind.SMITHY, Passages.Kind.CRYPT, Passages.Kind.WAR_ROOM)) {
+                Object[] found = room(level, Line.ZEUS, kind);
+                Passages.Plan plan = (Passages.Plan) found[0];
+                Passages.Cell c = (Passages.Cell) found[1];
+                Passages.build(level, plan);
+                BlockPos m = plan.centre(c);
+                int far = plan.half(c), braziers = 0;
+                java.util.Map<net.minecraft.world.level.block.Block, Integer> seen = new java.util.HashMap<>();
+                for (BlockPos at : BlockPos.betweenClosed(m.offset(-far, 1, -far), m.offset(far, plan.height(c), far))) {
+                    net.minecraft.world.level.block.Block b = level.getBlockState(at).getBlock();
+                    seen.merge(b, 1, Integer::sum);
+                    if (b == ModContent.TOWER_BRAZIER.get()) braziers++;
+                }
+                check(braziers >= 2, kind + ": lit by braziers: " + braziers);
+                switch (kind) {
+                    case SMITHY -> check(seen.containsKey(Blocks.ANVIL) && seen.containsKey(Blocks.BRICKS) && seen.containsKey(Blocks.WATER_CAULDRON), "a smithy has its hearth, anvil and quench");
+                    case CRYPT -> check(seen.getOrDefault(Blocks.CANDLE, 0) == 4, "a crypt has four coffins, a candle on each");
+                    default -> check(seen.getOrDefault(ModContent.TABLE.get(), 0) == 12 && seen.getOrDefault(ModContent.CHAIR.get(), 0) >= 12, "a war room has its tables and chairs");
+                }
+                for (int dx = -1; dx <= 1; dx++) for (int y = 1; y <= 3; y++) {
+                    check(level.getBlockState(m.offset(dx, y, far)).isAir() && level.getBlockState(m.offset(far, y, dx)).isAir() && level.getBlockState(m.offset(dx, y, 0)).isAir(),
+                            kind + ": its lanes are clear");
+                }
             }
         });
 

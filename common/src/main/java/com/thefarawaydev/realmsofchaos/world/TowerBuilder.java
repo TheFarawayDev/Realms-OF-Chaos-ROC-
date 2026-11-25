@@ -17,7 +17,7 @@ import net.minecraft.world.level.block.state.BlockState;
  * solid stands inside the fight ring, the entrance and exit corridors are flat, and the whole floor is enclosed.
  */
 public final class TowerBuilder {
-    public static final int LAYOUT_VERSION = 11;
+    public static final int LAYOUT_VERSION = 12;
 
     public enum Layout { FLAT, MOUNDS, PILLARS, PIT, DAIS, WAVES, MOAT, TERRACES, SPLIT, ZIGGURAT, SUMMIT }
 
@@ -301,6 +301,18 @@ public final class TowerBuilder {
         // ---- gates: home to the hub on the south side, up to the next floor on the north side
         gate(level, 0, y0, 19, p, ModContent.GATE_HUB.get(), Passages.portalFrame(line));
         if (!summit) gate(level, 0, y0, -19, p, ModContent.GATE_ASCEND.get(), Passages.portalFrame(line));
+        // braziers: in brackets round the wall between the windows, and standing either side of each gate - all outside
+        // the fight ring, which is kept clear
+        wallBraziers(level, line, y0);
+        for (int gz : summit ? new int[]{19} : new int[]{19, -19}) {
+            for (int side = -1; side <= 1; side += 2) {
+                BlockPos at = new BlockPos(side * 4, y0 + 1, gz - Integer.signum(gz));
+                if (level.getBlockState(at).isAir() && level.getBlockState(at.above()).isAir() && level.getBlockState(at.below()).isSolid()) {
+                    level.setBlock(at, ((com.thefarawaydev.realmsofchaos.block.BrazierBlock) ModContent.TOWER_BRAZIER.get())
+                            .of(line.ordinal(), com.thefarawaydev.realmsofchaos.block.BrazierBlock.Mount.STANDING, Direction.NORTH), 2);
+                }
+            }
+        }
         com.thefarawaydev.realmsofchaos.block.ConnectedBlock.settle(level, new BlockPos(-ri, y0 - 1, -ri), new BlockPos(ri, y0 + Tower.ROOM_HEIGHT + 1, ri));
     }
 
@@ -308,6 +320,41 @@ public final class TowerBuilder {
      * The glass in a tower's windows: Zeus's is reinforced, framed in bronze; Poseidon's frosted like sea-mist; Hades's
      * one-way - a dark mirror to anyone outside, clear to anyone within.
      */
+    /**
+     * Braziers on the inside of a floor's wall, at the height of its dado, between the windows - every other gap, and
+     * none on the two walls the gates stand in. @return where they hang
+     */
+    public static java.util.List<BlockPos> wallBraziers(ServerLevel level, Line line, int y0) {
+        java.util.List<BlockPos> out = new java.util.ArrayList<>();
+        var brazier = (com.thefarawaydev.realmsofchaos.block.BrazierBlock) ModContent.TOWER_BRAZIER.get();
+        for (int k = 0; k < 16; k += 2) {
+            if (k == 4 || k == 12) continue;                        // (the gates' walls)
+            double a = k / 16.0 * Math.PI * 2 - Math.PI;
+            // (facing inward along whichever axis has something solid behind it: on a diagonal wall, either may)
+            double cx = -Math.cos(a), cz = -Math.sin(a);
+            java.util.List<Direction> ways = new java.util.ArrayList<>();
+            if (Math.abs(cx) > 0.3) ways.add(cx > 0 ? Direction.EAST : Direction.WEST);
+            if (Math.abs(cz) > 0.3) ways.add(cz > 0 ? Direction.SOUTH : Direction.NORTH);
+            placing:
+            for (double r = Tower.WALL_INNER + 0.5; r >= Tower.WALL_INNER - 4.0; r -= 0.5) {
+                BlockPos near = new BlockPos((int) Math.round(Math.cos(a) * r), y0 + 3, (int) Math.round(Math.sin(a) * r));
+                // (the point on the line, or a block to either side of it: on a diagonal, what is behind is beside)
+                for (int[] o : new int[][]{{0, 0}, {1, 0}, {-1, 0}, {0, 1}, {0, -1}}) {
+                    BlockPos at = near.offset(o[0], 0, o[1]);
+                    if (!level.getBlockState(at).isAir()) continue;
+                    for (Direction in : ways) {
+                        if (level.getBlockState(at.relative(in.getOpposite())).isSolid()) {
+                            level.setBlock(at, brazier.of(line.ordinal(), com.thefarawaydev.realmsofchaos.block.BrazierBlock.Mount.WALL, in), 2);
+                            out.add(at);
+                            break placing;
+                        }
+                    }
+                }
+            }
+        }
+        return out;
+    }
+
     /**
      * The way a whole window faces out: the middle of its sector, not each block's own bearing, so that every block of
      * one window faces the same way and joins up with the rest.

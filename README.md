@@ -109,10 +109,23 @@ The current build is an **Alpha**.
   Poseidon, black wood and violet for Hades. Every cache is turned to face the middle of its room, and when someone
   takes their share its lid swings up over a bed of coins and falls shut a couple of seconds later.
   (`art/renders/caches-and-braziers.png`)
-* **Braziers three ways.** The tower brazier comes as a low **bowl**, a **standing** brazier on a post, and a
-  **wall** brazier on a bracket - each a few plain boxes of its tower's metal (bronze, verdigris, black iron), a bed
-  of embers, and a flat, flickering campfire-style flame in its tower's fire. Set one on a floor and it stands; set it
-  against a wall and it hangs there. Sanctums and room corners now have standing braziers.
+* **Braziers three ways, redrawn.** The tower brazier comes as a low **bowl**, a **standing** brazier on a post, and
+  a **wall** brazier on a riveted plate. Its art is drawn one texture pixel to one model pixel, the way the game's
+  own blocks are: each tower's metal in five tones (bronze, verdigris, black iron) with a lit lip, a band of rivets
+  and a shadowed foot; coals that glow hottest in the middle; and a four-frame flame of three tongues in four tones
+  of the tower's fire, which glows on its own in the dark. Set one on a floor and it stands; set it against a wall and
+  it hangs there. (`art/renders/caches-and-braziers.png`)
+* **Braziers in the towers.** Every tower floor has braziers in brackets round its wall between the windows, and a
+  standing brazier either side of each gate - all outside the fight ring. (`art/renders/tower-braziers.png`,
+  `tower-gate-braziers.png`)
+* **Three more passage rooms**, each lit by braziers:
+  * **Smithy** - a brick hearth with its fires burning in two bowls and its flue up through the ceiling; an anvil,
+    grindstone, smithing table and a cauldron to quench in; ore and coal heaped in a corner; racks of finished arms.
+    Entered through bronze doors. (`art/renders/smithy.png`)
+  * **Crypt** - four lidded stone coffins with candles burning on them, a standing brazier in each corner, cobwebs
+    overhead, an aisle of the tower's inlay. (`art/renders/crypt.png`)
+  * **War Room** - two long tables with chairs drawn up on both sides and candles on them, a lectern for the orders,
+    the tower's standards on plinths in the corners. Entered through garrison doors. (`art/renders/war-room.png`)
 * **The two-storey stairwell, rebuilt.** A straight flight of steps climbs each side wall to an upper floor that runs
   along both side walls and across the north end, with one railing round its inner edge; two pillars carry the north
   end, and the hall below is left open, a runner of inlay up its middle. Upstairs the cache stands against the north

@@ -1,117 +1,295 @@
 {
   "parent": "minecraft:block/block",
   "textures": {
-    "particle": "realms_of_chaos:block/brazier_metal_poseidon",
+    "particle": "realms_of_chaos:block/brazier_bowl_poseidon",
     "metal": "realms_of_chaos:block/brazier_metal_poseidon",
+    "bowl": "realms_of_chaos:block/brazier_bowl_poseidon",
     "coals": "realms_of_chaos:block/brazier_coals_poseidon",
+    "plate": "realms_of_chaos:block/brazier_plate_poseidon",
     "flame": "realms_of_chaos:block/brazier_flame_poseidon"
   },
   "elements": [
     {
       "from": [
         5,
-        3,
+        2,
         14
       ],
       "to": [
         11,
-        11,
+        12,
         16
       ],
       "faces": {
         "north": {
-          "texture": "#metal"
+          "texture": "#plate",
+          "uv": [
+            0,
+            0,
+            6,
+            10
+          ]
         },
         "south": {
-          "texture": "#metal"
+          "texture": "#plate",
+          "uv": [
+            0,
+            0,
+            6,
+            10
+          ]
         },
         "east": {
-          "texture": "#metal"
+          "texture": "#plate",
+          "uv": [
+            0,
+            0,
+            6,
+            10
+          ]
         },
         "west": {
-          "texture": "#metal"
+          "texture": "#plate",
+          "uv": [
+            0,
+            0,
+            6,
+            10
+          ]
         },
         "up": {
-          "texture": "#metal"
+          "texture": "#metal",
+          "uv": [
+            0,
+            0,
+            6,
+            2
+          ]
         },
         "down": {
-          "texture": "#metal"
+          "texture": "#metal",
+          "uv": [
+            0,
+            0,
+            6,
+            2
+          ]
         }
       }
     },
     {
       "from": [
         7,
-        5,
-        9
+        6,
+        6
       ],
       "to": [
         9,
-        7,
+        8,
         14
       ],
       "faces": {
         "north": {
-          "texture": "#metal"
+          "texture": "#metal",
+          "uv": [
+            0,
+            0,
+            8,
+            2
+          ]
         },
         "south": {
-          "texture": "#metal"
+          "texture": "#metal",
+          "uv": [
+            0,
+            0,
+            8,
+            2
+          ]
         },
         "east": {
-          "texture": "#metal"
+          "texture": "#metal",
+          "uv": [
+            0,
+            0,
+            8,
+            2
+          ]
         },
         "west": {
-          "texture": "#metal"
+          "texture": "#metal",
+          "uv": [
+            0,
+            0,
+            8,
+            2
+          ]
         },
         "up": {
-          "texture": "#metal"
+          "texture": "#metal",
+          "uv": [
+            0,
+            0,
+            2,
+            8
+          ]
         },
         "down": {
-          "texture": "#metal"
+          "texture": "#metal",
+          "uv": [
+            0,
+            0,
+            8,
+            2
+          ]
         }
       }
     },
     {
       "from": [
-        3,
         7,
-        3
+        3,
+        12
       ],
       "to": [
-        13,
-        11,
-        13
+        9,
+        6,
+        14
       ],
       "faces": {
         "north": {
-          "texture": "#metal"
+          "texture": "#metal",
+          "uv": [
+            0,
+            0,
+            2,
+            3
+          ]
         },
         "south": {
-          "texture": "#metal"
+          "texture": "#metal",
+          "uv": [
+            0,
+            0,
+            2,
+            3
+          ]
         },
         "east": {
-          "texture": "#metal"
+          "texture": "#metal",
+          "uv": [
+            0,
+            0,
+            2,
+            3
+          ]
         },
         "west": {
-          "texture": "#metal"
+          "texture": "#metal",
+          "uv": [
+            0,
+            0,
+            2,
+            3
+          ]
         },
         "up": {
-          "texture": "#coals"
+          "texture": "#metal",
+          "uv": [
+            0,
+            0,
+            2,
+            3
+          ]
         },
         "down": {
-          "texture": "#metal"
+          "texture": "#metal",
+          "uv": [
+            0,
+            0,
+            2,
+            3
+          ]
         }
       }
     },
     {
       "from": [
-        3,
-        10,
+        2,
+        8,
+        2
+      ],
+      "to": [
+        14,
+        12,
+        14
+      ],
+      "faces": {
+        "north": {
+          "texture": "#bowl",
+          "uv": [
+            2,
+            0,
+            14,
+            4
+          ]
+        },
+        "south": {
+          "texture": "#bowl",
+          "uv": [
+            2,
+            0,
+            14,
+            4
+          ]
+        },
+        "east": {
+          "texture": "#bowl",
+          "uv": [
+            2,
+            0,
+            14,
+            4
+          ]
+        },
+        "west": {
+          "texture": "#bowl",
+          "uv": [
+            2,
+            0,
+            14,
+            4
+          ]
+        },
+        "up": {
+          "texture": "#coals",
+          "uv": [
+            2,
+            2,
+            14,
+            14
+          ]
+        },
+        "down": {
+          "texture": "#metal",
+          "uv": [
+            0,
+            2,
+            12,
+            14
+          ]
+        }
+      }
+    },
+    {
+      "from": [
+        2,
+        11,
         8
       ],
       "to": [
-        13,
-        20,
+        14,
+        21,
         8
       ],
       "faces": {
@@ -142,17 +320,19 @@
         ],
         "axis": "y",
         "angle": 45.0
-      }
+      },
+      "shade": false,
+      "light_emission": 15
     },
     {
       "from": [
-        3,
-        10,
+        2,
+        11,
         8
       ],
       "to": [
-        13,
-        20,
+        14,
+        21,
         8
       ],
       "faces": {
@@ -183,7 +363,9 @@
         ],
         "axis": "y",
         "angle": -45.0
-      }
+      },
+      "shade": false,
+      "light_emission": 15
     }
   ]
 }
