@@ -16,6 +16,20 @@ The current build is an **Alpha**.
 
 ## What's in 1.2.0
 
+* **The shrine, the clam and the ores, modelled.** The physical blocks are built in layers with real depth, and their
+  lit parts glow:
+  * the **Cornucopia** is a horn that truly curves - eighteen tapering segments of ivory set along a curve, three gold
+    bands standing proud of it, an octagonal gold rim round a dark throat, a gem in the mouth that glows in the colour
+    of its core, and grapes, an apple with its leaf and ears of wheat spilling out onto the plinth
+    (`art/renders/cornucopia-horn-side.png`, `cornucopia-horn-front.png`);
+  * the **Plinth of Plenty** has a footing, a gold moulding, a body of inset panels with an inlaid line round each, a
+    cornice with a running meander and a polished top; the inlay glows when the shrine is whole;
+  * each **Column of Plenty** has a rounded fluted shaft with four inlaid strips that glow, a base of mouldings and an
+    Ionic capital with volutes at its corners (`art/renders/shrine-of-plenty-night.png`);
+  * the **Giant Clam** has ribbed, scalloped halves with a wavy lip, a bright blue-green mantle between them, and a
+    pearl that shimmers when it is open (`art/renders/clams-and-ore.png`);
+  * **Deepslate Adamantine Ore** and **Stygian Iron Ore** are a base of stone with an overlay of crystals or lumps
+    that glint faintly in the dark (`art/renders/clams-and-ore-night.png`).
 * **The long roads: resources to grind, and the relics made from them.** Three new resources are won from the
   world itself, one for each god's domain, and each is the start of a long chain of crafting:
   * **Storm glass (the sky).** Where lightning strikes sand, the sand fuses into **Fulgurite** - so a lightning rod set

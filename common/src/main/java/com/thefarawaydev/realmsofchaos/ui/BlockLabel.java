@@ -29,6 +29,16 @@ public final class BlockLabel {
 
     private BlockLabel() {}
 
+    /**
+     * A panel left behind in a saved world (the game stopped while it showed) is nobody's: when it loads again, it
+     * goes. Called by each loader as an entity joins a level.
+     */
+    public static void onLoad(net.minecraft.world.entity.Entity entity) {
+        if (!(entity instanceof Display.TextDisplay display) || !display.entityTags().contains(TAG)) return;
+        for (Shown shown : SHOWN.values()) if (shown.display() == display) return;
+        display.discard();
+    }
+
     private static final Map<String, java.lang.reflect.Method> METHODS = new HashMap<>();
 
     /**
@@ -72,6 +82,7 @@ public final class BlockLabel {
             call(Display.TextDisplay.class, display, "setLineWidth", int.class, 240);
             call(Display.class, display, "setViewRange", float.class, 0.6F);
             display.addTag(TAG);
+            SHOWN.put(k, new Shown(display, now + ticks));       // (known before it joins the level, so it is not taken for a stray)
             level.addFreshEntity(display);
         }
         call(Display.TextDisplay.class, display, "setText", Component.class, panel(message, colour));

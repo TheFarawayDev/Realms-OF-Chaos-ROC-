@@ -1,77 +1,224 @@
 {
   "parent": "minecraft:block/block",
   "textures": {
-    "particle": "realms_of_chaos:block/column_of_plenty_shaft",
-    "shaft": "realms_of_chaos:block/column_of_plenty_shaft",
-    "trim": "realms_of_chaos:block/column_of_plenty_trim",
-    "end": "realms_of_chaos:block/polished_porphyry"
+    "particle": "realms_of_chaos:block/shrine_flutes",
+    "flutes": "realms_of_chaos:block/shrine_flutes",
+    "porph": "realms_of_chaos:block/shrine_porphyry",
+    "dark": "realms_of_chaos:block/shrine_porphyry_dark",
+    "gold": "realms_of_chaos:block/shrine_gold",
+    "inlay": "realms_of_chaos:block/shrine_inlay",
+    "top": "realms_of_chaos:block/polished_porphyry"
   },
   "elements": [
     {
       "from": [
+        4,
+        0,
+        4
+      ],
+      "to": [
+        12,
+        16,
+        12
+      ],
+      "faces": {
+        "north": {
+          "texture": "#flutes"
+        },
+        "south": {
+          "texture": "#flutes"
+        },
+        "east": {
+          "texture": "#flutes"
+        },
+        "west": {
+          "texture": "#flutes"
+        },
+        "up": {
+          "texture": "#top"
+        },
+        "down": {
+          "texture": "#top"
+        }
+      }
+    },
+    {
+      "from": [
         3,
+        0,
+        5
+      ],
+      "to": [
+        13,
+        16,
+        11
+      ],
+      "faces": {
+        "north": {
+          "texture": "#flutes"
+        },
+        "south": {
+          "texture": "#flutes"
+        },
+        "east": {
+          "texture": "#flutes"
+        },
+        "west": {
+          "texture": "#flutes"
+        }
+      }
+    },
+    {
+      "from": [
+        5,
         0,
         3
       ],
       "to": [
-        13,
+        11,
         16,
         13
       ],
       "faces": {
         "north": {
-          "texture": "#shaft",
-          "uv": [
-            3,
-            0,
-            13,
-            16
-          ]
+          "texture": "#flutes"
         },
         "south": {
-          "texture": "#shaft",
-          "uv": [
-            3,
-            0,
-            13,
-            16
-          ]
+          "texture": "#flutes"
         },
         "east": {
-          "texture": "#shaft",
-          "uv": [
-            3,
-            0,
-            13,
-            16
-          ]
+          "texture": "#flutes"
         },
         "west": {
-          "texture": "#shaft",
-          "uv": [
-            3,
-            0,
-            13,
-            16
-          ]
+          "texture": "#flutes"
+        }
+      }
+    },
+    {
+      "from": [
+        7.5,
+        0,
+        2.7
+      ],
+      "to": [
+        8.5,
+        16,
+        3.0
+      ],
+      "faces": {
+        "north": {
+          "texture": "#inlay"
+        },
+        "south": {
+          "texture": "#inlay"
+        },
+        "east": {
+          "texture": "#inlay"
+        },
+        "west": {
+          "texture": "#inlay"
         },
         "up": {
-          "texture": "#end",
-          "uv": [
-            3,
-            3,
-            13,
-            13
-          ]
+          "texture": "#inlay"
         },
         "down": {
-          "texture": "#end",
-          "uv": [
-            3,
-            3,
-            13,
-            13
-          ]
+          "texture": "#inlay"
+        }
+      }
+    },
+    {
+      "from": [
+        7.5,
+        0,
+        13.0
+      ],
+      "to": [
+        8.5,
+        16,
+        13.3
+      ],
+      "faces": {
+        "north": {
+          "texture": "#inlay"
+        },
+        "south": {
+          "texture": "#inlay"
+        },
+        "east": {
+          "texture": "#inlay"
+        },
+        "west": {
+          "texture": "#inlay"
+        },
+        "up": {
+          "texture": "#inlay"
+        },
+        "down": {
+          "texture": "#inlay"
+        }
+      }
+    },
+    {
+      "from": [
+        2.7,
+        0,
+        7.5
+      ],
+      "to": [
+        3.0,
+        16,
+        8.5
+      ],
+      "faces": {
+        "north": {
+          "texture": "#inlay"
+        },
+        "south": {
+          "texture": "#inlay"
+        },
+        "east": {
+          "texture": "#inlay"
+        },
+        "west": {
+          "texture": "#inlay"
+        },
+        "up": {
+          "texture": "#inlay"
+        },
+        "down": {
+          "texture": "#inlay"
+        }
+      }
+    },
+    {
+      "from": [
+        13.0,
+        0,
+        7.5
+      ],
+      "to": [
+        13.3,
+        16,
+        8.5
+      ],
+      "faces": {
+        "north": {
+          "texture": "#inlay"
+        },
+        "south": {
+          "texture": "#inlay"
+        },
+        "east": {
+          "texture": "#inlay"
+        },
+        "west": {
+          "texture": "#inlay"
+        },
+        "up": {
+          "texture": "#inlay"
+        },
+        "down": {
+          "texture": "#inlay"
         }
       }
     }

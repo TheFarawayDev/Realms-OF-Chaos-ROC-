@@ -14,6 +14,7 @@ import hud_art
 import panoply_art
 import divine_art
 import divine_pro
+import divine_models
 from PIL import Image
 
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
@@ -5130,6 +5131,7 @@ if __name__ == "__main__":
     block_art.run(ASSETS, DATA)
     divine_art.gen(ASSETS, DATA, wj)
     divine_pro.gen(ASSETS, DATA, wj)
+    divine_models.gen(ASSETS, DATA, wj)
     gen_recipes()
     gen_field_data()
     gen_tags()

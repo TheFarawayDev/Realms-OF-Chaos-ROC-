@@ -24,6 +24,7 @@ public final class Grind {
     /** Called by each loader as an entity joins a server level. */
     public static void onEntityLoad(Entity entity, ServerLevel level) {
         if (entity instanceof LightningBolt bolt) fuse(level, bolt.blockPosition(), level.getRandom().nextLong());
+        com.thefarawaydev.realmsofchaos.ui.BlockLabel.onLoad(entity);
     }
 
     /**
