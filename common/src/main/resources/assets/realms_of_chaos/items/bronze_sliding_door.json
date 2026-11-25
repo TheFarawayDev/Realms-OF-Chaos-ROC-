@@ -1,6 +1,6 @@
 {
   "model": {
     "type": "minecraft:model",
-    "model": "realms_of_chaos:block/bronze_sliding_door"
+    "model": "realms_of_chaos:item/bronze_sliding_door"
   }
 }

@@ -1,0 +1,78 @@
+{
+  "parent": "minecraft:block/block",
+  "textures": {
+    "particle": "realms_of_chaos:block/bronze_swing_door_c0001",
+    "face": "realms_of_chaos:block/bronze_swing_door_c0001",
+    "edge": "realms_of_chaos:block/bronze_sliding_door_edge"
+  },
+  "elements": [
+    {
+      "from": [
+        13,
+        0,
+        0
+      ],
+      "to": [
+        16,
+        16,
+        16
+      ],
+      "faces": {
+        "east": {
+          "texture": "#face",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
+        },
+        "west": {
+          "texture": "#face",
+          "uv": [
+            16,
+            0,
+            0,
+            16
+          ]
+        },
+        "north": {
+          "texture": "#edge",
+          "uv": [
+            6,
+            0,
+            9,
+            16
+          ]
+        },
+        "south": {
+          "texture": "#edge",
+          "uv": [
+            6,
+            0,
+            9,
+            16
+          ]
+        },
+        "up": {
+          "texture": "#edge",
+          "uv": [
+            6,
+            0,
+            9,
+            16
+          ]
+        },
+        "down": {
+          "texture": "#edge",
+          "uv": [
+            6,
+            0,
+            9,
+            16
+          ]
+        }
+      }
+    }
+  ]
+}

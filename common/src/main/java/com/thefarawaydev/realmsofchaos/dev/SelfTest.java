@@ -6978,6 +6978,32 @@ public final class SelfTest {
                 for (int x = 0; x < 2; x++) for (int y = 0; y < 2; y++) level.setBlock(o.offset(x, y, 0), panel, 2 | 16);
                 check(com.thefarawaydev.realmsofchaos.block.SwingDoorBlock.door(level, o).size() == 4 && com.thefarawaydev.realmsofchaos.block.SwingDoorBlock.across(panel) == Direction.EAST,
                         "four panels make one leaf, running east from its hinge");
+                // each panel knows which edges join the door: the frame is drawn only round the outside
+                for (int x = 0; x < 2; x++) for (int y = 0; y < 2; y++) {
+                    BlockPos p = o.offset(x, y, 0);
+                    BlockState j = com.thefarawaydev.realmsofchaos.block.SwingDoorBlock.joined(level, p, level.getBlockState(p));
+                    check(j.getValue(com.thefarawaydev.realmsofchaos.block.SwingDoorBlock.TOP) == (y == 0) && j.getValue(com.thefarawaydev.realmsofchaos.block.SwingDoorBlock.BOTTOM) == (y == 1)
+                            && j.getValue(com.thefarawaydev.realmsofchaos.block.SwingDoorBlock.NEAR) == (x == 1) && j.getValue(com.thefarawaydev.realmsofchaos.block.SwingDoorBlock.FAR) == (x == 0),
+                            "panel " + x + "," + y + " joins its neighbours in the door, and only them");
+                    level.setBlock(p, j, 2 | 16);
+                }
+                // set on its own, a panel is a regular door: two high, the upper panel from the same stack
+                ServerPlayer joiner = fakePlayer(server, level, "RocDoorman");
+                level.addNewPlayer(joiner);
+                try {
+                    BlockPos lone = o.offset(-2, 0, 2);
+                    BlockState single = com.thefarawaydev.realmsofchaos.block.SwingDoorBlock.joined(level, lone, panel);
+                    level.setBlock(lone, single, 3);
+                    ItemStack stack = new ItemStack(SW, 2);
+                    SW.setPlacedBy(level, lone, single, joiner, stack);
+                    check(level.getBlockState(lone.above()).is(SW) && level.getBlockState(lone).getValue(com.thefarawaydev.realmsofchaos.block.SwingDoorBlock.TOP)
+                            && level.getBlockState(lone.above()).getValue(com.thefarawaydev.realmsofchaos.block.SwingDoorBlock.BOTTOM) && stack.getCount() == 1,
+                            "a panel set on its own makes a regular door, two high, paid for with a second panel");
+                    level.setBlock(lone, Blocks.AIR.defaultBlockState(), 2 | 16);
+                    level.setBlock(lone.above(), Blocks.AIR.defaultBlockState(), 2 | 16);
+                } finally {
+                    joiner.remove(net.minecraft.world.entity.Entity.RemovalReason.DISCARDED);
+                }
                 level.setBlock(o.offset(0, 1, -1), Blocks.STONE.defaultBlockState(), 2);
                 check(!com.thefarawaydev.realmsofchaos.block.SwingDoorBlock.swing(level, o, true, false), "something where it would swing holds it shut");
                 level.setBlock(o.offset(0, 1, -1), Blocks.AIR.defaultBlockState(), 2);

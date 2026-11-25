@@ -1258,6 +1258,10 @@ public final class Passages {
             BlockState panel = door.defaultBlockState().setValue(com.thefarawaydev.realmsofchaos.block.SwingDoorBlock.FACING, facing)
                     .setValue(com.thefarawaydev.realmsofchaos.block.SwingDoorBlock.HINGE, hinge);
             for (int y = 1; y <= 3; y++) for (int k = -1; k <= 1; k++) level.setBlock(along(plan, c, dir, d, k, y), panel, 2 | 16);
+            for (int y = 1; y <= 3; y++) for (int k = -1; k <= 1; k++) {
+                BlockPos at = along(plan, c, dir, d, k, y);
+                level.setBlock(at, com.thefarawaydev.realmsofchaos.block.SwingDoorBlock.joined(level, at, level.getBlockState(at)), 2 | 16);
+            }
             return;
         }
     }
@@ -1295,6 +1299,11 @@ public final class Passages {
         for (int y = 1; y <= 3; y++) {
             for (int k = -1; k <= 1; k++) level.setBlock(along(plan, c, dir, d, k, y), panel, 2 | 16);
             for (int k = 2; k <= 4; k++) level.setBlock(along(plan, c, dir, d, k * side, y), Blocks.AIR.defaultBlockState(), 2 | 16);
+        }
+        // each panel joined to those round it: one door with one frame round it
+        for (int y = 1; y <= 3; y++) for (int k = -1; k <= 1; k++) {
+            BlockPos at = along(plan, c, dir, d, k, y);
+            level.setBlock(at, com.thefarawaydev.realmsofchaos.block.SlidingDoorBlock.joined(level, at, level.getBlockState(at)), 2 | 16);
         }
     }
 

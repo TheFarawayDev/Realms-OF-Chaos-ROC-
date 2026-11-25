@@ -16,6 +16,16 @@ The current build is an **Alpha**.
 
 ## What's in 1.2.0
 
+* **Doors that read as one door.** Every panel of a sliding or swinging door knows which of its edges join the rest
+  of its door, and is drawn to match: the frame runs only round the outside of the whole door, whatever its size. A
+  swinging door has iron straps down its hinge edge, a rail where its panels meet one above another, and a ring to
+  pull at hand height on its free edge; a sliding door has an inlaid line running round it inside its frame and a pull
+  sunk into its leading edge. (`art/renders/doors-joined.png`)
+* **Regular doors.** Set a swinging or sliding door where it joins no other door and it goes down as a regular door,
+  two high, taking a second panel from the stack (set against another door, a panel joins it instead). A swinging
+  door's panel is now three pixels thick against the side of its block, like the game's own doors, and the leaf turns
+  on its hinge corner - so a regular door swings open against its frame. Each door has a flat item picture.
+  (`art/videos/regular-door.mp4`)
 * **Swinging doors, of any size.** Ordinary doors built the new way: four Swinging Doors - bronze, Sky, Sea and
   Shade - each block a panel of boards (or ashlar, or plates) with an iron band and studs across it. Set panels side
   by side and stacked and they make one leaf, up to 64 panels, hung on one edge. Use it, or give any panel a redstone

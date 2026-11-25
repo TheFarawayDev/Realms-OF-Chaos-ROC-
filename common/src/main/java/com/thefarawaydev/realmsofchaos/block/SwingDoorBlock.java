@@ -43,21 +43,27 @@ public class SwingDoorBlock extends Block {
     public static final EnumProperty<DoorHingeSide> HINGE = BlockStateProperties.DOOR_HINGE;
     public static final BooleanProperty OPEN = BlockStateProperties.OPEN;
     public static final BooleanProperty POWERED = BlockStateProperties.POWERED;
+    /** Whether the panel joins another of its door above, below, toward the door's home or hinge side, and toward its far side. */
+    public static final BooleanProperty TOP = BooleanProperty.create("top"), BOTTOM = BooleanProperty.create("bottom"),
+            NEAR = BooleanProperty.create("near"), FAR = BooleanProperty.create("far");
     /** The most panels in one door, and how many ticks a swing takes. */
     public static final int MAX_PANELS = 64, SWING = 10;
-    private static final VoxelShape ACROSS_X = Block.box(0, 0, 6, 16, 16, 10), ACROSS_Z = Block.box(6, 0, 0, 10, 16, 16);
+    /** A panel is three pixels thick, against one side of its block, as the game's own doors are. */
+    private static final Map<Direction, VoxelShape> SHAPES = Map.of(Direction.NORTH, Block.box(0, 0, 0, 16, 16, 3), Direction.SOUTH, Block.box(0, 0, 13, 16, 16, 16),
+            Direction.WEST, Block.box(0, 0, 0, 3, 16, 16), Direction.EAST, Block.box(13, 0, 0, 16, 16, 16));
     /** Where a door is swinging, and until what game tick. */
     private static final Map<BlockPos, Long> BUSY = new HashMap<>();
     private static final Map<String, java.lang.reflect.Method> METHODS = new HashMap<>();
 
     public SwingDoorBlock(Properties properties) {
         super(properties);
-        registerDefaultState(stateDefinition.any().setValue(FACING, Direction.NORTH).setValue(HINGE, DoorHingeSide.LEFT).setValue(OPEN, false).setValue(POWERED, false));
+        registerDefaultState(stateDefinition.any().setValue(FACING, Direction.NORTH).setValue(HINGE, DoorHingeSide.LEFT).setValue(OPEN, false).setValue(POWERED, false)
+                .setValue(TOP, false).setValue(BOTTOM, false).setValue(NEAR, false).setValue(FAR, false));
     }
 
     @Override
     protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
-        builder.add(FACING, HINGE, OPEN, POWERED);
+        builder.add(FACING, HINGE, OPEN, POWERED, TOP, BOTTOM, NEAR, FAR);
     }
 
     /** From the hinge toward the free edge, while the door is shut. */
@@ -74,14 +80,75 @@ public class SwingDoorBlock extends Block {
     @Override
     public BlockState getStateForPlacement(BlockPlaceContext context) {
         BlockState against = context.getLevel().getBlockState(context.getClickedPos().relative(context.getClickedFace().getOpposite()));
-        if (against.is(this)) return defaultBlockState().setValue(FACING, against.getValue(FACING)).setValue(HINGE, against.getValue(HINGE)).setValue(OPEN, against.getValue(OPEN));
-        boolean sneaking = context.getPlayer() != null && context.getPlayer().isShiftKeyDown();
-        return defaultBlockState().setValue(FACING, context.getHorizontalDirection()).setValue(HINGE, sneaking ? DoorHingeSide.RIGHT : DoorHingeSide.LEFT);
+        BlockState placed;
+        if (against.is(this)) placed = defaultBlockState().setValue(FACING, against.getValue(FACING)).setValue(HINGE, against.getValue(HINGE)).setValue(OPEN, against.getValue(OPEN));
+        else {
+            boolean sneaking = context.getPlayer() != null && context.getPlayer().isShiftKeyDown();
+            placed = defaultBlockState().setValue(FACING, context.getHorizontalDirection()).setValue(HINGE, sneaking ? DoorHingeSide.RIGHT : DoorHingeSide.LEFT);
+        }
+        return joined(context.getLevel(), context.getClickedPos(), placed);
+    }
+
+
+    /** The side of the door its home (a sliding door) or hinge (a swinging one) is on, and the other. */
+    public static Direction nearSide(BlockState state) {
+        return leaf(state).getOpposite();
+    }
+
+    public static Direction farSide(BlockState state) {
+        return leaf(state);
+    }
+
+    /** True if two panels belong to one door. */
+    public static boolean joins(BlockState a, BlockState b) {
+        return b.getBlock() == a.getBlock() && b.getValue(FACING) == a.getValue(FACING) && b.getValue(HINGE) == a.getValue(HINGE) && b.getValue(OPEN) == a.getValue(OPEN);
+    }
+
+    /** The panel with its joins to the panels round it worked out: it draws its frame only where the door ends. */
+    public static BlockState joined(BlockGetter level, BlockPos pos, BlockState state) {
+        return state.setValue(TOP, joins(state, level.getBlockState(pos.above()))).setValue(BOTTOM, joins(state, level.getBlockState(pos.below())))
+                .setValue(NEAR, joins(state, level.getBlockState(pos.relative(nearSide(state))))).setValue(FAR, joins(state, level.getBlockState(pos.relative(farSide(state)))));
+    }
+
+    @Override
+    protected BlockState updateShape(BlockState state, net.minecraft.world.level.LevelReader level, net.minecraft.world.level.ScheduledTickAccess ticks, BlockPos pos, Direction direction,
+                                     BlockPos neighborPos, BlockState neighborState, net.minecraft.util.RandomSource random) {
+        boolean j = joins(state, neighborState);
+        if (direction == Direction.UP) return state.setValue(TOP, j);
+        if (direction == Direction.DOWN) return state.setValue(BOTTOM, j);
+        if (direction == nearSide(state)) return state.setValue(NEAR, j);
+        if (direction == farSide(state)) return state.setValue(FAR, j);
+        return state;
+    }
+
+    /**
+     * Set where it joins no other door, a panel makes a regular door: two high, the upper panel taken from the same
+     * stack (so a door broken gives back what it cost). Set against another door, it joins that door instead.
+     */
+    @Override
+    public void setPlacedBy(Level level, BlockPos pos, BlockState state, net.minecraft.world.entity.LivingEntity placer, net.minecraft.world.item.ItemStack stack) {
+        if (level.isClientSide() || state.getValue(TOP) || state.getValue(BOTTOM) || state.getValue(NEAR) || state.getValue(FAR)) return;
+        BlockPos up = pos.above();
+        if (!level.getBlockState(up).canBeReplaced()) return;
+        boolean free = placer instanceof Player p && p.getAbilities().instabuild;
+        if (!free) {
+            if (stack.getCount() < 2) return;
+            stack.shrink(1);
+        }
+        level.setBlock(up, state.setValue(BOTTOM, true), 3);
     }
 
     @Override
     protected VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
-        return leaf(state).getAxis() == Direction.Axis.X ? ACROSS_X : ACROSS_Z;
+        return SHAPES.get(side(state));
+    }
+
+    /**
+     * The side of its block a panel stands against: shut, the side toward whoever set it; open, the side its hinge edge
+     * was on. The leaf turns on the corner where those two meet, the way a door turns on its hinges.
+     */
+    public static Direction side(BlockState state) {
+        return state.getValue(OPEN) ? across(state).getOpposite() : state.getValue(FACING).getOpposite();
     }
 
     /** Every panel of the door this one belongs to. */
@@ -164,14 +231,17 @@ public class SwingDoorBlock extends Block {
         // the leaf, seen swinging: a display block for each panel, set at the hinge and turned on it
         float turn = to == from.getCounterClockWise() ? -90.0F : 90.0F;
         List<Display.BlockDisplay> shown = new ArrayList<>();
+        Direction a = across(state), f = state.getValue(FACING);
         for (BlockPos p : panels) {
             BlockPos h = p.relative(from, -(moves.get(p).equals(p) ? 0 : distance(p, moves.get(p), from, to)));
+            // the hinge: the corner of the hinge block on its hinge edge and its near side
+            double px = h.getX() + 0.5 - 0.5 * a.getStepX() - 0.5 * f.getStepX(), pz = h.getZ() + 0.5 - 0.5 * a.getStepZ() - 0.5 * f.getStepZ();
             Display.BlockDisplay d = net.minecraft.world.entity.EntityTypes.BLOCK_DISPLAY.create(level, net.minecraft.world.entity.EntitySpawnReason.TRIGGERED);
             if (d == null) continue;
-            d.setPos(h.getX() + 0.5, p.getY(), h.getZ() + 0.5);
+            d.setPos(px, p.getY(), pz);
             call(Display.BlockDisplay.class, d, "setBlockState", BlockState.class, before.get(p));
             call(Display.class, d, "setTransformation", com.mojang.math.Transformation.class, new com.mojang.math.Transformation(
-                    new org.joml.Vector3f(p.getX() - h.getX() - 0.5F, 0.0F, p.getZ() - h.getZ() - 0.5F), new org.joml.Quaternionf(), new org.joml.Vector3f(1.0F, 1.0F, 1.0F), new org.joml.Quaternionf()));
+                    new org.joml.Vector3f((float) (p.getX() - px), 0.0F, (float) (p.getZ() - pz)), new org.joml.Quaternionf(), new org.joml.Vector3f(1.0F, 1.0F, 1.0F), new org.joml.Quaternionf()));
             call(Display.class, d, "setPosRotInterpolationDuration", int.class, SWING);
             level.addFreshEntity(d);
             shown.add(d);

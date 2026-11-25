@@ -3041,89 +3041,188 @@ def gen_sprinkler(assets, data):
 
 
 def gen_sliding_doors(assets, data):
-    """Sliding doors: a panel a block square, coffered, that stacks with others into a door of any size."""
+    """
+    Sliding and swinging doors made of panels. A panel knows which of its four edges join another panel of its door,
+    so it is drawn in sixteen ways: the frame runs only round the outside of the whole door, and the door reads as one
+    door whatever its size. A swinging door has iron straps on its hinge edge, a rail where its panels meet one above
+    the other, and a ring to pull at hand height on its free edge; a sliding door has an inlaid line set in from its
+    frame and a pull worked into its leading edge. Drawn with the hinge (or home) side on the left.
+    """
     T = os.path.join(assets, "textures/block")
+    TI = os.path.join(assets, "textures/item")
     M = os.path.join(assets, "models/block")
     t = lambda n: f"{MOD}:block/{n}"
     mats = {"bronze": ("minecraft:copper_ingot", "minecraft:gold_nugget"), "sky": (f"{MOD}:olympian_marble", "minecraft:gold_nugget"),
             "sea": ("minecraft:prismarine_bricks", "minecraft:prismarine_shard"), "shade": ("minecraft:polished_blackstone", "minecraft:amethyst_shard")}
+    import glob as _glob
+    for old in _glob.glob(os.path.join(T, "*_sliding_door*.png")) + _glob.glob(os.path.join(T, "*_swing_door*.png")):
+        os.remove(old)
+    for old in _glob.glob(os.path.join(M, "*_sliding_door*.json")) + _glob.glob(os.path.join(M, "*_swing_door*.json")):
+        os.remove(old)
+    codes = [(tp, bt, nr, fr) for tp in (0, 1) for bt in (0, 1) for nr in (0, 1) for fr in (0, 1)]
+    code = lambda c: "c" + "".join(str(v) for v in c)
+    BIG = 99
+
+    def edges(x, y, c):
+        tp, bt, nr, fr = c
+        dl = BIG if nr else x
+        dr = BIG if fr else 15 - x
+        dt = BIG if tp else y
+        db = BIG if bt else 15 - y
+        return dl, dr, dt, db
+
+    def frame_px(e, lit_side, frame, field):
+        """The frame, four pixels deep: an outline, a bevel lit from the top left, the frame, and the lip of the sunk field."""
+        if e == 0: return shade(frame, 0.55)
+        if e == 1: return shade(frame, 1.3) if lit_side else shade(frame, 0.78)
+        if e == 2: return shade(frame, 1.0)
+        return shade(frame, 0.72) if lit_side else shade(field, 1.25)
+
     for n, key in enumerate(("bronze", "sky", "sea", "shade")):
         field, frame, band, stud, glow, emblem, style = DOOR_SPECS[key]
         g = grain(311 + n, 0.04)
-        name = f"{key}_sliding_door"
 
-        # the face: a frame lit on its top and left and shadowed on its bottom and right, so that panels set side by
-        # side meet in a groove; a band inside it; a sunk panel; a rosette in the middle; studs at the corners
-        def face(x, y, field=field, frame=frame, band=band, stud=stud, glow=glow, g=g):
-            e = min(x, y, 15 - x, 15 - y)
-            if e == 0: return shade(frame, 1.3) if (x == 0 or y == 0) and x != 15 and y != 15 else shade(frame, 0.7)
-            if e == 1: return band if (x + y) % 2 else shade(band, 0.86)
-            if (x, y) in ((2, 2), (13, 2), (2, 13), (13, 13)): return stud
-            if e == 2: return shade(frame, 1.0)
-            if e == 3: return shade(frame, 0.82) if (x == 3 or y == 3) else shade(field, 1.22)
-            dd = abs(x - 7.5) + abs(y - 7.5)
-            if dd < 1.5: return shade(glow, 1.12)
-            if 3.0 <= dd < 4.0: return glow
-            return shade(field, g[y][x] * 0.92)
-        paint_hi(face).save(os.path.join(T, f"{name}.png"))
+        def surface(x, y):
+            """The field of a swinging door: boards running up it, or ashlar, or plates."""
+            if style == "planks":
+                if x % 4 == 3: return shade(field, 0.72)
+                if x % 4 == 0: return shade(field, 1.1)
+                return shade(field, g[y][x] * (0.93 if (x * 7 + y * 3) % 11 == 0 else 1.0))
+            if style == "stone":
+                course = y // 4
+                if y % 4 == 3 or (x + (4 if course % 2 else 0)) % 8 == 7: return shade(field, 0.8)
+                return shade(field, g[y][x] * (1.05 if y % 4 == 0 else 1.0))
+            if x % 8 == 0 or y % 8 == 0: return shade(field, 1.15)
+            if x % 8 == 7 or y % 8 == 7: return shade(field, 0.75)
+            if (x % 8, y % 8) in ((2, 2), (5, 2), (2, 5), (5, 5)): return shade(stud, 0.9)
+            return shade(field, g[y][x])
 
-        # the edge: the frame's metal, lit down its middle
+        def swing_face(c):
+            tp, bt, nr, fr = c
+
+            def px(x, y):
+                dl, dr, dt, db = edges(x, y, c)
+                e = min(dl, dr, dt, db)
+                col = frame_px(e, e in (dl, dt) and e not in (dr, db), frame, field) if e <= 3 else surface(x, y)
+                # a rail across where one panel stands on another
+                if bt and y >= 14: col = shade(frame, 1.25) if y == 14 else shade(frame, 1.0)
+                if tp and y <= 1: col = shade(frame, 0.95) if y == 0 else shade(frame, 0.7)
+                # iron straps on the hinge edge, riveted
+                if not nr and (y in (3, 4) or y in (11, 12)) and x <= 6:
+                    top = y in (3, 11)
+                    col = shade(band, 1.2) if top else shade(band, 0.8)
+                    if x in (2, 5) and top: col = stud
+                    if x == 6: col = shade(band, 0.6)
+                # a ring to pull, at hand height on the free edge: on the lowest panel of a taller door, in the middle of a single one
+                ring_y = 1 if (tp and not bt) else 6 if (not tp and not bt) else None
+                if not fr and ring_y is not None:
+                    rx, ry = x - 8, y - ring_y
+                    if 0 <= rx <= 3 and 0 <= ry <= 5:
+                        plate = rx in (1, 2) and ry <= 1
+                        ring = (ry in (2, 5) and rx in (1, 2)) or (rx in (0, 3) and ry in (3, 4))
+                        if plate: col = shade(band, 1.1) if ry == 0 else shade(band, 0.8)
+                        elif ring: col = stud if (rx, ry) in ((0, 3), (1, 2)) else shade(stud, 0.75)
+                return col
+            return paint_hi(px)
+
+        def slide_face(c):
+            tp, bt, nr, fr = c
+
+            def px(x, y):
+                dl, dr, dt, db = edges(x, y, c)
+                e = min(dl, dr, dt, db)
+                # a pull sunk into the leading edge's frame, along its length but short of its ends
+                if dr in (1, 2) and dt >= 4 and db >= 4: return shade(frame, 0.4) if dr == 2 else shade(frame, 0.62)
+                if e <= 3: return frame_px(e, e in (dl, dt) and e not in (dr, db), frame, field)
+                # an inlaid line set in from the frame, running round the whole door
+                if e == 6: return glow if (x + y) % 2 else shade(glow, 0.85)
+                if x % 8 == 4 and y % 8 == 4: return shade(stud, 0.95)
+                if (x % 8, y % 8) in ((3, 4), (5, 4), (4, 3), (4, 5)): return shade(field, 1.12)
+                return shade(field, g[y][x] * 0.94)
+            return paint_hi(px)
+
+        # the thin edges: the frame's metal, lit down the middle
+        name, swing = f"{key}_sliding_door", f"{key}_swing_door"
+
         def edge(x, y, frame=frame, band=band):
             return shade(band, 1.1) if x in (7, 8) and y % 4 else shade(frame, 1.15) if x in (6, 9) else shade(frame, 0.9)
         paint_hi(edge).save(os.path.join(T, f"{name}_edge.png"))
-        el = {"from": [0, 0, 6], "to": [16, 16, 10], "faces": {
-            "north": {"texture": "#face", "uv": [0, 0, 16, 16]}, "south": {"texture": "#face", "uv": [0, 0, 16, 16]},
-            "east": {"texture": "#edge", "uv": [6, 0, 10, 16]}, "west": {"texture": "#edge", "uv": [6, 0, 10, 16]},
-            "up": {"texture": "#edge", "uv": [0, 6, 16, 10], "rotation": 90}, "down": {"texture": "#edge", "uv": [0, 6, 16, 10], "rotation": 90}}}
-        wj(os.path.join(M, f"{name}.json"), {"parent": "minecraft:block/block",
-                                             "textures": {"particle": t(name), "face": t(name), "edge": t(f"{name}_edge")}, "elements": [el]})
-        variants = {}
-        for f, r in {"north": 0, "east": 90, "south": 180, "west": 270}.items():
-            for shift in range(5):
-                for powered in ("false", "true"):
-                    variants[f"facing={f},powered={powered},shift={shift}"] = {"model": f"{MOD}:block/{name}", "y": r}
-        wj(os.path.join(assets, f"blockstates/{name}.json"), {"variants": variants})
-        wj(os.path.join(assets, f"items/{name}.json"), {"model": {"type": "minecraft:model", "model": f"{MOD}:block/{name}"}})
+
+        def element(flip_north):
+            fn = [16, 0, 0, 16] if flip_north else [0, 0, 16, 16]
+            fs = [0, 0, 16, 16] if flip_north else [16, 0, 0, 16]
+            return {"from": [0, 0, 6], "to": [16, 16, 10], "faces": {
+                "north": {"texture": "#face", "uv": fn}, "south": {"texture": "#face", "uv": fs},
+                "east": {"texture": "#edge", "uv": [6, 0, 10, 16]}, "west": {"texture": "#edge", "uv": [6, 0, 10, 16]},
+                "up": {"texture": "#edge", "uv": [0, 6, 16, 10], "rotation": 90}, "down": {"texture": "#edge", "uv": [0, 6, 16, 10], "rotation": 90}}}
+
+        for c in codes:
+            slide_face(c).save(os.path.join(T, f"{name}_{code(c)}.png"))
+            swing_face(c).save(os.path.join(T, f"{swing}_{code(c)}.png"))
+            # the home or hinge side lies west in a model facing north: the north face is seen with west on its right, so it is flipped
+            wj(os.path.join(M, f"{name}_{code(c)}.json"), {"parent": "minecraft:block/block",
+                "textures": {"particle": t(f"{name}_{code(c)}"), "face": t(f"{name}_{code(c)}"), "edge": t(f"{name}_edge")}, "elements": [element(True)]})
+            # a swinging door's panel is three pixels thick against one side of its block, as the game's doors are.
+            # In a model facing north: shut, against the south side, the hinge west (left hand) or east (right hand);
+            # open, against the hinge side, with the hinge edge to the south
+            for hand in ("l", "r"):
+                for opened in (False, True):
+                    if not opened:
+                        fl = hand == "l"
+                        el2 = {"from": [0, 0, 13], "to": [16, 16, 16], "faces": {
+                            "north": {"texture": "#face", "uv": [16, 0, 0, 16] if fl else [0, 0, 16, 16]},
+                            "south": {"texture": "#face", "uv": [0, 0, 16, 16] if fl else [16, 0, 0, 16]},
+                            "east": {"texture": "#edge", "uv": [6, 0, 9, 16]}, "west": {"texture": "#edge", "uv": [6, 0, 9, 16]},
+                            "up": {"texture": "#edge", "uv": [0, 6, 16, 9]}, "down": {"texture": "#edge", "uv": [0, 6, 16, 9]}}}
+                    else:
+                        x0 = 0 if hand == "l" else 13
+                        el2 = {"from": [x0, 0, 0], "to": [x0 + 3, 16, 16], "faces": {
+                            "east": {"texture": "#face", "uv": [0, 0, 16, 16]}, "west": {"texture": "#face", "uv": [16, 0, 0, 16]},
+                            "north": {"texture": "#edge", "uv": [6, 0, 9, 16]}, "south": {"texture": "#edge", "uv": [6, 0, 9, 16]},
+                            "up": {"texture": "#edge", "uv": [6, 0, 9, 16]}, "down": {"texture": "#edge", "uv": [6, 0, 9, 16]}}}
+                    wj(os.path.join(M, f"{swing}_{code(c)}_{hand}{'_open' if opened else ''}.json"), {"parent": "minecraft:block/block",
+                        "textures": {"particle": t(f"{swing}_{code(c)}"), "face": t(f"{swing}_{code(c)}"), "edge": t(f"{name}_edge")}, "elements": [el2]})
+        base = {"north": 0, "east": 90, "south": 180, "west": 270}
+        b = lambda v: "true" if v else "false"
+        sv, wv = {}, {}
+        for f, r in base.items():
+            for c in codes:
+                tp, bt, nr, fr = c
+                joins = f"bottom={b(bt)},far={b(fr)},near={b(nr)},top={b(tp)}"
+                for shift in range(5):
+                    for powered in ("false", "true"):
+                        sv[f"{joins},facing={f},powered={powered},shift={shift}"] = {"model": f"{MOD}:block/{name}_{code(c)}", "y": r}
+                for hinge in ("left", "right"):
+                    for opened in (False, True):
+                        for powered in ("false", "true"):
+                            wv[f"{joins},facing={f},hinge={hinge},open={b(opened)},powered={powered}"] = {
+                                "model": f"{MOD}:block/{swing}_{code(c)}_{hinge[0]}{'_open' if opened else ''}", "y": r}
+        wj(os.path.join(assets, f"blockstates/{name}.json"), {"variants": sv})
+        wj(os.path.join(assets, f"blockstates/{swing}.json"), {"variants": wv})
+        wj(os.path.join(M, f"{name}.json"), {"parent": f"{MOD}:block/{name}_c0000"})
+        wj(os.path.join(M, f"{swing}.json"), {"parent": f"{MOD}:block/{swing}_c0000_l"})
+
+        # as items: the door as it stands, a regular door two panels high, drawn small
+        for item_id, face in ((name, slide_face), (swing, swing_face)):
+            upper, lower = face((0, 1, 0, 0)), face((1, 0, 0, 0))
+            icon = Image.new("RGBA", (16, 16), (0, 0, 0, 0))
+            tall = Image.new("RGBA", (16, 32))
+            tall.paste(upper, (0, 0))
+            tall.paste(lower, (0, 16))
+            small = tall.resize((8, 16), Image.NEAREST)
+            icon.paste(small, (4, 0))
+            # (a crisp outline down its sides, which halving can lose)
+            for y in range(16):
+                icon.putpixel((4, y), tuple(shade(frame, 0.55)) + (255,))
+                icon.putpixel((11, y), tuple(shade(frame, 0.55)) + (255,))
+            icon.save(os.path.join(TI, f"{item_id}.png"))
+            wj(os.path.join(assets, f"models/item/{item_id}.json"), {"parent": "minecraft:item/generated", "textures": {"layer0": f"{MOD}:item/{item_id}"}})
+            wj(os.path.join(assets, f"items/{item_id}.json"), {"model": {"type": "minecraft:model", "model": f"{MOD}:item/{item_id}"}})
         m = mats[key]
         wj(os.path.join(data, f"recipe/{name}.json"), {"type": "minecraft:crafting_shaped", "category": "redstone", "key": {"C": m[0], "G": m[1]},
                                                        "pattern": ["CGC", "CCC"], "result": {"id": f"{MOD}:{name}", "count": 4}})
-
-        # ---- the swinging door of the same stuff: boards (or ashlar, or plates) running up the leaf, an iron band
-        # across with studs along it, so that panels stacked into a great door read as one gate with its bands
-        swing = f"{key}_swing_door"
-
-        def leaf(x, y, field=field, frame=frame, band=band, stud=stud, style=style, g=g):
-            if y in (6, 9): return shade(frame, 0.8) if y == 9 else shade(band, 1.2)
-            if y in (7, 8): return stud if x % 5 == 2 else band if y == 7 else shade(band, 0.85)
-            if style == "planks":
-                if x % 4 == 3: return shade(field, 0.7)
-                if x % 4 == 0: return shade(field, 1.12)
-                return shade(field, g[y][x] * (0.92 if (x * 7 + y * 3) % 11 == 0 else 1.0))
-            if style == "stone":
-                # ashlar: courses four high, joints staggered
-                if y % 8 in (5,) or (x + (4 if (y // 8) % 2 else 0)) % 8 == 0: return shade(field, 0.78)
-                return shade(field, g[y][x] * (1.06 if y % 8 == 0 else 1.0))
-            # metal plates with a lit rim
-            if x in (0, 8) or y in (0, 15): return shade(field, 1.18)
-            if x in (7, 15): return shade(field, 0.72)
-            return shade(field, g[y][x])
-        paint_hi(leaf).save(os.path.join(T, f"{swing}.png"))
-        wj(os.path.join(M, f"{swing}.json"), {"parent": "minecraft:block/block",
-                                              "textures": {"particle": t(swing), "face": t(swing), "edge": t(f"{name}_edge")}, "elements": [el]})
-        sv = {}
-        base = {"north": 0, "east": 90, "south": 180, "west": 270}
-        for f, r in base.items():
-            for hinge in ("left", "right"):
-                for opened in (False, True):
-                    for powered in ("false", "true"):
-                        # open, the leaf lies along the way it swings: a quarter turn from shut
-                        rr = (r + (90 if hinge == "left" else 270)) % 360 if opened else r
-                        sv[f"facing={f},hinge={hinge},open={'true' if opened else 'false'},powered={powered}"] = {"model": f"{MOD}:block/{swing}", "y": rr}
-        wj(os.path.join(assets, f"blockstates/{swing}.json"), {"variants": sv})
-        wj(os.path.join(assets, f"items/{swing}.json"), {"model": {"type": "minecraft:model", "model": f"{MOD}:block/{swing}"}})
         wj(os.path.join(data, f"recipe/{swing}.json"), {"type": "minecraft:crafting_shaped", "category": "redstone", "key": {"C": m[0], "G": m[1]},
                                                         "pattern": ["CC", "CC", "GC"], "result": {"id": f"{MOD}:{swing}", "count": 4}})
-
 
 def gen_puzzle2(assets, data):
     """The dial hall and the sliding stones: dials, frescoes, carved stones and sockets."""

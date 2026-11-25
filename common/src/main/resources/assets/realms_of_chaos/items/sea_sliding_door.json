@@ -1,6 +1,6 @@
 {
   "model": {
     "type": "minecraft:model",
-    "model": "realms_of_chaos:block/sea_sliding_door"
+    "model": "realms_of_chaos:item/sea_sliding_door"
   }
 }

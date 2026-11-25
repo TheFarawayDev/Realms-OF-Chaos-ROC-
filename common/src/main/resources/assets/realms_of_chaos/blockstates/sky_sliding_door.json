@@ -1,163 +1,2563 @@
 {
   "variants": {
-    "facing=north,powered=false,shift=0": {
-      "model": "realms_of_chaos:block/sky_sliding_door",
+    "bottom=false,far=false,near=false,top=false,facing=north,powered=false,shift=0": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c0000",
       "y": 0
     },
-    "facing=north,powered=true,shift=0": {
-      "model": "realms_of_chaos:block/sky_sliding_door",
+    "bottom=false,far=false,near=false,top=false,facing=north,powered=true,shift=0": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c0000",
       "y": 0
     },
-    "facing=north,powered=false,shift=1": {
-      "model": "realms_of_chaos:block/sky_sliding_door",
+    "bottom=false,far=false,near=false,top=false,facing=north,powered=false,shift=1": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c0000",
       "y": 0
     },
-    "facing=north,powered=true,shift=1": {
-      "model": "realms_of_chaos:block/sky_sliding_door",
+    "bottom=false,far=false,near=false,top=false,facing=north,powered=true,shift=1": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c0000",
       "y": 0
     },
-    "facing=north,powered=false,shift=2": {
-      "model": "realms_of_chaos:block/sky_sliding_door",
+    "bottom=false,far=false,near=false,top=false,facing=north,powered=false,shift=2": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c0000",
       "y": 0
     },
-    "facing=north,powered=true,shift=2": {
-      "model": "realms_of_chaos:block/sky_sliding_door",
+    "bottom=false,far=false,near=false,top=false,facing=north,powered=true,shift=2": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c0000",
       "y": 0
     },
-    "facing=north,powered=false,shift=3": {
-      "model": "realms_of_chaos:block/sky_sliding_door",
+    "bottom=false,far=false,near=false,top=false,facing=north,powered=false,shift=3": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c0000",
       "y": 0
     },
-    "facing=north,powered=true,shift=3": {
-      "model": "realms_of_chaos:block/sky_sliding_door",
+    "bottom=false,far=false,near=false,top=false,facing=north,powered=true,shift=3": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c0000",
       "y": 0
     },
-    "facing=north,powered=false,shift=4": {
-      "model": "realms_of_chaos:block/sky_sliding_door",
+    "bottom=false,far=false,near=false,top=false,facing=north,powered=false,shift=4": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c0000",
       "y": 0
     },
-    "facing=north,powered=true,shift=4": {
-      "model": "realms_of_chaos:block/sky_sliding_door",
+    "bottom=false,far=false,near=false,top=false,facing=north,powered=true,shift=4": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c0000",
       "y": 0
     },
-    "facing=east,powered=false,shift=0": {
-      "model": "realms_of_chaos:block/sky_sliding_door",
+    "bottom=false,far=true,near=false,top=false,facing=north,powered=false,shift=0": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c0001",
+      "y": 0
+    },
+    "bottom=false,far=true,near=false,top=false,facing=north,powered=true,shift=0": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c0001",
+      "y": 0
+    },
+    "bottom=false,far=true,near=false,top=false,facing=north,powered=false,shift=1": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c0001",
+      "y": 0
+    },
+    "bottom=false,far=true,near=false,top=false,facing=north,powered=true,shift=1": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c0001",
+      "y": 0
+    },
+    "bottom=false,far=true,near=false,top=false,facing=north,powered=false,shift=2": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c0001",
+      "y": 0
+    },
+    "bottom=false,far=true,near=false,top=false,facing=north,powered=true,shift=2": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c0001",
+      "y": 0
+    },
+    "bottom=false,far=true,near=false,top=false,facing=north,powered=false,shift=3": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c0001",
+      "y": 0
+    },
+    "bottom=false,far=true,near=false,top=false,facing=north,powered=true,shift=3": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c0001",
+      "y": 0
+    },
+    "bottom=false,far=true,near=false,top=false,facing=north,powered=false,shift=4": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c0001",
+      "y": 0
+    },
+    "bottom=false,far=true,near=false,top=false,facing=north,powered=true,shift=4": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c0001",
+      "y": 0
+    },
+    "bottom=false,far=false,near=true,top=false,facing=north,powered=false,shift=0": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c0010",
+      "y": 0
+    },
+    "bottom=false,far=false,near=true,top=false,facing=north,powered=true,shift=0": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c0010",
+      "y": 0
+    },
+    "bottom=false,far=false,near=true,top=false,facing=north,powered=false,shift=1": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c0010",
+      "y": 0
+    },
+    "bottom=false,far=false,near=true,top=false,facing=north,powered=true,shift=1": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c0010",
+      "y": 0
+    },
+    "bottom=false,far=false,near=true,top=false,facing=north,powered=false,shift=2": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c0010",
+      "y": 0
+    },
+    "bottom=false,far=false,near=true,top=false,facing=north,powered=true,shift=2": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c0010",
+      "y": 0
+    },
+    "bottom=false,far=false,near=true,top=false,facing=north,powered=false,shift=3": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c0010",
+      "y": 0
+    },
+    "bottom=false,far=false,near=true,top=false,facing=north,powered=true,shift=3": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c0010",
+      "y": 0
+    },
+    "bottom=false,far=false,near=true,top=false,facing=north,powered=false,shift=4": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c0010",
+      "y": 0
+    },
+    "bottom=false,far=false,near=true,top=false,facing=north,powered=true,shift=4": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c0010",
+      "y": 0
+    },
+    "bottom=false,far=true,near=true,top=false,facing=north,powered=false,shift=0": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c0011",
+      "y": 0
+    },
+    "bottom=false,far=true,near=true,top=false,facing=north,powered=true,shift=0": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c0011",
+      "y": 0
+    },
+    "bottom=false,far=true,near=true,top=false,facing=north,powered=false,shift=1": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c0011",
+      "y": 0
+    },
+    "bottom=false,far=true,near=true,top=false,facing=north,powered=true,shift=1": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c0011",
+      "y": 0
+    },
+    "bottom=false,far=true,near=true,top=false,facing=north,powered=false,shift=2": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c0011",
+      "y": 0
+    },
+    "bottom=false,far=true,near=true,top=false,facing=north,powered=true,shift=2": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c0011",
+      "y": 0
+    },
+    "bottom=false,far=true,near=true,top=false,facing=north,powered=false,shift=3": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c0011",
+      "y": 0
+    },
+    "bottom=false,far=true,near=true,top=false,facing=north,powered=true,shift=3": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c0011",
+      "y": 0
+    },
+    "bottom=false,far=true,near=true,top=false,facing=north,powered=false,shift=4": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c0011",
+      "y": 0
+    },
+    "bottom=false,far=true,near=true,top=false,facing=north,powered=true,shift=4": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c0011",
+      "y": 0
+    },
+    "bottom=true,far=false,near=false,top=false,facing=north,powered=false,shift=0": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c0100",
+      "y": 0
+    },
+    "bottom=true,far=false,near=false,top=false,facing=north,powered=true,shift=0": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c0100",
+      "y": 0
+    },
+    "bottom=true,far=false,near=false,top=false,facing=north,powered=false,shift=1": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c0100",
+      "y": 0
+    },
+    "bottom=true,far=false,near=false,top=false,facing=north,powered=true,shift=1": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c0100",
+      "y": 0
+    },
+    "bottom=true,far=false,near=false,top=false,facing=north,powered=false,shift=2": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c0100",
+      "y": 0
+    },
+    "bottom=true,far=false,near=false,top=false,facing=north,powered=true,shift=2": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c0100",
+      "y": 0
+    },
+    "bottom=true,far=false,near=false,top=false,facing=north,powered=false,shift=3": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c0100",
+      "y": 0
+    },
+    "bottom=true,far=false,near=false,top=false,facing=north,powered=true,shift=3": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c0100",
+      "y": 0
+    },
+    "bottom=true,far=false,near=false,top=false,facing=north,powered=false,shift=4": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c0100",
+      "y": 0
+    },
+    "bottom=true,far=false,near=false,top=false,facing=north,powered=true,shift=4": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c0100",
+      "y": 0
+    },
+    "bottom=true,far=true,near=false,top=false,facing=north,powered=false,shift=0": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c0101",
+      "y": 0
+    },
+    "bottom=true,far=true,near=false,top=false,facing=north,powered=true,shift=0": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c0101",
+      "y": 0
+    },
+    "bottom=true,far=true,near=false,top=false,facing=north,powered=false,shift=1": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c0101",
+      "y": 0
+    },
+    "bottom=true,far=true,near=false,top=false,facing=north,powered=true,shift=1": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c0101",
+      "y": 0
+    },
+    "bottom=true,far=true,near=false,top=false,facing=north,powered=false,shift=2": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c0101",
+      "y": 0
+    },
+    "bottom=true,far=true,near=false,top=false,facing=north,powered=true,shift=2": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c0101",
+      "y": 0
+    },
+    "bottom=true,far=true,near=false,top=false,facing=north,powered=false,shift=3": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c0101",
+      "y": 0
+    },
+    "bottom=true,far=true,near=false,top=false,facing=north,powered=true,shift=3": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c0101",
+      "y": 0
+    },
+    "bottom=true,far=true,near=false,top=false,facing=north,powered=false,shift=4": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c0101",
+      "y": 0
+    },
+    "bottom=true,far=true,near=false,top=false,facing=north,powered=true,shift=4": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c0101",
+      "y": 0
+    },
+    "bottom=true,far=false,near=true,top=false,facing=north,powered=false,shift=0": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c0110",
+      "y": 0
+    },
+    "bottom=true,far=false,near=true,top=false,facing=north,powered=true,shift=0": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c0110",
+      "y": 0
+    },
+    "bottom=true,far=false,near=true,top=false,facing=north,powered=false,shift=1": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c0110",
+      "y": 0
+    },
+    "bottom=true,far=false,near=true,top=false,facing=north,powered=true,shift=1": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c0110",
+      "y": 0
+    },
+    "bottom=true,far=false,near=true,top=false,facing=north,powered=false,shift=2": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c0110",
+      "y": 0
+    },
+    "bottom=true,far=false,near=true,top=false,facing=north,powered=true,shift=2": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c0110",
+      "y": 0
+    },
+    "bottom=true,far=false,near=true,top=false,facing=north,powered=false,shift=3": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c0110",
+      "y": 0
+    },
+    "bottom=true,far=false,near=true,top=false,facing=north,powered=true,shift=3": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c0110",
+      "y": 0
+    },
+    "bottom=true,far=false,near=true,top=false,facing=north,powered=false,shift=4": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c0110",
+      "y": 0
+    },
+    "bottom=true,far=false,near=true,top=false,facing=north,powered=true,shift=4": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c0110",
+      "y": 0
+    },
+    "bottom=true,far=true,near=true,top=false,facing=north,powered=false,shift=0": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c0111",
+      "y": 0
+    },
+    "bottom=true,far=true,near=true,top=false,facing=north,powered=true,shift=0": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c0111",
+      "y": 0
+    },
+    "bottom=true,far=true,near=true,top=false,facing=north,powered=false,shift=1": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c0111",
+      "y": 0
+    },
+    "bottom=true,far=true,near=true,top=false,facing=north,powered=true,shift=1": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c0111",
+      "y": 0
+    },
+    "bottom=true,far=true,near=true,top=false,facing=north,powered=false,shift=2": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c0111",
+      "y": 0
+    },
+    "bottom=true,far=true,near=true,top=false,facing=north,powered=true,shift=2": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c0111",
+      "y": 0
+    },
+    "bottom=true,far=true,near=true,top=false,facing=north,powered=false,shift=3": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c0111",
+      "y": 0
+    },
+    "bottom=true,far=true,near=true,top=false,facing=north,powered=true,shift=3": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c0111",
+      "y": 0
+    },
+    "bottom=true,far=true,near=true,top=false,facing=north,powered=false,shift=4": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c0111",
+      "y": 0
+    },
+    "bottom=true,far=true,near=true,top=false,facing=north,powered=true,shift=4": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c0111",
+      "y": 0
+    },
+    "bottom=false,far=false,near=false,top=true,facing=north,powered=false,shift=0": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c1000",
+      "y": 0
+    },
+    "bottom=false,far=false,near=false,top=true,facing=north,powered=true,shift=0": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c1000",
+      "y": 0
+    },
+    "bottom=false,far=false,near=false,top=true,facing=north,powered=false,shift=1": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c1000",
+      "y": 0
+    },
+    "bottom=false,far=false,near=false,top=true,facing=north,powered=true,shift=1": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c1000",
+      "y": 0
+    },
+    "bottom=false,far=false,near=false,top=true,facing=north,powered=false,shift=2": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c1000",
+      "y": 0
+    },
+    "bottom=false,far=false,near=false,top=true,facing=north,powered=true,shift=2": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c1000",
+      "y": 0
+    },
+    "bottom=false,far=false,near=false,top=true,facing=north,powered=false,shift=3": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c1000",
+      "y": 0
+    },
+    "bottom=false,far=false,near=false,top=true,facing=north,powered=true,shift=3": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c1000",
+      "y": 0
+    },
+    "bottom=false,far=false,near=false,top=true,facing=north,powered=false,shift=4": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c1000",
+      "y": 0
+    },
+    "bottom=false,far=false,near=false,top=true,facing=north,powered=true,shift=4": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c1000",
+      "y": 0
+    },
+    "bottom=false,far=true,near=false,top=true,facing=north,powered=false,shift=0": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c1001",
+      "y": 0
+    },
+    "bottom=false,far=true,near=false,top=true,facing=north,powered=true,shift=0": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c1001",
+      "y": 0
+    },
+    "bottom=false,far=true,near=false,top=true,facing=north,powered=false,shift=1": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c1001",
+      "y": 0
+    },
+    "bottom=false,far=true,near=false,top=true,facing=north,powered=true,shift=1": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c1001",
+      "y": 0
+    },
+    "bottom=false,far=true,near=false,top=true,facing=north,powered=false,shift=2": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c1001",
+      "y": 0
+    },
+    "bottom=false,far=true,near=false,top=true,facing=north,powered=true,shift=2": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c1001",
+      "y": 0
+    },
+    "bottom=false,far=true,near=false,top=true,facing=north,powered=false,shift=3": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c1001",
+      "y": 0
+    },
+    "bottom=false,far=true,near=false,top=true,facing=north,powered=true,shift=3": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c1001",
+      "y": 0
+    },
+    "bottom=false,far=true,near=false,top=true,facing=north,powered=false,shift=4": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c1001",
+      "y": 0
+    },
+    "bottom=false,far=true,near=false,top=true,facing=north,powered=true,shift=4": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c1001",
+      "y": 0
+    },
+    "bottom=false,far=false,near=true,top=true,facing=north,powered=false,shift=0": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c1010",
+      "y": 0
+    },
+    "bottom=false,far=false,near=true,top=true,facing=north,powered=true,shift=0": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c1010",
+      "y": 0
+    },
+    "bottom=false,far=false,near=true,top=true,facing=north,powered=false,shift=1": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c1010",
+      "y": 0
+    },
+    "bottom=false,far=false,near=true,top=true,facing=north,powered=true,shift=1": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c1010",
+      "y": 0
+    },
+    "bottom=false,far=false,near=true,top=true,facing=north,powered=false,shift=2": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c1010",
+      "y": 0
+    },
+    "bottom=false,far=false,near=true,top=true,facing=north,powered=true,shift=2": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c1010",
+      "y": 0
+    },
+    "bottom=false,far=false,near=true,top=true,facing=north,powered=false,shift=3": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c1010",
+      "y": 0
+    },
+    "bottom=false,far=false,near=true,top=true,facing=north,powered=true,shift=3": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c1010",
+      "y": 0
+    },
+    "bottom=false,far=false,near=true,top=true,facing=north,powered=false,shift=4": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c1010",
+      "y": 0
+    },
+    "bottom=false,far=false,near=true,top=true,facing=north,powered=true,shift=4": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c1010",
+      "y": 0
+    },
+    "bottom=false,far=true,near=true,top=true,facing=north,powered=false,shift=0": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c1011",
+      "y": 0
+    },
+    "bottom=false,far=true,near=true,top=true,facing=north,powered=true,shift=0": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c1011",
+      "y": 0
+    },
+    "bottom=false,far=true,near=true,top=true,facing=north,powered=false,shift=1": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c1011",
+      "y": 0
+    },
+    "bottom=false,far=true,near=true,top=true,facing=north,powered=true,shift=1": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c1011",
+      "y": 0
+    },
+    "bottom=false,far=true,near=true,top=true,facing=north,powered=false,shift=2": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c1011",
+      "y": 0
+    },
+    "bottom=false,far=true,near=true,top=true,facing=north,powered=true,shift=2": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c1011",
+      "y": 0
+    },
+    "bottom=false,far=true,near=true,top=true,facing=north,powered=false,shift=3": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c1011",
+      "y": 0
+    },
+    "bottom=false,far=true,near=true,top=true,facing=north,powered=true,shift=3": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c1011",
+      "y": 0
+    },
+    "bottom=false,far=true,near=true,top=true,facing=north,powered=false,shift=4": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c1011",
+      "y": 0
+    },
+    "bottom=false,far=true,near=true,top=true,facing=north,powered=true,shift=4": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c1011",
+      "y": 0
+    },
+    "bottom=true,far=false,near=false,top=true,facing=north,powered=false,shift=0": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c1100",
+      "y": 0
+    },
+    "bottom=true,far=false,near=false,top=true,facing=north,powered=true,shift=0": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c1100",
+      "y": 0
+    },
+    "bottom=true,far=false,near=false,top=true,facing=north,powered=false,shift=1": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c1100",
+      "y": 0
+    },
+    "bottom=true,far=false,near=false,top=true,facing=north,powered=true,shift=1": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c1100",
+      "y": 0
+    },
+    "bottom=true,far=false,near=false,top=true,facing=north,powered=false,shift=2": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c1100",
+      "y": 0
+    },
+    "bottom=true,far=false,near=false,top=true,facing=north,powered=true,shift=2": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c1100",
+      "y": 0
+    },
+    "bottom=true,far=false,near=false,top=true,facing=north,powered=false,shift=3": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c1100",
+      "y": 0
+    },
+    "bottom=true,far=false,near=false,top=true,facing=north,powered=true,shift=3": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c1100",
+      "y": 0
+    },
+    "bottom=true,far=false,near=false,top=true,facing=north,powered=false,shift=4": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c1100",
+      "y": 0
+    },
+    "bottom=true,far=false,near=false,top=true,facing=north,powered=true,shift=4": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c1100",
+      "y": 0
+    },
+    "bottom=true,far=true,near=false,top=true,facing=north,powered=false,shift=0": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c1101",
+      "y": 0
+    },
+    "bottom=true,far=true,near=false,top=true,facing=north,powered=true,shift=0": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c1101",
+      "y": 0
+    },
+    "bottom=true,far=true,near=false,top=true,facing=north,powered=false,shift=1": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c1101",
+      "y": 0
+    },
+    "bottom=true,far=true,near=false,top=true,facing=north,powered=true,shift=1": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c1101",
+      "y": 0
+    },
+    "bottom=true,far=true,near=false,top=true,facing=north,powered=false,shift=2": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c1101",
+      "y": 0
+    },
+    "bottom=true,far=true,near=false,top=true,facing=north,powered=true,shift=2": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c1101",
+      "y": 0
+    },
+    "bottom=true,far=true,near=false,top=true,facing=north,powered=false,shift=3": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c1101",
+      "y": 0
+    },
+    "bottom=true,far=true,near=false,top=true,facing=north,powered=true,shift=3": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c1101",
+      "y": 0
+    },
+    "bottom=true,far=true,near=false,top=true,facing=north,powered=false,shift=4": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c1101",
+      "y": 0
+    },
+    "bottom=true,far=true,near=false,top=true,facing=north,powered=true,shift=4": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c1101",
+      "y": 0
+    },
+    "bottom=true,far=false,near=true,top=true,facing=north,powered=false,shift=0": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c1110",
+      "y": 0
+    },
+    "bottom=true,far=false,near=true,top=true,facing=north,powered=true,shift=0": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c1110",
+      "y": 0
+    },
+    "bottom=true,far=false,near=true,top=true,facing=north,powered=false,shift=1": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c1110",
+      "y": 0
+    },
+    "bottom=true,far=false,near=true,top=true,facing=north,powered=true,shift=1": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c1110",
+      "y": 0
+    },
+    "bottom=true,far=false,near=true,top=true,facing=north,powered=false,shift=2": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c1110",
+      "y": 0
+    },
+    "bottom=true,far=false,near=true,top=true,facing=north,powered=true,shift=2": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c1110",
+      "y": 0
+    },
+    "bottom=true,far=false,near=true,top=true,facing=north,powered=false,shift=3": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c1110",
+      "y": 0
+    },
+    "bottom=true,far=false,near=true,top=true,facing=north,powered=true,shift=3": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c1110",
+      "y": 0
+    },
+    "bottom=true,far=false,near=true,top=true,facing=north,powered=false,shift=4": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c1110",
+      "y": 0
+    },
+    "bottom=true,far=false,near=true,top=true,facing=north,powered=true,shift=4": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c1110",
+      "y": 0
+    },
+    "bottom=true,far=true,near=true,top=true,facing=north,powered=false,shift=0": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c1111",
+      "y": 0
+    },
+    "bottom=true,far=true,near=true,top=true,facing=north,powered=true,shift=0": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c1111",
+      "y": 0
+    },
+    "bottom=true,far=true,near=true,top=true,facing=north,powered=false,shift=1": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c1111",
+      "y": 0
+    },
+    "bottom=true,far=true,near=true,top=true,facing=north,powered=true,shift=1": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c1111",
+      "y": 0
+    },
+    "bottom=true,far=true,near=true,top=true,facing=north,powered=false,shift=2": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c1111",
+      "y": 0
+    },
+    "bottom=true,far=true,near=true,top=true,facing=north,powered=true,shift=2": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c1111",
+      "y": 0
+    },
+    "bottom=true,far=true,near=true,top=true,facing=north,powered=false,shift=3": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c1111",
+      "y": 0
+    },
+    "bottom=true,far=true,near=true,top=true,facing=north,powered=true,shift=3": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c1111",
+      "y": 0
+    },
+    "bottom=true,far=true,near=true,top=true,facing=north,powered=false,shift=4": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c1111",
+      "y": 0
+    },
+    "bottom=true,far=true,near=true,top=true,facing=north,powered=true,shift=4": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c1111",
+      "y": 0
+    },
+    "bottom=false,far=false,near=false,top=false,facing=east,powered=false,shift=0": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c0000",
       "y": 90
     },
-    "facing=east,powered=true,shift=0": {
-      "model": "realms_of_chaos:block/sky_sliding_door",
+    "bottom=false,far=false,near=false,top=false,facing=east,powered=true,shift=0": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c0000",
       "y": 90
     },
-    "facing=east,powered=false,shift=1": {
-      "model": "realms_of_chaos:block/sky_sliding_door",
+    "bottom=false,far=false,near=false,top=false,facing=east,powered=false,shift=1": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c0000",
       "y": 90
     },
-    "facing=east,powered=true,shift=1": {
-      "model": "realms_of_chaos:block/sky_sliding_door",
+    "bottom=false,far=false,near=false,top=false,facing=east,powered=true,shift=1": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c0000",
       "y": 90
     },
-    "facing=east,powered=false,shift=2": {
-      "model": "realms_of_chaos:block/sky_sliding_door",
+    "bottom=false,far=false,near=false,top=false,facing=east,powered=false,shift=2": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c0000",
       "y": 90
     },
-    "facing=east,powered=true,shift=2": {
-      "model": "realms_of_chaos:block/sky_sliding_door",
+    "bottom=false,far=false,near=false,top=false,facing=east,powered=true,shift=2": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c0000",
       "y": 90
     },
-    "facing=east,powered=false,shift=3": {
-      "model": "realms_of_chaos:block/sky_sliding_door",
+    "bottom=false,far=false,near=false,top=false,facing=east,powered=false,shift=3": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c0000",
       "y": 90
     },
-    "facing=east,powered=true,shift=3": {
-      "model": "realms_of_chaos:block/sky_sliding_door",
+    "bottom=false,far=false,near=false,top=false,facing=east,powered=true,shift=3": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c0000",
       "y": 90
     },
-    "facing=east,powered=false,shift=4": {
-      "model": "realms_of_chaos:block/sky_sliding_door",
+    "bottom=false,far=false,near=false,top=false,facing=east,powered=false,shift=4": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c0000",
       "y": 90
     },
-    "facing=east,powered=true,shift=4": {
-      "model": "realms_of_chaos:block/sky_sliding_door",
+    "bottom=false,far=false,near=false,top=false,facing=east,powered=true,shift=4": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c0000",
       "y": 90
     },
-    "facing=south,powered=false,shift=0": {
-      "model": "realms_of_chaos:block/sky_sliding_door",
+    "bottom=false,far=true,near=false,top=false,facing=east,powered=false,shift=0": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c0001",
+      "y": 90
+    },
+    "bottom=false,far=true,near=false,top=false,facing=east,powered=true,shift=0": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c0001",
+      "y": 90
+    },
+    "bottom=false,far=true,near=false,top=false,facing=east,powered=false,shift=1": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c0001",
+      "y": 90
+    },
+    "bottom=false,far=true,near=false,top=false,facing=east,powered=true,shift=1": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c0001",
+      "y": 90
+    },
+    "bottom=false,far=true,near=false,top=false,facing=east,powered=false,shift=2": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c0001",
+      "y": 90
+    },
+    "bottom=false,far=true,near=false,top=false,facing=east,powered=true,shift=2": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c0001",
+      "y": 90
+    },
+    "bottom=false,far=true,near=false,top=false,facing=east,powered=false,shift=3": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c0001",
+      "y": 90
+    },
+    "bottom=false,far=true,near=false,top=false,facing=east,powered=true,shift=3": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c0001",
+      "y": 90
+    },
+    "bottom=false,far=true,near=false,top=false,facing=east,powered=false,shift=4": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c0001",
+      "y": 90
+    },
+    "bottom=false,far=true,near=false,top=false,facing=east,powered=true,shift=4": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c0001",
+      "y": 90
+    },
+    "bottom=false,far=false,near=true,top=false,facing=east,powered=false,shift=0": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c0010",
+      "y": 90
+    },
+    "bottom=false,far=false,near=true,top=false,facing=east,powered=true,shift=0": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c0010",
+      "y": 90
+    },
+    "bottom=false,far=false,near=true,top=false,facing=east,powered=false,shift=1": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c0010",
+      "y": 90
+    },
+    "bottom=false,far=false,near=true,top=false,facing=east,powered=true,shift=1": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c0010",
+      "y": 90
+    },
+    "bottom=false,far=false,near=true,top=false,facing=east,powered=false,shift=2": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c0010",
+      "y": 90
+    },
+    "bottom=false,far=false,near=true,top=false,facing=east,powered=true,shift=2": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c0010",
+      "y": 90
+    },
+    "bottom=false,far=false,near=true,top=false,facing=east,powered=false,shift=3": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c0010",
+      "y": 90
+    },
+    "bottom=false,far=false,near=true,top=false,facing=east,powered=true,shift=3": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c0010",
+      "y": 90
+    },
+    "bottom=false,far=false,near=true,top=false,facing=east,powered=false,shift=4": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c0010",
+      "y": 90
+    },
+    "bottom=false,far=false,near=true,top=false,facing=east,powered=true,shift=4": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c0010",
+      "y": 90
+    },
+    "bottom=false,far=true,near=true,top=false,facing=east,powered=false,shift=0": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c0011",
+      "y": 90
+    },
+    "bottom=false,far=true,near=true,top=false,facing=east,powered=true,shift=0": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c0011",
+      "y": 90
+    },
+    "bottom=false,far=true,near=true,top=false,facing=east,powered=false,shift=1": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c0011",
+      "y": 90
+    },
+    "bottom=false,far=true,near=true,top=false,facing=east,powered=true,shift=1": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c0011",
+      "y": 90
+    },
+    "bottom=false,far=true,near=true,top=false,facing=east,powered=false,shift=2": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c0011",
+      "y": 90
+    },
+    "bottom=false,far=true,near=true,top=false,facing=east,powered=true,shift=2": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c0011",
+      "y": 90
+    },
+    "bottom=false,far=true,near=true,top=false,facing=east,powered=false,shift=3": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c0011",
+      "y": 90
+    },
+    "bottom=false,far=true,near=true,top=false,facing=east,powered=true,shift=3": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c0011",
+      "y": 90
+    },
+    "bottom=false,far=true,near=true,top=false,facing=east,powered=false,shift=4": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c0011",
+      "y": 90
+    },
+    "bottom=false,far=true,near=true,top=false,facing=east,powered=true,shift=4": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c0011",
+      "y": 90
+    },
+    "bottom=true,far=false,near=false,top=false,facing=east,powered=false,shift=0": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c0100",
+      "y": 90
+    },
+    "bottom=true,far=false,near=false,top=false,facing=east,powered=true,shift=0": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c0100",
+      "y": 90
+    },
+    "bottom=true,far=false,near=false,top=false,facing=east,powered=false,shift=1": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c0100",
+      "y": 90
+    },
+    "bottom=true,far=false,near=false,top=false,facing=east,powered=true,shift=1": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c0100",
+      "y": 90
+    },
+    "bottom=true,far=false,near=false,top=false,facing=east,powered=false,shift=2": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c0100",
+      "y": 90
+    },
+    "bottom=true,far=false,near=false,top=false,facing=east,powered=true,shift=2": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c0100",
+      "y": 90
+    },
+    "bottom=true,far=false,near=false,top=false,facing=east,powered=false,shift=3": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c0100",
+      "y": 90
+    },
+    "bottom=true,far=false,near=false,top=false,facing=east,powered=true,shift=3": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c0100",
+      "y": 90
+    },
+    "bottom=true,far=false,near=false,top=false,facing=east,powered=false,shift=4": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c0100",
+      "y": 90
+    },
+    "bottom=true,far=false,near=false,top=false,facing=east,powered=true,shift=4": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c0100",
+      "y": 90
+    },
+    "bottom=true,far=true,near=false,top=false,facing=east,powered=false,shift=0": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c0101",
+      "y": 90
+    },
+    "bottom=true,far=true,near=false,top=false,facing=east,powered=true,shift=0": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c0101",
+      "y": 90
+    },
+    "bottom=true,far=true,near=false,top=false,facing=east,powered=false,shift=1": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c0101",
+      "y": 90
+    },
+    "bottom=true,far=true,near=false,top=false,facing=east,powered=true,shift=1": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c0101",
+      "y": 90
+    },
+    "bottom=true,far=true,near=false,top=false,facing=east,powered=false,shift=2": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c0101",
+      "y": 90
+    },
+    "bottom=true,far=true,near=false,top=false,facing=east,powered=true,shift=2": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c0101",
+      "y": 90
+    },
+    "bottom=true,far=true,near=false,top=false,facing=east,powered=false,shift=3": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c0101",
+      "y": 90
+    },
+    "bottom=true,far=true,near=false,top=false,facing=east,powered=true,shift=3": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c0101",
+      "y": 90
+    },
+    "bottom=true,far=true,near=false,top=false,facing=east,powered=false,shift=4": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c0101",
+      "y": 90
+    },
+    "bottom=true,far=true,near=false,top=false,facing=east,powered=true,shift=4": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c0101",
+      "y": 90
+    },
+    "bottom=true,far=false,near=true,top=false,facing=east,powered=false,shift=0": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c0110",
+      "y": 90
+    },
+    "bottom=true,far=false,near=true,top=false,facing=east,powered=true,shift=0": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c0110",
+      "y": 90
+    },
+    "bottom=true,far=false,near=true,top=false,facing=east,powered=false,shift=1": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c0110",
+      "y": 90
+    },
+    "bottom=true,far=false,near=true,top=false,facing=east,powered=true,shift=1": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c0110",
+      "y": 90
+    },
+    "bottom=true,far=false,near=true,top=false,facing=east,powered=false,shift=2": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c0110",
+      "y": 90
+    },
+    "bottom=true,far=false,near=true,top=false,facing=east,powered=true,shift=2": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c0110",
+      "y": 90
+    },
+    "bottom=true,far=false,near=true,top=false,facing=east,powered=false,shift=3": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c0110",
+      "y": 90
+    },
+    "bottom=true,far=false,near=true,top=false,facing=east,powered=true,shift=3": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c0110",
+      "y": 90
+    },
+    "bottom=true,far=false,near=true,top=false,facing=east,powered=false,shift=4": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c0110",
+      "y": 90
+    },
+    "bottom=true,far=false,near=true,top=false,facing=east,powered=true,shift=4": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c0110",
+      "y": 90
+    },
+    "bottom=true,far=true,near=true,top=false,facing=east,powered=false,shift=0": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c0111",
+      "y": 90
+    },
+    "bottom=true,far=true,near=true,top=false,facing=east,powered=true,shift=0": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c0111",
+      "y": 90
+    },
+    "bottom=true,far=true,near=true,top=false,facing=east,powered=false,shift=1": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c0111",
+      "y": 90
+    },
+    "bottom=true,far=true,near=true,top=false,facing=east,powered=true,shift=1": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c0111",
+      "y": 90
+    },
+    "bottom=true,far=true,near=true,top=false,facing=east,powered=false,shift=2": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c0111",
+      "y": 90
+    },
+    "bottom=true,far=true,near=true,top=false,facing=east,powered=true,shift=2": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c0111",
+      "y": 90
+    },
+    "bottom=true,far=true,near=true,top=false,facing=east,powered=false,shift=3": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c0111",
+      "y": 90
+    },
+    "bottom=true,far=true,near=true,top=false,facing=east,powered=true,shift=3": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c0111",
+      "y": 90
+    },
+    "bottom=true,far=true,near=true,top=false,facing=east,powered=false,shift=4": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c0111",
+      "y": 90
+    },
+    "bottom=true,far=true,near=true,top=false,facing=east,powered=true,shift=4": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c0111",
+      "y": 90
+    },
+    "bottom=false,far=false,near=false,top=true,facing=east,powered=false,shift=0": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c1000",
+      "y": 90
+    },
+    "bottom=false,far=false,near=false,top=true,facing=east,powered=true,shift=0": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c1000",
+      "y": 90
+    },
+    "bottom=false,far=false,near=false,top=true,facing=east,powered=false,shift=1": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c1000",
+      "y": 90
+    },
+    "bottom=false,far=false,near=false,top=true,facing=east,powered=true,shift=1": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c1000",
+      "y": 90
+    },
+    "bottom=false,far=false,near=false,top=true,facing=east,powered=false,shift=2": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c1000",
+      "y": 90
+    },
+    "bottom=false,far=false,near=false,top=true,facing=east,powered=true,shift=2": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c1000",
+      "y": 90
+    },
+    "bottom=false,far=false,near=false,top=true,facing=east,powered=false,shift=3": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c1000",
+      "y": 90
+    },
+    "bottom=false,far=false,near=false,top=true,facing=east,powered=true,shift=3": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c1000",
+      "y": 90
+    },
+    "bottom=false,far=false,near=false,top=true,facing=east,powered=false,shift=4": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c1000",
+      "y": 90
+    },
+    "bottom=false,far=false,near=false,top=true,facing=east,powered=true,shift=4": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c1000",
+      "y": 90
+    },
+    "bottom=false,far=true,near=false,top=true,facing=east,powered=false,shift=0": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c1001",
+      "y": 90
+    },
+    "bottom=false,far=true,near=false,top=true,facing=east,powered=true,shift=0": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c1001",
+      "y": 90
+    },
+    "bottom=false,far=true,near=false,top=true,facing=east,powered=false,shift=1": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c1001",
+      "y": 90
+    },
+    "bottom=false,far=true,near=false,top=true,facing=east,powered=true,shift=1": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c1001",
+      "y": 90
+    },
+    "bottom=false,far=true,near=false,top=true,facing=east,powered=false,shift=2": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c1001",
+      "y": 90
+    },
+    "bottom=false,far=true,near=false,top=true,facing=east,powered=true,shift=2": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c1001",
+      "y": 90
+    },
+    "bottom=false,far=true,near=false,top=true,facing=east,powered=false,shift=3": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c1001",
+      "y": 90
+    },
+    "bottom=false,far=true,near=false,top=true,facing=east,powered=true,shift=3": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c1001",
+      "y": 90
+    },
+    "bottom=false,far=true,near=false,top=true,facing=east,powered=false,shift=4": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c1001",
+      "y": 90
+    },
+    "bottom=false,far=true,near=false,top=true,facing=east,powered=true,shift=4": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c1001",
+      "y": 90
+    },
+    "bottom=false,far=false,near=true,top=true,facing=east,powered=false,shift=0": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c1010",
+      "y": 90
+    },
+    "bottom=false,far=false,near=true,top=true,facing=east,powered=true,shift=0": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c1010",
+      "y": 90
+    },
+    "bottom=false,far=false,near=true,top=true,facing=east,powered=false,shift=1": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c1010",
+      "y": 90
+    },
+    "bottom=false,far=false,near=true,top=true,facing=east,powered=true,shift=1": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c1010",
+      "y": 90
+    },
+    "bottom=false,far=false,near=true,top=true,facing=east,powered=false,shift=2": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c1010",
+      "y": 90
+    },
+    "bottom=false,far=false,near=true,top=true,facing=east,powered=true,shift=2": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c1010",
+      "y": 90
+    },
+    "bottom=false,far=false,near=true,top=true,facing=east,powered=false,shift=3": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c1010",
+      "y": 90
+    },
+    "bottom=false,far=false,near=true,top=true,facing=east,powered=true,shift=3": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c1010",
+      "y": 90
+    },
+    "bottom=false,far=false,near=true,top=true,facing=east,powered=false,shift=4": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c1010",
+      "y": 90
+    },
+    "bottom=false,far=false,near=true,top=true,facing=east,powered=true,shift=4": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c1010",
+      "y": 90
+    },
+    "bottom=false,far=true,near=true,top=true,facing=east,powered=false,shift=0": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c1011",
+      "y": 90
+    },
+    "bottom=false,far=true,near=true,top=true,facing=east,powered=true,shift=0": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c1011",
+      "y": 90
+    },
+    "bottom=false,far=true,near=true,top=true,facing=east,powered=false,shift=1": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c1011",
+      "y": 90
+    },
+    "bottom=false,far=true,near=true,top=true,facing=east,powered=true,shift=1": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c1011",
+      "y": 90
+    },
+    "bottom=false,far=true,near=true,top=true,facing=east,powered=false,shift=2": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c1011",
+      "y": 90
+    },
+    "bottom=false,far=true,near=true,top=true,facing=east,powered=true,shift=2": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c1011",
+      "y": 90
+    },
+    "bottom=false,far=true,near=true,top=true,facing=east,powered=false,shift=3": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c1011",
+      "y": 90
+    },
+    "bottom=false,far=true,near=true,top=true,facing=east,powered=true,shift=3": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c1011",
+      "y": 90
+    },
+    "bottom=false,far=true,near=true,top=true,facing=east,powered=false,shift=4": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c1011",
+      "y": 90
+    },
+    "bottom=false,far=true,near=true,top=true,facing=east,powered=true,shift=4": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c1011",
+      "y": 90
+    },
+    "bottom=true,far=false,near=false,top=true,facing=east,powered=false,shift=0": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c1100",
+      "y": 90
+    },
+    "bottom=true,far=false,near=false,top=true,facing=east,powered=true,shift=0": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c1100",
+      "y": 90
+    },
+    "bottom=true,far=false,near=false,top=true,facing=east,powered=false,shift=1": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c1100",
+      "y": 90
+    },
+    "bottom=true,far=false,near=false,top=true,facing=east,powered=true,shift=1": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c1100",
+      "y": 90
+    },
+    "bottom=true,far=false,near=false,top=true,facing=east,powered=false,shift=2": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c1100",
+      "y": 90
+    },
+    "bottom=true,far=false,near=false,top=true,facing=east,powered=true,shift=2": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c1100",
+      "y": 90
+    },
+    "bottom=true,far=false,near=false,top=true,facing=east,powered=false,shift=3": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c1100",
+      "y": 90
+    },
+    "bottom=true,far=false,near=false,top=true,facing=east,powered=true,shift=3": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c1100",
+      "y": 90
+    },
+    "bottom=true,far=false,near=false,top=true,facing=east,powered=false,shift=4": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c1100",
+      "y": 90
+    },
+    "bottom=true,far=false,near=false,top=true,facing=east,powered=true,shift=4": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c1100",
+      "y": 90
+    },
+    "bottom=true,far=true,near=false,top=true,facing=east,powered=false,shift=0": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c1101",
+      "y": 90
+    },
+    "bottom=true,far=true,near=false,top=true,facing=east,powered=true,shift=0": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c1101",
+      "y": 90
+    },
+    "bottom=true,far=true,near=false,top=true,facing=east,powered=false,shift=1": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c1101",
+      "y": 90
+    },
+    "bottom=true,far=true,near=false,top=true,facing=east,powered=true,shift=1": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c1101",
+      "y": 90
+    },
+    "bottom=true,far=true,near=false,top=true,facing=east,powered=false,shift=2": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c1101",
+      "y": 90
+    },
+    "bottom=true,far=true,near=false,top=true,facing=east,powered=true,shift=2": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c1101",
+      "y": 90
+    },
+    "bottom=true,far=true,near=false,top=true,facing=east,powered=false,shift=3": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c1101",
+      "y": 90
+    },
+    "bottom=true,far=true,near=false,top=true,facing=east,powered=true,shift=3": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c1101",
+      "y": 90
+    },
+    "bottom=true,far=true,near=false,top=true,facing=east,powered=false,shift=4": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c1101",
+      "y": 90
+    },
+    "bottom=true,far=true,near=false,top=true,facing=east,powered=true,shift=4": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c1101",
+      "y": 90
+    },
+    "bottom=true,far=false,near=true,top=true,facing=east,powered=false,shift=0": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c1110",
+      "y": 90
+    },
+    "bottom=true,far=false,near=true,top=true,facing=east,powered=true,shift=0": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c1110",
+      "y": 90
+    },
+    "bottom=true,far=false,near=true,top=true,facing=east,powered=false,shift=1": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c1110",
+      "y": 90
+    },
+    "bottom=true,far=false,near=true,top=true,facing=east,powered=true,shift=1": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c1110",
+      "y": 90
+    },
+    "bottom=true,far=false,near=true,top=true,facing=east,powered=false,shift=2": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c1110",
+      "y": 90
+    },
+    "bottom=true,far=false,near=true,top=true,facing=east,powered=true,shift=2": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c1110",
+      "y": 90
+    },
+    "bottom=true,far=false,near=true,top=true,facing=east,powered=false,shift=3": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c1110",
+      "y": 90
+    },
+    "bottom=true,far=false,near=true,top=true,facing=east,powered=true,shift=3": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c1110",
+      "y": 90
+    },
+    "bottom=true,far=false,near=true,top=true,facing=east,powered=false,shift=4": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c1110",
+      "y": 90
+    },
+    "bottom=true,far=false,near=true,top=true,facing=east,powered=true,shift=4": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c1110",
+      "y": 90
+    },
+    "bottom=true,far=true,near=true,top=true,facing=east,powered=false,shift=0": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c1111",
+      "y": 90
+    },
+    "bottom=true,far=true,near=true,top=true,facing=east,powered=true,shift=0": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c1111",
+      "y": 90
+    },
+    "bottom=true,far=true,near=true,top=true,facing=east,powered=false,shift=1": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c1111",
+      "y": 90
+    },
+    "bottom=true,far=true,near=true,top=true,facing=east,powered=true,shift=1": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c1111",
+      "y": 90
+    },
+    "bottom=true,far=true,near=true,top=true,facing=east,powered=false,shift=2": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c1111",
+      "y": 90
+    },
+    "bottom=true,far=true,near=true,top=true,facing=east,powered=true,shift=2": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c1111",
+      "y": 90
+    },
+    "bottom=true,far=true,near=true,top=true,facing=east,powered=false,shift=3": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c1111",
+      "y": 90
+    },
+    "bottom=true,far=true,near=true,top=true,facing=east,powered=true,shift=3": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c1111",
+      "y": 90
+    },
+    "bottom=true,far=true,near=true,top=true,facing=east,powered=false,shift=4": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c1111",
+      "y": 90
+    },
+    "bottom=true,far=true,near=true,top=true,facing=east,powered=true,shift=4": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c1111",
+      "y": 90
+    },
+    "bottom=false,far=false,near=false,top=false,facing=south,powered=false,shift=0": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c0000",
       "y": 180
     },
-    "facing=south,powered=true,shift=0": {
-      "model": "realms_of_chaos:block/sky_sliding_door",
+    "bottom=false,far=false,near=false,top=false,facing=south,powered=true,shift=0": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c0000",
       "y": 180
     },
-    "facing=south,powered=false,shift=1": {
-      "model": "realms_of_chaos:block/sky_sliding_door",
+    "bottom=false,far=false,near=false,top=false,facing=south,powered=false,shift=1": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c0000",
       "y": 180
     },
-    "facing=south,powered=true,shift=1": {
-      "model": "realms_of_chaos:block/sky_sliding_door",
+    "bottom=false,far=false,near=false,top=false,facing=south,powered=true,shift=1": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c0000",
       "y": 180
     },
-    "facing=south,powered=false,shift=2": {
-      "model": "realms_of_chaos:block/sky_sliding_door",
+    "bottom=false,far=false,near=false,top=false,facing=south,powered=false,shift=2": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c0000",
       "y": 180
     },
-    "facing=south,powered=true,shift=2": {
-      "model": "realms_of_chaos:block/sky_sliding_door",
+    "bottom=false,far=false,near=false,top=false,facing=south,powered=true,shift=2": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c0000",
       "y": 180
     },
-    "facing=south,powered=false,shift=3": {
-      "model": "realms_of_chaos:block/sky_sliding_door",
+    "bottom=false,far=false,near=false,top=false,facing=south,powered=false,shift=3": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c0000",
       "y": 180
     },
-    "facing=south,powered=true,shift=3": {
-      "model": "realms_of_chaos:block/sky_sliding_door",
+    "bottom=false,far=false,near=false,top=false,facing=south,powered=true,shift=3": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c0000",
       "y": 180
     },
-    "facing=south,powered=false,shift=4": {
-      "model": "realms_of_chaos:block/sky_sliding_door",
+    "bottom=false,far=false,near=false,top=false,facing=south,powered=false,shift=4": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c0000",
       "y": 180
     },
-    "facing=south,powered=true,shift=4": {
-      "model": "realms_of_chaos:block/sky_sliding_door",
+    "bottom=false,far=false,near=false,top=false,facing=south,powered=true,shift=4": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c0000",
       "y": 180
     },
-    "facing=west,powered=false,shift=0": {
-      "model": "realms_of_chaos:block/sky_sliding_door",
+    "bottom=false,far=true,near=false,top=false,facing=south,powered=false,shift=0": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c0001",
+      "y": 180
+    },
+    "bottom=false,far=true,near=false,top=false,facing=south,powered=true,shift=0": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c0001",
+      "y": 180
+    },
+    "bottom=false,far=true,near=false,top=false,facing=south,powered=false,shift=1": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c0001",
+      "y": 180
+    },
+    "bottom=false,far=true,near=false,top=false,facing=south,powered=true,shift=1": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c0001",
+      "y": 180
+    },
+    "bottom=false,far=true,near=false,top=false,facing=south,powered=false,shift=2": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c0001",
+      "y": 180
+    },
+    "bottom=false,far=true,near=false,top=false,facing=south,powered=true,shift=2": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c0001",
+      "y": 180
+    },
+    "bottom=false,far=true,near=false,top=false,facing=south,powered=false,shift=3": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c0001",
+      "y": 180
+    },
+    "bottom=false,far=true,near=false,top=false,facing=south,powered=true,shift=3": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c0001",
+      "y": 180
+    },
+    "bottom=false,far=true,near=false,top=false,facing=south,powered=false,shift=4": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c0001",
+      "y": 180
+    },
+    "bottom=false,far=true,near=false,top=false,facing=south,powered=true,shift=4": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c0001",
+      "y": 180
+    },
+    "bottom=false,far=false,near=true,top=false,facing=south,powered=false,shift=0": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c0010",
+      "y": 180
+    },
+    "bottom=false,far=false,near=true,top=false,facing=south,powered=true,shift=0": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c0010",
+      "y": 180
+    },
+    "bottom=false,far=false,near=true,top=false,facing=south,powered=false,shift=1": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c0010",
+      "y": 180
+    },
+    "bottom=false,far=false,near=true,top=false,facing=south,powered=true,shift=1": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c0010",
+      "y": 180
+    },
+    "bottom=false,far=false,near=true,top=false,facing=south,powered=false,shift=2": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c0010",
+      "y": 180
+    },
+    "bottom=false,far=false,near=true,top=false,facing=south,powered=true,shift=2": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c0010",
+      "y": 180
+    },
+    "bottom=false,far=false,near=true,top=false,facing=south,powered=false,shift=3": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c0010",
+      "y": 180
+    },
+    "bottom=false,far=false,near=true,top=false,facing=south,powered=true,shift=3": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c0010",
+      "y": 180
+    },
+    "bottom=false,far=false,near=true,top=false,facing=south,powered=false,shift=4": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c0010",
+      "y": 180
+    },
+    "bottom=false,far=false,near=true,top=false,facing=south,powered=true,shift=4": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c0010",
+      "y": 180
+    },
+    "bottom=false,far=true,near=true,top=false,facing=south,powered=false,shift=0": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c0011",
+      "y": 180
+    },
+    "bottom=false,far=true,near=true,top=false,facing=south,powered=true,shift=0": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c0011",
+      "y": 180
+    },
+    "bottom=false,far=true,near=true,top=false,facing=south,powered=false,shift=1": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c0011",
+      "y": 180
+    },
+    "bottom=false,far=true,near=true,top=false,facing=south,powered=true,shift=1": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c0011",
+      "y": 180
+    },
+    "bottom=false,far=true,near=true,top=false,facing=south,powered=false,shift=2": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c0011",
+      "y": 180
+    },
+    "bottom=false,far=true,near=true,top=false,facing=south,powered=true,shift=2": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c0011",
+      "y": 180
+    },
+    "bottom=false,far=true,near=true,top=false,facing=south,powered=false,shift=3": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c0011",
+      "y": 180
+    },
+    "bottom=false,far=true,near=true,top=false,facing=south,powered=true,shift=3": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c0011",
+      "y": 180
+    },
+    "bottom=false,far=true,near=true,top=false,facing=south,powered=false,shift=4": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c0011",
+      "y": 180
+    },
+    "bottom=false,far=true,near=true,top=false,facing=south,powered=true,shift=4": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c0011",
+      "y": 180
+    },
+    "bottom=true,far=false,near=false,top=false,facing=south,powered=false,shift=0": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c0100",
+      "y": 180
+    },
+    "bottom=true,far=false,near=false,top=false,facing=south,powered=true,shift=0": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c0100",
+      "y": 180
+    },
+    "bottom=true,far=false,near=false,top=false,facing=south,powered=false,shift=1": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c0100",
+      "y": 180
+    },
+    "bottom=true,far=false,near=false,top=false,facing=south,powered=true,shift=1": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c0100",
+      "y": 180
+    },
+    "bottom=true,far=false,near=false,top=false,facing=south,powered=false,shift=2": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c0100",
+      "y": 180
+    },
+    "bottom=true,far=false,near=false,top=false,facing=south,powered=true,shift=2": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c0100",
+      "y": 180
+    },
+    "bottom=true,far=false,near=false,top=false,facing=south,powered=false,shift=3": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c0100",
+      "y": 180
+    },
+    "bottom=true,far=false,near=false,top=false,facing=south,powered=true,shift=3": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c0100",
+      "y": 180
+    },
+    "bottom=true,far=false,near=false,top=false,facing=south,powered=false,shift=4": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c0100",
+      "y": 180
+    },
+    "bottom=true,far=false,near=false,top=false,facing=south,powered=true,shift=4": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c0100",
+      "y": 180
+    },
+    "bottom=true,far=true,near=false,top=false,facing=south,powered=false,shift=0": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c0101",
+      "y": 180
+    },
+    "bottom=true,far=true,near=false,top=false,facing=south,powered=true,shift=0": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c0101",
+      "y": 180
+    },
+    "bottom=true,far=true,near=false,top=false,facing=south,powered=false,shift=1": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c0101",
+      "y": 180
+    },
+    "bottom=true,far=true,near=false,top=false,facing=south,powered=true,shift=1": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c0101",
+      "y": 180
+    },
+    "bottom=true,far=true,near=false,top=false,facing=south,powered=false,shift=2": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c0101",
+      "y": 180
+    },
+    "bottom=true,far=true,near=false,top=false,facing=south,powered=true,shift=2": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c0101",
+      "y": 180
+    },
+    "bottom=true,far=true,near=false,top=false,facing=south,powered=false,shift=3": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c0101",
+      "y": 180
+    },
+    "bottom=true,far=true,near=false,top=false,facing=south,powered=true,shift=3": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c0101",
+      "y": 180
+    },
+    "bottom=true,far=true,near=false,top=false,facing=south,powered=false,shift=4": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c0101",
+      "y": 180
+    },
+    "bottom=true,far=true,near=false,top=false,facing=south,powered=true,shift=4": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c0101",
+      "y": 180
+    },
+    "bottom=true,far=false,near=true,top=false,facing=south,powered=false,shift=0": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c0110",
+      "y": 180
+    },
+    "bottom=true,far=false,near=true,top=false,facing=south,powered=true,shift=0": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c0110",
+      "y": 180
+    },
+    "bottom=true,far=false,near=true,top=false,facing=south,powered=false,shift=1": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c0110",
+      "y": 180
+    },
+    "bottom=true,far=false,near=true,top=false,facing=south,powered=true,shift=1": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c0110",
+      "y": 180
+    },
+    "bottom=true,far=false,near=true,top=false,facing=south,powered=false,shift=2": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c0110",
+      "y": 180
+    },
+    "bottom=true,far=false,near=true,top=false,facing=south,powered=true,shift=2": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c0110",
+      "y": 180
+    },
+    "bottom=true,far=false,near=true,top=false,facing=south,powered=false,shift=3": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c0110",
+      "y": 180
+    },
+    "bottom=true,far=false,near=true,top=false,facing=south,powered=true,shift=3": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c0110",
+      "y": 180
+    },
+    "bottom=true,far=false,near=true,top=false,facing=south,powered=false,shift=4": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c0110",
+      "y": 180
+    },
+    "bottom=true,far=false,near=true,top=false,facing=south,powered=true,shift=4": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c0110",
+      "y": 180
+    },
+    "bottom=true,far=true,near=true,top=false,facing=south,powered=false,shift=0": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c0111",
+      "y": 180
+    },
+    "bottom=true,far=true,near=true,top=false,facing=south,powered=true,shift=0": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c0111",
+      "y": 180
+    },
+    "bottom=true,far=true,near=true,top=false,facing=south,powered=false,shift=1": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c0111",
+      "y": 180
+    },
+    "bottom=true,far=true,near=true,top=false,facing=south,powered=true,shift=1": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c0111",
+      "y": 180
+    },
+    "bottom=true,far=true,near=true,top=false,facing=south,powered=false,shift=2": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c0111",
+      "y": 180
+    },
+    "bottom=true,far=true,near=true,top=false,facing=south,powered=true,shift=2": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c0111",
+      "y": 180
+    },
+    "bottom=true,far=true,near=true,top=false,facing=south,powered=false,shift=3": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c0111",
+      "y": 180
+    },
+    "bottom=true,far=true,near=true,top=false,facing=south,powered=true,shift=3": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c0111",
+      "y": 180
+    },
+    "bottom=true,far=true,near=true,top=false,facing=south,powered=false,shift=4": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c0111",
+      "y": 180
+    },
+    "bottom=true,far=true,near=true,top=false,facing=south,powered=true,shift=4": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c0111",
+      "y": 180
+    },
+    "bottom=false,far=false,near=false,top=true,facing=south,powered=false,shift=0": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c1000",
+      "y": 180
+    },
+    "bottom=false,far=false,near=false,top=true,facing=south,powered=true,shift=0": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c1000",
+      "y": 180
+    },
+    "bottom=false,far=false,near=false,top=true,facing=south,powered=false,shift=1": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c1000",
+      "y": 180
+    },
+    "bottom=false,far=false,near=false,top=true,facing=south,powered=true,shift=1": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c1000",
+      "y": 180
+    },
+    "bottom=false,far=false,near=false,top=true,facing=south,powered=false,shift=2": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c1000",
+      "y": 180
+    },
+    "bottom=false,far=false,near=false,top=true,facing=south,powered=true,shift=2": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c1000",
+      "y": 180
+    },
+    "bottom=false,far=false,near=false,top=true,facing=south,powered=false,shift=3": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c1000",
+      "y": 180
+    },
+    "bottom=false,far=false,near=false,top=true,facing=south,powered=true,shift=3": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c1000",
+      "y": 180
+    },
+    "bottom=false,far=false,near=false,top=true,facing=south,powered=false,shift=4": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c1000",
+      "y": 180
+    },
+    "bottom=false,far=false,near=false,top=true,facing=south,powered=true,shift=4": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c1000",
+      "y": 180
+    },
+    "bottom=false,far=true,near=false,top=true,facing=south,powered=false,shift=0": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c1001",
+      "y": 180
+    },
+    "bottom=false,far=true,near=false,top=true,facing=south,powered=true,shift=0": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c1001",
+      "y": 180
+    },
+    "bottom=false,far=true,near=false,top=true,facing=south,powered=false,shift=1": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c1001",
+      "y": 180
+    },
+    "bottom=false,far=true,near=false,top=true,facing=south,powered=true,shift=1": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c1001",
+      "y": 180
+    },
+    "bottom=false,far=true,near=false,top=true,facing=south,powered=false,shift=2": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c1001",
+      "y": 180
+    },
+    "bottom=false,far=true,near=false,top=true,facing=south,powered=true,shift=2": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c1001",
+      "y": 180
+    },
+    "bottom=false,far=true,near=false,top=true,facing=south,powered=false,shift=3": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c1001",
+      "y": 180
+    },
+    "bottom=false,far=true,near=false,top=true,facing=south,powered=true,shift=3": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c1001",
+      "y": 180
+    },
+    "bottom=false,far=true,near=false,top=true,facing=south,powered=false,shift=4": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c1001",
+      "y": 180
+    },
+    "bottom=false,far=true,near=false,top=true,facing=south,powered=true,shift=4": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c1001",
+      "y": 180
+    },
+    "bottom=false,far=false,near=true,top=true,facing=south,powered=false,shift=0": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c1010",
+      "y": 180
+    },
+    "bottom=false,far=false,near=true,top=true,facing=south,powered=true,shift=0": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c1010",
+      "y": 180
+    },
+    "bottom=false,far=false,near=true,top=true,facing=south,powered=false,shift=1": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c1010",
+      "y": 180
+    },
+    "bottom=false,far=false,near=true,top=true,facing=south,powered=true,shift=1": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c1010",
+      "y": 180
+    },
+    "bottom=false,far=false,near=true,top=true,facing=south,powered=false,shift=2": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c1010",
+      "y": 180
+    },
+    "bottom=false,far=false,near=true,top=true,facing=south,powered=true,shift=2": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c1010",
+      "y": 180
+    },
+    "bottom=false,far=false,near=true,top=true,facing=south,powered=false,shift=3": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c1010",
+      "y": 180
+    },
+    "bottom=false,far=false,near=true,top=true,facing=south,powered=true,shift=3": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c1010",
+      "y": 180
+    },
+    "bottom=false,far=false,near=true,top=true,facing=south,powered=false,shift=4": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c1010",
+      "y": 180
+    },
+    "bottom=false,far=false,near=true,top=true,facing=south,powered=true,shift=4": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c1010",
+      "y": 180
+    },
+    "bottom=false,far=true,near=true,top=true,facing=south,powered=false,shift=0": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c1011",
+      "y": 180
+    },
+    "bottom=false,far=true,near=true,top=true,facing=south,powered=true,shift=0": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c1011",
+      "y": 180
+    },
+    "bottom=false,far=true,near=true,top=true,facing=south,powered=false,shift=1": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c1011",
+      "y": 180
+    },
+    "bottom=false,far=true,near=true,top=true,facing=south,powered=true,shift=1": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c1011",
+      "y": 180
+    },
+    "bottom=false,far=true,near=true,top=true,facing=south,powered=false,shift=2": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c1011",
+      "y": 180
+    },
+    "bottom=false,far=true,near=true,top=true,facing=south,powered=true,shift=2": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c1011",
+      "y": 180
+    },
+    "bottom=false,far=true,near=true,top=true,facing=south,powered=false,shift=3": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c1011",
+      "y": 180
+    },
+    "bottom=false,far=true,near=true,top=true,facing=south,powered=true,shift=3": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c1011",
+      "y": 180
+    },
+    "bottom=false,far=true,near=true,top=true,facing=south,powered=false,shift=4": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c1011",
+      "y": 180
+    },
+    "bottom=false,far=true,near=true,top=true,facing=south,powered=true,shift=4": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c1011",
+      "y": 180
+    },
+    "bottom=true,far=false,near=false,top=true,facing=south,powered=false,shift=0": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c1100",
+      "y": 180
+    },
+    "bottom=true,far=false,near=false,top=true,facing=south,powered=true,shift=0": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c1100",
+      "y": 180
+    },
+    "bottom=true,far=false,near=false,top=true,facing=south,powered=false,shift=1": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c1100",
+      "y": 180
+    },
+    "bottom=true,far=false,near=false,top=true,facing=south,powered=true,shift=1": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c1100",
+      "y": 180
+    },
+    "bottom=true,far=false,near=false,top=true,facing=south,powered=false,shift=2": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c1100",
+      "y": 180
+    },
+    "bottom=true,far=false,near=false,top=true,facing=south,powered=true,shift=2": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c1100",
+      "y": 180
+    },
+    "bottom=true,far=false,near=false,top=true,facing=south,powered=false,shift=3": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c1100",
+      "y": 180
+    },
+    "bottom=true,far=false,near=false,top=true,facing=south,powered=true,shift=3": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c1100",
+      "y": 180
+    },
+    "bottom=true,far=false,near=false,top=true,facing=south,powered=false,shift=4": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c1100",
+      "y": 180
+    },
+    "bottom=true,far=false,near=false,top=true,facing=south,powered=true,shift=4": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c1100",
+      "y": 180
+    },
+    "bottom=true,far=true,near=false,top=true,facing=south,powered=false,shift=0": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c1101",
+      "y": 180
+    },
+    "bottom=true,far=true,near=false,top=true,facing=south,powered=true,shift=0": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c1101",
+      "y": 180
+    },
+    "bottom=true,far=true,near=false,top=true,facing=south,powered=false,shift=1": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c1101",
+      "y": 180
+    },
+    "bottom=true,far=true,near=false,top=true,facing=south,powered=true,shift=1": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c1101",
+      "y": 180
+    },
+    "bottom=true,far=true,near=false,top=true,facing=south,powered=false,shift=2": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c1101",
+      "y": 180
+    },
+    "bottom=true,far=true,near=false,top=true,facing=south,powered=true,shift=2": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c1101",
+      "y": 180
+    },
+    "bottom=true,far=true,near=false,top=true,facing=south,powered=false,shift=3": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c1101",
+      "y": 180
+    },
+    "bottom=true,far=true,near=false,top=true,facing=south,powered=true,shift=3": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c1101",
+      "y": 180
+    },
+    "bottom=true,far=true,near=false,top=true,facing=south,powered=false,shift=4": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c1101",
+      "y": 180
+    },
+    "bottom=true,far=true,near=false,top=true,facing=south,powered=true,shift=4": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c1101",
+      "y": 180
+    },
+    "bottom=true,far=false,near=true,top=true,facing=south,powered=false,shift=0": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c1110",
+      "y": 180
+    },
+    "bottom=true,far=false,near=true,top=true,facing=south,powered=true,shift=0": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c1110",
+      "y": 180
+    },
+    "bottom=true,far=false,near=true,top=true,facing=south,powered=false,shift=1": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c1110",
+      "y": 180
+    },
+    "bottom=true,far=false,near=true,top=true,facing=south,powered=true,shift=1": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c1110",
+      "y": 180
+    },
+    "bottom=true,far=false,near=true,top=true,facing=south,powered=false,shift=2": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c1110",
+      "y": 180
+    },
+    "bottom=true,far=false,near=true,top=true,facing=south,powered=true,shift=2": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c1110",
+      "y": 180
+    },
+    "bottom=true,far=false,near=true,top=true,facing=south,powered=false,shift=3": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c1110",
+      "y": 180
+    },
+    "bottom=true,far=false,near=true,top=true,facing=south,powered=true,shift=3": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c1110",
+      "y": 180
+    },
+    "bottom=true,far=false,near=true,top=true,facing=south,powered=false,shift=4": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c1110",
+      "y": 180
+    },
+    "bottom=true,far=false,near=true,top=true,facing=south,powered=true,shift=4": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c1110",
+      "y": 180
+    },
+    "bottom=true,far=true,near=true,top=true,facing=south,powered=false,shift=0": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c1111",
+      "y": 180
+    },
+    "bottom=true,far=true,near=true,top=true,facing=south,powered=true,shift=0": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c1111",
+      "y": 180
+    },
+    "bottom=true,far=true,near=true,top=true,facing=south,powered=false,shift=1": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c1111",
+      "y": 180
+    },
+    "bottom=true,far=true,near=true,top=true,facing=south,powered=true,shift=1": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c1111",
+      "y": 180
+    },
+    "bottom=true,far=true,near=true,top=true,facing=south,powered=false,shift=2": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c1111",
+      "y": 180
+    },
+    "bottom=true,far=true,near=true,top=true,facing=south,powered=true,shift=2": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c1111",
+      "y": 180
+    },
+    "bottom=true,far=true,near=true,top=true,facing=south,powered=false,shift=3": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c1111",
+      "y": 180
+    },
+    "bottom=true,far=true,near=true,top=true,facing=south,powered=true,shift=3": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c1111",
+      "y": 180
+    },
+    "bottom=true,far=true,near=true,top=true,facing=south,powered=false,shift=4": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c1111",
+      "y": 180
+    },
+    "bottom=true,far=true,near=true,top=true,facing=south,powered=true,shift=4": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c1111",
+      "y": 180
+    },
+    "bottom=false,far=false,near=false,top=false,facing=west,powered=false,shift=0": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c0000",
       "y": 270
     },
-    "facing=west,powered=true,shift=0": {
-      "model": "realms_of_chaos:block/sky_sliding_door",
+    "bottom=false,far=false,near=false,top=false,facing=west,powered=true,shift=0": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c0000",
       "y": 270
     },
-    "facing=west,powered=false,shift=1": {
-      "model": "realms_of_chaos:block/sky_sliding_door",
+    "bottom=false,far=false,near=false,top=false,facing=west,powered=false,shift=1": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c0000",
       "y": 270
     },
-    "facing=west,powered=true,shift=1": {
-      "model": "realms_of_chaos:block/sky_sliding_door",
+    "bottom=false,far=false,near=false,top=false,facing=west,powered=true,shift=1": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c0000",
       "y": 270
     },
-    "facing=west,powered=false,shift=2": {
-      "model": "realms_of_chaos:block/sky_sliding_door",
+    "bottom=false,far=false,near=false,top=false,facing=west,powered=false,shift=2": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c0000",
       "y": 270
     },
-    "facing=west,powered=true,shift=2": {
-      "model": "realms_of_chaos:block/sky_sliding_door",
+    "bottom=false,far=false,near=false,top=false,facing=west,powered=true,shift=2": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c0000",
       "y": 270
     },
-    "facing=west,powered=false,shift=3": {
-      "model": "realms_of_chaos:block/sky_sliding_door",
+    "bottom=false,far=false,near=false,top=false,facing=west,powered=false,shift=3": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c0000",
       "y": 270
     },
-    "facing=west,powered=true,shift=3": {
-      "model": "realms_of_chaos:block/sky_sliding_door",
+    "bottom=false,far=false,near=false,top=false,facing=west,powered=true,shift=3": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c0000",
       "y": 270
     },
-    "facing=west,powered=false,shift=4": {
-      "model": "realms_of_chaos:block/sky_sliding_door",
+    "bottom=false,far=false,near=false,top=false,facing=west,powered=false,shift=4": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c0000",
       "y": 270
     },
-    "facing=west,powered=true,shift=4": {
-      "model": "realms_of_chaos:block/sky_sliding_door",
+    "bottom=false,far=false,near=false,top=false,facing=west,powered=true,shift=4": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c0000",
+      "y": 270
+    },
+    "bottom=false,far=true,near=false,top=false,facing=west,powered=false,shift=0": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c0001",
+      "y": 270
+    },
+    "bottom=false,far=true,near=false,top=false,facing=west,powered=true,shift=0": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c0001",
+      "y": 270
+    },
+    "bottom=false,far=true,near=false,top=false,facing=west,powered=false,shift=1": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c0001",
+      "y": 270
+    },
+    "bottom=false,far=true,near=false,top=false,facing=west,powered=true,shift=1": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c0001",
+      "y": 270
+    },
+    "bottom=false,far=true,near=false,top=false,facing=west,powered=false,shift=2": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c0001",
+      "y": 270
+    },
+    "bottom=false,far=true,near=false,top=false,facing=west,powered=true,shift=2": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c0001",
+      "y": 270
+    },
+    "bottom=false,far=true,near=false,top=false,facing=west,powered=false,shift=3": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c0001",
+      "y": 270
+    },
+    "bottom=false,far=true,near=false,top=false,facing=west,powered=true,shift=3": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c0001",
+      "y": 270
+    },
+    "bottom=false,far=true,near=false,top=false,facing=west,powered=false,shift=4": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c0001",
+      "y": 270
+    },
+    "bottom=false,far=true,near=false,top=false,facing=west,powered=true,shift=4": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c0001",
+      "y": 270
+    },
+    "bottom=false,far=false,near=true,top=false,facing=west,powered=false,shift=0": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c0010",
+      "y": 270
+    },
+    "bottom=false,far=false,near=true,top=false,facing=west,powered=true,shift=0": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c0010",
+      "y": 270
+    },
+    "bottom=false,far=false,near=true,top=false,facing=west,powered=false,shift=1": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c0010",
+      "y": 270
+    },
+    "bottom=false,far=false,near=true,top=false,facing=west,powered=true,shift=1": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c0010",
+      "y": 270
+    },
+    "bottom=false,far=false,near=true,top=false,facing=west,powered=false,shift=2": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c0010",
+      "y": 270
+    },
+    "bottom=false,far=false,near=true,top=false,facing=west,powered=true,shift=2": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c0010",
+      "y": 270
+    },
+    "bottom=false,far=false,near=true,top=false,facing=west,powered=false,shift=3": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c0010",
+      "y": 270
+    },
+    "bottom=false,far=false,near=true,top=false,facing=west,powered=true,shift=3": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c0010",
+      "y": 270
+    },
+    "bottom=false,far=false,near=true,top=false,facing=west,powered=false,shift=4": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c0010",
+      "y": 270
+    },
+    "bottom=false,far=false,near=true,top=false,facing=west,powered=true,shift=4": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c0010",
+      "y": 270
+    },
+    "bottom=false,far=true,near=true,top=false,facing=west,powered=false,shift=0": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c0011",
+      "y": 270
+    },
+    "bottom=false,far=true,near=true,top=false,facing=west,powered=true,shift=0": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c0011",
+      "y": 270
+    },
+    "bottom=false,far=true,near=true,top=false,facing=west,powered=false,shift=1": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c0011",
+      "y": 270
+    },
+    "bottom=false,far=true,near=true,top=false,facing=west,powered=true,shift=1": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c0011",
+      "y": 270
+    },
+    "bottom=false,far=true,near=true,top=false,facing=west,powered=false,shift=2": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c0011",
+      "y": 270
+    },
+    "bottom=false,far=true,near=true,top=false,facing=west,powered=true,shift=2": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c0011",
+      "y": 270
+    },
+    "bottom=false,far=true,near=true,top=false,facing=west,powered=false,shift=3": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c0011",
+      "y": 270
+    },
+    "bottom=false,far=true,near=true,top=false,facing=west,powered=true,shift=3": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c0011",
+      "y": 270
+    },
+    "bottom=false,far=true,near=true,top=false,facing=west,powered=false,shift=4": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c0011",
+      "y": 270
+    },
+    "bottom=false,far=true,near=true,top=false,facing=west,powered=true,shift=4": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c0011",
+      "y": 270
+    },
+    "bottom=true,far=false,near=false,top=false,facing=west,powered=false,shift=0": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c0100",
+      "y": 270
+    },
+    "bottom=true,far=false,near=false,top=false,facing=west,powered=true,shift=0": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c0100",
+      "y": 270
+    },
+    "bottom=true,far=false,near=false,top=false,facing=west,powered=false,shift=1": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c0100",
+      "y": 270
+    },
+    "bottom=true,far=false,near=false,top=false,facing=west,powered=true,shift=1": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c0100",
+      "y": 270
+    },
+    "bottom=true,far=false,near=false,top=false,facing=west,powered=false,shift=2": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c0100",
+      "y": 270
+    },
+    "bottom=true,far=false,near=false,top=false,facing=west,powered=true,shift=2": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c0100",
+      "y": 270
+    },
+    "bottom=true,far=false,near=false,top=false,facing=west,powered=false,shift=3": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c0100",
+      "y": 270
+    },
+    "bottom=true,far=false,near=false,top=false,facing=west,powered=true,shift=3": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c0100",
+      "y": 270
+    },
+    "bottom=true,far=false,near=false,top=false,facing=west,powered=false,shift=4": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c0100",
+      "y": 270
+    },
+    "bottom=true,far=false,near=false,top=false,facing=west,powered=true,shift=4": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c0100",
+      "y": 270
+    },
+    "bottom=true,far=true,near=false,top=false,facing=west,powered=false,shift=0": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c0101",
+      "y": 270
+    },
+    "bottom=true,far=true,near=false,top=false,facing=west,powered=true,shift=0": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c0101",
+      "y": 270
+    },
+    "bottom=true,far=true,near=false,top=false,facing=west,powered=false,shift=1": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c0101",
+      "y": 270
+    },
+    "bottom=true,far=true,near=false,top=false,facing=west,powered=true,shift=1": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c0101",
+      "y": 270
+    },
+    "bottom=true,far=true,near=false,top=false,facing=west,powered=false,shift=2": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c0101",
+      "y": 270
+    },
+    "bottom=true,far=true,near=false,top=false,facing=west,powered=true,shift=2": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c0101",
+      "y": 270
+    },
+    "bottom=true,far=true,near=false,top=false,facing=west,powered=false,shift=3": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c0101",
+      "y": 270
+    },
+    "bottom=true,far=true,near=false,top=false,facing=west,powered=true,shift=3": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c0101",
+      "y": 270
+    },
+    "bottom=true,far=true,near=false,top=false,facing=west,powered=false,shift=4": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c0101",
+      "y": 270
+    },
+    "bottom=true,far=true,near=false,top=false,facing=west,powered=true,shift=4": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c0101",
+      "y": 270
+    },
+    "bottom=true,far=false,near=true,top=false,facing=west,powered=false,shift=0": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c0110",
+      "y": 270
+    },
+    "bottom=true,far=false,near=true,top=false,facing=west,powered=true,shift=0": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c0110",
+      "y": 270
+    },
+    "bottom=true,far=false,near=true,top=false,facing=west,powered=false,shift=1": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c0110",
+      "y": 270
+    },
+    "bottom=true,far=false,near=true,top=false,facing=west,powered=true,shift=1": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c0110",
+      "y": 270
+    },
+    "bottom=true,far=false,near=true,top=false,facing=west,powered=false,shift=2": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c0110",
+      "y": 270
+    },
+    "bottom=true,far=false,near=true,top=false,facing=west,powered=true,shift=2": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c0110",
+      "y": 270
+    },
+    "bottom=true,far=false,near=true,top=false,facing=west,powered=false,shift=3": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c0110",
+      "y": 270
+    },
+    "bottom=true,far=false,near=true,top=false,facing=west,powered=true,shift=3": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c0110",
+      "y": 270
+    },
+    "bottom=true,far=false,near=true,top=false,facing=west,powered=false,shift=4": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c0110",
+      "y": 270
+    },
+    "bottom=true,far=false,near=true,top=false,facing=west,powered=true,shift=4": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c0110",
+      "y": 270
+    },
+    "bottom=true,far=true,near=true,top=false,facing=west,powered=false,shift=0": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c0111",
+      "y": 270
+    },
+    "bottom=true,far=true,near=true,top=false,facing=west,powered=true,shift=0": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c0111",
+      "y": 270
+    },
+    "bottom=true,far=true,near=true,top=false,facing=west,powered=false,shift=1": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c0111",
+      "y": 270
+    },
+    "bottom=true,far=true,near=true,top=false,facing=west,powered=true,shift=1": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c0111",
+      "y": 270
+    },
+    "bottom=true,far=true,near=true,top=false,facing=west,powered=false,shift=2": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c0111",
+      "y": 270
+    },
+    "bottom=true,far=true,near=true,top=false,facing=west,powered=true,shift=2": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c0111",
+      "y": 270
+    },
+    "bottom=true,far=true,near=true,top=false,facing=west,powered=false,shift=3": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c0111",
+      "y": 270
+    },
+    "bottom=true,far=true,near=true,top=false,facing=west,powered=true,shift=3": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c0111",
+      "y": 270
+    },
+    "bottom=true,far=true,near=true,top=false,facing=west,powered=false,shift=4": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c0111",
+      "y": 270
+    },
+    "bottom=true,far=true,near=true,top=false,facing=west,powered=true,shift=4": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c0111",
+      "y": 270
+    },
+    "bottom=false,far=false,near=false,top=true,facing=west,powered=false,shift=0": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c1000",
+      "y": 270
+    },
+    "bottom=false,far=false,near=false,top=true,facing=west,powered=true,shift=0": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c1000",
+      "y": 270
+    },
+    "bottom=false,far=false,near=false,top=true,facing=west,powered=false,shift=1": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c1000",
+      "y": 270
+    },
+    "bottom=false,far=false,near=false,top=true,facing=west,powered=true,shift=1": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c1000",
+      "y": 270
+    },
+    "bottom=false,far=false,near=false,top=true,facing=west,powered=false,shift=2": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c1000",
+      "y": 270
+    },
+    "bottom=false,far=false,near=false,top=true,facing=west,powered=true,shift=2": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c1000",
+      "y": 270
+    },
+    "bottom=false,far=false,near=false,top=true,facing=west,powered=false,shift=3": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c1000",
+      "y": 270
+    },
+    "bottom=false,far=false,near=false,top=true,facing=west,powered=true,shift=3": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c1000",
+      "y": 270
+    },
+    "bottom=false,far=false,near=false,top=true,facing=west,powered=false,shift=4": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c1000",
+      "y": 270
+    },
+    "bottom=false,far=false,near=false,top=true,facing=west,powered=true,shift=4": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c1000",
+      "y": 270
+    },
+    "bottom=false,far=true,near=false,top=true,facing=west,powered=false,shift=0": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c1001",
+      "y": 270
+    },
+    "bottom=false,far=true,near=false,top=true,facing=west,powered=true,shift=0": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c1001",
+      "y": 270
+    },
+    "bottom=false,far=true,near=false,top=true,facing=west,powered=false,shift=1": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c1001",
+      "y": 270
+    },
+    "bottom=false,far=true,near=false,top=true,facing=west,powered=true,shift=1": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c1001",
+      "y": 270
+    },
+    "bottom=false,far=true,near=false,top=true,facing=west,powered=false,shift=2": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c1001",
+      "y": 270
+    },
+    "bottom=false,far=true,near=false,top=true,facing=west,powered=true,shift=2": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c1001",
+      "y": 270
+    },
+    "bottom=false,far=true,near=false,top=true,facing=west,powered=false,shift=3": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c1001",
+      "y": 270
+    },
+    "bottom=false,far=true,near=false,top=true,facing=west,powered=true,shift=3": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c1001",
+      "y": 270
+    },
+    "bottom=false,far=true,near=false,top=true,facing=west,powered=false,shift=4": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c1001",
+      "y": 270
+    },
+    "bottom=false,far=true,near=false,top=true,facing=west,powered=true,shift=4": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c1001",
+      "y": 270
+    },
+    "bottom=false,far=false,near=true,top=true,facing=west,powered=false,shift=0": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c1010",
+      "y": 270
+    },
+    "bottom=false,far=false,near=true,top=true,facing=west,powered=true,shift=0": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c1010",
+      "y": 270
+    },
+    "bottom=false,far=false,near=true,top=true,facing=west,powered=false,shift=1": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c1010",
+      "y": 270
+    },
+    "bottom=false,far=false,near=true,top=true,facing=west,powered=true,shift=1": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c1010",
+      "y": 270
+    },
+    "bottom=false,far=false,near=true,top=true,facing=west,powered=false,shift=2": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c1010",
+      "y": 270
+    },
+    "bottom=false,far=false,near=true,top=true,facing=west,powered=true,shift=2": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c1010",
+      "y": 270
+    },
+    "bottom=false,far=false,near=true,top=true,facing=west,powered=false,shift=3": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c1010",
+      "y": 270
+    },
+    "bottom=false,far=false,near=true,top=true,facing=west,powered=true,shift=3": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c1010",
+      "y": 270
+    },
+    "bottom=false,far=false,near=true,top=true,facing=west,powered=false,shift=4": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c1010",
+      "y": 270
+    },
+    "bottom=false,far=false,near=true,top=true,facing=west,powered=true,shift=4": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c1010",
+      "y": 270
+    },
+    "bottom=false,far=true,near=true,top=true,facing=west,powered=false,shift=0": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c1011",
+      "y": 270
+    },
+    "bottom=false,far=true,near=true,top=true,facing=west,powered=true,shift=0": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c1011",
+      "y": 270
+    },
+    "bottom=false,far=true,near=true,top=true,facing=west,powered=false,shift=1": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c1011",
+      "y": 270
+    },
+    "bottom=false,far=true,near=true,top=true,facing=west,powered=true,shift=1": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c1011",
+      "y": 270
+    },
+    "bottom=false,far=true,near=true,top=true,facing=west,powered=false,shift=2": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c1011",
+      "y": 270
+    },
+    "bottom=false,far=true,near=true,top=true,facing=west,powered=true,shift=2": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c1011",
+      "y": 270
+    },
+    "bottom=false,far=true,near=true,top=true,facing=west,powered=false,shift=3": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c1011",
+      "y": 270
+    },
+    "bottom=false,far=true,near=true,top=true,facing=west,powered=true,shift=3": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c1011",
+      "y": 270
+    },
+    "bottom=false,far=true,near=true,top=true,facing=west,powered=false,shift=4": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c1011",
+      "y": 270
+    },
+    "bottom=false,far=true,near=true,top=true,facing=west,powered=true,shift=4": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c1011",
+      "y": 270
+    },
+    "bottom=true,far=false,near=false,top=true,facing=west,powered=false,shift=0": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c1100",
+      "y": 270
+    },
+    "bottom=true,far=false,near=false,top=true,facing=west,powered=true,shift=0": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c1100",
+      "y": 270
+    },
+    "bottom=true,far=false,near=false,top=true,facing=west,powered=false,shift=1": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c1100",
+      "y": 270
+    },
+    "bottom=true,far=false,near=false,top=true,facing=west,powered=true,shift=1": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c1100",
+      "y": 270
+    },
+    "bottom=true,far=false,near=false,top=true,facing=west,powered=false,shift=2": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c1100",
+      "y": 270
+    },
+    "bottom=true,far=false,near=false,top=true,facing=west,powered=true,shift=2": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c1100",
+      "y": 270
+    },
+    "bottom=true,far=false,near=false,top=true,facing=west,powered=false,shift=3": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c1100",
+      "y": 270
+    },
+    "bottom=true,far=false,near=false,top=true,facing=west,powered=true,shift=3": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c1100",
+      "y": 270
+    },
+    "bottom=true,far=false,near=false,top=true,facing=west,powered=false,shift=4": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c1100",
+      "y": 270
+    },
+    "bottom=true,far=false,near=false,top=true,facing=west,powered=true,shift=4": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c1100",
+      "y": 270
+    },
+    "bottom=true,far=true,near=false,top=true,facing=west,powered=false,shift=0": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c1101",
+      "y": 270
+    },
+    "bottom=true,far=true,near=false,top=true,facing=west,powered=true,shift=0": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c1101",
+      "y": 270
+    },
+    "bottom=true,far=true,near=false,top=true,facing=west,powered=false,shift=1": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c1101",
+      "y": 270
+    },
+    "bottom=true,far=true,near=false,top=true,facing=west,powered=true,shift=1": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c1101",
+      "y": 270
+    },
+    "bottom=true,far=true,near=false,top=true,facing=west,powered=false,shift=2": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c1101",
+      "y": 270
+    },
+    "bottom=true,far=true,near=false,top=true,facing=west,powered=true,shift=2": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c1101",
+      "y": 270
+    },
+    "bottom=true,far=true,near=false,top=true,facing=west,powered=false,shift=3": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c1101",
+      "y": 270
+    },
+    "bottom=true,far=true,near=false,top=true,facing=west,powered=true,shift=3": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c1101",
+      "y": 270
+    },
+    "bottom=true,far=true,near=false,top=true,facing=west,powered=false,shift=4": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c1101",
+      "y": 270
+    },
+    "bottom=true,far=true,near=false,top=true,facing=west,powered=true,shift=4": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c1101",
+      "y": 270
+    },
+    "bottom=true,far=false,near=true,top=true,facing=west,powered=false,shift=0": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c1110",
+      "y": 270
+    },
+    "bottom=true,far=false,near=true,top=true,facing=west,powered=true,shift=0": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c1110",
+      "y": 270
+    },
+    "bottom=true,far=false,near=true,top=true,facing=west,powered=false,shift=1": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c1110",
+      "y": 270
+    },
+    "bottom=true,far=false,near=true,top=true,facing=west,powered=true,shift=1": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c1110",
+      "y": 270
+    },
+    "bottom=true,far=false,near=true,top=true,facing=west,powered=false,shift=2": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c1110",
+      "y": 270
+    },
+    "bottom=true,far=false,near=true,top=true,facing=west,powered=true,shift=2": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c1110",
+      "y": 270
+    },
+    "bottom=true,far=false,near=true,top=true,facing=west,powered=false,shift=3": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c1110",
+      "y": 270
+    },
+    "bottom=true,far=false,near=true,top=true,facing=west,powered=true,shift=3": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c1110",
+      "y": 270
+    },
+    "bottom=true,far=false,near=true,top=true,facing=west,powered=false,shift=4": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c1110",
+      "y": 270
+    },
+    "bottom=true,far=false,near=true,top=true,facing=west,powered=true,shift=4": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c1110",
+      "y": 270
+    },
+    "bottom=true,far=true,near=true,top=true,facing=west,powered=false,shift=0": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c1111",
+      "y": 270
+    },
+    "bottom=true,far=true,near=true,top=true,facing=west,powered=true,shift=0": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c1111",
+      "y": 270
+    },
+    "bottom=true,far=true,near=true,top=true,facing=west,powered=false,shift=1": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c1111",
+      "y": 270
+    },
+    "bottom=true,far=true,near=true,top=true,facing=west,powered=true,shift=1": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c1111",
+      "y": 270
+    },
+    "bottom=true,far=true,near=true,top=true,facing=west,powered=false,shift=2": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c1111",
+      "y": 270
+    },
+    "bottom=true,far=true,near=true,top=true,facing=west,powered=true,shift=2": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c1111",
+      "y": 270
+    },
+    "bottom=true,far=true,near=true,top=true,facing=west,powered=false,shift=3": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c1111",
+      "y": 270
+    },
+    "bottom=true,far=true,near=true,top=true,facing=west,powered=true,shift=3": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c1111",
+      "y": 270
+    },
+    "bottom=true,far=true,near=true,top=true,facing=west,powered=false,shift=4": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c1111",
+      "y": 270
+    },
+    "bottom=true,far=true,near=true,top=true,facing=west,powered=true,shift=4": {
+      "model": "realms_of_chaos:block/sky_sliding_door_c1111",
       "y": 270
     }
   }

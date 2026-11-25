@@ -1,0 +1,80 @@
+{
+  "parent": "minecraft:block/block",
+  "textures": {
+    "particle": "realms_of_chaos:block/sea_sliding_door_c1000",
+    "face": "realms_of_chaos:block/sea_sliding_door_c1000",
+    "edge": "realms_of_chaos:block/sea_sliding_door_edge"
+  },
+  "elements": [
+    {
+      "from": [
+        0,
+        0,
+        6
+      ],
+      "to": [
+        16,
+        16,
+        10
+      ],
+      "faces": {
+        "north": {
+          "texture": "#face",
+          "uv": [
+            16,
+            0,
+            0,
+            16
+          ]
+        },
+        "south": {
+          "texture": "#face",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
+        },
+        "east": {
+          "texture": "#edge",
+          "uv": [
+            6,
+            0,
+            10,
+            16
+          ]
+        },
+        "west": {
+          "texture": "#edge",
+          "uv": [
+            6,
+            0,
+            10,
+            16
+          ]
+        },
+        "up": {
+          "texture": "#edge",
+          "uv": [
+            0,
+            6,
+            16,
+            10
+          ],
+          "rotation": 90
+        },
+        "down": {
+          "texture": "#edge",
+          "uv": [
+            0,
+            6,
+            16,
+            10
+          ],
+          "rotation": 90
+        }
+      }
+    }
+  ]
+}
