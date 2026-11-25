@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "N": "minecraft:nautilus_shell",
+    "C": "minecraft:prismarine_crystals",
+    "S": "minecraft:sea_pickle"
+  },
+  "pattern": [
+    "NCN",
+    "CSC",
+    "NCN"
+  ],
+  "result": {
+    "id": "realms_of_chaos:giant_clam",
+    "count": 1
+  }
+}

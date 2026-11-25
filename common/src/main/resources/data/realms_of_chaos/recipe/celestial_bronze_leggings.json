@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "key": {
+    "#": "realms_of_chaos:celestial_bronze_ingot"
+  },
+  "pattern": [
+    "###",
+    "# #",
+    "# #"
+  ],
+  "result": {
+    "id": "realms_of_chaos:celestial_bronze_leggings",
+    "count": 1
+  }
+}

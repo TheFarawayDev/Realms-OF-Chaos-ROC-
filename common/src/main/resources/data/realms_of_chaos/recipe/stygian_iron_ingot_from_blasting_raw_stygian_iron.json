@@ -1,0 +1,10 @@
+{
+  "type": "minecraft:blasting",
+  "category": "misc",
+  "cookingtime": 400,
+  "experience": 1.5,
+  "ingredient": "realms_of_chaos:raw_stygian_iron",
+  "result": {
+    "id": "realms_of_chaos:stygian_iron_ingot"
+  }
+}

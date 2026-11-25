@@ -1,0 +1,68 @@
+{
+  "variants": {
+    "facing=north,pearl=false,waterlogged=false": {
+      "model": "realms_of_chaos:block/giant_clam",
+      "y": 0
+    },
+    "facing=north,pearl=false,waterlogged=true": {
+      "model": "realms_of_chaos:block/giant_clam",
+      "y": 0
+    },
+    "facing=north,pearl=true,waterlogged=false": {
+      "model": "realms_of_chaos:block/giant_clam_pearl",
+      "y": 0
+    },
+    "facing=north,pearl=true,waterlogged=true": {
+      "model": "realms_of_chaos:block/giant_clam_pearl",
+      "y": 0
+    },
+    "facing=east,pearl=false,waterlogged=false": {
+      "model": "realms_of_chaos:block/giant_clam",
+      "y": 90
+    },
+    "facing=east,pearl=false,waterlogged=true": {
+      "model": "realms_of_chaos:block/giant_clam",
+      "y": 90
+    },
+    "facing=east,pearl=true,waterlogged=false": {
+      "model": "realms_of_chaos:block/giant_clam_pearl",
+      "y": 90
+    },
+    "facing=east,pearl=true,waterlogged=true": {
+      "model": "realms_of_chaos:block/giant_clam_pearl",
+      "y": 90
+    },
+    "facing=south,pearl=false,waterlogged=false": {
+      "model": "realms_of_chaos:block/giant_clam",
+      "y": 180
+    },
+    "facing=south,pearl=false,waterlogged=true": {
+      "model": "realms_of_chaos:block/giant_clam",
+      "y": 180
+    },
+    "facing=south,pearl=true,waterlogged=false": {
+      "model": "realms_of_chaos:block/giant_clam_pearl",
+      "y": 180
+    },
+    "facing=south,pearl=true,waterlogged=true": {
+      "model": "realms_of_chaos:block/giant_clam_pearl",
+      "y": 180
+    },
+    "facing=west,pearl=false,waterlogged=false": {
+      "model": "realms_of_chaos:block/giant_clam",
+      "y": 270
+    },
+    "facing=west,pearl=false,waterlogged=true": {
+      "model": "realms_of_chaos:block/giant_clam",
+      "y": 270
+    },
+    "facing=west,pearl=true,waterlogged=false": {
+      "model": "realms_of_chaos:block/giant_clam_pearl",
+      "y": 270
+    },
+    "facing=west,pearl=true,waterlogged=true": {
+      "model": "realms_of_chaos:block/giant_clam_pearl",
+      "y": 270
+    }
+  }
+}

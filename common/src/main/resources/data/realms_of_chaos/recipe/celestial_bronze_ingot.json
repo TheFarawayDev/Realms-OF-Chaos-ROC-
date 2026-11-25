@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "C": "minecraft:copper_ingot",
+    "G": "minecraft:gold_ingot",
+    "S": "realms_of_chaos:storm_glass"
+  },
+  "pattern": [
+    "CGC",
+    "GSG",
+    "CGC"
+  ],
+  "result": {
+    "id": "realms_of_chaos:celestial_bronze_ingot",
+    "count": 2
+  }
+}

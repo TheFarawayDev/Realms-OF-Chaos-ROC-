@@ -65,6 +65,8 @@
     "realms_of_chaos:chiseled_porphyry",
     "realms_of_chaos:porphyry_pillar",
     "realms_of_chaos:adamantine_block",
+    "realms_of_chaos:fulgurite",
+    "realms_of_chaos:giant_clam",
     "realms_of_chaos:bronze_sliding_door",
     "realms_of_chaos:sky_sliding_door",
     "realms_of_chaos:sea_sliding_door",
@@ -101,6 +103,8 @@
     "realms_of_chaos:verdigris_trapdoor",
     "realms_of_chaos:porphyry_door",
     "realms_of_chaos:porphyry_trapdoor",
-    "realms_of_chaos:deepslate_adamantine_ore"
+    "realms_of_chaos:deepslate_adamantine_ore",
+    "realms_of_chaos:stygian_iron_ore",
+    "realms_of_chaos:cornucopia"
   ]
 }

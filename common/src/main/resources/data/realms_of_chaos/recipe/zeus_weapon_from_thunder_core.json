@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "key": {
+    "L": "minecraft:lightning_rod",
+    "C": "realms_of_chaos:thunder_core",
+    "B": "realms_of_chaos:celestial_bronze_ingot",
+    "E": "realms_of_chaos:essence_zeus"
+  },
+  "pattern": [
+    "LCL",
+    "BEB",
+    " B "
+  ],
+  "result": {
+    "id": "realms_of_chaos:zeus_weapon",
+    "count": 1
+  }
+}

@@ -117,6 +117,10 @@ public final class RealmsOfChaosForge {
             if (event.getEntity() instanceof ServerPlayer player) Welcome.onJoin(player);
         });
         TickEvent.ServerTickEvent.Post.BUS.addListener(event -> RealmSafety.tick(event.server()));
+        // lightning on sand makes fulgurite
+        net.minecraftforge.event.entity.EntityJoinLevelEvent.BUS.addListener(event -> {
+            if (event.getLevel() instanceof net.minecraft.server.level.ServerLevel server) com.thefarawaydev.realmsofchaos.world.Grind.onEntityLoad(event.getEntity(), server);
+        });
         // kills made with a relic weapon in hand give that weapon experience
         net.minecraftforge.event.entity.living.LivingDeathEvent.BUS.addListener(event -> {
             com.thefarawaydev.realmsofchaos.item.GodWeaponItem.onKill(event.getEntity(), event.getSource());

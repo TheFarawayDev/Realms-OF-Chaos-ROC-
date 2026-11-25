@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "key": {
+    "K": "minecraft:wither_skeleton_skull",
+    "C": "realms_of_chaos:shade_core",
+    "I": "realms_of_chaos:stygian_iron_ingot",
+    "E": "realms_of_chaos:essence_hades"
+  },
+  "pattern": [
+    "KCK",
+    "IEI",
+    " I "
+  ],
+  "result": {
+    "id": "realms_of_chaos:hades_weapon",
+    "count": 1
+  }
+}

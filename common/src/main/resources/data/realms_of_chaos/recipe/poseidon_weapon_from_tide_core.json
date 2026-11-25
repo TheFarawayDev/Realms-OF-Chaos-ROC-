@@ -1,0 +1,20 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "key": {
+    "P": "realms_of_chaos:abyssal_pearl",
+    "C": "realms_of_chaos:tide_core",
+    "O": "realms_of_chaos:orichalcum_ingot",
+    "T": "minecraft:trident",
+    "E": "realms_of_chaos:essence_poseidon"
+  },
+  "pattern": [
+    "PCP",
+    "OTO",
+    " E "
+  ],
+  "result": {
+    "id": "realms_of_chaos:poseidon_weapon",
+    "count": 1
+  }
+}

@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "G": "minecraft:gold_ingot",
+    "P": "minecraft:prismarine_crystals",
+    "A": "realms_of_chaos:abyssal_pearl"
+  },
+  "pattern": [
+    "GPG",
+    "PAP",
+    "GPG"
+  ],
+  "result": {
+    "id": "realms_of_chaos:orichalcum_ingot",
+    "count": 2
+  }
+}

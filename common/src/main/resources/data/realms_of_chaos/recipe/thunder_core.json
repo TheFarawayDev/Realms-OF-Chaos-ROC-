@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "B": "realms_of_chaos:celestial_bronze_ingot",
+    "S": "realms_of_chaos:storm_glass",
+    "A": "realms_of_chaos:adamantine_ingot"
+  },
+  "pattern": [
+    "BSB",
+    "SAS",
+    "BSB"
+  ],
+  "result": {
+    "id": "realms_of_chaos:thunder_core",
+    "count": 1
+  }
+}

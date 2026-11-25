@@ -1,0 +1,6 @@
+{
+  "type": "forge:add_features",
+  "biomes": "minecraft:soul_sand_valley",
+  "features": "realms_of_chaos:stygian_iron_ore",
+  "step": "underground_ores"
+}

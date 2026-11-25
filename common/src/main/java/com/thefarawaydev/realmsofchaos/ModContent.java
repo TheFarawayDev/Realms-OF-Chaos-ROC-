@@ -138,6 +138,14 @@ public final class ModContent {
     public static final Ref<Block> PORPHYRY = new Ref<>(), POLISHED_PORPHYRY = new Ref<>(), PORPHYRY_BRICKS = new Ref<>(), CHISELED_PORPHYRY = new Ref<>(),
             PORPHYRY_TILES = new Ref<>(), PORPHYRY_PILLAR = new Ref<>(), PORPHYRY_DOOR = new Ref<>(), PORPHYRY_TRAPDOOR = new Ref<>(),
             DEEPSLATE_ADAMANTINE_ORE = new Ref<>(), ADAMANTINE_BLOCK = new Ref<>();
+    /** What is won from the world itself: fulgurite where lightning strikes sand, clams that grow pearls, iron from the soul valleys; and the Cornucopia. */
+    public static final Ref<Block> FULGURITE = new Ref<>(), GIANT_CLAM = new Ref<>(), STYGIAN_IRON_ORE = new Ref<>(), CORNUCOPIA = new Ref<>();
+    /** The resources, the god-metals forged from them, and the cores that the relics and the Cornucopia are made with. */
+    public static final Ref<Item> STORM_GLASS = new Ref<>(), ABYSSAL_PEARL = new Ref<>(), RAW_STYGIAN_IRON = new Ref<>(),
+            CELESTIAL_BRONZE_INGOT = new Ref<>(), ORICHALCUM_INGOT = new Ref<>(), STYGIAN_IRON_INGOT = new Ref<>(),
+            THUNDER_CORE = new Ref<>(), TIDE_CORE = new Ref<>(), SHADE_CORE = new Ref<>();
+    /** The four armour sets, by set and then by piece. */
+    public static final Map<com.thefarawaydev.realmsofchaos.item.ArmorSets.Set, Map<net.minecraft.world.item.equipment.ArmorType, Ref<Item>>> ARMOR = new java.util.EnumMap<>(com.thefarawaydev.realmsofchaos.item.ArmorSets.Set.class);
     public static final Map<String, Ref<Item>> WEAPONS = new HashMap<>();
     /** The eight pieces of the panoply, by id. */
     public static final Map<String, Ref<Item>> PANOPLY = new java.util.LinkedHashMap<>();
@@ -370,6 +378,16 @@ public final class ModContent {
                 BlockBehaviour.Properties.of().setId(key).mapColor(MapColor.DEEPSLATE).requiresCorrectToolForDrops().strength(30.0F, 1200.0F).sound(SoundType.DEEPSLATE)));
         block("adamantine_block", ADAMANTINE_BLOCK, key -> new Block(BlockBehaviour.Properties.of().setId(key).mapColor(MapColor.DIAMOND)
                 .requiresCorrectToolForDrops().strength(50.0F, 1200.0F).sound(SoundType.NETHERITE_BLOCK)));
+        // what is won from the world, and the horn of plenty
+        block("fulgurite", FULGURITE, key -> new Block(BlockBehaviour.Properties.of().setId(key).mapColor(MapColor.SAND).requiresCorrectToolForDrops()
+                .strength(1.8F, 6.0F).sound(SoundType.GLASS)));
+        block("giant_clam", GIANT_CLAM, key -> new com.thefarawaydev.realmsofchaos.block.GiantClamBlock(BlockBehaviour.Properties.of().setId(key)
+                .mapColor(MapColor.COLOR_LIGHT_BLUE).strength(2.0F).sound(SoundType.CORAL_BLOCK).noOcclusion().randomTicks()));
+        block("stygian_iron_ore", STYGIAN_IRON_ORE, key -> new net.minecraft.world.level.block.DropExperienceBlock(net.minecraft.util.valueproviders.UniformInt.of(3, 7),
+                BlockBehaviour.Properties.of().setId(key).mapColor(MapColor.COLOR_BROWN).requiresCorrectToolForDrops().strength(20.0F, 1200.0F).sound(SoundType.NETHER_ORE)));
+        block("cornucopia", CORNUCOPIA, key -> new com.thefarawaydev.realmsofchaos.block.CornucopiaBlock(BlockBehaviour.Properties.of().setId(key)
+                .mapColor(MapColor.GOLD).requiresCorrectToolForDrops().strength(50.0F, 1200.0F).sound(SoundType.METAL).noOcclusion()
+                .lightLevel(st -> st.getValue(com.thefarawaydev.realmsofchaos.block.CornucopiaBlock.CORE) == com.thefarawaydev.realmsofchaos.block.CornucopiaBlock.Core.NONE ? 0 : 9)));
         door("sky", SKY_DOOR, SKY_TRAPDOOR, net.minecraft.world.level.block.state.properties.BlockSetType.COPPER, MapColor.QUARTZ);
         door("sea", SEA_DOOR, SEA_TRAPDOOR, net.minecraft.world.level.block.state.properties.BlockSetType.DARK_OAK, MapColor.WARPED_WART_BLOCK);
         door("shade", SHADE_DOOR, SHADE_TRAPDOOR, net.minecraft.world.level.block.state.properties.BlockSetType.CRIMSON, MapColor.COLOR_BLACK);
@@ -403,6 +421,24 @@ public final class ModContent {
         item("raw_adamantine", RAW_ADAMANTINE, key -> new Item(new Item.Properties().setId(key).rarity(net.minecraft.world.item.Rarity.UNCOMMON)));
         item("adamantine_scrap", ADAMANTINE_SCRAP, key -> new Item(new Item.Properties().setId(key).rarity(net.minecraft.world.item.Rarity.RARE).fireResistant()));
         item("adamantine_ingot", ADAMANTINE_INGOT, key -> new Item(new Item.Properties().setId(key).rarity(net.minecraft.world.item.Rarity.RARE).fireResistant()));
+        item("storm_glass", STORM_GLASS, key -> new Item(new Item.Properties().setId(key).rarity(net.minecraft.world.item.Rarity.UNCOMMON)));
+        item("abyssal_pearl", ABYSSAL_PEARL, key -> new Item(new Item.Properties().setId(key).rarity(net.minecraft.world.item.Rarity.UNCOMMON)));
+        item("raw_stygian_iron", RAW_STYGIAN_IRON, key -> new Item(new Item.Properties().setId(key).rarity(net.minecraft.world.item.Rarity.UNCOMMON)));
+        item("celestial_bronze_ingot", CELESTIAL_BRONZE_INGOT, key -> new Item(new Item.Properties().setId(key).rarity(net.minecraft.world.item.Rarity.RARE)));
+        item("orichalcum_ingot", ORICHALCUM_INGOT, key -> new Item(new Item.Properties().setId(key).rarity(net.minecraft.world.item.Rarity.RARE)));
+        item("stygian_iron_ingot", STYGIAN_IRON_INGOT, key -> new Item(new Item.Properties().setId(key).rarity(net.minecraft.world.item.Rarity.RARE).fireResistant()));
+        item("thunder_core", THUNDER_CORE, key -> new Item(core(key, "thunder_core")));
+        item("tide_core", TIDE_CORE, key -> new Item(core(key, "tide_core")));
+        item("shade_core", SHADE_CORE, key -> new Item(core(key, "shade_core")));
+        for (var set : com.thefarawaydev.realmsofchaos.item.ArmorSets.Set.values()) {
+            Map<net.minecraft.world.item.equipment.ArmorType, Ref<Item>> pieces = new java.util.EnumMap<>(net.minecraft.world.item.equipment.ArmorType.class);
+            ARMOR.put(set, pieces);
+            for (var type : com.thefarawaydev.realmsofchaos.item.ArmorSets.PIECES) {
+                Ref<Item> ref = new Ref<>();
+                pieces.put(type, ref);
+                item(set.id() + "_" + com.thefarawaydev.realmsofchaos.item.ArmorSets.pieceName(type), ref, key -> com.thefarawaydev.realmsofchaos.item.ArmorSets.create(set, type, key));
+            }
+        }
         item("adamantine_sword", ADAMANTINE_SWORD, key -> new Item(tool(key).sword(ADAMANTINE, 3.0F, -2.4F)));
         item("adamantine_pickaxe", ADAMANTINE_PICKAXE, key -> new Item(tool(key).pickaxe(ADAMANTINE, 1.0F, -2.8F)));
         item("adamantine_axe", ADAMANTINE_AXE, key -> new Item(tool(key).axe(ADAMANTINE, 5.0F, -3.0F)));
@@ -474,6 +510,13 @@ public final class ModContent {
 
     private static void block(String id, Ref<Block> ref, Function<ResourceKey<Block>, Block> factory) {
         BLOCK_DEFS.add(new Def<>(id, factory, ref));
+    }
+
+    /** A core: one of the hearts the relics and the Cornucopia are built round. */
+    private static Item.Properties core(ResourceKey<Item> key, String id) {
+        return new Item.Properties().setId(key).stacksTo(16).rarity(net.minecraft.world.item.Rarity.EPIC).fireResistant()
+                .component(net.minecraft.core.component.DataComponents.LORE, new net.minecraft.world.item.component.ItemLore(List.of(
+                        net.minecraft.network.chat.Component.translatable("item." + RealmsOfChaos.MOD_ID + "." + id + ".lore").withStyle(net.minecraft.ChatFormatting.GRAY))));
     }
 
     /** What every adamantine tool shares: one to a stack, proof against fire and lava, and rare. */
@@ -618,6 +661,9 @@ public final class ModContent {
         out.add(LOCKPICK.get());
         for (Ref<Item> r : List.of(RAW_ADAMANTINE, ADAMANTINE_SCRAP, ADAMANTINE_INGOT, ADAMANTINE_SWORD, ADAMANTINE_PICKAXE, ADAMANTINE_AXE, ADAMANTINE_SHOVEL, ADAMANTINE_HOE))
             out.add(r.get());
+        for (Ref<Item> r : List.of(STORM_GLASS, ABYSSAL_PEARL, RAW_STYGIAN_IRON, CELESTIAL_BRONZE_INGOT, ORICHALCUM_INGOT, STYGIAN_IRON_INGOT,
+                THUNDER_CORE, TIDE_CORE, SHADE_CORE)) out.add(r.get());
+        for (var pieces : ARMOR.values()) for (Ref<Item> r : pieces.values()) out.add(r.get());
         for (Line line : Line.values()) {
             for (God god : Gods.ofLine(line)) {
                 out.add(WEAPONS.get(god.id()).get());

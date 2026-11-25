@@ -46,6 +46,7 @@ public final class RealmSafety {
         Hazards.tick(server);
         Onslaughts.tick(server);
         com.thefarawaydev.realmsofchaos.item.Panoply.tick(server);
+        com.thefarawaydev.realmsofchaos.item.ArmorSets.tick(server);
         Commissions.tick(server);
         Craters.tick(server);
         com.thefarawaydev.realmsofchaos.ui.Sidebar.tick(server);

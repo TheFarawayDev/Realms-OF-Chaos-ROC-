@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "O": "realms_of_chaos:orichalcum_ingot",
+    "P": "realms_of_chaos:abyssal_pearl",
+    "A": "realms_of_chaos:adamantine_ingot"
+  },
+  "pattern": [
+    "OPO",
+    "PAP",
+    "OPO"
+  ],
+  "result": {
+    "id": "realms_of_chaos:tide_core",
+    "count": 1
+  }
+}

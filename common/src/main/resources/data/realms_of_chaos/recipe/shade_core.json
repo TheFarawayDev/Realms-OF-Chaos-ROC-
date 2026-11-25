@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "I": "realms_of_chaos:stygian_iron_ingot",
+    "E": "minecraft:echo_shard",
+    "A": "realms_of_chaos:adamantine_ingot"
+  },
+  "pattern": [
+    "IEI",
+    "EAE",
+    "IEI"
+  ],
+  "result": {
+    "id": "realms_of_chaos:shade_core",
+    "count": 1
+  }
+}

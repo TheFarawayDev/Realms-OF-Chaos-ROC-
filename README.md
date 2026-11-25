@@ -16,6 +16,37 @@ The current build is an **Alpha**.
 
 ## What's in 1.2.0
 
+* **The long roads: resources to grind, and the relics made from them.** Three new resources are won from the
+  world itself, one for each god's domain, and each is the start of a long chain of crafting:
+  * **Storm glass (the sky).** Where lightning strikes sand, the sand fuses into **Fulgurite** - so a lightning rod set
+    on sand in a thunderstorm, or a trident of channelling, is how it is farmed. A blast furnace turns fulgurite into
+    **Storm Glass**; four copper, four gold and a storm glass make two **Celestial Bronze Ingots**.
+  * **Abyssal pearls (the sea).** A **Giant Clam** (four nautilus shells, four prismarine crystals and a sea pickle)
+    set under water, deep in an ocean (no higher than y 50), slowly grows an **Abyssal Pearl** - open it to take the
+    pearl and it begins another. Four gold, four prismarine crystals and a pearl make two **Orichalcum Ingots**.
+  * **Stygian iron (the underworld).** **Stygian Iron Ore** lies in the soul soil and soul sand of the nether's soul
+    sand valleys. It wants a diamond pickaxe; its **Raw Stygian Iron** is only rendered into a **Stygian Iron Ingot**
+    in a blast furnace.
+  * **Cores.** Four of a god-metal, four of its resource and an adamantine ingot at the heart make a **Thunder Core**
+    (celestial bronze and storm glass), a **Tide Core** (orichalcum and abyssal pearls) or a **Shade Core** (stygian
+    iron and echo shards).
+  * **The relics, crafted.** A core, its metal, the tower's essence (won from its summit) and something of the god's
+    own make the king's relic at a crafting table: **Keraunos, the Thunderbolt** (two lightning rods), the **Trident
+    of the Deep** (a trident and abyssal pearls) and the **Bident of the Dead** (two wither skeleton skulls). The
+    longest road to Zeus's thunderbolt: lightning on sand, fulgurite, storm glass, copper and gold into celestial
+    bronze; deep ore into adamantine scrap, scrap and netherite into adamantine; both into a thunder core; and the
+    Spark of Olympus from the top of the sky tower.
+* **Four sets of armour.** Helmet, chestplate, leggings and boots of **Adamantine**, **Celestial Bronze**,
+  **Orichalcum** and **Stygian Iron**, each better than netherite and each with a gift when worn whole:
+  adamantine (the most protection - 24 points, toughness 4) gives resistance; celestial bronze gives speed and
+  haste; orichalcum lets you breathe and swim like the sea's own; stygian iron keeps off fire and withering. They
+  cannot burn and are mended with their ingot. (`art/renders/armor-sets.png`)
+* **The Cornucopia.** The horn of plenty: a golden horn banded in ivory on a porphyry plinth, spilling fruit. It is
+  very hard to make - all three cores, a nether star, two blocks of adamantine, a goat horn and two blocks of gold.
+  Set a core in its mouth and it glows with that core's colour and brings forth, every five minutes, the resource the
+  core belongs to: storm glass for a thunder core, abyssal pearls for a tide core, raw stygian iron for a shade core -
+  and now and then a lump of raw adamantine. It fills a chest or hopper under it, or spills out on top. Sneak with an
+  empty hand to take the core back. (`art/renders/cornucopia-and-clams.png`, `art/renders/cornucopia-cores.png`)
 * **Adamantine, and the first tool set.** A new ore, **Deepslate Adamantine Ore**, lies in small veins in the deepest
   stone of the overworld (below y -40) - about twenty times rarer than diamond. It is as hard as ancient debris and
   wants a diamond pickaxe or better. It gives **Raw Adamantine**, which only a blast furnace will render into

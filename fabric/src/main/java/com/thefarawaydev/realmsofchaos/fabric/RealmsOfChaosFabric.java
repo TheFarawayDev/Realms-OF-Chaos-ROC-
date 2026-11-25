@@ -34,6 +34,12 @@ public class RealmsOfChaosFabric implements ModInitializer {
         net.fabricmc.fabric.api.biome.v1.BiomeModifications.addFeature(net.fabricmc.fabric.api.biome.v1.BiomeSelectors.foundInOverworld(),
                 net.minecraft.world.level.levelgen.GenerationStep.Decoration.UNDERGROUND_ORES,
                 ResourceKey.create(Registries.PLACED_FEATURE, RealmsOfChaos.id("adamantine_ore")));
+        // stygian iron ore, in the soul sand valleys of the nether
+        net.fabricmc.fabric.api.biome.v1.BiomeModifications.addFeature(net.fabricmc.fabric.api.biome.v1.BiomeSelectors.includeByKey(net.minecraft.world.level.biome.Biomes.SOUL_SAND_VALLEY),
+                net.minecraft.world.level.levelgen.GenerationStep.Decoration.UNDERGROUND_ORES,
+                ResourceKey.create(Registries.PLACED_FEATURE, RealmsOfChaos.id("stygian_iron_ore")));
+        // lightning on sand makes fulgurite
+        net.fabricmc.fabric.api.event.lifecycle.v1.ServerEntityEvents.ENTITY_LOAD.register(com.thefarawaydev.realmsofchaos.world.Grind::onEntityLoad);
         for (ModContent.Def<net.minecraft.world.level.block.Block> def : ModContent.BLOCK_DEFS) {
             Identifier id = RealmsOfChaos.id(def.id());
             var block = def.factory().apply(ResourceKey.create(Registries.BLOCK, id));

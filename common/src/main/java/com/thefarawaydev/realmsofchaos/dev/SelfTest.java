@@ -7028,6 +7028,82 @@ public final class SelfTest {
             }
         });
 
+        step("the long roads: fulgurite from lightning, pearls from clams, stygian iron from the soul valleys, cores, relics, armour, and the Cornucopia", () -> {
+            int gy = level.getHeight(net.minecraft.world.level.levelgen.Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, 130, 40) + 3;
+            BlockPos o = new BlockPos(130, gy, 40);
+            BlockPos.betweenClosed(o.offset(-4, -3, -4), o.offset(4, 4, 4)).forEach(p -> level.setBlock(p, p.getY() < o.getY() - 2 ? Blocks.STONE.defaultBlockState() : Blocks.AIR.defaultBlockState(), 2 | 16));
+            ServerPlayer smith = fakePlayer(server, level, "RocSmith");
+            level.addNewPlayer(smith);
+            try {
+                // ---- lightning on sand fuses it into fulgurite: a real bolt, through the loader's event
+                BlockPos.betweenClosed(o.offset(-1, -2, -1), o.offset(1, -1, 1)).forEach(p -> level.setBlock(p, Blocks.SAND.defaultBlockState(), 2 | 16));
+                var bolt = net.minecraft.world.entity.EntityTypes.LIGHTNING_BOLT.create(level, net.minecraft.world.entity.EntitySpawnReason.TRIGGERED);
+                bolt.setPos(o.getX() + 0.5, o.getY(), o.getZ() + 0.5);
+                bolt.setVisualOnly(true);
+                level.addFreshEntity(bolt);
+                int fused = 0;
+                for (BlockPos p : BlockPos.betweenClosed(o.offset(-1, -2, -1), o.offset(1, -1, 1))) if (level.getBlockState(p).is(ModContent.FULGURITE.get())) fused++;
+                check(fused > 0 && fused < 18, "a bolt striking sand fuses some of it into fulgurite: " + fused + " of 18");
+                bolt.discard();
+                // ---- a clam opened with a pearl in it gives the pearl and begins another
+                BlockPos clam = o.offset(3, 0, 3);
+                level.setBlock(clam, ModContent.GIANT_CLAM.get().defaultBlockState().setValue(com.thefarawaydev.realmsofchaos.block.GiantClamBlock.PEARL, true), 3);
+                check(!com.thefarawaydev.realmsofchaos.block.GiantClamBlock.canGrow(level, clam, level.getBlockState(clam)), "a clam out of the sea grows nothing");
+                level.getBlockState(clam).useWithoutItem(level, smith, new BlockHitResult(Vec3.atCenterOf(clam), Direction.UP, clam, false));
+                check(!level.getBlockState(clam).getValue(com.thefarawaydev.realmsofchaos.block.GiantClamBlock.PEARL)
+                        && !level.getEntitiesOfClass(net.minecraft.world.entity.item.ItemEntity.class, new AABB(clam).inflate(2), e -> e.getItem().is(ModContent.ABYSSAL_PEARL.get())).isEmpty(),
+                        "opened, a clam gives up its pearl");
+                // ---- stygian iron grows in the soul sand valleys
+                var placed = server.registryAccess().lookupOrThrow(net.minecraft.core.registries.Registries.PLACED_FEATURE)
+                        .get(net.minecraft.resources.ResourceKey.create(net.minecraft.core.registries.Registries.PLACED_FEATURE, RealmsOfChaos.id("stygian_iron_ore")));
+                var valley = server.registryAccess().lookupOrThrow(net.minecraft.core.registries.Registries.BIOME).getOrThrow(net.minecraft.world.level.biome.Biomes.SOUL_SAND_VALLEY);
+                int ores = net.minecraft.world.level.levelgen.GenerationStep.Decoration.UNDERGROUND_ORES.ordinal();
+                check(placed.isPresent() && valley.value().getGenerationSettings().features().get(ores).stream().anyMatch(h -> h.is(placed.get().key())),
+                        "stygian iron ore lies in the soul sand valleys");
+                // ---- the cornucopia takes a core and brings forth what that core belongs to, into a chest under it
+                BlockPos horn = o.offset(-3, 0, -3);
+                level.setBlock(horn.below(), Blocks.CHEST.defaultBlockState(), 3);
+                level.setBlock(horn, ModContent.CORNUCOPIA.get().defaultBlockState(), 3);
+                ItemStack thunder = new ItemStack(ModContent.THUNDER_CORE.get());
+                smith.setItemInHand(net.minecraft.world.InteractionHand.MAIN_HAND, thunder);
+                level.getBlockState(horn).useItemOn(thunder, level, smith, net.minecraft.world.InteractionHand.MAIN_HAND, new BlockHitResult(Vec3.atCenterOf(horn), Direction.UP, horn, false));
+                check(level.getBlockState(horn).getValue(com.thefarawaydev.realmsofchaos.block.CornucopiaBlock.CORE) == com.thefarawaydev.realmsofchaos.block.CornucopiaBlock.Core.STORM
+                        && thunder.isEmpty(), "a thunder core set in the Cornucopia");
+                ItemStack made = com.thefarawaydev.realmsofchaos.block.CornucopiaBlock.produce(level, horn, level.getRandom());
+                var chest = (net.minecraft.world.Container) level.getBlockEntity(horn.below());
+                boolean stored = false;
+                for (int i = 0; i < chest.getContainerSize(); i++) stored |= chest.getItem(i).is(made.getItem());
+                check((made.is(ModContent.STORM_GLASS.get()) || made.is(ModContent.RAW_ADAMANTINE.get())) && stored, "it brings forth storm glass, into the chest under it: " + made);
+                check(level.getBlockTicks().hasScheduledTick(horn, ModContent.CORNUCOPIA.get()), "and will again in a few minutes");
+                // ---- the armour: better than netherite, and a gift for a whole set
+                var nether = net.minecraft.world.item.equipment.ArmorMaterials.NETHERITE;
+                var ad = com.thefarawaydev.realmsofchaos.item.ArmorSets.Set.ADAMANTINE.material;
+                int adSum = 0, neSum = 0;
+                for (var type : com.thefarawaydev.realmsofchaos.item.ArmorSets.PIECES) {
+                    adSum += ad.defense().get(type);
+                    neSum += nether.defense().get(type);
+                }
+                check(adSum > neSum && ad.toughness() > nether.toughness() && ad.durability() > nether.durability(), "adamantine armour outdoes netherite: " + adSum + " to " + neSum);
+                var bronze = ModContent.ARMOR.get(com.thefarawaydev.realmsofchaos.item.ArmorSets.Set.CELESTIAL_BRONZE);
+                smith.setItemSlot(net.minecraft.world.entity.EquipmentSlot.HEAD, new ItemStack(bronze.get(net.minecraft.world.item.equipment.ArmorType.HELMET).get()));
+                smith.setItemSlot(net.minecraft.world.entity.EquipmentSlot.CHEST, new ItemStack(bronze.get(net.minecraft.world.item.equipment.ArmorType.CHESTPLATE).get()));
+                smith.setItemSlot(net.minecraft.world.entity.EquipmentSlot.LEGS, new ItemStack(bronze.get(net.minecraft.world.item.equipment.ArmorType.LEGGINGS).get()));
+                smith.setItemSlot(net.minecraft.world.entity.EquipmentSlot.FEET, new ItemStack(bronze.get(net.minecraft.world.item.equipment.ArmorType.BOOTS).get()));
+                check(com.thefarawaydev.realmsofchaos.item.ArmorSets.wornWhole(smith) == com.thefarawaydev.realmsofchaos.item.ArmorSets.Set.CELESTIAL_BRONZE, "a whole set of celestial bronze is known as one");
+                com.thefarawaydev.realmsofchaos.item.ArmorSets.tend(smith);
+                check(smith.hasEffect(net.minecraft.world.effect.MobEffects.SPEED) && smith.hasEffect(net.minecraft.world.effect.MobEffects.HASTE), "worn whole, it gives speed and haste");
+                // ---- every step of the roads can be made
+                for (String id : List.of("storm_glass_from_blasting_fulgurite", "celestial_bronze_ingot", "orichalcum_ingot", "stygian_iron_ingot_from_blasting_raw_stygian_iron",
+                        "thunder_core", "tide_core", "shade_core", "zeus_weapon_from_thunder_core", "poseidon_weapon_from_tide_core", "hades_weapon_from_shade_core",
+                        "giant_clam", "cornucopia", "adamantine_chestplate", "celestial_bronze_helmet", "orichalcum_leggings", "stygian_iron_boots"))
+                    check(server.getRecipeManager().byKey(net.minecraft.resources.ResourceKey.create(net.minecraft.core.registries.Registries.RECIPE, RealmsOfChaos.id(id))).isPresent(), "a recipe for " + id);
+            } finally {
+                smith.remove(net.minecraft.world.entity.Entity.RemovalReason.DISCARDED);
+                for (var e : level.getEntitiesOfClass(net.minecraft.world.entity.item.ItemEntity.class, new AABB(o).inflate(6), e -> true)) e.discard();
+                BlockPos.betweenClosed(o.offset(-4, -3, -4), o.offset(4, 4, 4)).forEach(p -> level.setBlock(p, Blocks.AIR.defaultBlockState(), 2 | 16));
+            }
+        });
+
         step("every word on the mod's menus is in its language file: nobody is shown a key", () -> {
             ServerPlayer hero = fakePlayer(server, level, "RocProofreader");
             com.thefarawaydev.realmsofchaos.ui.Options.reset(hero);
