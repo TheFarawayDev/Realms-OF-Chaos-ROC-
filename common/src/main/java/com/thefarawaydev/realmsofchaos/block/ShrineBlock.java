@@ -45,7 +45,7 @@ public class ShrineBlock extends Block {
         String key = player.getUUID() + "@" + level.dimension().identifier() + "/" + pos.asLong();
         Long last = BLESSED.get(key);
         if (last != null && now >= last && now - last < REST_TICKS) {
-            Hud.actionBar(player, Hud.colored(Component.translatable(hud + "resting", (REST_TICKS - (now - last)) / 1200 + 1), 0xAAAAAA));
+            Hud.above(player, pos, Component.translatable(hud + "resting", (REST_TICKS - (now - last)) / 1200 + 1), 0xAAAAAA);
             return false;
         }
         BLESSED.put(key, now);
@@ -77,7 +77,7 @@ public class ShrineBlock extends Block {
             // and holds off whatever weighs on the level
             com.thefarawaydev.realmsofchaos.world.Passages.shelter(seer);
         }
-        Hud.actionBar(player, Hud.colored(Component.translatable(hud + "blessed." + line.id()), line.color()));
+        Hud.above(player, pos, Component.translatable(hud + "blessed." + line.id()), line.color());
         return true;
     }
 
@@ -96,7 +96,7 @@ public class ShrineBlock extends Block {
     @Override
     public void animateTick(BlockState state, Level level, BlockPos pos, RandomSource random) {
         if (random.nextInt(2) == 0) {
-            level.addParticle(ParticleTypes.HAPPY_VILLAGER, pos.getX() + random.nextDouble(), pos.getY() + 1.0 + random.nextDouble() * 0.6,
+            level.addParticle(com.thefarawaydev.realmsofchaos.fx.RocParticles.GLINT.type(), pos.getX() + random.nextDouble(), pos.getY() + 1.0 + random.nextDouble() * 0.6,
                     pos.getZ() + random.nextDouble(), 0, 0.02, 0);
         }
     }

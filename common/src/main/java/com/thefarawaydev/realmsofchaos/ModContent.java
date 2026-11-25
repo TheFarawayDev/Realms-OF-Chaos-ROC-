@@ -107,7 +107,9 @@ public final class ModContent {
     public static final Ref<Block> CLOUDSTONE = new Ref<>(), CLOUD_TILE = new Ref<>(), TRENCH_STONE = new Ref<>(), NACRE_TILE = new Ref<>(),
             TARTARUS_STONE = new Ref<>(), THRONE_TILE = new Ref<>(), PORTAL_FRAME_SKY = new Ref<>(), PORTAL_FRAME_SEA = new Ref<>(),
             PORTAL_FRAME_SHADE = new Ref<>(), PORTAL_FRAME_HUB = new Ref<>(), ARRIVAL_SIGIL = new Ref<>();
-    public static final Ref<Block> TOWER_BRAZIER = new Ref<>();
+    public static final Ref<Block> TOWER_BRAZIER = new Ref<>(), SPRINKLER = new Ref<>();
+    /** The dial hall's and the sliding stones' blocks. */
+    public static final Ref<Block> DIAL_STONE = new Ref<>(), FRESCO_TILE = new Ref<>(), SLIDE_STONE = new Ref<>(), STONE_SOCKET = new Ref<>();
     /** Sparring dummies, the barracks' furniture, three more doors, and the mod's glass. */
     public static final Ref<Block> MOVING_DUMMY = new Ref<>(), CHAIR = new Ref<>(), TABLE = new Ref<>(), BENCH = new Ref<>(), DRESSER = new Ref<>(),
             BUNK_BED = new Ref<>(), GARRISON_DOOR = new Ref<>(), GARRISON_TRAPDOOR = new Ref<>(), VERDIGRIS_DOOR = new Ref<>(), VERDIGRIS_TRAPDOOR = new Ref<>(),
@@ -122,7 +124,7 @@ public final class ModContent {
     // ---- items --------------------------------------------------------------------------------
     public static final Ref<Item> CHAOS_COMPASS = new Ref<>();
     public static final Ref<Item> CHAOS_CODEX = new Ref<>();
-    public static final Ref<Item> FIELD_BAG = new Ref<>();
+    public static final Ref<Item> FIELD_BAG = new Ref<>(), LOCKPICK = new Ref<>();
     public static final Map<String, Ref<Item>> WEAPONS = new HashMap<>();
     /** The eight pieces of the panoply, by id. */
     public static final Map<String, Ref<Item>> PANOPLY = new java.util.LinkedHashMap<>();
@@ -139,6 +141,11 @@ public final class ModContent {
     public static final Map<Line, Ref<Item>> SEEKERS = new HashMap<>();
     /** Forge materials dropped on tiers 1-3 of each tower, keyed "<line id>/<tier>". */
     public static final Map<String, Ref<Item>> MATERIALS = new HashMap<>();
+    /** The mod's own particle types, by id (see {@link com.thefarawaydev.realmsofchaos.fx.RocParticles}). */
+    public static final Map<String, Ref<net.minecraft.core.particles.SimpleParticleType>> PARTICLES = new java.util.LinkedHashMap<>();
+    static {
+        for (com.thefarawaydev.realmsofchaos.fx.RocParticles p : com.thefarawaydev.realmsofchaos.fx.RocParticles.values()) PARTICLES.put(p.id(), new Ref<>());
+    }
     /** Not obtainable: the sprites staff bolts and god projectiles are drawn with, one per power. */
     public static final Map<Power, Ref<Item>> ORBS = new HashMap<>();
 
@@ -301,6 +308,13 @@ public final class ModContent {
         block("portal_frame_sea", PORTAL_FRAME_SEA, key -> new com.thefarawaydev.realmsofchaos.block.ConnectedBlock(decor(key).mapColor(MapColor.WARPED_WART_BLOCK).lightLevel(s -> 7)));
         block("portal_frame_shade", PORTAL_FRAME_SHADE, key -> new com.thefarawaydev.realmsofchaos.block.ConnectedBlock(decor(key).mapColor(MapColor.COLOR_PURPLE).lightLevel(s -> 7)));
         block("portal_frame_hub", PORTAL_FRAME_HUB, key -> new com.thefarawaydev.realmsofchaos.block.ConnectedBlock(decor(key).mapColor(MapColor.COLOR_GRAY).lightLevel(s -> 7)));
+        block("dial_stone", DIAL_STONE, key -> new com.thefarawaydev.realmsofchaos.block.PuzzleBlocks.Dial(unbreakable(key).mapColor(MapColor.STONE).sound(SoundType.STONE)));
+        block("fresco_tile", FRESCO_TILE, key -> new com.thefarawaydev.realmsofchaos.block.PuzzleBlocks.Fresco(unbreakable(key).mapColor(MapColor.SAND)
+                .lightLevel(s -> s.getValue(com.thefarawaydev.realmsofchaos.block.PuzzleBlocks.LIT) ? 9 : 0)));
+        block("slide_stone", SLIDE_STONE, key -> new com.thefarawaydev.realmsofchaos.block.PuzzleBlocks.SlideStone(unbreakable(key).mapColor(MapColor.STONE).sound(SoundType.STONE)));
+        block("stone_socket", STONE_SOCKET, key -> new com.thefarawaydev.realmsofchaos.block.PuzzleBlocks.Socket(unbreakable(key).mapColor(MapColor.STONE)
+                .lightLevel(s -> s.getValue(com.thefarawaydev.realmsofchaos.block.PuzzleBlocks.LIT) ? 11 : 2)));
+        block("sprinkler", SPRINKLER, key -> new com.thefarawaydev.realmsofchaos.block.SprinklerBlock(decor(key).mapColor(MapColor.COLOR_ORANGE).sound(SoundType.COPPER).noOcclusion()));
         block("arena_sand", ARENA_SAND, key -> new Block(decor(key).mapColor(MapColor.SAND).sound(SoundType.SAND).strength(1.0F)));
         block("war_drum", WAR_DRUM, key -> new com.thefarawaydev.realmsofchaos.block.WarDrumBlock(decor(key).mapColor(MapColor.COLOR_RED).sound(SoundType.WOOD).strength(1.5F).noOcclusion()));
         block("war_standard", WAR_STANDARD, key -> new com.thefarawaydev.realmsofchaos.block.WarStandardBlock(decor(key).mapColor(MapColor.COLOR_RED).sound(SoundType.WOOD).strength(1.0F).noOcclusion()));
@@ -353,6 +367,7 @@ public final class ModContent {
         // items: codex, compass, 45 god weapons (ordered by line, rank 1 -> 15), then the block items
         item("chaos_codex", CHAOS_CODEX, key -> new CodexItem(new Item.Properties().setId(key).stacksTo(1)));
         item("chaos_compass", CHAOS_COMPASS, key -> new ChaosCompassItem(new Item.Properties().setId(key).stacksTo(1)));
+        item("lockpick", LOCKPICK, key -> new Item(new Item.Properties().setId(key).stacksTo(16)));
         item("field_bag", FIELD_BAG, key -> new com.thefarawaydev.realmsofchaos.item.FieldBagItem(new Item.Properties().setId(key).stacksTo(1)));
         for (Line line : Line.values()) {
             for (God god : Gods.ofLine(line)) {
@@ -555,6 +570,7 @@ public final class ModContent {
         out.add(CHAOS_CODEX.get());
         out.add(CHAOS_COMPASS.get());
         out.add(FIELD_BAG.get());
+        out.add(LOCKPICK.get());
         for (Line line : Line.values()) {
             for (God god : Gods.ofLine(line)) {
                 out.add(WEAPONS.get(god.id()).get());

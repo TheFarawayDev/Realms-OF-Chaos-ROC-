@@ -42,7 +42,7 @@ public class ShieldPylonBlock extends Block {
             return boss.strikePylon(level, pos, player);
         }
         level.setBlock(pos, Blocks.AIR.defaultBlockState(), 3);
-        level.sendParticles(ParticleTypes.POOF, pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5, 12, 0.2, 0.4, 0.2, 0.02);
+        level.sendParticles(com.thefarawaydev.realmsofchaos.fx.RocParticles.DUST.type(), pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5, 12, 0.2, 0.4, 0.2, 0.02);
         return false;
     }
 
@@ -61,10 +61,10 @@ public class ShieldPylonBlock extends Block {
 
     @Override
     public void animateTick(BlockState state, Level level, BlockPos pos, RandomSource random) {
-        level.addParticle(ParticleTypes.END_ROD, pos.getX() + 0.3 + random.nextDouble() * 0.4, pos.getY() + 1.0, pos.getZ() + 0.3 + random.nextDouble() * 0.4, 0, 0.05, 0);
+        level.addParticle(com.thefarawaydev.realmsofchaos.fx.RocParticles.GLINT.type(), pos.getX() + 0.3 + random.nextDouble() * 0.4, pos.getY() + 1.0, pos.getZ() + 0.3 + random.nextDouble() * 0.4, 0, 0.05, 0);
         if (random.nextInt(3) == 0) {
             double a = random.nextDouble() * Math.PI * 2;
-            level.addParticle(ParticleTypes.ENCHANT, pos.getX() + 0.5 + Math.cos(a), pos.getY() + 1.4, pos.getZ() + 0.5 + Math.sin(a), -Math.cos(a), -0.4, -Math.sin(a));
+            level.addParticle(com.thefarawaydev.realmsofchaos.fx.RocParticles.RUNE.type(), pos.getX() + 0.5 + Math.cos(a), pos.getY() + 1.4, pos.getZ() + 0.5 + Math.sin(a), -Math.cos(a), -0.4, -Math.sin(a));
         }
     }
 }

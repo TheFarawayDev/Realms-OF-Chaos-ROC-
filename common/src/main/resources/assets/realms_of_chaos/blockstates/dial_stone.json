@@ -1,0 +1,68 @@
+{
+  "variants": {
+    "facing=north,sigil=0": {
+      "model": "realms_of_chaos:block/dial_stone_0",
+      "y": 0
+    },
+    "facing=north,sigil=1": {
+      "model": "realms_of_chaos:block/dial_stone_1",
+      "y": 0
+    },
+    "facing=north,sigil=2": {
+      "model": "realms_of_chaos:block/dial_stone_2",
+      "y": 0
+    },
+    "facing=north,sigil=3": {
+      "model": "realms_of_chaos:block/dial_stone_3",
+      "y": 0
+    },
+    "facing=east,sigil=0": {
+      "model": "realms_of_chaos:block/dial_stone_0",
+      "y": 90
+    },
+    "facing=east,sigil=1": {
+      "model": "realms_of_chaos:block/dial_stone_1",
+      "y": 90
+    },
+    "facing=east,sigil=2": {
+      "model": "realms_of_chaos:block/dial_stone_2",
+      "y": 90
+    },
+    "facing=east,sigil=3": {
+      "model": "realms_of_chaos:block/dial_stone_3",
+      "y": 90
+    },
+    "facing=south,sigil=0": {
+      "model": "realms_of_chaos:block/dial_stone_0",
+      "y": 180
+    },
+    "facing=south,sigil=1": {
+      "model": "realms_of_chaos:block/dial_stone_1",
+      "y": 180
+    },
+    "facing=south,sigil=2": {
+      "model": "realms_of_chaos:block/dial_stone_2",
+      "y": 180
+    },
+    "facing=south,sigil=3": {
+      "model": "realms_of_chaos:block/dial_stone_3",
+      "y": 180
+    },
+    "facing=west,sigil=0": {
+      "model": "realms_of_chaos:block/dial_stone_0",
+      "y": 270
+    },
+    "facing=west,sigil=1": {
+      "model": "realms_of_chaos:block/dial_stone_1",
+      "y": 270
+    },
+    "facing=west,sigil=2": {
+      "model": "realms_of_chaos:block/dial_stone_2",
+      "y": 270
+    },
+    "facing=west,sigil=3": {
+      "model": "realms_of_chaos:block/dial_stone_3",
+      "y": 270
+    }
+  }
+}

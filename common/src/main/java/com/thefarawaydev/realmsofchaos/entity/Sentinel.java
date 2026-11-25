@@ -529,7 +529,7 @@ public class Sentinel extends Monster implements RangedAttackMob {
         guardCooldown = GUARD_EVERY;
         level.playSound(null, blockPosition(), SoundEvents.SHIELD_BLOCK.value(), SoundSource.HOSTILE, 1.2F, 1.3F);
         level.playSound(null, blockPosition(), SoundEvents.ANVIL_LAND, SoundSource.HOSTILE, 0.4F, 2.0F);
-        level.sendParticles(ParticleTypes.ENCHANTED_HIT, getX(), getY() + 1.3, getZ(), 14, 0.4, 0.4, 0.4, 0.2);
+        level.sendParticles(com.thefarawaydev.realmsofchaos.fx.RocParticles.STRIKE.type(), getX(), getY() + 1.3, getZ(), 14, 0.4, 0.4, 0.4, 0.2);
         com.thefarawaydev.realmsofchaos.ui.Hud.actionBar(striker, com.thefarawaydev.realmsofchaos.ui.Hud.colored(
                 Component.translatable("hud." + RealmsOfChaos.MOD_ID + ".sentinel.guarded", kind().displayName()), 0xFFAA00));
         com.thefarawaydev.realmsofchaos.world.Scheduler.after(level.getServer(), COUNTER_DELAY, () -> {
@@ -639,7 +639,7 @@ public class Sentinel extends Monster implements RangedAttackMob {
             getNavigation().stop();
             setYRot(getYRot() + 36.0F);
             yBodyRot = getYRot();
-            if (whirlWindup % 4 == 0) ring(level, ParticleTypes.CRIT, WHIRL_RADIUS, getY() + 0.1, 24);
+            if (whirlWindup % 4 == 0) ring(level, com.thefarawaydev.realmsofchaos.fx.RocParticles.STRIKE.type(), WHIRL_RADIUS, getY() + 0.1, 24);
             if (--whirlWindup == 0) whirl(level);
             return true;
         }
@@ -764,7 +764,7 @@ public class Sentinel extends Monster implements RangedAttackMob {
         heavyWindup = HEAVY_WINDUP;
         heavyCooldown = HEAVY_EVERY + random.nextInt(40);
         level.playSound(null, blockPosition(), SoundEvents.RAVAGER_ATTACK, SoundSource.HOSTILE, 0.8F, 1.4F);
-        level.sendParticles(ParticleTypes.CRIT, getX(), getY() + getBbHeight() * 0.7, getZ(), 10, 0.3, 0.3, 0.3, 0.1);
+        level.sendParticles(com.thefarawaydev.realmsofchaos.fx.RocParticles.STRIKE.type(), getX(), getY() + getBbHeight() * 0.7, getZ(), 10, 0.3, 0.3, 0.3, 0.1);
         if (target instanceof ServerPlayer watcher) com.thefarawaydev.realmsofchaos.ui.Tutorial.tip(watcher, com.thefarawaydev.realmsofchaos.ui.Tutorial.Tip.PARRY);
     }
 
@@ -805,7 +805,7 @@ public class Sentinel extends Monster implements RangedAttackMob {
             double d = Math.max(0.01, Math.sqrt(away.x * away.x + away.z * away.z));
             living.setDeltaMovement(away.x / d * 1.1, 0.4, away.z / d * 1.1);
             living.needsSync = true;
-            level.sendParticles(ParticleTypes.CLOUD, target.getX(), target.getY(0.5), target.getZ(), 8, 0.2, 0.2, 0.2, 0.05);
+            level.sendParticles(com.thefarawaydev.realmsofchaos.fx.RocParticles.DUST.type(), target.getX(), target.getY(0.5), target.getZ(), 8, 0.2, 0.2, 0.2, 0.05);
             com.thefarawaydev.realmsofchaos.world.Fx.impact(level, target.position(), 3);
         }
         return hit;
@@ -885,7 +885,7 @@ public class Sentinel extends Monster implements RangedAttackMob {
                     Vec3 a = position().add(0, 1.0, 0), b = ally.position().add(0, 1.0, 0);
                     for (int i = 0; i <= 8; i++) {
                         Vec3 at = a.lerp(b, i / 8.0);
-                        level.sendParticles(ParticleTypes.ENCHANTED_HIT, at.x, at.y, at.z, 1, 0, 0, 0, 0);
+                        level.sendParticles(com.thefarawaydev.realmsofchaos.fx.RocParticles.STRIKE.type(), at.x, at.y, at.z, 1, 0, 0, 0, 0);
                     }
                     break;
                 }
@@ -926,7 +926,7 @@ public class Sentinel extends Monster implements RangedAttackMob {
             other.snapTo(here.x, here.y, here.z, other.getYRot(), 0.0F);
             snapTo(there.x, there.y, there.z, getYRot(), 0.0F);
         }
-        level.sendParticles(ParticleTypes.CLOUD, here.x, here.y + 1.0, here.z, 40, 1.2, 0.8, 1.2, 0.02);
+        level.sendParticles(com.thefarawaydev.realmsofchaos.fx.RocParticles.DUST.type(), here.x, here.y + 1.0, here.z, 40, 1.2, 0.8, 1.2, 0.02);
         level.playSound(null, blockPosition(), SoundEvents.ILLUSIONER_MIRROR_MOVE, SoundSource.HOSTILE, 1.5F, 1.0F);
         return copies;
     }
@@ -1016,7 +1016,7 @@ public class Sentinel extends Monster implements RangedAttackMob {
         worst.snapTo(mine.x, mine.y, mine.z, worst.getYRot(), 0.0F);
         worst.addEffect(new net.minecraft.world.effect.MobEffectInstance(MobEffects.REGENERATION, 80, 1));
         if (worst.getTarget() != null) setTarget(worst.getTarget());
-        for (Vec3 at : new Vec3[]{mine, theirs}) level.sendParticles(ParticleTypes.PORTAL, at.x, at.y + 1.0, at.z, 30, 0.3, 0.8, 0.3, 0.3);
+        for (Vec3 at : new Vec3[]{mine, theirs}) level.sendParticles(com.thefarawaydev.realmsofchaos.fx.RocParticles.CHAOS_MOTE.type(), at.x, at.y + 1.0, at.z, 30, 0.3, 0.8, 0.3, 0.3);
         level.playSound(null, blockPosition(), SoundEvents.ENDERMAN_TELEPORT, SoundSource.HOSTILE, 1.0F, 1.4F);
         return true;
     }
@@ -1028,7 +1028,7 @@ public class Sentinel extends Monster implements RangedAttackMob {
             case DUELIST -> {
                 // its guard, when up, glints on its blade
                 if (guardCooldown > 0) guardCooldown--;
-                else if (tickCount % 10 == 0) level.sendParticles(ParticleTypes.ENCHANTED_HIT, getX(), getY() + 1.2, getZ(), 3, 0.3, 0.3, 0.3, 0.0);
+                else if (tickCount % 10 == 0) level.sendParticles(com.thefarawaydev.realmsofchaos.fx.RocParticles.STRIKE.type(), getX(), getY() + 1.2, getZ(), 3, 0.3, 0.3, 0.3, 0.0);
             }
             case BOMB -> {
                 if (fuse < 0 && distanceToSqr(target) < 6.25) {
@@ -1111,7 +1111,7 @@ public class Sentinel extends Monster implements RangedAttackMob {
                 for (Sentinel ally : near) {
                     ally.addEffect(new net.minecraft.world.effect.MobEffectInstance(MobEffects.SPEED, 140, 0));
                     ally.addEffect(new net.minecraft.world.effect.MobEffectInstance(MobEffects.STRENGTH, 140, 0));
-                    level.sendParticles(ParticleTypes.ELECTRIC_SPARK, ally.getX(), ally.getY() + 1.2, ally.getZ(), 8, 0.3, 0.5, 0.3, 0.05);
+                    level.sendParticles(com.thefarawaydev.realmsofchaos.fx.RocParticles.STORM_SPARK.type(), ally.getX(), ally.getY() + 1.2, ally.getZ(), 8, 0.3, 0.5, 0.3, 0.05);
                     did = true;
                 }
             }
@@ -1136,7 +1136,7 @@ public class Sentinel extends Monster implements RangedAttackMob {
                         shade.setPersistenceRequired();
                         shade.setTarget(getTarget());
                         level.addFreshEntity(shade);
-                        level.sendParticles(ParticleTypes.SOUL, getX(), getY() + 0.5, getZ(), 20, 0.4, 0.5, 0.4, 0.05);
+                        level.sendParticles(com.thefarawaydev.realmsofchaos.fx.RocParticles.SOUL_WISP.type(), getX(), getY() + 0.5, getZ(), 20, 0.4, 0.5, 0.4, 0.05);
                         did = true;
                     }
                 }
@@ -1206,7 +1206,7 @@ public class Sentinel extends Monster implements RangedAttackMob {
     protected void customServerAiStep(ServerLevel level) {
         super.customServerAiStep(level);
         if (illusion && ++life > ILLUSION_TICKS) {
-            level.sendParticles(ParticleTypes.CLOUD, getX(), getY() + 1.0, getZ(), 10, 0.3, 0.6, 0.3, 0.02);
+            level.sendParticles(com.thefarawaydev.realmsofchaos.fx.RocParticles.DUST.type(), getX(), getY() + 1.0, getZ(), 10, 0.3, 0.6, 0.3, 0.02);
             discard();
             return;
         }

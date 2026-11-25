@@ -87,15 +87,15 @@ public class ForgeBlock extends Block {
     public void animateTick(BlockState state, Level level, BlockPos pos, RandomSource random) {
         if (state.getValue(UP)) return;                       // (a forge with another on it is inside the bank: only the top one smokes)
         double x = pos.getX() + 0.5, y = pos.getY() + 1.0, z = pos.getZ() + 0.5;
-        level.addParticle(ParticleTypes.FLAME, x + (random.nextDouble() - 0.5) * 0.5, y + 0.05, z + (random.nextDouble() - 0.5) * 0.5, 0, 0.03, 0);
+        level.addParticle(com.thefarawaydev.realmsofchaos.fx.RocParticles.FLAME_STORM.type(), x + (random.nextDouble() - 0.5) * 0.5, y + 0.05, z + (random.nextDouble() - 0.5) * 0.5, 0, 0.03, 0);
         if (random.nextInt(3) == 0) {
-            level.addParticle(ParticleTypes.SMOKE, x + (random.nextDouble() - 0.5) * 0.4, y + 0.3, z + (random.nextDouble() - 0.5) * 0.4, 0, 0.04, 0);
+            level.addParticle(com.thefarawaydev.realmsofchaos.fx.RocParticles.SMOKE.type(), x + (random.nextDouble() - 0.5) * 0.4, y + 0.3, z + (random.nextDouble() - 0.5) * 0.4, 0, 0.04, 0);
         }
         if (random.nextInt(4) == 0) {
-            level.addParticle(ParticleTypes.ENCHANT, x + (random.nextDouble() - 0.5) * 2.4, y + 1.2, z + (random.nextDouble() - 0.5) * 2.4, 0, -0.7, 0);
+            level.addParticle(com.thefarawaydev.realmsofchaos.fx.RocParticles.RUNE.type(), x + (random.nextDouble() - 0.5) * 2.4, y + 1.2, z + (random.nextDouble() - 0.5) * 2.4, 0, -0.7, 0);
         }
         if (random.nextInt(12) == 0) {
-            level.addParticle(ParticleTypes.LAVA, x, y + 0.1, z, 0, 0, 0);
+            level.addParticle(com.thefarawaydev.realmsofchaos.fx.RocParticles.EMBER.type(), x, y + 0.1, z, 0, 0, 0);
         }
         if (random.nextInt(24) == 0) {
             level.playLocalSound(pos, SoundEvents.BLASTFURNACE_FIRE_CRACKLE, SoundSource.BLOCKS, 0.6F, 0.7F + random.nextFloat() * 0.3F, false);

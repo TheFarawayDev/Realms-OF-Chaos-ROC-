@@ -37,9 +37,9 @@ public final class Arena {
 
     public static ParticleOptions hazardParticle(Line line) {
         return switch (line) {
-            case ZEUS -> ParticleTypes.ELECTRIC_SPARK;
-            case POSEIDON -> ParticleTypes.SNOWFLAKE;
-            case HADES -> ParticleTypes.FLAME;
+            case ZEUS -> com.thefarawaydev.realmsofchaos.fx.RocParticles.STORM_SPARK.type();
+            case POSEIDON -> com.thefarawaydev.realmsofchaos.fx.RocParticles.FROST.type();
+            case HADES -> com.thefarawaydev.realmsofchaos.fx.RocParticles.FLAME_STORM.type();
         };
     }
 

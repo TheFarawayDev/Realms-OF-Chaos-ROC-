@@ -94,7 +94,7 @@ public class MovingDummyBlock extends Block {
      * The slide itself, as a piston moves a block: it glides into the next block over two ticks and sets itself down
      * there. Run on the server and on every client watching (through a block event), so that it is seen to glide.
      */
-    static void slide(Level level, BlockPos pos, BlockState state, Direction d) {
+    public static void slide(Level level, BlockPos pos, BlockState state, Direction d) {
         BlockPos to = pos.relative(d);
         BlockState moving = Blocks.MOVING_PISTON.defaultBlockState().setValue(MovingPistonBlock.FACING, d).setValue(MovingPistonBlock.TYPE, PistonType.DEFAULT);
         level.setBlock(pos, Blocks.AIR.defaultBlockState(), 2 | 16);

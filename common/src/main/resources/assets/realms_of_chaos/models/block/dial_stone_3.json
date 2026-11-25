@@ -1,0 +1,8 @@
+{
+  "parent": "minecraft:block/orientable",
+  "textures": {
+    "front": "realms_of_chaos:block/dial_stone_3",
+    "side": "realms_of_chaos:block/dial_stone_side",
+    "top": "realms_of_chaos:block/dial_stone_side"
+  }
+}

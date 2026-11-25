@@ -77,12 +77,12 @@ public class GateBlock extends Block {
     @Override
     public void animateTick(BlockState state, Level level, BlockPos pos, RandomSource random) {
         ParticleOptions particle = switch (kind) {
-            case HUB -> ParticleTypes.PORTAL;
-            case ZEUS -> ParticleTypes.ELECTRIC_SPARK;
+            case HUB -> com.thefarawaydev.realmsofchaos.fx.RocParticles.CHAOS_MOTE.type();
+            case ZEUS -> com.thefarawaydev.realmsofchaos.fx.RocParticles.STORM_SPARK.type();
             case POSEIDON -> ParticleTypes.BUBBLE_POP;
-            case HADES -> ParticleTypes.SOUL_FIRE_FLAME;
-            case ASCEND -> ParticleTypes.END_ROD;
-            case LEAVE -> ParticleTypes.HAPPY_VILLAGER;
+            case HADES -> com.thefarawaydev.realmsofchaos.fx.RocParticles.SOUL_WISP.type();
+            case ASCEND -> com.thefarawaydev.realmsofchaos.fx.RocParticles.GLINT.type();
+            case LEAVE -> com.thefarawaydev.realmsofchaos.fx.RocParticles.GLINT.type();
         };
         for (int i = 0; i < 2; i++) {
             level.addParticle(particle, pos.getX() + random.nextDouble(), pos.getY() + random.nextDouble(), pos.getZ() + random.nextDouble(),

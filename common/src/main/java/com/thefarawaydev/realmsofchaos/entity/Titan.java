@@ -282,7 +282,7 @@ public class Titan extends Monster {
     @Override
     public boolean hurtServer(ServerLevel level, DamageSource source, float amount) {
         if (shieldTicks > 0) {
-            level.sendParticles(ParticleTypes.ENCHANTED_HIT, getX(), getY() + 1.5, getZ(), 6, 0.6, 1.0, 0.6, 0.1);
+            level.sendParticles(com.thefarawaydev.realmsofchaos.fx.RocParticles.STRIKE.type(), getX(), getY() + 1.5, getZ(), 6, 0.6, 1.0, 0.6, 0.1);
             return false;
         }
         boolean hurt = super.hurtServer(level, source, amount);
@@ -364,11 +364,11 @@ public class Titan extends Monster {
         if (windup % 3 != 0) return;
         switch (casting) {
             case SOLAR_LANCE -> {
-                for (int i = 2; i <= 20; i += 2) spark(level, ParticleTypes.END_ROD, position().add(aim.scale(i)), 1, 0.15);
+                for (int i = 2; i <= 20; i += 2) spark(level, com.thefarawaydev.realmsofchaos.fx.RocParticles.GLINT.type(), position().add(aim.scale(i)), 1, 0.15);
             }
-            case BLINDING_DAWN -> level.sendParticles(ParticleTypes.END_ROD, getX(), getY() + 2.5, getZ(), 8 + (casting.windup - windup) / 2, 0.4, 0.4, 0.4, 0.02);
+            case BLINDING_DAWN -> level.sendParticles(com.thefarawaydev.realmsofchaos.fx.RocParticles.GLINT.type(), getX(), getY() + 2.5, getZ(), 8 + (casting.windup - windup) / 2, 0.4, 0.4, 0.4, 0.02);
             case FALLING_STARS -> {
-                for (Vec3 m : marks) for (int k = 0; k < 8; k++) spark(level, ParticleTypes.FLAME, m.add(Math.cos(k * 0.785) * 1.8, 0, Math.sin(k * 0.785) * 1.8), 1, 0.05);
+                for (Vec3 m : marks) for (int k = 0; k < 8; k++) spark(level, com.thefarawaydev.realmsofchaos.fx.RocParticles.FLAME_STORM.type(), m.add(Math.cos(k * 0.785) * 1.8, 0, Math.sin(k * 0.785) * 1.8), 1, 0.05);
             }
             case WATERSPOUTS -> {
                 for (Vec3 m : marks) spark(level, ParticleTypes.BUBBLE_POP, m, 10, 0.8);
@@ -376,24 +376,24 @@ public class Titan extends Monster {
             case UNDERTOW -> {
                 for (int k = 0; k < 16; k++) {
                     double a = k * Math.PI / 8 + windup * 0.3;
-                    spark(level, ParticleTypes.SPLASH, position().add(Math.cos(a) * 9, 0, Math.sin(a) * 9), 2, 0.2);
+                    spark(level, com.thefarawaydev.realmsofchaos.fx.RocParticles.SEA_SPRAY.type(), position().add(Math.cos(a) * 9, 0, Math.sin(a) * 9), 2, 0.2);
                 }
             }
             case SCYTHE_SWEEP -> {
                 double base = Math.atan2(aim.z, aim.x);
                 for (int k = -6; k <= 6; k++) {
                     double a = base + k * Math.toRadians(10);
-                    spark(level, ParticleTypes.SOUL_FIRE_FLAME, position().add(Math.cos(a) * 5.5, 0, Math.sin(a) * 5.5), 1, 0.05);
+                    spark(level, com.thefarawaydev.realmsofchaos.fx.RocParticles.SOUL_WISP.type(), position().add(Math.cos(a) * 5.5, 0, Math.sin(a) * 5.5), 1, 0.05);
                 }
             }
             case DEVOUR_TIME -> {
                 level.playSound(null, blockPosition(), SoundEvents.NOTE_BLOCK_HAT.value(), SoundSource.HOSTILE, 1.4F, 0.5F + (casting.windup - windup) / 40.0F);
-                level.sendParticles(ParticleTypes.REVERSE_PORTAL, getX(), getY() + 1.5, getZ(), 20, 3.0, 1.0, 3.0, 0.05);
+                level.sendParticles(com.thefarawaydev.realmsofchaos.fx.RocParticles.CHAOS_MOTE.type(), getX(), getY() + 1.5, getZ(), 20, 3.0, 1.0, 3.0, 0.05);
             }
             case REWIND -> {
                 Player p = marked == null ? null : level.getPlayerByUUID(marked);
                 Vec3 back = p == null ? null : rewindTo(p);
-                if (back != null) spark(level, ParticleTypes.REVERSE_PORTAL, back, 16, 0.4);
+                if (back != null) spark(level, com.thefarawaydev.realmsofchaos.fx.RocParticles.CHAOS_MOTE.type(), back, 16, 0.4);
             }
             default -> level.sendParticles(spell(), getX(), getY() + 2.5, getZ(), 6, 0.8, 0.8, 0.8, 0.05);
         }
@@ -401,9 +401,9 @@ public class Titan extends Monster {
 
     private ParticleOptions spell() {
         return switch (kind()) {
-            case HYPERION -> ParticleTypes.END_ROD;
-            case OCEANUS -> ParticleTypes.SPLASH;
-            case CRONUS -> ParticleTypes.SOUL_FIRE_FLAME;
+            case HYPERION -> com.thefarawaydev.realmsofchaos.fx.RocParticles.GLINT.type();
+            case OCEANUS -> com.thefarawaydev.realmsofchaos.fx.RocParticles.SEA_SPRAY.type();
+            case CRONUS -> com.thefarawaydev.realmsofchaos.fx.RocParticles.SOUL_WISP.type();
         };
     }
 
@@ -420,7 +420,7 @@ public class Titan extends Monster {
         switch (move) {
             case SOLAR_LANCE -> {
                 level.playSound(null, blockPosition(), SoundEvents.WARDEN_SONIC_BOOM, SoundSource.HOSTILE, 2.0F, 1.4F);
-                for (int i = 1; i <= 20; i++) level.sendParticles(ParticleTypes.END_ROD, getX() + aim.x * i, getY() + 1.4, getZ() + aim.z * i, 6, 0.2, 0.2, 0.2, 0.02);
+                for (int i = 1; i <= 20; i++) level.sendParticles(com.thefarawaydev.realmsofchaos.fx.RocParticles.GLINT.type(), getX() + aim.x * i, getY() + 1.4, getZ() + aim.z * i, 6, 0.2, 0.2, 0.2, 0.02);
                 for (Player p : players(level, 22)) {
                     Vec3 d = p.position().subtract(position());
                     double along = d.x * aim.x + d.z * aim.z, across = Math.abs(-d.x * aim.z + d.z * aim.x);
@@ -432,7 +432,7 @@ public class Titan extends Monster {
             }
             case BLINDING_DAWN -> {
                 level.playSound(null, blockPosition(), SoundEvents.BEACON_ACTIVATE, SoundSource.HOSTILE, 3.0F, 1.6F);
-                level.sendParticles(ParticleTypes.END_ROD, getX(), getY() + 2.0, getZ(), 160, 1.5, 1.5, 1.5, 0.6);
+                level.sendParticles(com.thefarawaydev.realmsofchaos.fx.RocParticles.GLINT.type(), getX(), getY() + 2.0, getZ(), 160, 1.5, 1.5, 1.5, 0.6);
                 for (Player p : players(level, 22)) {
                     // only those looking at him: anyone who turned away is spared
                     Vec3 toHim = position().add(0, 2, 0).subtract(p.getEyePosition()).normalize();
@@ -448,7 +448,7 @@ public class Titan extends Monster {
                 after(12, () -> {
                     for (Vec3 m : spots) {
                         level.sendParticles(ParticleTypes.EXPLOSION, m.x, m.y + 0.5, m.z, 1, 0, 0, 0, 0);
-                        level.sendParticles(ParticleTypes.LAVA, m.x, m.y + 0.5, m.z, 10, 0.6, 0.4, 0.6, 0.1);
+                        level.sendParticles(com.thefarawaydev.realmsofchaos.fx.RocParticles.EMBER.type(), m.x, m.y + 0.5, m.z, 10, 0.6, 0.4, 0.6, 0.1);
                         level.playSound(null, BlockPos.containing(m), SoundEvents.GENERIC_EXPLODE.value(), SoundSource.HOSTILE, 0.9F, 1.2F);
                         for (Player p : level.getEntitiesOfClass(Player.class, new AABB(m, m).inflate(2.4, 3, 2.4), e -> e.isAlive() && !e.isCreative() && !e.isSpectator())) {
                             p.hurtServer(level, blow(), 8.0F * scale());
@@ -475,7 +475,7 @@ public class Titan extends Monster {
                     caught++;
                 }
                 after(14, () -> {
-                    level.sendParticles(ParticleTypes.SPLASH, getX(), getY() + 0.5, getZ(), 80, 3.0, 0.5, 3.0, 0.4);
+                    level.sendParticles(com.thefarawaydev.realmsofchaos.fx.RocParticles.SEA_SPRAY.type(), getX(), getY() + 0.5, getZ(), 80, 3.0, 0.5, 3.0, 0.4);
                     level.playSound(null, blockPosition(), SoundEvents.TRIDENT_THUNDER.value(), SoundSource.HOSTILE, 1.5F, 0.6F);
                     for (Player p : players(level, 4.5)) {
                         p.hurtServer(level, blow(), 9.0F * scale());
@@ -486,7 +486,7 @@ public class Titan extends Monster {
             }
             case WATERSPOUTS -> {
                 for (Vec3 m : marks) {
-                    level.sendParticles(ParticleTypes.SPLASH, m.x, m.y + 1.0, m.z, 60, 0.4, 2.0, 0.4, 0.3);
+                    level.sendParticles(com.thefarawaydev.realmsofchaos.fx.RocParticles.SEA_SPRAY.type(), m.x, m.y + 1.0, m.z, 60, 0.4, 2.0, 0.4, 0.3);
                     level.sendParticles(ParticleTypes.BUBBLE_COLUMN_UP, m.x, m.y + 0.5, m.z, 40, 0.3, 1.5, 0.3, 0.2);
                     for (Player p : level.getEntitiesOfClass(Player.class, new AABB(m, m).inflate(1.9, 3, 1.9), e -> e.isAlive() && !e.isCreative() && !e.isSpectator())) {
                         p.hurtServer(level, blow(), 6.0F * s);
@@ -513,7 +513,7 @@ public class Titan extends Monster {
                     add.setCustomName(Hud.colored(Component.translatable("citadel." + RealmsOfChaos.MOD_ID + ".halfkin", com.thefarawaydev.realmsofchaos.world.Tower.god(Line.POSEIDON, com.thefarawaydev.realmsofchaos.world.Tower.FLOORS).displayName()), Line.POSEIDON.color()));
                     if (getTarget() != null) add.setTarget(getTarget());
                     level.addFreshEntity(add);
-                    level.sendParticles(ParticleTypes.SPLASH, add.getX(), add.getY() + 1, add.getZ(), 30, 0.4, 0.8, 0.4, 0.2);
+                    level.sendParticles(com.thefarawaydev.realmsofchaos.fx.RocParticles.SEA_SPRAY.type(), add.getX(), add.getY() + 1, add.getZ(), 30, 0.4, 0.8, 0.4, 0.2);
                     caught++;
                 }
                 Onslaughts.begin(level, null, Line.POSEIDON, Onslaughts.Kind.RINGS, position(), 13, 5.0F * s);
@@ -547,7 +547,7 @@ public class Titan extends Monster {
                 Player p = marked == null ? null : level.getPlayerByUUID(marked);
                 Vec3 back = p == null ? null : rewindTo(p);
                 if (p != null && back != null && p.isAlive() && p.level() == level && p.distanceToSqr(this) < 40 * 40) {
-                    level.sendParticles(ParticleTypes.REVERSE_PORTAL, p.getX(), p.getY() + 1, p.getZ(), 40, 0.4, 0.8, 0.4, 0.1);
+                    level.sendParticles(com.thefarawaydev.realmsofchaos.fx.RocParticles.CHAOS_MOTE.type(), p.getX(), p.getY() + 1, p.getZ(), 40, 0.4, 0.8, 0.4, 0.1);
                     com.thefarawaydev.realmsofchaos.world.Fx.place(level, p, back.x, back.y, back.z);
                     p.hurtServer(level, blow(), 5.0F * s);
                     p.addEffect(new MobEffectInstance(MobEffects.SLOWNESS, 40, 1));

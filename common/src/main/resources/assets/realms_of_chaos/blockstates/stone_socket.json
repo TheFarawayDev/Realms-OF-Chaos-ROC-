@@ -1,0 +1,10 @@
+{
+  "variants": {
+    "lit=false": {
+      "model": "realms_of_chaos:block/stone_socket"
+    },
+    "lit=true": {
+      "model": "realms_of_chaos:block/stone_socket_lit"
+    }
+  }
+}

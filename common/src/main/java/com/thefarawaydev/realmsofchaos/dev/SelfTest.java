@@ -886,8 +886,9 @@ public final class SelfTest {
                             check(Passages.point(player, level, spot).equals(plan.centre(plan.exit).above()), in + "the compass points to the gate");
                             Passages.Cell shrine = plan.cells().stream().filter(c -> plan.kind(c) == Passages.Kind.SHRINE).findFirst().orElseThrow();
                             player.setHealth(4.0F);
-                            check(ShrineBlock.bless(level, plan.featurePos(shrine), player) && player.getHealth() == player.getMaxHealth()
-                                    && !player.getActiveEffects().isEmpty(), in + "the shrine heals and blesses");
+                            boolean blessed = ShrineBlock.bless(level, plan.featurePos(shrine), player);
+                            check(blessed && player.getHealth() == player.getMaxHealth()
+                                    && !player.getActiveEffects().isEmpty(), in + "the shrine heals and blesses: " + blessed + " " + player.getHealth() + "/" + player.getMaxHealth() + " " + player.getActiveEffects().size());
                             check(!ShrineBlock.bless(level, plan.featurePos(shrine), player), in + "the shrine rests afterwards");
                             player.removeAllEffects();
                         }
@@ -1167,7 +1168,7 @@ public final class SelfTest {
                 }
                 if (!a.toString().contentEquals(b)) changed++;
                 if (!a.toString().contentEquals(c)) acrossTowers++;
-                check(here.size == (n <= 5 ? 4 : 5) && here.seals.size() == Tower.tier(n) + 1, "passage " + n + " grows with its tier");
+                check(here.size == 5 && here.seals.size() == Tower.tier(n) + 1, "passage " + n + " is five rooms square, its seals growing with its tier");
             }
             check(changed >= Passages.COUNT - 1, "another world seed lays the passages out differently: " + changed + " of " + Passages.COUNT);
             check(acrossTowers >= Passages.COUNT - 1, "another tower lays them out differently: " + acrossTowers);
@@ -3553,7 +3554,13 @@ public final class SelfTest {
                 for (int i = 0; i <= wait; i++) com.thefarawaydev.realmsofchaos.world.Traps.step(trap);
                 check(level.getBlockState(com.thefarawaydev.realmsofchaos.world.Traps.rune(plan, cell, order[0])).getValue(com.thefarawaydev.realmsofchaos.block.RuneStoneBlock.LIT), "the first rune of the order lights");
                 for (int i = 0; i < com.thefarawaydev.realmsofchaos.world.Traps.fillEvery(plan) && trap.water() < 1; i++) com.thefarawaydev.realmsofchaos.world.Traps.step(trap);
-                check(trap.water() == 1 && level.getBlockState(m.offset(2, 1, 0)).is(Blocks.WATER) && level.getBlockState(m.offset(2, 2, 0)).isAir(), "the water rises a layer at a time");
+                check(trap.water() == 1 && trap.pending() > 0 && !level.getBlockState(m.above()).is(Blocks.WATER), "the water begins to rise - not all at once");
+                for (int i = 0; i < com.thefarawaydev.realmsofchaos.world.Traps.CREEP_TICKS / 2; i++) com.thefarawaydev.realmsofchaos.world.Traps.step(trap);
+                check(level.getBlockState(m.offset(4, 1, 4)).is(Blocks.WATER) && !level.getBlockState(m.above()).is(Blocks.WATER), "it creeps in from the walls");
+                for (int i = 0; i < com.thefarawaydev.realmsofchaos.world.Traps.CREEP_TICKS; i++) com.thefarawaydev.realmsofchaos.world.Traps.step(trap);
+                check(level.getBlockState(m.offset(2, 1, 0)).is(Blocks.WATER) && level.getBlockState(m.offset(2, 2, 0)).isAir() && trap.pending() == 0, "until the layer is whole, and no higher");
+                check(com.thefarawaydev.realmsofchaos.world.Traps.sprinklers(plan, cell).stream().allMatch(s -> level.getBlockState(s).is(ModContent.SPRINKLER.get())),
+                        "sprinklers hang from the ceiling");
 
                 // a wrong rune costs a layer and the progress made
                 BlockPos wrong = com.thefarawaydev.realmsofchaos.world.Traps.rune(plan, cell, (order[0] + 1) % 4);
@@ -3594,7 +3601,7 @@ public final class SelfTest {
                 com.thefarawaydev.realmsofchaos.world.Traps.service(late, level, plan, cell);
                 trap = com.thefarawaydev.realmsofchaos.world.Traps.active(plan, cell);
                 check(trap != null, "it springs again for someone it let go");
-                for (int i = 0; i < com.thefarawaydev.realmsofchaos.world.Traps.fillEvery(plan); i++) com.thefarawaydev.realmsofchaos.world.Traps.step(trap);
+                for (int i = 0; i < com.thefarawaydev.realmsofchaos.world.Traps.fillEvery(plan) + com.thefarawaydev.realmsofchaos.world.Traps.CREEP_TICKS; i++) com.thefarawaydev.realmsofchaos.world.Traps.step(trap);
                 com.thefarawaydev.realmsofchaos.world.Traps.forget();
                 check(!dry.getAsBoolean() && !open.getAsBoolean(), "test setup: the server stopped with the room flooded and shut");
                 late.setPos(middle.x + 3.5, middle.y, middle.z);
@@ -4001,6 +4008,7 @@ public final class SelfTest {
                 break;
             }
             // building ahead
+            for (int i = 0; i < 20000 && Passages.pending() > 0; i++) Passages.tick(server);           // (whatever earlier steps left building)
             data.unmarkPrefix("passage/hades/9/");
             check(!Passages.isBuilt(level, Line.HADES, 9, 0), "test setup: a level that is not standing");
             check(Passages.prepare(level, Line.HADES, 9, 0) && Passages.pending() == 1 && !Passages.prepare(level, Line.HADES, 9, 0), "a level is queued once");
@@ -6723,6 +6731,139 @@ public final class SelfTest {
                     check(level.getBlockState(m.offset(dx, y, far)).isAir() && level.getBlockState(m.offset(far, y, dx)).isAir() && level.getBlockState(m.offset(dx, y, 0)).isAir(),
                             kind + ": its lanes are clear");
                 }
+            }
+        });
+
+        step("the mod's own particles, a dial hall and sliding stones, lockpicking, and words shown over the block they come from", () -> {
+            // ---- particles: every kind registered, under the mod's name
+            for (com.thefarawaydev.realmsofchaos.fx.RocParticles kind : com.thefarawaydev.realmsofchaos.fx.RocParticles.values()) {
+                var id = net.minecraft.core.registries.BuiltInRegistries.PARTICLE_TYPE.getKey(kind.type());
+                check(id != null && id.getNamespace().equals(RealmsOfChaos.MOD_ID) && id.getPath().equals(kind.id()), kind + ": a particle of the mod's own");
+            }
+            Realm.testAlias(Level.OVERWORLD, Realm.OLYMPUS);
+            com.thefarawaydev.realmsofchaos.world.Rooms.forget();
+            ServerPlayer hero = fakePlayer(server, level, "RocPuzzler");
+            level.addNewPlayer(hero);
+            data.unmarkPrefix("looted/" + hero.getUUID() + "/");
+            List<Passages.Plan> built = new ArrayList<>();
+            try {
+                // ---- the dial hall
+                Object[] found = room(level, Line.ZEUS, Passages.Kind.DIALS);
+                Passages.Plan dials = (Passages.Plan) found[0];
+                Passages.Cell dc = (Passages.Cell) found[1];
+                built.add(dials);
+                Passages.build(level, dials);
+                Passages.rearm(level, dials);
+                check(!com.thefarawaydev.realmsofchaos.world.Rooms.allMatched(level, dials, dc) && !com.thefarawaydev.realmsofchaos.world.Rooms.solved(level, dials, dc), "a dial hall starts with its dials astray");
+                for (int i = 0; i < 4; i++) {
+                    check(level.getBlockState(com.thefarawaydev.realmsofchaos.world.Rooms.fresco(dials, dc, i)).is(ModContent.FRESCO_TILE.get())
+                            && level.getBlockState(com.thefarawaydev.realmsofchaos.world.Rooms.dial(dials, dc, i)).is(ModContent.DIAL_STONE.get()), "fresco " + i + " with its dial below");
+                }
+                int before1 = com.thefarawaydev.realmsofchaos.world.Rooms.sigil(level, com.thefarawaydev.realmsofchaos.world.Rooms.dial(dials, dc, 1));
+                int before2 = com.thefarawaydev.realmsofchaos.world.Rooms.sigil(level, com.thefarawaydev.realmsofchaos.world.Rooms.dial(dials, dc, 2));
+                int before3 = com.thefarawaydev.realmsofchaos.world.Rooms.sigil(level, com.thefarawaydev.realmsofchaos.world.Rooms.dial(dials, dc, 3));
+                com.thefarawaydev.realmsofchaos.world.Rooms.turnDial(level, com.thefarawaydev.realmsofchaos.world.Rooms.dial(dials, dc, 1), hero);
+                if (!com.thefarawaydev.realmsofchaos.world.Rooms.solved(level, dials, dc)) {
+                    check(com.thefarawaydev.realmsofchaos.world.Rooms.sigil(level, com.thefarawaydev.realmsofchaos.world.Rooms.dial(dials, dc, 1)) == (before1 + 1) % 4
+                            && com.thefarawaydev.realmsofchaos.world.Rooms.sigil(level, com.thefarawaydev.realmsofchaos.world.Rooms.dial(dials, dc, 2)) == (before2 + 1) % 4
+                            && com.thefarawaydev.realmsofchaos.world.Rooms.sigil(level, com.thefarawaydev.realmsofchaos.world.Rooms.dial(dials, dc, 3)) == before3, "turning a dial turns the next with it, and no further");
+                    check(com.thefarawaydev.realmsofchaos.ui.BlockLabel.at(level, com.thefarawaydev.realmsofchaos.world.Rooms.dial(dials, dc, 1)) != null, "and what it says hangs over it");
+                    // solve it the way a player would: west to east, each dial set by turning it (which turns the next)
+                    for (int i = 0; i < 4 && !com.thefarawaydev.realmsofchaos.world.Rooms.solved(level, dials, dc); i++) {
+                        for (int k = 0; k < 4 && com.thefarawaydev.realmsofchaos.world.Rooms.sigil(level, com.thefarawaydev.realmsofchaos.world.Rooms.dial(dials, dc, i))
+                                != com.thefarawaydev.realmsofchaos.world.Rooms.target(dials, dc, i); k++) {
+                            com.thefarawaydev.realmsofchaos.world.Rooms.turnDial(level, com.thefarawaydev.realmsofchaos.world.Rooms.dial(dials, dc, i), hero);
+                        }
+                    }
+                }
+                check(com.thefarawaydev.realmsofchaos.world.Rooms.solved(level, dials, dc)
+                        && level.getBlockState(com.thefarawaydev.realmsofchaos.world.Rooms.fresco(dials, dc, 3)).getValue(com.thefarawaydev.realmsofchaos.block.PuzzleBlocks.LIT), "set west to east, the frescoes all glow and the hall is solved");
+                check(Passages.loot(level, com.thefarawaydev.realmsofchaos.world.Rooms.cache(dials, dc), hero), "and its cache opens");
+
+                // ---- the sliding stones
+                found = room(level, Line.ZEUS, Passages.Kind.SLIDES);
+                Passages.Plan slides = (Passages.Plan) found[0];
+                Passages.Cell sc = (Passages.Cell) found[1];
+                built.add(slides);
+                Passages.build(level, slides);
+                Passages.rearm(level, slides);
+                BlockPos sm = slides.centre(sc);
+                for (int i = 0; i < 2; i++) {
+                    BlockPos start = com.thefarawaydev.realmsofchaos.world.Rooms.slideStart(slides, sc, i);
+                    check(level.getBlockState(start).is(ModContent.SLIDE_STONE.get()) && level.getBlockState(com.thefarawaydev.realmsofchaos.world.Rooms.socket(slides, sc, i)).is(ModContent.STONE_SOCKET.get()),
+                            "stone " + i + " and its socket");
+                    int sx = Integer.signum(start.getX() - sm.getX()), sz = Integer.signum(start.getZ() - sm.getZ());
+                    // the straight way is blocked: pushing it along x first
+                    hero.setPos(start.getX() + 0.5 - sx, start.getY(), start.getZ() + 0.5);
+                    check(!com.thefarawaydev.realmsofchaos.world.Rooms.pushStone(level, start, hero), "a pillar stands in the obvious way");
+                    // so: along z, then along x
+                    BlockPos at = start;
+                    int far = slides.half(sc) - 1;
+                    while (Math.abs(at.getZ() - sm.getZ()) < far) {
+                        hero.setPos(at.getX() + 0.5, at.getY(), at.getZ() + 0.5 - sz);
+                        check(com.thefarawaydev.realmsofchaos.world.Rooms.pushStone(level, at, hero), "a push along z");
+                        // (the push is a block event, run on the server's next tick: run it now)
+                        level.getBlockState(at).triggerEvent(level, at, 0, (sz > 0 ? Direction.SOUTH : Direction.NORTH).get3DDataValue());
+                        BlockPos to = at.offset(0, 0, sz);
+                        if (level.getBlockEntity(to) instanceof net.minecraft.world.level.block.piston.PistonMovingBlockEntity glide) glide.finalTick();
+                        at = to;
+                    }
+                    while (Math.abs(at.getX() - sm.getX()) < far) {
+                        hero.setPos(at.getX() + 0.5 - sx, at.getY(), at.getZ() + 0.5);
+                        check(com.thefarawaydev.realmsofchaos.world.Rooms.pushStone(level, at, hero), "a push along x");
+                        // (the push is a block event, run on the server's next tick: run it now)
+                        level.getBlockState(at).triggerEvent(level, at, 0, (sx > 0 ? Direction.EAST : Direction.WEST).get3DDataValue());
+                        BlockPos to = at.offset(sx, 0, 0);
+                        if (level.getBlockEntity(to) instanceof net.minecraft.world.level.block.piston.PistonMovingBlockEntity glide) glide.finalTick();
+                        at = to;
+                    }
+                    check(at.equals(com.thefarawaydev.realmsofchaos.world.Rooms.socket(slides, sc, i).above()) && level.getBlockState(at).is(ModContent.SLIDE_STONE.get()), "the stone sits on its socket");
+                    com.thefarawaydev.realmsofchaos.world.Rooms.checkSockets(level, slides, sc);
+                }
+                check(com.thefarawaydev.realmsofchaos.world.Rooms.solved(level, slides, sc), "both stones home, the hall is solved");
+                Passages.rearm(level, slides);
+                check(level.getBlockState(com.thefarawaydev.realmsofchaos.world.Rooms.slideStart(slides, sc, 0)).is(ModContent.SLIDE_STONE.get())
+                        && !level.getBlockState(com.thefarawaydev.realmsofchaos.world.Rooms.socket(slides, sc, 0).above()).is(ModContent.SLIDE_STONE.get()), "sealed again, the stones are back where they began");
+
+                // ---- lockpicking
+                found = room(level, Line.ZEUS, Passages.Kind.TREASURE);
+                Passages.Plan vaultPlan = null;
+                Passages.Cell lockedCell = null;
+                for (int index = 1; index <= Passages.COUNT && lockedCell == null; index++) {
+                    for (int stage = 0; stage < Passages.stages(level, Line.ZEUS, index) && lockedCell == null; stage++) {
+                        Passages.Plan candidate = Passages.plan(level, Line.ZEUS, index, stage);
+                        for (Passages.Cell c : candidate.cells()) if (lockedCell == null && Passages.locked(candidate, c)) { vaultPlan = candidate; lockedCell = c; }
+                    }
+                }
+                check(lockedCell != null, "some treasure rooms are locked");
+                built.add(vaultPlan);
+                Passages.build(level, vaultPlan);
+                BlockPos cachePos = vaultPlan.featurePos(lockedCell);
+                net.minecraft.world.level.block.state.BlockState cacheState = level.getBlockState(cachePos);
+                check(cacheState.is(ModContent.PASSAGE_CACHE.get()) && cacheState.getValue(com.thefarawaydev.realmsofchaos.block.CacheBlock.LOCKED), "its cache is locked");
+                hero.setPos(cachePos.getX() + 0.5, cachePos.getY(), cachePos.getZ() + 1.5);
+                hero.getInventory().clearContent();
+                cacheState.useWithoutItem(level, hero, new BlockHitResult(Vec3.atCenterOf(cachePos), Direction.SOUTH, cachePos, false));
+                check(com.thefarawaydev.realmsofchaos.ui.BlockLabel.at(level, cachePos) != null && com.thefarawaydev.realmsofchaos.world.Lockpicking.attempt(hero) == null,
+                        "without a pick it only says it is locked - over the chest");
+                hero.setItemInHand(net.minecraft.world.InteractionHand.MAIN_HAND, new ItemStack(ModContent.LOCKPICK.get(), 4));
+                var attempt = com.thefarawaydev.realmsofchaos.world.Lockpicking.begin(level, cachePos, hero);
+                check(attempt != null && attempt.pins() == 2 + vaultPlan.tier && attempt.set() == 0, "with a pick, the attempt begins: " + (attempt == null ? -1 : attempt.pins()) + " pins");
+                com.thefarawaydev.realmsofchaos.world.Lockpicking.tryAt(level, cachePos, hero, true);
+                check(attempt.set() == 1, "a click in the gap sets a pin");
+                com.thefarawaydev.realmsofchaos.world.Lockpicking.tryAt(level, cachePos, hero, false);
+                check(attempt.set() == 0, "a miss drops the pins");
+                hero.setItemInHand(net.minecraft.world.InteractionHand.MAIN_HAND, new ItemStack(ModContent.LOCKPICK.get(), 4));
+                for (int i = 0; i < attempt.pins(); i++) com.thefarawaydev.realmsofchaos.world.Lockpicking.tryAt(level, cachePos, hero, true);
+                check(!level.getBlockState(cachePos).getValue(com.thefarawaydev.realmsofchaos.block.CacheBlock.LOCKED), "every pin set, the lock gives");
+                check(Passages.loot(level, cachePos, hero), "and the cache opens");
+                Passages.rearm(level, vaultPlan);
+                check(level.getBlockState(cachePos).getValue(com.thefarawaydev.realmsofchaos.block.CacheBlock.LOCKED), "sealed again, it is locked again");
+                check(server.getRecipeManager().byKey(net.minecraft.resources.ResourceKey.create(net.minecraft.core.registries.Registries.RECIPE, RealmsOfChaos.id("lockpick"))).isPresent(),
+                        "a lockpick can be made");
+            } finally {
+                for (Passages.Plan plan : built) Passages.rearm(level, plan);
+                hero.remove(net.minecraft.world.entity.Entity.RemovalReason.DISCARDED);
             }
         });
 

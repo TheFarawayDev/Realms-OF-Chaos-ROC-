@@ -43,6 +43,11 @@ public class RealmsOfChaosFabric implements ModInitializer {
             def.ref().bind(() -> item);
         }
 
+        for (var entry : ModContent.PARTICLES.entrySet()) {
+            var type = Registry.register(BuiltInRegistries.PARTICLE_TYPE, RealmsOfChaos.id(entry.getKey()), new com.thefarawaydev.realmsofchaos.fx.RocParticles.Type());
+            entry.getValue().bind(() -> type);
+        }
+
         for (com.thefarawaydev.realmsofchaos.ui.Skin.Panel panel : com.thefarawaydev.realmsofchaos.ui.Skin.Panel.values()) {
             var menuType = ModContent.createMenuType(panel);
             Registry.register(BuiltInRegistries.MENU, RealmsOfChaos.id(panel.id()), menuType);

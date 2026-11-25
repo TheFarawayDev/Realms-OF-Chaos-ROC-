@@ -85,11 +85,7 @@ public class BrazierBlock extends Block {
 
     @Override
     public void animateTick(BlockState state, Level level, BlockPos pos, RandomSource random) {
-        var flame = switch (state.getValue(TOWER)) {
-            case 0 -> ParticleTypes.ELECTRIC_SPARK;
-            case 1 -> ParticleTypes.GLOW;
-            default -> ParticleTypes.SOUL_FIRE_FLAME;
-        };
+        var flame = com.thefarawaydev.realmsofchaos.fx.RocParticles.flame(state.getValue(TOWER)).type();
         double[] at = fire(state);
         if (state.getValue(MOUNT) == Mount.WALL) {
             Direction f = state.getValue(FACING);
@@ -97,6 +93,6 @@ public class BrazierBlock extends Block {
             at[2] = 0.5 + 0.06 * f.getStepZ();
         }
         level.addParticle(flame, pos.getX() + at[0] - 0.15 + random.nextDouble() * 0.3, pos.getY() + at[1], pos.getZ() + at[2] - 0.15 + random.nextDouble() * 0.3, 0, 0.03, 0);
-        if (random.nextInt(4) == 0) level.addParticle(ParticleTypes.SMOKE, pos.getX() + at[0], pos.getY() + at[1] + 0.2, pos.getZ() + at[2], 0, 0.02, 0);
+        if (random.nextInt(4) == 0) level.addParticle(com.thefarawaydev.realmsofchaos.fx.RocParticles.SMOKE.type(), pos.getX() + at[0], pos.getY() + at[1] + 0.2, pos.getZ() + at[2], 0, 0.02, 0);
     }
 }

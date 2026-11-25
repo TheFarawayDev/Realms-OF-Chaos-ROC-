@@ -56,7 +56,7 @@ public final class Fx {
         BlockState ground = ground(level, pos);
         RandomSource random = level.getRandom();
         level.sendParticles(new BlockParticleOption(ParticleTypes.BLOCK, ground), at.x, at.y + 0.2, at.z, 12 + power * 6, 0.5, 0.2, 0.5, 0.15);
-        level.sendParticles(ParticleTypes.CAMPFIRE_COSY_SMOKE, at.x, at.y + 0.1, at.z, 2 + power / 2, 0.4, 0.05, 0.4, 0.01);
+        level.sendParticles(com.thefarawaydev.realmsofchaos.fx.RocParticles.SMOKE.type(), at.x, at.y + 0.1, at.z, 2 + power / 2, 0.4, 0.05, 0.4, 0.01);
         level.playSound(null, pos, SoundEvents.GENERIC_EXPLODE.value(), SoundSource.BLOCKS, 0.25F + power * 0.06F, 0.6F + random.nextFloat() * 0.3F);
         int thrown = 0;
         for (int i = 0; i < Math.min(MAX_CHUNKS, power); i++) {

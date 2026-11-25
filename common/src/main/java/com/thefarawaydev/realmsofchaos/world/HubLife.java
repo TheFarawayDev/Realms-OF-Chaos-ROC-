@@ -128,8 +128,8 @@ public final class HubLife {
         }
         // the Oracle's flame breathes
         BlockPos oracle = RealmBuilder.ORACLE;
-        level.sendParticles(ParticleTypes.SOUL_FIRE_FLAME, oracle.getX() + 0.5, oracle.getY() + 1.2, oracle.getZ() + 0.5, 2, 0.15, 0.2, 0.15, 0.01);
-        level.sendParticles(ParticleTypes.ENCHANT, oracle.getX() + 0.5, oracle.getY() + 2.2, oracle.getZ() + 0.5, 4, 0.8, 0.6, 0.8, 0.5);
+        level.sendParticles(com.thefarawaydev.realmsofchaos.fx.RocParticles.SOUL_WISP.type(), oracle.getX() + 0.5, oracle.getY() + 1.2, oracle.getZ() + 0.5, 2, 0.15, 0.2, 0.15, 0.01);
+        level.sendParticles(com.thefarawaydev.realmsofchaos.fx.RocParticles.RUNE.type(), oracle.getX() + 0.5, oracle.getY() + 2.2, oracle.getZ() + 0.5, 4, 0.8, 0.6, 0.8, 0.5);
         if (ticker % 400 == 0) {
             level.playSound(null, oracle, SoundEvents.AMETHYST_BLOCK_CHIME, SoundSource.AMBIENT, 1.5F, 0.6F + random.nextFloat() * 0.6F);
         }

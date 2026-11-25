@@ -151,7 +151,7 @@ public class AltarBlock extends Block {
             bolt.setVisualOnly(true);
             level.addFreshEntity(bolt);
         }
-        level.sendParticles(ParticleTypes.POOF, spawn.x, spawn.y + 1, spawn.z, 60, 0.6, 1.0, 0.6, 0.08);
+        level.sendParticles(com.thefarawaydev.realmsofchaos.fx.RocParticles.DUST.type(), spawn.x, spawn.y + 1, spawn.z, 60, 0.6, 1.0, 0.6, 0.08);
         level.playSound(null, boss.blockPosition(), SoundEvents.WITHER_SPAWN, SoundSource.HOSTILE, 0.8F, 1.3F);
         String hud = "hud." + RealmsOfChaos.MOD_ID + ".";
         for (ServerPlayer witness : level.getEntitiesOfClass(ServerPlayer.class, fightArea(level, altar, line), Player::isAlive)) {
@@ -197,7 +197,7 @@ public class AltarBlock extends Block {
     @Override
     public void animateTick(BlockState state, Level level, BlockPos pos, RandomSource random) {
         if (random.nextInt(2) == 0) {
-            level.addParticle(ParticleTypes.ENCHANT, pos.getX() + 0.5 + (random.nextDouble() - 0.5) * 1.6, pos.getY() + 1.6,
+            level.addParticle(com.thefarawaydev.realmsofchaos.fx.RocParticles.RUNE.type(), pos.getX() + 0.5 + (random.nextDouble() - 0.5) * 1.6, pos.getY() + 1.6,
                     pos.getZ() + 0.5 + (random.nextDouble() - 0.5) * 1.6, 0, -0.6, 0);
         }
         if (random.nextInt(4) == 0) {

@@ -62,9 +62,9 @@ public class FieldBlock extends Block {
         if (!(level instanceof ServerLevel serverLevel) || !(placer instanceof ServerPlayer player)) return;
         Network.Node node = Network.register(serverLevel, pos, kind, player.getUUID());
         if (kind == Network.Kind.WAYGATE) Network.discover(player, node);
-        serverLevel.sendParticles(ParticleTypes.END_ROD, pos.getX() + 0.5, pos.getY() + 1.0, pos.getZ() + 0.5, 30, 0.2, 1.0, 0.2, 0.05);
+        serverLevel.sendParticles(com.thefarawaydev.realmsofchaos.fx.RocParticles.GLINT.type(), pos.getX() + 0.5, pos.getY() + 1.0, pos.getZ() + 0.5, 30, 0.2, 1.0, 0.2, 0.05);
         serverLevel.playSound(null, pos, SoundEvents.BEACON_POWER_SELECT, SoundSource.BLOCKS, 0.8F, 1.2F);
-        Hud.actionBar(player, Hud.colored(Component.translatable("hud." + RealmsOfChaos.MOD_ID + ".field.placed." + kind.id(), kind.range), 0x55FFFF));
+        Hud.above(player, pos, Component.translatable("hud." + RealmsOfChaos.MOD_ID + ".field.placed." + kind.id(), kind.range), 0x55FFFF);
     }
 
     @Override
@@ -83,7 +83,7 @@ public class FieldBlock extends Block {
         }
         if (kind == Network.Kind.WAYGATE) {
             if (Network.discover(player, node)) {
-                Hud.actionBar(player, Hud.colored(Component.translatable("hud." + RealmsOfChaos.MOD_ID + ".waygate.found"), 0x55FF55));
+                Hud.above(player, pos, Component.translatable("hud." + RealmsOfChaos.MOD_ID + ".waygate.found"), 0x55FF55);
                 level.playSound(null, pos, SoundEvents.RESPAWN_ANCHOR_CHARGE, SoundSource.BLOCKS, 0.8F, 1.2F);
             }
             Screens.show(player, Screens.waygate(player, level, pos));
@@ -91,7 +91,7 @@ public class FieldBlock extends Block {
             return;
         }
         boolean mine = node.owner().equals(player.getUUID());
-        Hud.actionBar(player, Hud.colored(Component.translatable("hud." + RealmsOfChaos.MOD_ID + ".field.status." + kind.id() + (mine ? ".mine" : ""), kind.range), 0x55FFFF));
+        Hud.above(player, pos, Component.translatable("hud." + RealmsOfChaos.MOD_ID + ".field.status." + kind.id() + (mine ? ".mine" : ""), kind.range), 0x55FFFF);
     }
 
     @Override
@@ -106,17 +106,17 @@ public class FieldBlock extends Block {
         switch (kind) {
             case RELAY -> {
                 // a thin beam going up, so a relay can be picked out from a distance
-                level.addParticle(ParticleTypes.END_ROD, x, y + random.nextDouble() * 3.0, z, 0, 0.08, 0);
+                level.addParticle(com.thefarawaydev.realmsofchaos.fx.RocParticles.GLINT.type(), x, y + random.nextDouble() * 3.0, z, 0, 0.08, 0);
             }
             case JAMMER -> {
                 if (random.nextInt(2) == 0) {
                     double a = random.nextDouble() * Math.PI * 2;
-                    level.addParticle(ParticleTypes.ELECTRIC_SPARK, x + Math.cos(a) * 0.6, y - 0.2, z + Math.sin(a) * 0.6, Math.cos(a) * 0.1, 0.05, Math.sin(a) * 0.1);
+                    level.addParticle(com.thefarawaydev.realmsofchaos.fx.RocParticles.STORM_SPARK.type(), x + Math.cos(a) * 0.6, y - 0.2, z + Math.sin(a) * 0.6, Math.cos(a) * 0.1, 0.05, Math.sin(a) * 0.1);
                 }
             }
             case WAYGATE -> {
                 double a = random.nextDouble() * Math.PI * 2;
-                level.addParticle(ParticleTypes.PORTAL, x + Math.cos(a) * 0.9, y - 0.6 + random.nextDouble(), z + Math.sin(a) * 0.9, -Math.cos(a) * 0.6, 0.1, -Math.sin(a) * 0.6);
+                level.addParticle(com.thefarawaydev.realmsofchaos.fx.RocParticles.CHAOS_MOTE.type(), x + Math.cos(a) * 0.9, y - 0.6 + random.nextDouble(), z + Math.sin(a) * 0.9, -Math.cos(a) * 0.6, 0.1, -Math.sin(a) * 0.6);
             }
         }
     }

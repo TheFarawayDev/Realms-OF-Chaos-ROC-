@@ -1,0 +1,28 @@
+{
+  "variants": {
+    "lit=false,sigil=0": {
+      "model": "realms_of_chaos:block/fresco_tile_0"
+    },
+    "lit=true,sigil=0": {
+      "model": "realms_of_chaos:block/fresco_tile_0_lit"
+    },
+    "lit=false,sigil=1": {
+      "model": "realms_of_chaos:block/fresco_tile_1"
+    },
+    "lit=true,sigil=1": {
+      "model": "realms_of_chaos:block/fresco_tile_1_lit"
+    },
+    "lit=false,sigil=2": {
+      "model": "realms_of_chaos:block/fresco_tile_2"
+    },
+    "lit=true,sigil=2": {
+      "model": "realms_of_chaos:block/fresco_tile_2_lit"
+    },
+    "lit=false,sigil=3": {
+      "model": "realms_of_chaos:block/fresco_tile_3"
+    },
+    "lit=true,sigil=3": {
+      "model": "realms_of_chaos:block/fresco_tile_3_lit"
+    }
+  }
+}

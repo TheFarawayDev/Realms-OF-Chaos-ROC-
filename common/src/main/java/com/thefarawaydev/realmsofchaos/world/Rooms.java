@@ -67,7 +67,7 @@ public final class Rooms {
 
     public static boolean isPuzzle(Passages.Kind kind) {
         return kind == Passages.Kind.VAULT || kind == Passages.Kind.CHIMES || kind == Passages.Kind.BEAM || kind == Passages.Kind.PLATES
-                || kind == Passages.Kind.SHUTTERS;
+                || kind == Passages.Kind.SHUTTERS || kind == Passages.Kind.DIALS || kind == Passages.Kind.SLIDES;
     }
 
     private static String key(Passages.Plan plan, Passages.Cell cell) {
@@ -87,7 +87,7 @@ public final class Rooms {
     }
 
     /** The room a block belongs to, if it is of the kind asked for. */
-    private record Place(Passages.Plan plan, Passages.Cell cell) {}
+    public record Place(Passages.Plan plan, Passages.Cell cell) {}
 
     private static Place place(ServerLevel level, BlockPos pos, Passages.Kind kind) {
         Passages.Plan plan = Passages.planAt(level, pos);
@@ -111,14 +111,15 @@ public final class Rooms {
         veils(level, plan, cell, true);
         BlockPos m = plan.centre(cell);
         level.playSound(null, m, SoundEvents.UI_TOAST_CHALLENGE_COMPLETE, SoundSource.BLOCKS, 1.0F, 1.3F);
-        level.sendParticles(ParticleTypes.END_ROD, m.getX() + 0.5, m.getY() + 2.0, m.getZ() + 0.5, 80, 2.5, 1.0, 2.5, 0.05);
+        level.sendParticles(com.thefarawaydev.realmsofchaos.fx.RocParticles.GLINT.type(), m.getX() + 0.5, m.getY() + 2.0, m.getZ() + 0.5, 80, 2.5, 1.0, 2.5, 0.05);
         for (ServerPlayer p : inside(level, plan, cell)) {
             Hud.title(p, Hud.colored(Component.translatable(HUD + "solved"), 0x55FF55), Hud.colored(Component.translatable(HUD + "solved.sub"), 0xCCCCCC), 5, 50, 15);
         }
     }
 
-    private static void hint(ServerPlayer player, String key, int color, Object... args) {
-        Hud.actionBar(player, Hud.colored(Component.translatable(HUD + key, args), color));
+    /** What a puzzle block says, over the block. */
+    private static void hint(ServerPlayer player, BlockPos pos, String key, int color, Object... args) {
+        Hud.above(player, pos, Component.translatable(HUD + key, args), color);
     }
 
     /** Where the cache of a puzzle room stands: in the middle, except in a vault, whose middle is the puzzle. */
@@ -140,6 +141,8 @@ public final class Rooms {
                 for (BlockPos plate : plates(plan, cell)) level.setBlock(plate, ModContent.MEMORY_PLATE.get().defaultBlockState(), 2);
             }
             case SHUTTERS -> buildShutters(level, plan, cell, random);
+            case DIALS -> buildDials(level, plan, cell, random);
+            case SLIDES -> buildSlides(level, plan, cell);
             case DARTS -> {
                 BlockPos m = plan.centre(cell);
                 for (int dx = -3; dx <= 3; dx++) {
@@ -196,6 +199,202 @@ public final class Rooms {
             if (clear) com.thefarawaydev.realmsofchaos.block.Glass.ripple(level, at, veil, CLEAR, true);
             else for (BlockPos b : com.thefarawaydev.realmsofchaos.block.Glass.window(level, at, veil)) level.setBlock(b, level.getBlockState(b).setValue(CLEAR, false), 2);
         }
+    }
+
+    // ---- the dial hall: four dials under four frescoes; turning one turns the next ------------------------------------
+
+    private static com.thefarawaydev.realmsofchaos.block.PuzzleBlocks.Dial DIAL() {
+        return (com.thefarawaydev.realmsofchaos.block.PuzzleBlocks.Dial) ModContent.DIAL_STONE.get();
+    }
+
+    /** Where dial {@code i} stands (0 to 3, west to east): in a row a step out from the north wall. */
+    public static BlockPos dial(Passages.Plan plan, Passages.Cell cell, int i) {
+        int[] xs = {-4, -2, 2, 4};
+        return plan.centre(cell).offset(xs[i], 1, -(plan.half(cell) - 1));
+    }
+
+    /** The fresco over dial {@code i}, in the north wall. */
+    public static BlockPos fresco(Passages.Plan plan, Passages.Cell cell, int i) {
+        BlockPos d = dial(plan, cell, i);
+        return new BlockPos(d.getX(), d.getY() + 2, plan.centre(cell).getZ() - plan.half(cell) - 1);
+    }
+
+    /** The sigil each fresco shows: four, chosen by the level's seed. */
+    public static int target(Passages.Plan plan, Passages.Cell cell, int i) {
+        return new Random(plan.seed ^ (cell.x() * 31L + cell.z() * 17L + i * 101L)).nextInt(com.thefarawaydev.realmsofchaos.block.PuzzleBlocks.SIGILS);
+    }
+
+    public static int sigil(ServerLevel level, BlockPos pos) {
+        BlockState s = level.getBlockState(pos);
+        return s.hasProperty(com.thefarawaydev.realmsofchaos.block.PuzzleBlocks.SIGIL) ? s.getValue(com.thefarawaydev.realmsofchaos.block.PuzzleBlocks.SIGIL) : -1;
+    }
+
+    /** The dial hall a block belongs to, or null. */
+    public static Place dialHall(ServerLevel level, BlockPos pos) {
+        return place(level, pos, Passages.Kind.DIALS);
+    }
+
+    /** Turns dial {@code i} on by one, and dial {@code i + 1} with it (the last turns alone). */
+    private static void turn(ServerLevel level, Passages.Plan plan, Passages.Cell cell, int i) {
+        for (int j = i; j <= Math.min(3, i + 1); j++) {
+            BlockPos at = dial(plan, cell, j);
+            BlockState s = level.getBlockState(at);
+            if (s.is(DIAL())) level.setBlock(at, s.setValue(com.thefarawaydev.realmsofchaos.block.PuzzleBlocks.SIGIL,
+                    (s.getValue(com.thefarawaydev.realmsofchaos.block.PuzzleBlocks.SIGIL) + 1) % com.thefarawaydev.realmsofchaos.block.PuzzleBlocks.SIGILS), 3);
+        }
+    }
+
+    /** Lights each fresco whose dial matches it. @return how many match */
+    private static int lightFrescoes(ServerLevel level, Passages.Plan plan, Passages.Cell cell) {
+        int matched = 0;
+        for (int i = 0; i < 4; i++) {
+            boolean match = sigil(level, dial(plan, cell, i)) == target(plan, cell, i);
+            if (match) matched++;
+            BlockState f = level.getBlockState(fresco(plan, cell, i));
+            if (f.is(ModContent.FRESCO_TILE.get()) && f.getValue(com.thefarawaydev.realmsofchaos.block.PuzzleBlocks.LIT) != match) {
+                level.setBlock(fresco(plan, cell, i), f.setValue(com.thefarawaydev.realmsofchaos.block.PuzzleBlocks.LIT, match), 3);
+            }
+        }
+        return matched;
+    }
+
+    /**
+     * A dial hall: four frescoes in the north wall, each painted with a sigil, a dial on a plinth below each. Turning a
+     * dial turns the one east of it too. Laid matching, then turned at random - so there is always a way back.
+     */
+    private static void buildDials(ServerLevel level, Passages.Plan plan, Passages.Cell cell, Random random) {
+        for (int i = 0; i < 4; i++) {
+            BlockPos d = dial(plan, cell, i);
+            level.setBlock(d.below(), plan.palette().trim().defaultBlockState(), 2);
+            level.setBlock(d, DIAL().defaultBlockState().setValue(com.thefarawaydev.realmsofchaos.block.PuzzleBlocks.SIGIL, target(plan, cell, i))
+                    .setValue(com.thefarawaydev.realmsofchaos.block.PuzzleBlocks.FACING, net.minecraft.core.Direction.SOUTH), 2);
+            level.setBlock(fresco(plan, cell, i), ModContent.FRESCO_TILE.get().defaultBlockState().setValue(com.thefarawaydev.realmsofchaos.block.PuzzleBlocks.SIGIL, target(plan, cell, i)), 2);
+        }
+        for (int n = 0; n < 3 + plan.tier; n++) turn(level, plan, cell, random.nextInt(4));
+        if (lightFrescoes(level, plan, cell) == 4) turn(level, plan, cell, 3);
+        lightFrescoes(level, plan, cell);
+    }
+
+    /** Turns a dial in a dial hall. @return true if it was one (and the turn was made) */
+    public static boolean turnDial(ServerLevel level, BlockPos pos, ServerPlayer player) {
+        Place at = dialHall(level, pos);
+        if (at == null) return false;
+        for (int i = 0; i < 4; i++) {
+            if (!dial(at.plan, at.cell, i).equals(pos)) continue;
+            if (solved(level, at.plan, at.cell)) {
+                hint(player, pos, "already", 0xAAAAAA);
+                return true;
+            }
+            turn(level, at.plan, at.cell, i);
+            level.playSound(null, pos, SoundEvents.GRINDSTONE_USE, SoundSource.BLOCKS, 0.6F, 1.4F);
+            int matched = lightFrescoes(level, at.plan, at.cell);
+            if (matched == 4) solve(level, at.plan, at.cell);
+            else hint(player, pos, "dials.matched", 0xF5B82E, matched);
+            return true;
+        }
+        return false;
+    }
+
+    public static boolean allMatched(ServerLevel level, Passages.Plan plan, Passages.Cell cell) {
+        for (int i = 0; i < 4; i++) if (sigil(level, dial(plan, cell, i)) != target(plan, cell, i)) return false;
+        return true;
+    }
+
+    // ---- the sliding stones: push two stones onto their sockets --------------------------------------------------------
+
+    /** The two quarters the stones are in, as signs of x and z. */
+    private static final int[][] SLIDE_QUARTERS = {{1, 1}, {-1, -1}};
+
+    /** Where stone {@code i} starts, where its socket is, and the pillar that stands in its straight way there. */
+    public static BlockPos slideStart(Passages.Plan plan, Passages.Cell cell, int i) {
+        return plan.centre(cell).offset(SLIDE_QUARTERS[i][0] * 2, 1, SLIDE_QUARTERS[i][1] * 2);
+    }
+
+    public static BlockPos socket(Passages.Plan plan, Passages.Cell cell, int i) {
+        int r = plan.half(cell) - 1;
+        return plan.centre(cell).offset(SLIDE_QUARTERS[i][0] * r, 0, SLIDE_QUARTERS[i][1] * r);
+    }
+
+    public static BlockPos slidePillar(Passages.Plan plan, Passages.Cell cell, int i) {
+        int r = plan.half(cell) - 1;
+        return plan.centre(cell).offset(SLIDE_QUARTERS[i][0] * r, 1, SLIDE_QUARTERS[i][1] * 2);
+    }
+
+    /** A sliding-stone hall: two carved stones, two sockets in the floor, a pillar in the obvious way to each. */
+    private static void buildSlides(ServerLevel level, Passages.Plan plan, Passages.Cell cell) {
+        BlockPos m = plan.centre(cell);
+        int far = plan.half(cell);
+        // (clear the quarters of anything a stone was left on)
+        for (BlockPos at : BlockPos.betweenClosed(m.offset(-far, 1, -far), m.offset(far, 1, far))) {
+            if (level.getBlockState(at).is(ModContent.SLIDE_STONE.get())) level.setBlock(at, net.minecraft.world.level.block.Blocks.AIR.defaultBlockState(), 2);
+        }
+        for (int i = 0; i < 2; i++) {
+            level.setBlock(socket(plan, cell, i), ModContent.STONE_SOCKET.get().defaultBlockState(), 2);
+            level.setBlock(slideStart(plan, cell, i), ModContent.SLIDE_STONE.get().defaultBlockState(), 2);
+            level.setBlock(slidePillar(plan, cell, i), plan.palette().pillar().defaultBlockState(), 2);
+            level.setBlock(slidePillar(plan, cell, i).above(), plan.palette().trim().defaultBlockState(), 2);
+        }
+    }
+
+    /** True where a stone may be pushed: open air over solid floor, inside the room and off the lanes. */
+    private static boolean canPush(ServerLevel level, Passages.Plan plan, Passages.Cell cell, BlockPos to) {
+        BlockPos m = plan.centre(cell);
+        int dx = to.getX() - m.getX(), dz = to.getZ() - m.getZ(), far = plan.half(cell);
+        if (Math.abs(dx) < 2 || Math.abs(dz) < 2 || Math.abs(dx) > far || Math.abs(dz) > far) return false;
+        return level.getBlockState(to).isAir() && level.getBlockState(to.below()).isFaceSturdy(level, to.below(), net.minecraft.core.Direction.UP);
+    }
+
+    /** Pushes a sliding stone a block away from the player, or - sneaking - sets it back where it began. @return true if it moved */
+    public static boolean pushStone(ServerLevel level, BlockPos pos, ServerPlayer player) {
+        Place at = place(level, pos, Passages.Kind.SLIDES);
+        if (at == null) return false;
+        if (solved(level, at.plan, at.cell)) {
+            hint(player, pos, "already", 0xAAAAAA);
+            return false;
+        }
+        int which = Math.signum(pos.getX() - at.plan.centre(at.cell).getX()) == SLIDE_QUARTERS[0][0] ? 0 : 1;
+        if (player.isShiftKeyDown()) {
+            BlockPos home = slideStart(at.plan, at.cell, which);
+            if (home.equals(pos) || !level.getBlockState(home).isAir()) return false;
+            level.setBlock(pos, net.minecraft.world.level.block.Blocks.AIR.defaultBlockState(), 3);
+            level.setBlock(home, ModContent.SLIDE_STONE.get().defaultBlockState(), 3);
+            level.sendParticles(com.thefarawaydev.realmsofchaos.fx.RocParticles.DUST.type(), home.getX() + 0.5, home.getY() + 0.5, home.getZ() + 0.5, 10, 0.3, 0.3, 0.3, 0.01);
+            hint(player, home, "slides.reset", 0xAAAAAA);
+            checkSockets(level, at.plan, at.cell);
+            return true;
+        }
+        double dx = pos.getX() + 0.5 - player.getX(), dz = pos.getZ() + 0.5 - player.getZ();
+        net.minecraft.core.Direction d = Math.abs(dx) > Math.abs(dz) ? (dx > 0 ? net.minecraft.core.Direction.EAST : net.minecraft.core.Direction.WEST)
+                : (dz > 0 ? net.minecraft.core.Direction.SOUTH : net.minecraft.core.Direction.NORTH);
+        BlockPos to = pos.relative(d);
+        if (!canPush(level, at.plan, at.cell, to)) {
+            level.playSound(null, pos, SoundEvents.STONE_HIT, SoundSource.BLOCKS, 0.8F, 0.6F);
+            hint(player, pos, "slides.stuck", 0xFF5555);
+            return false;
+        }
+        level.blockEvent(pos, ModContent.SLIDE_STONE.get(), 0, d.get3DDataValue());
+        level.playSound(null, pos, SoundEvents.STONE_BREAK, SoundSource.BLOCKS, 0.7F, 0.5F);
+        level.sendParticles(com.thefarawaydev.realmsofchaos.fx.RocParticles.DUST.type(), pos.getX() + 0.5, pos.getY() + 0.1, pos.getZ() + 0.5, 6, 0.3, 0.05, 0.3, 0.01);
+        Scheduler.after(level.getServer(), 4, () -> checkSockets(level, at.plan, at.cell));
+        return true;
+    }
+
+    /** Lights each socket a stone sits on; both lit, the hall is solved. @return how many are covered */
+    public static int checkSockets(ServerLevel level, Passages.Plan plan, Passages.Cell cell) {
+        int covered = 0;
+        for (int i = 0; i < 2; i++) {
+            BlockPos s = socket(plan, cell, i);
+            BlockState above = level.getBlockState(s.above());
+            boolean on = above.is(ModContent.SLIDE_STONE.get()) || (above.is(net.minecraft.world.level.block.Blocks.MOVING_PISTON));
+            if (on) covered++;
+            BlockState sock = level.getBlockState(s);
+            if (sock.is(ModContent.STONE_SOCKET.get()) && sock.getValue(com.thefarawaydev.realmsofchaos.block.PuzzleBlocks.LIT) != on) {
+                level.setBlock(s, sock.setValue(com.thefarawaydev.realmsofchaos.block.PuzzleBlocks.LIT, on), 3);
+                if (on) level.playSound(null, s, SoundEvents.END_PORTAL_FRAME_FILL, SoundSource.BLOCKS, 1.0F, 1.0F);
+            }
+        }
+        if (covered == 2 && !solved(level, plan, cell)) solve(level, plan, cell);
+        return covered;
     }
 
     // ---- the shutter hall: four veiled lanterns, lights out ----------------------------------------------------------
@@ -304,6 +503,8 @@ public final class Rooms {
                 }
                 case BEAM -> buildBeam(level, plan, cell, random);
                 case SHUTTERS -> buildShutters(level, plan, cell, random);
+                case DIALS -> buildDials(level, plan, cell, random);
+                case SLIDES -> buildSlides(level, plan, cell);
                 default -> {
                     for (BlockPos plate : plates(plan, cell)) light(level, plate, false);
                 }
@@ -344,7 +545,7 @@ public final class Rooms {
         Place at = place(level, pos, Passages.Kind.VAULT);
         if (at == null) return false;
         if (solved(level, at.plan, at.cell)) {
-            hint(player, "already", 0xAAAAAA);
+            hint(player, pos, "already", 0xAAAAAA);
             return false;
         }
         BlockPos m = at.plan.centre(at.cell);
@@ -375,7 +576,7 @@ public final class Rooms {
         Place at = place(level, pos, Passages.Kind.CHIMES);
         if (at == null) return false;
         if (solved(level, at.plan, at.cell)) {
-            hint(player, "already", 0xAAAAAA);
+            hint(player, pos, "already", 0xAAAAAA);
             return false;
         }
         String key = key(at.plan, at.cell);
@@ -385,7 +586,7 @@ public final class Rooms {
             // a new attempt: whatever was still ringing is quiet first
             for (int n = 0; n < 4; n++) light(level, chime(at.plan, at.cell, n), false);
             CHIME_UNTIL.put(key, now + chimeTicks(at.plan));
-            hint(player, "chimes.start", 0x55FFFF, chimeTicks(at.plan) / 20);
+            hint(player, pos, "chimes.start", 0x55FFFF, chimeTicks(at.plan) / 20);
         }
         light(level, pos, true);
         int ringing = 0;
@@ -582,7 +783,7 @@ public final class Rooms {
         Place at = place(level, pos, Passages.Kind.BEAM);
         if (at == null) return false;
         if (solved(level, at.plan, at.cell)) {
-            hint(player, "already", 0xAAAAAA);
+            hint(player, pos, "already", 0xAAAAAA);
             return false;
         }
         Beam beam = beam(at.plan, at.cell);
@@ -603,9 +804,9 @@ public final class Rooms {
             scramble(level, beam, new Random(at.plan.seed ^ level.getGameTime()));
             player.hurtServer(level, level.damageSources().magic(), 2.0F);
             level.playSound(null, pos, SoundEvents.BEACON_DEACTIVATE, SoundSource.BLOCKS, 1.0F, 0.7F);
-            hint(player, "beam.scrambled", 0xFF5555);
+            hint(player, pos, "beam.scrambled", 0xFF5555);
         } else if (used == beam.turns() - 1) {
-            hint(player, "beam.last", 0xFFAA00);
+            hint(player, pos, "beam.last", 0xFFAA00);
         }
         return false;
     }
@@ -633,7 +834,7 @@ public final class Rooms {
             } else {
                 level.sendParticles(BEAM_CORE, ax, ay, az, 1, 0, 0, 0, 0);
             }
-            if (level.getBlockState(a).is(ModContent.BEAM_MIRROR.get())) level.sendParticles(ParticleTypes.END_ROD, ax, ay + 0.2, az, 1, 0.05, 0.05, 0.05, 0.01);
+            if (level.getBlockState(a).is(ModContent.BEAM_MIRROR.get())) level.sendParticles(com.thefarawaydev.realmsofchaos.fx.RocParticles.GLINT.type(), ax, ay + 0.2, az, 1, 0.05, 0.05, 0.05, 0.01);
         }
     }
 
@@ -721,7 +922,7 @@ public final class Rooms {
         player.needsSync = true;
         level.playSound(null, pos, SoundEvents.NOTE_BLOCK_BASS.value(), SoundSource.BLOCKS, 2.0F, 0.5F);
         level.sendParticles(Signature.spark(at.plan.line), pos.getX() + 0.5, pos.getY() + 1.1, pos.getZ() + 0.5, 20, 0.3, 0.1, 0.3, 0.1);
-        hint(player, "plates.wrong", 0xFF5555);
+        hint(player, pos, "plates.wrong", 0xFF5555);
         return false;
     }
 
@@ -800,7 +1001,7 @@ public final class Rooms {
                 hidden.setPersistenceRequired();
                 hidden.setTarget(player);
                 level.addFreshEntity(hidden);
-                hint(player, "urn.ambush", 0xFF5555);
+                hint(player, pos, "urn.ambush", 0xFF5555);
             }
         }
         return urn;
@@ -865,8 +1066,8 @@ public final class Rooms {
         }
         BlockPos m = plan.centre(cell);
         for (int dx = -4; dx <= 4; dx++) {
-            level.sendParticles(ParticleTypes.FLAME, m.getX() + dx + 0.5, m.getY() + 1.1, m.getZ() + active.row + 0.5, 3, 0.2, 0.02, 0.2, 0.0);
-            level.sendParticles(ParticleTypes.CRIT, m.getX() + dx + 0.5, m.getY() + Passages.HEADROOM, m.getZ() + active.row + 0.5, 2, 0.2, 0.1, 0.2, 0.0);
+            level.sendParticles(com.thefarawaydev.realmsofchaos.fx.RocParticles.FLAME_STORM.type(), m.getX() + dx + 0.5, m.getY() + 1.1, m.getZ() + active.row + 0.5, 3, 0.2, 0.02, 0.2, 0.0);
+            level.sendParticles(com.thefarawaydev.realmsofchaos.fx.RocParticles.STRIKE.type(), m.getX() + dx + 0.5, m.getY() + Passages.HEADROOM, m.getZ() + active.row + 0.5, 2, 0.2, 0.1, 0.2, 0.0);
         }
         level.playSound(null, m.offset(0, 1, active.row), SoundEvents.PISTON_EXTEND, SoundSource.BLOCKS, 1.5F, 0.5F);
         return active.row;
@@ -912,7 +1113,7 @@ public final class Rooms {
                 Active active = ACTIVE.get(e.getKey());
                 if (active != null && !solved(active.level, active.plan, active.cell)) {
                     for (int n = 0; n < 4; n++) light(active.level, chime(active.plan, active.cell, n), false);
-                    for (ServerPlayer p : inside(active.level, active.plan, active.cell)) hint(p, "chimes.slow", 0xFF5555);
+                    for (ServerPlayer p : inside(active.level, active.plan, active.cell)) hint(p, active.plan.centre(active.cell).above(2), "chimes.slow", 0xFF5555);
                 }
                 it.remove();
             }
@@ -936,7 +1137,7 @@ public final class Rooms {
                 case PLATES -> {
                     // every six seconds the path shows itself for a second and a half
                     if (a.ticks % 120 < 30 && a.ticks % 5 == 0 && !solved(a.level, a.plan, a.cell)) {
-                        for (BlockPos p : path(a.plan, a.cell)) a.level.sendParticles(ParticleTypes.END_ROD, p.getX() + 0.5, p.getY() + 1.15, p.getZ() + 0.5, 2, 0.2, 0.02, 0.2, 0.0);
+                        for (BlockPos p : path(a.plan, a.cell)) a.level.sendParticles(com.thefarawaydev.realmsofchaos.fx.RocParticles.GLINT.type(), p.getX() + 0.5, p.getY() + 1.15, p.getZ() + 0.5, 2, 0.2, 0.02, 0.2, 0.0);
                     }
                 }
                 default -> { }

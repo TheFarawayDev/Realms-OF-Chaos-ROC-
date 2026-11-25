@@ -81,12 +81,12 @@ public class SealMenu extends ButtonMenu {
             // the seal bites back
             viewer.hurtServer(level, level.damageSources().magic(), 2.0F);
             level.playSound(null, seal, SoundEvents.ANVIL_LAND, SoundSource.BLOCKS, 0.7F, 0.6F);
-            level.sendParticles(ParticleTypes.ELECTRIC_SPARK, x, y, z, 12, 0.3, 0.3, 0.3, 0.2);
+            level.sendParticles(com.thefarawaydev.realmsofchaos.fx.RocParticles.STORM_SPARK.type(), x, y, z, 12, 0.3, 0.3, 0.3, 0.2);
             Hud.actionBar(viewer, Hud.colored(Component.translatable(NS + "miss"), 0xFF5555));
         } else {
             cracks += hit == StrikeBar.Hit.PERFECT ? 2 : 1;
             level.playSound(null, seal, SoundEvents.ANVIL_USE, SoundSource.BLOCKS, 0.7F, hit == StrikeBar.Hit.PERFECT ? 1.6F : 1.2F);
-            level.sendParticles(ParticleTypes.CRIT, x, y, z, 14, 0.3, 0.3, 0.3, 0.3);
+            level.sendParticles(com.thefarawaydev.realmsofchaos.fx.RocParticles.STRIKE.type(), x, y, z, 14, 0.3, 0.3, 0.3, 0.3);
             Hud.actionBar(viewer, Hud.colored(Component.translatable(NS + (hit == StrikeBar.Hit.PERFECT ? "perfect" : "good")),
                     hit == StrikeBar.Hit.PERFECT ? 0xFFFF55 : 0x55FF55));
         }

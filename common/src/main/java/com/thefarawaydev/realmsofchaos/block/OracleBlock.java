@@ -46,9 +46,9 @@ public class OracleBlock extends Block {
     @Override
     public void animateTick(BlockState state, Level level, BlockPos pos, RandomSource random) {
         double x = pos.getX() + 0.5, y = pos.getY() + 1.0, z = pos.getZ() + 0.5;
-        level.addParticle(ParticleTypes.SOUL_FIRE_FLAME, x + (random.nextDouble() - 0.5) * 0.4, y + 0.05, z + (random.nextDouble() - 0.5) * 0.4, 0, 0.04, 0);
+        level.addParticle(com.thefarawaydev.realmsofchaos.fx.RocParticles.SOUL_WISP.type(), x + (random.nextDouble() - 0.5) * 0.4, y + 0.05, z + (random.nextDouble() - 0.5) * 0.4, 0, 0.04, 0);
         if (random.nextInt(3) == 0) {
-            level.addParticle(ParticleTypes.ENCHANT, x + (random.nextDouble() - 0.5) * 3.0, y + 1.5, z + (random.nextDouble() - 0.5) * 3.0, 0, -0.8, 0);
+            level.addParticle(com.thefarawaydev.realmsofchaos.fx.RocParticles.RUNE.type(), x + (random.nextDouble() - 0.5) * 3.0, y + 1.5, z + (random.nextDouble() - 0.5) * 3.0, 0, -0.8, 0);
         }
         if (random.nextInt(40) == 0) {
             level.playLocalSound(pos, SoundEvents.FIRE_AMBIENT, SoundSource.BLOCKS, 0.6F, 0.5F + random.nextFloat() * 0.3F, false);

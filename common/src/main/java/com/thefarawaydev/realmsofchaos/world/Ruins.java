@@ -492,8 +492,8 @@ public final class Ruins {
             bolt.setVisualOnly(true);
             level.addFreshEntity(bolt);
         }
-        level.sendParticles(ParticleTypes.PORTAL, mid.getX() + 0.5, mid.getY() + 0.5, mid.getZ() + 0.5, 200, 1.0, 1.5, 0.3, 0.6);
-        level.sendParticles(ParticleTypes.END_ROD, mid.getX() + 0.5, mid.getY() + 0.5, mid.getZ() + 0.5, 60, 1.0, 1.5, 0.3, 0.1);
+        level.sendParticles(com.thefarawaydev.realmsofchaos.fx.RocParticles.CHAOS_MOTE.type(), mid.getX() + 0.5, mid.getY() + 0.5, mid.getZ() + 0.5, 200, 1.0, 1.5, 0.3, 0.6);
+        level.sendParticles(com.thefarawaydev.realmsofchaos.fx.RocParticles.GLINT.type(), mid.getX() + 0.5, mid.getY() + 0.5, mid.getZ() + 0.5, 60, 1.0, 1.5, 0.3, 0.1);
         level.playSound(null, mid, SoundEvents.END_PORTAL_SPAWN, SoundSource.BLOCKS, 0.6F, 1.2F);
         for (ServerPlayer p : level.getEntitiesOfClass(ServerPlayer.class, new net.minecraft.world.phys.AABB(mid).inflate(32), e -> true)) {
             Hud.title(p, Hud.colored(Component.translatable(HUD + "gate.wakes"), 0xA55AD6), Hud.colored(Component.translatable(HUD + "gate.wakes.sub"), 0xCCCCCC));
@@ -535,7 +535,7 @@ public final class Ruins {
             Hud.actionBar(player, Hud.colored(Component.translatable(HUD + "point", kind.displayName(), (int) Math.round(dist),
                     Component.translatable(directionKey(dx, dz))), color));
             for (int i = 1; i <= 10; i++) {
-                level.sendParticles(ParticleTypes.END_ROD, player.getX() + dx / dist * i * 0.6, player.getY() + 1.2, player.getZ() + dz / dist * i * 0.6, 1, 0, 0, 0, 0);
+                level.sendParticles(com.thefarawaydev.realmsofchaos.fx.RocParticles.GLINT.type(), player.getX() + dx / dist * i * 0.6, player.getY() + 1.2, player.getZ() + dz / dist * i * 0.6, 1, 0, 0, 0, 0);
             }
         }
         level.playSound(null, player.blockPosition(), SoundEvents.LODESTONE_COMPASS_LOCK, SoundSource.PLAYERS, 0.6F, 1.2F);

@@ -787,6 +787,13 @@ def gen_lang():
         "item.realms_of_chaos.chaos_compass.mode": "Looking for: %s",
         "item.realms_of_chaos.chaos_compass.sneak": "Sneak and right-click to change what it looks for",
         "item.realms_of_chaos.field_bag": "Field Tower Bag",
+        "item.realms_of_chaos.lockpick": "Lockpick",
+        "hud.realms_of_chaos.lockpick.locked": "Locked. A lockpick would open it",
+        "hud.realms_of_chaos.lockpick.title": "Pick the lock: click in the gold",
+        "hud.realms_of_chaos.lockpick.set": "A pin is set",
+        "hud.realms_of_chaos.lockpick.miss": "The pins drop",
+        "hud.realms_of_chaos.lockpick.snapped": "The pick snaps",
+        "hud.realms_of_chaos.lockpick.open": "The lock gives",
         "item.realms_of_chaos.field_bag.tooltip": "Right-click to open. What is in it stays in it",
         "item.realms_of_chaos.field_bag.deploy": "Sneak and right-click a block: sets down the first relay, jammer or waygate inside",
         "item.realms_of_chaos.field_bag.used": "%s stacks inside",
@@ -889,6 +896,17 @@ def gen_lang():
         "menu.realms_of_chaos.passage.kind.smithy": "Smithy",
         "menu.realms_of_chaos.passage.kind.crypt": "Crypt",
         "menu.realms_of_chaos.passage.kind.war_room": "War Room",
+        "hud.realms_of_chaos.passage.room.dials": "A dial hall. Set each dial to the fresco above it - but each dial turns the next",
+        "hud.realms_of_chaos.passage.room.slides": "A hall of sliding stones. Push each onto its socket (sneak to set one back)",
+        "menu.realms_of_chaos.passage.kind.dials": "Dial Hall",
+        "menu.realms_of_chaos.passage.kind.slides": "Sliding Stones",
+        "hud.realms_of_chaos.room.dials.matched": "%s of 4 frescoes answered",
+        "hud.realms_of_chaos.room.slides.stuck": "It will not go that way",
+        "hud.realms_of_chaos.room.slides.reset": "The stone is set back",
+        "block.realms_of_chaos.dial_stone": "Dial Stone",
+        "block.realms_of_chaos.fresco_tile": "Fresco",
+        "block.realms_of_chaos.slide_stone": "Sliding Stone",
+        "block.realms_of_chaos.stone_socket": "Stone Socket",
         "hud.realms_of_chaos.passage.room.shutters": "A shutter hall. Shoot or throw at a lantern's veil: it turns, and the two beside it too. Open all four",
         "menu.realms_of_chaos.passage.kind.shutters": "Shutter Hall",
         "hud.realms_of_chaos.passage.room.duel": "A duelling circle. Its champion has been waiting",
@@ -921,6 +939,7 @@ def gen_lang():
         "block.realms_of_chaos.war_drum": "War Drum",
         "block.realms_of_chaos.war_standard": "War Standard",
         "block.realms_of_chaos.training_dummy": "Training Dummy",
+        "block.realms_of_chaos.sprinkler": "Sprinkler",
         "block.realms_of_chaos.moving_dummy": "Sparring Dummy",
         "block.realms_of_chaos.chair": "Chair",
         "block.realms_of_chaos.table": "Table",
@@ -2031,7 +2050,7 @@ DECOR = ["olympian_marble", "olympian_marble_pillar", "gilded_frieze", "abyssal_
          "cloudstone", "cloud_tile", "trench_stone", "nacre_tile", "tartarus_stone", "throne_tile",
          "portal_frame_sky", "portal_frame_sea", "portal_frame_shade", "portal_frame_hub", "arrival_sigil",
          "bronze_trapdoor", "sky_trapdoor", "shade_trapdoor",
-         "arena_sand", "beast_gate", "war_drum", "war_standard",
+         "arena_sand", "beast_gate", "war_drum", "war_standard", "sprinkler",
          "reinforced_glass", "frosted_glass", "smart_glass", "veil_glass", "one_way_glass"] + [f"{b}_{k}" for b in ("olympian_marble", "cloudstone", "trench_stone", "tartarus_stone", "storm_brick", "tide_brick", "ash_brick", "underworld_brick") for k in ("stairs", "slab")]
 PICKAXE_ONLY = ["bronze_door", "sky_door", "shade_door", "verdigris_door", "verdigris_trapdoor"]
 AXE_ONLY = ["sea_door", "sea_trapdoor", "garrison_door", "garrison_trapdoor", "ivory_door", "ivory_trapdoor",
@@ -2127,7 +2146,7 @@ def gen_models():
         item_def(iid, f"item/{iid}")
         parent = "minecraft:item/generated" if g[4] in GENERATED_SHAPES else "minecraft:item/handheld"
         wj(os.path.join(ASSETS, f"models/item/{iid}.json"), {"parent": parent, "textures": {"layer0": f"{MOD}:item/{iid}"}})
-    extra = ["chaos_compass", "chaos_codex", "field_bag", "tarot_deck"] + [f"tarot_{c[0]}" for c in TAROT] + [f"voodoo_doll_{d[0]}" for d in DOLLS] \
+    extra = ["chaos_compass", "chaos_codex", "field_bag", "lockpick", "tarot_deck"] + [f"tarot_{c[0]}" for c in TAROT] + [f"voodoo_doll_{d[0]}" for d in DOLLS] \
         + [f"essence_{l.lower()}" for l in LINES] \
         + [f"material_{l.lower()}_{t}" for l in LINES for t in (1, 2, 3)] \
         + [f"keystone_{l.lower()}" for l in LINES] + [f"seeker_{l.lower()}" for l in LINES]
@@ -3476,6 +3495,7 @@ def gen_field_data():
         "waygate_obelisk": ({"E": "minecraft:ender_eye", "A": "minecraft:amethyst_shard", "P": "minecraft:ender_pearl", "O": "minecraft:obsidian"},
                             [" E ", "APA", "OOO"], "misc"),
         "field_bag": ({"S": "minecraft:string", "L": "minecraft:leather", "C": "minecraft:chest"}, ["SLS", "LCL", "LLL"], "equipment"),
+        "lockpick": ({"N": "minecraft:iron_nugget", "S": "minecraft:stick"}, ["N", "N", "S"], "equipment"),
     }
     for rid, (key, pattern, category) in recipes.items():
         wj(os.path.join(DATA, f"recipe/{rid}.json"), {"type": "minecraft:crafting_shaped", "category": category, "key": key, "pattern": pattern,

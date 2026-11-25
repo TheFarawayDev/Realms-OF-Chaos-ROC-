@@ -41,7 +41,7 @@ public class GatePedestalBlock extends Block {
     @Override
     public void animateTick(BlockState state, Level level, BlockPos pos, RandomSource random) {
         if (random.nextInt(3) == 0) {
-            level.addParticle(ParticleTypes.ENCHANT, pos.getX() + 0.5 + (random.nextDouble() - 0.5) * 2.0, pos.getY() + 1.6,
+            level.addParticle(com.thefarawaydev.realmsofchaos.fx.RocParticles.RUNE.type(), pos.getX() + 0.5 + (random.nextDouble() - 0.5) * 2.0, pos.getY() + 1.6,
                     pos.getZ() + 0.5 + (random.nextDouble() - 0.5) * 2.0, 0, -0.5, 0);
         }
     }

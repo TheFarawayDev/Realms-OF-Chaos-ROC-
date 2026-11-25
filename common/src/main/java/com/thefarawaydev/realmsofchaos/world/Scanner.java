@@ -400,14 +400,14 @@ public final class Scanner {
                 level.playSound(null, player.blockPosition(), SoundEvents.NOTE_BLOCK_CHIME.value(), SoundSource.PLAYERS, 1.0F, 1.6F);
                 double d = Math.max(0.01, reading.distance());
                 for (int i = 1; i <= 14; i++) {
-                    level.sendParticles(ParticleTypes.END_ROD, player.getX() + reading.dx() / d * i * 0.6, player.getY() + 1.2,
+                    level.sendParticles(com.thefarawaydev.realmsofchaos.fx.RocParticles.GLINT.type(), player.getX() + reading.dx() / d * i * 0.6, player.getY() + 1.2,
                             player.getZ() + reading.dz() / d * i * 0.6, 1, 0, 0, 0, 0);
                 }
             }
             case STATIC_SURGE -> {
                 scan.surges++;
                 level.playSound(null, player.blockPosition(), SoundEvents.REDSTONE_TORCH_BURNOUT, SoundSource.PLAYERS, 0.8F, 0.6F);
-                level.sendParticles(ParticleTypes.ELECTRIC_SPARK, player.getX(), player.getY() + 1.2, player.getZ(), 10, 0.3, 0.3, 0.3, 0.1);
+                level.sendParticles(com.thefarawaydev.realmsofchaos.fx.RocParticles.STORM_SPARK.type(), player.getX(), player.getY() + 1.2, player.getZ(), 10, 0.3, 0.3, 0.3, 0.1);
             }
             default -> {
                 if (scan.best == null || scan.best.roll() != Roll.CLEAN_LOCK) scan.best = reading;

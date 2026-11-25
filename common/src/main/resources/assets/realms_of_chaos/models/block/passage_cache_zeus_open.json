@@ -1,10 +1,13 @@
 {
   "parent": "minecraft:block/block",
   "textures": {
-    "particle": "realms_of_chaos:block/cache_wood_zeus",
-    "wood": "realms_of_chaos:block/cache_wood_zeus",
-    "lock": "realms_of_chaos:block/cache_lock",
-    "in": "realms_of_chaos:block/cache_inside"
+    "particle": "realms_of_chaos:block/cache_body_zeus",
+    "body": "realms_of_chaos:block/cache_body_zeus",
+    "lid": "realms_of_chaos:block/cache_lid_zeus",
+    "top": "realms_of_chaos:block/cache_top_zeus",
+    "latch": "realms_of_chaos:block/cache_latch_zeus",
+    "in": "realms_of_chaos:block/cache_inside",
+    "lock": "realms_of_chaos:block/cache_padlock"
   },
   "elements": [
     {
@@ -15,65 +18,137 @@
       ],
       "to": [
         15,
-        9,
+        10,
         15
       ],
       "faces": {
         "north": {
-          "texture": "#wood"
+          "texture": "#body",
+          "uv": [
+            1,
+            6,
+            15,
+            16
+          ]
         },
         "south": {
-          "texture": "#wood"
+          "texture": "#body",
+          "uv": [
+            1,
+            6,
+            15,
+            16
+          ]
         },
         "east": {
-          "texture": "#wood"
+          "texture": "#body",
+          "uv": [
+            1,
+            6,
+            15,
+            16
+          ]
         },
         "west": {
-          "texture": "#wood"
+          "texture": "#body",
+          "uv": [
+            1,
+            6,
+            15,
+            16
+          ]
         },
         "up": {
-          "texture": "#in"
+          "texture": "#in",
+          "uv": [
+            1,
+            1,
+            15,
+            15
+          ]
         },
         "down": {
-          "texture": "#wood"
+          "texture": "#top",
+          "uv": [
+            1,
+            1,
+            15,
+            15
+          ]
         }
       }
     },
     {
       "from": [
         1,
-        9,
+        10,
         1
       ],
       "to": [
         15,
-        14,
+        15,
         15
       ],
       "faces": {
         "north": {
-          "texture": "#wood"
+          "texture": "#lid",
+          "uv": [
+            1,
+            0,
+            15,
+            5
+          ]
         },
         "south": {
-          "texture": "#wood"
+          "texture": "#lid",
+          "uv": [
+            1,
+            0,
+            15,
+            5
+          ]
         },
         "east": {
-          "texture": "#wood"
+          "texture": "#lid",
+          "uv": [
+            1,
+            0,
+            15,
+            5
+          ]
         },
         "west": {
-          "texture": "#wood"
+          "texture": "#lid",
+          "uv": [
+            1,
+            0,
+            15,
+            5
+          ]
         },
         "up": {
-          "texture": "#wood"
+          "texture": "#top",
+          "uv": [
+            1,
+            1,
+            15,
+            15
+          ]
         },
         "down": {
-          "texture": "#wood"
+          "texture": "#top",
+          "uv": [
+            1,
+            1,
+            15,
+            15
+          ]
         }
       },
       "rotation": {
         "origin": [
           8,
-          9,
+          10,
           15
         ],
         "axis": "x",
@@ -83,38 +158,74 @@
     {
       "from": [
         7,
-        7,
+        8,
         0
       ],
       "to": [
         9,
-        11,
+        12,
         1
       ],
       "faces": {
         "north": {
-          "texture": "#lock"
+          "texture": "#latch",
+          "uv": [
+            0,
+            0,
+            2,
+            4
+          ]
         },
         "south": {
-          "texture": "#lock"
+          "texture": "#latch",
+          "uv": [
+            0,
+            0,
+            2,
+            4
+          ]
         },
         "east": {
-          "texture": "#lock"
+          "texture": "#latch",
+          "uv": [
+            0,
+            0,
+            2,
+            4
+          ]
         },
         "west": {
-          "texture": "#lock"
+          "texture": "#latch",
+          "uv": [
+            0,
+            0,
+            2,
+            4
+          ]
         },
         "up": {
-          "texture": "#lock"
+          "texture": "#latch",
+          "uv": [
+            0,
+            0,
+            2,
+            1
+          ]
         },
         "down": {
-          "texture": "#lock"
+          "texture": "#latch",
+          "uv": [
+            0,
+            0,
+            2,
+            1
+          ]
         }
       },
       "rotation": {
         "origin": [
           8,
-          9,
+          10,
           15
         ],
         "axis": "x",

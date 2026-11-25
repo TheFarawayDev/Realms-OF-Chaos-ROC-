@@ -16,6 +16,35 @@ The current build is an **Alpha**.
 
 ## What's in 1.2.0
 
+* **The mod's own particles.** Sixteen particles drawn for the mod at 8x8, the size of the game's own, each a few
+  frames that play out over its life: storm sparks for Zeus, sea spray for Poseidon, soul wisps for Hades, a flame
+  in each tower's colour for its braziers, a twinkle for treasure and solved puzzles, glyphs of the old script for
+  rune stones and seals, a flash where a blow lands, stone dust, frost, motes of chaos, water drops, smoke, a
+  violet gloom and falling embers. Every fire, spark, puff and glow the mod made with the game's particles now uses
+  these; what is left of the game's own is its explosions, hearts, block crumbs and a few such cues.
+  (`art/renders/particles.png`, `art/renders/brazier-particles.png`)
+* **Two more puzzle rooms.**
+  * **Dial Hall** - four stone dials on plinths before the north wall, each showing one of four sigils, and four
+    frescoes in the wall above them showing the sigils wanted. Turning a dial turns the one beside it too. A
+    fresco lights when the dial under it matches; light all four and the cache unlocks. (`art/renders/dial-hall.png`)
+  * **Sliding Stones** - two heavy stones near the middle of the room and a socket in two opposite corners, with
+    pillars in the way. Use a stone and it slides a block away from you, smoothly; push each onto a socket and the
+    cache unlocks. Sneak and use a stone to put it back where it started. (`art/renders/sliding-stones.png`)
+* **Rising water and sprinklers.** A flooding rune chamber has four bronze sprinklers in its ceiling. When it
+  springs they pour, and each layer of water creeps in ring by ring from the walls over three seconds rather than
+  appearing at once. (`art/videos/flood-sprinklers.mp4`)
+* **Bigger levels.** Every passage level is at least five rooms square (it was four on the lowest floors), six on
+  the grander ones, and more of its rooms are tall - a god's tower, not a burrow.
+* **Chests redrawn, and locked.** The treasure caches are redrawn in the game's own flat manner, a face to each side:
+  boards, a lid with a lip, a gold latch, and inside a bed of coins. About half the caches in a passage are
+  **locked** and wear a padlock.
+* **Lockpicking.** Craft a **Lockpick** from two iron nuggets over a stick (they also turn up in loot and in the
+  barracks footlockers). Use one on a locked cache and a lock appears over it: a mark sweeps along a bar, and you
+  click while it is in the gold. Each pin narrows the gold; a tower's higher floors have more pins. Miss and the
+  pins drop, and the pick may snap. (`art/renders/lockpick-panel.png`, `art/videos/lockpicking.mp4`)
+* **Messages over the block.** What a block says - a rune stone pressed out of turn, a locked cache, a guarded
+  treasure, a seal, a shrine, a war drum, a training dummy's count - now shows in a framed panel floating over that
+  block for a few seconds, rather than in the bar above the hotbar.
 * **Every item redrawn.** All 45 relic weapons, the codex, the compass, the seekers, the keystones, the essences,
   the field bag, the Deck of Fate and its 22 cards, the voodoo dolls, the eight pieces of the panoply, the forge
   materials and the bolts the staffs fire. Each is designed as smooth solids and cut into crisp 16x16 pixels - the

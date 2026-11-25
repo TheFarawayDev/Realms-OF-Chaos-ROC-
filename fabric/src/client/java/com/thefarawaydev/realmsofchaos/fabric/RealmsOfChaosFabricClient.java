@@ -9,6 +9,12 @@ import net.fabricmc.fabric.api.client.rendering.v1.EntityRendererRegistry;
 public class RealmsOfChaosFabricClient implements ClientModInitializer {
     @Override
     public void onInitializeClient() {
+        // the mod's own particles, each drawn from its own sprites
+        for (com.thefarawaydev.realmsofchaos.fx.RocParticles kind : com.thefarawaydev.realmsofchaos.fx.RocParticles.values()) {
+            net.fabricmc.fabric.api.client.particle.v1.ParticleProviderRegistry.getInstance().register(kind.type(),
+                    (net.fabricmc.fabric.api.client.particle.v1.ParticleProviderRegistry.PendingParticleProvider<net.minecraft.core.particles.SimpleParticleType>)
+                            sprites -> com.thefarawaydev.realmsofchaos.client.RocQuadParticle.provider(kind, sprites));
+        }
         EntityRendererRegistry.register(ModContent.GOD_BOSS.get(), GodBossRenderer::new);
         EntityRendererRegistry.register(ModContent.SENTINEL.get(), com.thefarawaydev.realmsofchaos.client.SentinelRenderer::new);
         EntityRendererRegistry.register(ModContent.TITAN.get(), com.thefarawaydev.realmsofchaos.client.TitanRenderer::new);

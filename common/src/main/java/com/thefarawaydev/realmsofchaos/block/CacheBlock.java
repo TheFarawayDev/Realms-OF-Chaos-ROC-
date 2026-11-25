@@ -34,17 +34,17 @@ public class CacheBlock extends Block {
     /** 0 Zeus, 1 Poseidon, 2 Hades. */
     public static final IntegerProperty TOWER = IntegerProperty.create("tower", 0, 2);
     public static final EnumProperty<Direction> FACING = BlockStateProperties.HORIZONTAL_FACING;
-    public static final BooleanProperty OPEN = BlockStateProperties.OPEN;
+    public static final BooleanProperty OPEN = BlockStateProperties.OPEN, LOCKED = BooleanProperty.create("locked");
     private static final VoxelShape SHAPE = Block.box(1, 0, 1, 15, 14, 15);
 
     public CacheBlock(Properties properties) {
         super(properties);
-        registerDefaultState(stateDefinition.any().setValue(TOWER, 0).setValue(FACING, Direction.SOUTH).setValue(OPEN, false));
+        registerDefaultState(stateDefinition.any().setValue(TOWER, 0).setValue(FACING, Direction.SOUTH).setValue(OPEN, false).setValue(LOCKED, false));
     }
 
     @Override
     protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
-        builder.add(TOWER, FACING, OPEN);
+        builder.add(TOWER, FACING, OPEN, LOCKED);
     }
 
     @Override
@@ -59,7 +59,14 @@ public class CacheBlock extends Block {
 
     @Override
     protected InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hit) {
-        if (level instanceof ServerLevel serverLevel && player instanceof ServerPlayer sp && Passages.loot(serverLevel, pos, sp)) lift(serverLevel, pos);
+        if (!(level instanceof ServerLevel serverLevel) || !(player instanceof ServerPlayer sp)) return InteractionResult.SUCCESS;
+        if (state.getValue(LOCKED)) {
+            // locked: a pick in hand works at the lock; without one, it says so
+            if (com.thefarawaydev.realmsofchaos.world.Lockpicking.holdsPick(sp)) com.thefarawaydev.realmsofchaos.world.Lockpicking.press(serverLevel, pos, sp);
+            else com.thefarawaydev.realmsofchaos.ui.Hud.above(sp, pos, net.minecraft.network.chat.Component.translatable("hud.realms_of_chaos.lockpick.locked"), 0xFF5555);
+            return InteractionResult.SUCCESS;
+        }
+        if (Passages.loot(serverLevel, pos, sp)) lift(serverLevel, pos);
         return InteractionResult.SUCCESS;
     }
 
@@ -86,10 +93,10 @@ public class CacheBlock extends Block {
     @Override
     public void animateTick(BlockState state, Level level, BlockPos pos, RandomSource random) {
         if (random.nextInt(4) == 0) {
-            level.addParticle(ParticleTypes.WAX_ON, pos.getX() + 0.2 + random.nextDouble() * 0.6, pos.getY() + 0.95, pos.getZ() + 0.2 + random.nextDouble() * 0.6, 0, 0.02, 0);
+            level.addParticle(com.thefarawaydev.realmsofchaos.fx.RocParticles.GLINT.type(), pos.getX() + 0.2 + random.nextDouble() * 0.6, pos.getY() + 0.95, pos.getZ() + 0.2 + random.nextDouble() * 0.6, 0, 0.02, 0);
         }
         if (state.getValue(OPEN) && random.nextInt(2) == 0) {
-            level.addParticle(ParticleTypes.END_ROD, pos.getX() + 0.5, pos.getY() + 0.9, pos.getZ() + 0.5, 0, 0.05, 0);
+            level.addParticle(com.thefarawaydev.realmsofchaos.fx.RocParticles.GLINT.type(), pos.getX() + 0.5, pos.getY() + 0.9, pos.getZ() + 0.5, 0, 0.05, 0);
         }
     }
 }

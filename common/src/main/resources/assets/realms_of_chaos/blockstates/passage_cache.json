@@ -1,99 +1,195 @@
 {
   "variants": {
-    "facing=north,open=false,tower=0": {
+    "facing=north,locked=false,open=false,tower=0": {
       "model": "realms_of_chaos:block/passage_cache_zeus",
       "y": 0
     },
-    "facing=north,open=false,tower=1": {
-      "model": "realms_of_chaos:block/passage_cache_poseidon",
-      "y": 0
-    },
-    "facing=north,open=false,tower=2": {
-      "model": "realms_of_chaos:block/passage_cache_hades",
-      "y": 0
-    },
-    "facing=north,open=true,tower=0": {
-      "model": "realms_of_chaos:block/passage_cache_zeus_open",
-      "y": 0
-    },
-    "facing=north,open=true,tower=1": {
-      "model": "realms_of_chaos:block/passage_cache_poseidon_open",
-      "y": 0
-    },
-    "facing=north,open=true,tower=2": {
-      "model": "realms_of_chaos:block/passage_cache_hades_open",
-      "y": 0
-    },
-    "facing=east,open=false,tower=0": {
+    "facing=east,locked=false,open=false,tower=0": {
       "model": "realms_of_chaos:block/passage_cache_zeus",
       "y": 90
     },
-    "facing=east,open=false,tower=1": {
-      "model": "realms_of_chaos:block/passage_cache_poseidon",
-      "y": 90
-    },
-    "facing=east,open=false,tower=2": {
-      "model": "realms_of_chaos:block/passage_cache_hades",
-      "y": 90
-    },
-    "facing=east,open=true,tower=0": {
-      "model": "realms_of_chaos:block/passage_cache_zeus_open",
-      "y": 90
-    },
-    "facing=east,open=true,tower=1": {
-      "model": "realms_of_chaos:block/passage_cache_poseidon_open",
-      "y": 90
-    },
-    "facing=east,open=true,tower=2": {
-      "model": "realms_of_chaos:block/passage_cache_hades_open",
-      "y": 90
-    },
-    "facing=south,open=false,tower=0": {
+    "facing=south,locked=false,open=false,tower=0": {
       "model": "realms_of_chaos:block/passage_cache_zeus",
       "y": 180
     },
-    "facing=south,open=false,tower=1": {
-      "model": "realms_of_chaos:block/passage_cache_poseidon",
-      "y": 180
-    },
-    "facing=south,open=false,tower=2": {
-      "model": "realms_of_chaos:block/passage_cache_hades",
-      "y": 180
-    },
-    "facing=south,open=true,tower=0": {
-      "model": "realms_of_chaos:block/passage_cache_zeus_open",
-      "y": 180
-    },
-    "facing=south,open=true,tower=1": {
-      "model": "realms_of_chaos:block/passage_cache_poseidon_open",
-      "y": 180
-    },
-    "facing=south,open=true,tower=2": {
-      "model": "realms_of_chaos:block/passage_cache_hades_open",
-      "y": 180
-    },
-    "facing=west,open=false,tower=0": {
+    "facing=west,locked=false,open=false,tower=0": {
       "model": "realms_of_chaos:block/passage_cache_zeus",
       "y": 270
     },
-    "facing=west,open=false,tower=1": {
-      "model": "realms_of_chaos:block/passage_cache_poseidon",
+    "facing=north,locked=true,open=false,tower=0": {
+      "model": "realms_of_chaos:block/passage_cache_zeus_locked",
+      "y": 0
+    },
+    "facing=east,locked=true,open=false,tower=0": {
+      "model": "realms_of_chaos:block/passage_cache_zeus_locked",
+      "y": 90
+    },
+    "facing=south,locked=true,open=false,tower=0": {
+      "model": "realms_of_chaos:block/passage_cache_zeus_locked",
+      "y": 180
+    },
+    "facing=west,locked=true,open=false,tower=0": {
+      "model": "realms_of_chaos:block/passage_cache_zeus_locked",
       "y": 270
     },
-    "facing=west,open=false,tower=2": {
-      "model": "realms_of_chaos:block/passage_cache_hades",
-      "y": 270
+    "facing=north,locked=false,open=true,tower=0": {
+      "model": "realms_of_chaos:block/passage_cache_zeus_open",
+      "y": 0
     },
-    "facing=west,open=true,tower=0": {
+    "facing=east,locked=false,open=true,tower=0": {
+      "model": "realms_of_chaos:block/passage_cache_zeus_open",
+      "y": 90
+    },
+    "facing=south,locked=false,open=true,tower=0": {
+      "model": "realms_of_chaos:block/passage_cache_zeus_open",
+      "y": 180
+    },
+    "facing=west,locked=false,open=true,tower=0": {
       "model": "realms_of_chaos:block/passage_cache_zeus_open",
       "y": 270
     },
-    "facing=west,open=true,tower=1": {
+    "facing=north,locked=true,open=true,tower=0": {
+      "model": "realms_of_chaos:block/passage_cache_zeus_open_locked",
+      "y": 0
+    },
+    "facing=east,locked=true,open=true,tower=0": {
+      "model": "realms_of_chaos:block/passage_cache_zeus_open_locked",
+      "y": 90
+    },
+    "facing=south,locked=true,open=true,tower=0": {
+      "model": "realms_of_chaos:block/passage_cache_zeus_open_locked",
+      "y": 180
+    },
+    "facing=west,locked=true,open=true,tower=0": {
+      "model": "realms_of_chaos:block/passage_cache_zeus_open_locked",
+      "y": 270
+    },
+    "facing=north,locked=false,open=false,tower=1": {
+      "model": "realms_of_chaos:block/passage_cache_poseidon",
+      "y": 0
+    },
+    "facing=east,locked=false,open=false,tower=1": {
+      "model": "realms_of_chaos:block/passage_cache_poseidon",
+      "y": 90
+    },
+    "facing=south,locked=false,open=false,tower=1": {
+      "model": "realms_of_chaos:block/passage_cache_poseidon",
+      "y": 180
+    },
+    "facing=west,locked=false,open=false,tower=1": {
+      "model": "realms_of_chaos:block/passage_cache_poseidon",
+      "y": 270
+    },
+    "facing=north,locked=true,open=false,tower=1": {
+      "model": "realms_of_chaos:block/passage_cache_poseidon_locked",
+      "y": 0
+    },
+    "facing=east,locked=true,open=false,tower=1": {
+      "model": "realms_of_chaos:block/passage_cache_poseidon_locked",
+      "y": 90
+    },
+    "facing=south,locked=true,open=false,tower=1": {
+      "model": "realms_of_chaos:block/passage_cache_poseidon_locked",
+      "y": 180
+    },
+    "facing=west,locked=true,open=false,tower=1": {
+      "model": "realms_of_chaos:block/passage_cache_poseidon_locked",
+      "y": 270
+    },
+    "facing=north,locked=false,open=true,tower=1": {
+      "model": "realms_of_chaos:block/passage_cache_poseidon_open",
+      "y": 0
+    },
+    "facing=east,locked=false,open=true,tower=1": {
+      "model": "realms_of_chaos:block/passage_cache_poseidon_open",
+      "y": 90
+    },
+    "facing=south,locked=false,open=true,tower=1": {
+      "model": "realms_of_chaos:block/passage_cache_poseidon_open",
+      "y": 180
+    },
+    "facing=west,locked=false,open=true,tower=1": {
       "model": "realms_of_chaos:block/passage_cache_poseidon_open",
       "y": 270
     },
-    "facing=west,open=true,tower=2": {
+    "facing=north,locked=true,open=true,tower=1": {
+      "model": "realms_of_chaos:block/passage_cache_poseidon_open_locked",
+      "y": 0
+    },
+    "facing=east,locked=true,open=true,tower=1": {
+      "model": "realms_of_chaos:block/passage_cache_poseidon_open_locked",
+      "y": 90
+    },
+    "facing=south,locked=true,open=true,tower=1": {
+      "model": "realms_of_chaos:block/passage_cache_poseidon_open_locked",
+      "y": 180
+    },
+    "facing=west,locked=true,open=true,tower=1": {
+      "model": "realms_of_chaos:block/passage_cache_poseidon_open_locked",
+      "y": 270
+    },
+    "facing=north,locked=false,open=false,tower=2": {
+      "model": "realms_of_chaos:block/passage_cache_hades",
+      "y": 0
+    },
+    "facing=east,locked=false,open=false,tower=2": {
+      "model": "realms_of_chaos:block/passage_cache_hades",
+      "y": 90
+    },
+    "facing=south,locked=false,open=false,tower=2": {
+      "model": "realms_of_chaos:block/passage_cache_hades",
+      "y": 180
+    },
+    "facing=west,locked=false,open=false,tower=2": {
+      "model": "realms_of_chaos:block/passage_cache_hades",
+      "y": 270
+    },
+    "facing=north,locked=true,open=false,tower=2": {
+      "model": "realms_of_chaos:block/passage_cache_hades_locked",
+      "y": 0
+    },
+    "facing=east,locked=true,open=false,tower=2": {
+      "model": "realms_of_chaos:block/passage_cache_hades_locked",
+      "y": 90
+    },
+    "facing=south,locked=true,open=false,tower=2": {
+      "model": "realms_of_chaos:block/passage_cache_hades_locked",
+      "y": 180
+    },
+    "facing=west,locked=true,open=false,tower=2": {
+      "model": "realms_of_chaos:block/passage_cache_hades_locked",
+      "y": 270
+    },
+    "facing=north,locked=false,open=true,tower=2": {
       "model": "realms_of_chaos:block/passage_cache_hades_open",
+      "y": 0
+    },
+    "facing=east,locked=false,open=true,tower=2": {
+      "model": "realms_of_chaos:block/passage_cache_hades_open",
+      "y": 90
+    },
+    "facing=south,locked=false,open=true,tower=2": {
+      "model": "realms_of_chaos:block/passage_cache_hades_open",
+      "y": 180
+    },
+    "facing=west,locked=false,open=true,tower=2": {
+      "model": "realms_of_chaos:block/passage_cache_hades_open",
+      "y": 270
+    },
+    "facing=north,locked=true,open=true,tower=2": {
+      "model": "realms_of_chaos:block/passage_cache_hades_open_locked",
+      "y": 0
+    },
+    "facing=east,locked=true,open=true,tower=2": {
+      "model": "realms_of_chaos:block/passage_cache_hades_open_locked",
+      "y": 90
+    },
+    "facing=south,locked=true,open=true,tower=2": {
+      "model": "realms_of_chaos:block/passage_cache_hades_open_locked",
+      "y": 180
+    },
+    "facing=west,locked=true,open=true,tower=2": {
+      "model": "realms_of_chaos:block/passage_cache_hades_open_locked",
       "y": 270
     }
   }

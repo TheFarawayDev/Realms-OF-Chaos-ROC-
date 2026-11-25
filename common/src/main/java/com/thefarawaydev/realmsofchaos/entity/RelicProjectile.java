@@ -115,7 +115,7 @@ public class RelicProjectile extends ThrowableItemProjectile {
         if (target instanceof net.minecraft.server.level.ServerPlayer met && !(shooter instanceof net.minecraft.world.entity.player.Player)
                 && com.thefarawaydev.realmsofchaos.world.Combat.tryParry(level, met, null)) {
             shooter.hurtServer(level, damageSources().thrown(this, met), damage);
-            level.sendParticles(net.minecraft.core.particles.ParticleTypes.ENCHANTED_HIT, shooter.getX(), shooter.getY() + 1.0, shooter.getZ(), 10, 0.3, 0.4, 0.3, 0.2);
+            level.sendParticles(com.thefarawaydev.realmsofchaos.fx.RocParticles.STRIKE.type(), shooter.getX(), shooter.getY() + 1.0, shooter.getZ(), 10, 0.3, 0.4, 0.3, 0.2);
             return;
         }
         target.hurtServer(level, damageSources().thrown(this, shooter), damage);
@@ -140,7 +140,7 @@ public class RelicProjectile extends ThrowableItemProjectile {
     protected void onHit(HitResult result) {
         super.onHit(result);
         if (level() instanceof ServerLevel level) {
-            level.sendParticles(ParticleTypes.POOF, getX(), getY(), getZ(), 6, 0.1, 0.1, 0.1, 0.02);
+            level.sendParticles(com.thefarawaydev.realmsofchaos.fx.RocParticles.DUST.type(), getX(), getY(), getZ(), 6, 0.1, 0.1, 0.1, 0.02);
             land(level, result.getLocation());
             discard();
         }

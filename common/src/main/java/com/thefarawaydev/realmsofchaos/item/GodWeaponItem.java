@@ -118,8 +118,8 @@ public class GodWeaponItem extends Item {
                 target.damageCooldownTime = 0;          // or the hit that just landed would swallow the bonus
                 target.hurtServer(level, Power.source(level, attacker),
                         (float) (god.baseDamage() * god.kind().meleeScale() * WeaponProgress.multiplier(stack) * 0.5));
-                level.sendParticles(ParticleTypes.CRIT, target.getX(), target.getY(0.6), target.getZ(), 18, 0.3, 0.4, 0.3, 0.4);
-                level.sendParticles(ParticleTypes.ENCHANTED_HIT, target.getX(), target.getY(0.6), target.getZ(), 12, 0.3, 0.4, 0.3, 0.3);
+                level.sendParticles(com.thefarawaydev.realmsofchaos.fx.RocParticles.STRIKE.type(), target.getX(), target.getY(0.6), target.getZ(), 18, 0.3, 0.4, 0.3, 0.4);
+                level.sendParticles(com.thefarawaydev.realmsofchaos.fx.RocParticles.STRIKE.type(), target.getX(), target.getY(0.6), target.getZ(), 12, 0.3, 0.4, 0.3, 0.3);
                 level.playSound(null, target.blockPosition(), SoundEvents.PLAYER_ATTACK_CRIT, SoundSource.PLAYERS, 1.0F, 0.7F);
                 com.thefarawaydev.realmsofchaos.world.Fx.impact(level, target.position(), 3);
                 if (player instanceof ServerPlayer sp) {

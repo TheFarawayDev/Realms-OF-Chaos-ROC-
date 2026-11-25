@@ -138,7 +138,7 @@ public final class Combat {
         st.dodgeUntil = now + DODGE_TICKS;
         st.dodgeReady = now + DODGE_RECOVERY;
         if (player.level() instanceof ServerLevel level) {
-            level.sendParticles(ParticleTypes.CLOUD, player.getX(), player.getY() + 0.1, player.getZ(), 8, 0.3, 0.05, 0.3, 0.02);
+            level.sendParticles(com.thefarawaydev.realmsofchaos.fx.RocParticles.DUST.type(), player.getX(), player.getY() + 0.1, player.getZ(), 8, 0.3, 0.05, 0.3, 0.02);
             level.playSound(null, player.blockPosition(), SoundEvents.PLAYER_ATTACK_SWEEP, SoundSource.PLAYERS, 0.6F, 1.7F);
         }
         return true;
@@ -169,7 +169,7 @@ public final class Combat {
             st.momentum = Math.min(MAX_MOMENTUM, st.momentum + 1);
             st.lastBlow = now;
             level.playSound(null, player.blockPosition(), SoundEvents.PLAYER_ATTACK_NODAMAGE, SoundSource.PLAYERS, 1.0F, 1.4F);
-            level.sendParticles(ParticleTypes.CLOUD, player.getX(), player.getY() + 1.0, player.getZ(), 10, 0.3, 0.4, 0.3, 0.05);
+            level.sendParticles(com.thefarawaydev.realmsofchaos.fx.RocParticles.DUST.type(), player.getX(), player.getY() + 1.0, player.getZ(), 10, 0.3, 0.4, 0.3, 0.05);
             ProgressData.get(level.getServer()).addCounter("dodges/" + player.getUUID(), 1);
             show(player, st, now);
             return true;
@@ -184,7 +184,7 @@ public final class Combat {
         if (attacker != null) stagger(level, attacker, STAGGER_TICKS);
         level.playSound(null, player.blockPosition(), SoundEvents.SHIELD_BLOCK.value(), SoundSource.PLAYERS, 1.0F, 1.6F);
         level.playSound(null, player.blockPosition(), SoundEvents.ANVIL_PLACE, SoundSource.PLAYERS, 0.5F, 1.8F);
-        level.sendParticles(ParticleTypes.ENCHANTED_HIT, player.getX(), player.getY() + 1.1, player.getZ(), 18, 0.4, 0.4, 0.4, 0.3);
+        level.sendParticles(com.thefarawaydev.realmsofchaos.fx.RocParticles.STRIKE.type(), player.getX(), player.getY() + 1.1, player.getZ(), 18, 0.4, 0.4, 0.4, 0.3);
         ProgressData.get(level.getServer()).addCounter("parries/" + player.getUUID(), 1);
         show(player, st, now);
         return true;
@@ -196,7 +196,7 @@ public final class Combat {
         creature.addEffect(new MobEffectInstance(MobEffects.SLOWNESS, ticks, 5, true, false, false));
         creature.addEffect(new MobEffectInstance(MobEffects.WEAKNESS, ticks, 2, true, false, false));
         if (creature instanceof Mob mob) mob.getNavigation().stop();
-        level.sendParticles(ParticleTypes.CRIT, creature.getX(), creature.getY() + creature.getBbHeight() + 0.3, creature.getZ(), 12, 0.3, 0.1, 0.3, 0.2);
+        level.sendParticles(com.thefarawaydev.realmsofchaos.fx.RocParticles.STRIKE.type(), creature.getX(), creature.getY() + creature.getBbHeight() + 0.3, creature.getZ(), 12, 0.3, 0.1, 0.3, 0.2);
     }
 
     public static boolean isStaggered(LivingEntity creature) {
@@ -264,7 +264,7 @@ public final class Combat {
             shocking = false;
         }
         level.sendParticles(ParticleTypes.EXPLOSION, victim.getX(), victim.getY() + 0.2, victim.getZ(), 1, 0, 0, 0, 0);
-        level.sendParticles(ParticleTypes.POOF, victim.getX(), victim.getY() + 0.2, victim.getZ(), 24, 1.2, 0.1, 1.2, 0.05);
+        level.sendParticles(com.thefarawaydev.realmsofchaos.fx.RocParticles.DUST.type(), victim.getX(), victim.getY() + 0.2, victim.getZ(), 24, 1.2, 0.1, 1.2, 0.05);
         level.playSound(null, victim.blockPosition(), SoundEvents.MACE_SMASH_GROUND, SoundSource.PLAYERS, 1.0F, 1.0F);
     }
 

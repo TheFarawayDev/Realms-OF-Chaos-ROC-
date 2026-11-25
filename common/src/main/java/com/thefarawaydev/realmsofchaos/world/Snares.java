@@ -176,7 +176,7 @@ public final class Snares {
                     if (spikeGroup(dx, dz) != group) continue;
                     BlockPos at = m.offset(dx, 1, dz);
                     if (warn) {
-                        level.sendParticles(ParticleTypes.CRIT, at.getX() + 0.5, at.getY() + 0.1, at.getZ() + 0.5, 1, 0.2, 0.0, 0.2, 0.0);
+                        level.sendParticles(com.thefarawaydev.realmsofchaos.fx.RocParticles.STRIKE.type(), at.getX() + 0.5, at.getY() + 0.1, at.getZ() + 0.5, 1, 0.2, 0.0, 0.2, 0.0);
                     } else if (rise) {
                         if (level.getBlockState(at).isAir()) level.setBlock(at, spike().defaultBlockState(), 2);
                     } else if (level.getBlockState(at).is(spike())) {
@@ -230,8 +230,8 @@ public final class Snares {
                 if (flameGroup(dz) != group) continue;
                 for (int dx = -SPAN; dx <= SPAN; dx += 2) {
                     double x = m.getX() + dx + 0.5, y = m.getY() + 1.05, z = m.getZ() + dz + 0.5;
-                    if (warn && phase % 4 == 0) level.sendParticles(ParticleTypes.SMOKE, x, y, z, 1, 0.1, 0.05, 0.1, 0.01);
-                    if (burn && phase % 2 == 0) level.sendParticles(ParticleTypes.FLAME, x, y + 0.2, z, 3, 0.25, 0.5, 0.25, 0.02);
+                    if (warn && phase % 4 == 0) level.sendParticles(com.thefarawaydev.realmsofchaos.fx.RocParticles.SMOKE.type(), x, y, z, 1, 0.1, 0.05, 0.1, 0.01);
+                    if (burn && phase % 2 == 0) level.sendParticles(com.thefarawaydev.realmsofchaos.fx.RocParticles.FLAME_STORM.type(), x, y + 0.2, z, 3, 0.25, 0.5, 0.25, 0.02);
                 }
             }
             if (burn && phase % 5 == 0) {
@@ -258,7 +258,7 @@ public final class Snares {
         double x = m.getX() + 0.5 + bladeAt(now), y = m.getY() + 1.0;
         if (now % 2 == 0) {
             for (int dz = -4; dz <= 4; dz += 2) level.sendParticles(ParticleTypes.SWEEP_ATTACK, x, y + 0.8, m.getZ() + dz + 0.5, 1, 0, 0, 0, 0);
-            for (int dz = -4; dz <= 4; dz++) level.sendParticles(ParticleTypes.ELECTRIC_SPARK, x, y + 0.1, m.getZ() + dz + 0.5, 1, 0.0, 0.0, 0.3, 0.0);
+            for (int dz = -4; dz <= 4; dz++) level.sendParticles(com.thefarawaydev.realmsofchaos.fx.RocParticles.STORM_SPARK.type(), x, y + 0.1, m.getZ() + dz + 0.5, 1, 0.0, 0.0, 0.3, 0.0);
         }
         if (Math.floorMod(now, (long) (BLADE_PERIOD / 2)) == 0) level.playSound(null, m, SoundEvents.PLAYER_ATTACK_SWEEP, SoundSource.BLOCKS, 1.0F, 0.6F);
         boolean eastward = Math.floorMod(now, (long) BLADE_PERIOD) < BLADE_PERIOD / 2;
@@ -294,7 +294,7 @@ public final class Snares {
         if (now % 2 == 0) {
             for (double r = 0.8; r <= ARC_REACH; r += 0.6) {
                 for (int side = -1; side <= 1; side += 2) {
-                    level.sendParticles(ParticleTypes.ELECTRIC_SPARK, cx + Math.cos(a) * r * side, m.getY() + 1.2, cz + Math.sin(a) * r * side, 1, 0.0, 0.25, 0.0, 0.0);
+                    level.sendParticles(com.thefarawaydev.realmsofchaos.fx.RocParticles.STORM_SPARK.type(), cx + Math.cos(a) * r * side, m.getY() + 1.2, cz + Math.sin(a) * r * side, 1, 0.0, 0.25, 0.0, 0.0);
                 }
             }
         }
@@ -339,7 +339,7 @@ public final class Snares {
             for (int dx = -4; dx <= 4; dx += 2) {
                 for (int dz = -4; dz <= 4; dz += 2) {
                     if (!inHalf(half, dx, dz)) continue;
-                    level.sendParticles(out ? ParticleTypes.SNEEZE : ParticleTypes.SMOKE, m.getX() + dx + 0.5, m.getY() + (out ? 1.4 : 1.1), m.getZ() + dz + 0.5, out ? 2 : 1, 0.5, 0.3, 0.5, 0.01);
+                    level.sendParticles(out ? ParticleTypes.SNEEZE : com.thefarawaydev.realmsofchaos.fx.RocParticles.SMOKE.type(), m.getX() + dx + 0.5, m.getY() + (out ? 1.4 : 1.1), m.getZ() + dz + 0.5, out ? 2 : 1, 0.5, 0.3, 0.5, 0.01);
                 }
             }
         }
@@ -417,7 +417,7 @@ public final class Snares {
             if (stood) {
                 PIT_SPRING.put(key, now + PIT_WARN);
                 level.playSound(null, mid, SoundEvents.COPPER_TRAPDOOR_OPEN, SoundSource.BLOCKS, 0.7F, 0.5F);
-                level.sendParticles(ParticleTypes.CRIT, mid.getX() + 0.5, mid.getY() + 1.05, mid.getZ() + 0.5, 12, 1.0, 0.0, 1.0, 0.0);
+                level.sendParticles(com.thefarawaydev.realmsofchaos.fx.RocParticles.STRIKE.type(), mid.getX() + 0.5, mid.getY() + 1.05, mid.getZ() + 0.5, 12, 1.0, 0.0, 1.0, 0.0);
             } else if (inside.isEmpty() && level.getBlockState(mid).getBlock() instanceof net.minecraft.world.level.block.TrapDoorBlock && level.getBlockState(mid).getValue(net.minecraft.world.level.block.TrapDoorBlock.OPEN)) {
                 setLids(level, plan, c, dir, false);                 // (left open by a server that stopped mid-spring)
             }
@@ -451,8 +451,8 @@ public final class Snares {
         boolean burn = jetsBurning(now);
         if (phase == JET_WARN) level.playSound(null, mid, SoundEvents.BLAZE_SHOOT, SoundSource.BLOCKS, 0.6F, 0.8F);
         int kind = plan.jetKind(c, dir);
-        var wisp = kind == Passages.JET_FROST ? ParticleTypes.SNOWFLAKE : kind == Passages.JET_SHOCK ? ParticleTypes.ELECTRIC_SPARK : kind == Passages.JET_VENOM ? ParticleTypes.ITEM_SLIME : ParticleTypes.SMOKE;
-        var burst = kind == Passages.JET_FROST ? ParticleTypes.SNOWFLAKE : kind == Passages.JET_SHOCK ? ParticleTypes.ELECTRIC_SPARK : kind == Passages.JET_VENOM ? ParticleTypes.SNEEZE : ParticleTypes.FLAME;
+        var wisp = kind == Passages.JET_FROST ? com.thefarawaydev.realmsofchaos.fx.RocParticles.FROST.type() : kind == Passages.JET_SHOCK ? com.thefarawaydev.realmsofchaos.fx.RocParticles.STORM_SPARK.type() : kind == Passages.JET_VENOM ? ParticleTypes.ITEM_SLIME : com.thefarawaydev.realmsofchaos.fx.RocParticles.SMOKE.type();
+        var burst = kind == Passages.JET_FROST ? com.thefarawaydev.realmsofchaos.fx.RocParticles.FROST.type() : kind == Passages.JET_SHOCK ? com.thefarawaydev.realmsofchaos.fx.RocParticles.STORM_SPARK.type() : kind == Passages.JET_VENOM ? ParticleTypes.SNEEZE : com.thefarawaydev.realmsofchaos.fx.RocParticles.FLAME_STORM.type();
         for (int k = -1; k <= 1; k++) {
             BlockPos vent = dir == 0 ? mid.offset(0, 0, k) : mid.offset(k, 0, 0);
             double x = vent.getX() + 0.5, y = vent.getY() + 1.05, z = vent.getZ() + 0.5;

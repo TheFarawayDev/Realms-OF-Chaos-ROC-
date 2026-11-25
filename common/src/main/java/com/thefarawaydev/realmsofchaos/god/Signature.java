@@ -96,9 +96,9 @@ public enum Signature {
 
     public static ParticleOptions spark(Line line) {
         return switch (line) {
-            case ZEUS -> ParticleTypes.ELECTRIC_SPARK;
-            case POSEIDON -> ParticleTypes.SPLASH;
-            case HADES -> ParticleTypes.SOUL_FIRE_FLAME;
+            case ZEUS -> com.thefarawaydev.realmsofchaos.fx.RocParticles.STORM_SPARK.type();
+            case POSEIDON -> com.thefarawaydev.realmsofchaos.fx.RocParticles.SEA_SPRAY.type();
+            case HADES -> com.thefarawaydev.realmsofchaos.fx.RocParticles.SOUL_WISP.type();
         };
     }
 
@@ -166,7 +166,7 @@ public enum Signature {
                     double a = user.getRandom().nextDouble() * Math.PI * 2, r = 4.0 + user.getRandom().nextDouble() * 5.0;
                     bolt(level, at.x + Math.cos(a) * r, at.y, at.z + Math.sin(a) * r);
                 }
-                level.sendParticles(ParticleTypes.ELECTRIC_SPARK, at.x, at.y + 1.2, at.z, 80, 3.0, 1.5, 3.0, 0.2);
+                level.sendParticles(com.thefarawaydev.realmsofchaos.fx.RocParticles.STORM_SPARK.type(), at.x, at.y + 1.2, at.z, 80, 3.0, 1.5, 3.0, 0.2);
                 sound(level, user, SoundEvents.TRIDENT_THUNDER.value(), 1.6F, 1.0F);
             }
             case CHARGE -> {
@@ -178,7 +178,7 @@ public enum Signature {
                     Vec3 step = foothold(level, user, new Vec3(at.x + dir.x * d, end.y, at.z + dir.z * d));
                     if (step == null) break;
                     end = step;
-                    level.sendParticles(ParticleTypes.CLOUD, step.x, step.y + 0.4, step.z, 2, 0.2, 0.2, 0.2, 0.01);
+                    level.sendParticles(com.thefarawaydev.realmsofchaos.fx.RocParticles.DUST.type(), step.x, step.y + 0.4, step.z, 2, 0.2, 0.2, 0.2, 0.01);
                     level.sendParticles(spark, step.x, step.y + 1.0, step.z, 3, 0.2, 0.4, 0.2, 0.02);
                 }
                 Vec3 side = new Vec3(-dir.z, 0, dir.x);
@@ -235,9 +235,9 @@ public enum Signature {
                 // the shockwave breaks the ground as it goes out
                 Fx.impact(level, at, 6);
                 for (int i = 0; i < 4; i++) Fx.impact(level, at.add(Math.cos(Math.PI / 2 * i) * 3.5, 0, Math.sin(Math.PI / 2 * i) * 3.5), 3);
-                ring(level, ParticleTypes.CLOUD, at, 3.0, 0.3);
+                ring(level, com.thefarawaydev.realmsofchaos.fx.RocParticles.DUST.type(), at, 3.0, 0.3);
                 ring(level, spark, at, 5.0, 0.4);
-                ring(level, ParticleTypes.CLOUD, at, 7.0, 0.3);
+                ring(level, com.thefarawaydev.realmsofchaos.fx.RocParticles.DUST.type(), at, 7.0, 0.3);
                 sound(level, user, SoundEvents.GENERIC_EXPLODE.value(), 1.2F, 1.3F);
             }
             case BLINK -> {
@@ -257,15 +257,15 @@ public enum Signature {
                 for (Vec3 around : new Vec3[]{t.subtract(back.scale(1.6)), t.add(side.scale(1.6)), t.subtract(side.scale(1.6)), t.add(back.scale(1.6))}) {
                     Vec3 spot = foothold(level, user, around);
                     if (spot == null) continue;
-                    level.sendParticles(ParticleTypes.PORTAL, at.x, at.y + 1.0, at.z, 40, 0.3, 0.8, 0.3, 0.4);
+                    level.sendParticles(com.thefarawaydev.realmsofchaos.fx.RocParticles.CHAOS_MOTE.type(), at.x, at.y + 1.0, at.z, 40, 0.3, 0.8, 0.3, 0.4);
                     user.teleportTo(spot.x, spot.y, spot.z);
                     user.resetFallDistance();
                     break;
                 }
                 user.lookAt(EntityAnchorArgument.Anchor.EYES, target.getEyePosition());
                 strike(level, user, target, god, damage * 1.6F);
-                level.sendParticles(ParticleTypes.PORTAL, user.getX(), user.getY() + 1.0, user.getZ(), 40, 0.3, 0.8, 0.3, 0.4);
-                level.sendParticles(ParticleTypes.CRIT, target.getX(), target.getY(0.6), target.getZ(), 25, 0.3, 0.5, 0.3, 0.3);
+                level.sendParticles(com.thefarawaydev.realmsofchaos.fx.RocParticles.CHAOS_MOTE.type(), user.getX(), user.getY() + 1.0, user.getZ(), 40, 0.3, 0.8, 0.3, 0.4);
+                level.sendParticles(com.thefarawaydev.realmsofchaos.fx.RocParticles.STRIKE.type(), target.getX(), target.getY(0.6), target.getZ(), 25, 0.3, 0.5, 0.3, 0.3);
                 Fx.impact(level, target.position(), 2);
                 sound(level, user, SoundEvents.ENDERMAN_TELEPORT, 1.0F, 1.2F);
                 sound(level, user, SoundEvents.PLAYER_ATTACK_CRIT, 1.2F, 0.9F);
@@ -288,8 +288,8 @@ public enum Signature {
                     god.applyTargetEffect(e);
                 }
                 level.sendParticles(ParticleTypes.HEART, at.x, at.y + 2.0, at.z, 8, 0.5, 0.3, 0.5, 0.0);
-                ring(level, ParticleTypes.HAPPY_VILLAGER, at, 2.0, 0.4);
-                ring(level, ParticleTypes.HAPPY_VILLAGER, at, 3.5, 1.2);
+                ring(level, com.thefarawaydev.realmsofchaos.fx.RocParticles.GLINT.type(), at, 2.0, 0.4);
+                ring(level, com.thefarawaydev.realmsofchaos.fx.RocParticles.GLINT.type(), at, 3.5, 1.2);
                 sound(level, user, SoundEvents.AMETHYST_BLOCK_CHIME, 2.0F, 0.8F);
                 sound(level, user, SoundEvents.PLAYER_LEVELUP, 0.6F, 1.6F);
             }
@@ -305,9 +305,9 @@ public enum Signature {
                     }
                     level.sendParticles(ParticleTypes.NOTE, e.getX(), e.getY() + e.getBbHeight() + 0.4, e.getZ(), 3, 0.3, 0.2, 0.3, 0.5);
                 }
-                level.sendParticles(ParticleTypes.WITCH, at.x, at.y + 1.0, at.z, 60, 3.0, 1.0, 3.0, 0.1);
-                ring(level, ParticleTypes.WITCH, at, 6.0, 0.4);
-                ring(level, ParticleTypes.WITCH, at, 10.0, 0.4);
+                level.sendParticles(com.thefarawaydev.realmsofchaos.fx.RocParticles.CHAOS_MOTE.type(), at.x, at.y + 1.0, at.z, 60, 3.0, 1.0, 3.0, 0.1);
+                ring(level, com.thefarawaydev.realmsofchaos.fx.RocParticles.CHAOS_MOTE.type(), at, 6.0, 0.4);
+                ring(level, com.thefarawaydev.realmsofchaos.fx.RocParticles.CHAOS_MOTE.type(), at, 10.0, 0.4);
                 sound(level, user, SoundEvents.ILLUSIONER_CAST_SPELL, 1.5F, 0.6F);
             }
             case REAP -> {
@@ -317,7 +317,7 @@ public enum Signature {
                     Vec3 to = e.position().subtract(at);
                     if (to.x * to.x + to.z * to.z > 0.25 && flat(to).dot(dir) < 0.2) continue;       // behind the reaper
                     strike(level, user, e, god, damage * 1.3F);
-                    level.sendParticles(ParticleTypes.SOUL, e.getX(), e.getY(0.7), e.getZ(), 5, 0.2, 0.3, 0.2, 0.03);
+                    level.sendParticles(com.thefarawaydev.realmsofchaos.fx.RocParticles.SOUL_WISP.type(), e.getX(), e.getY(0.7), e.getZ(), 5, 0.2, 0.3, 0.2, 0.03);
                     hits++;
                 }
                 if (hits > 0) user.heal(hits * (player ? 2.0F + damage * 0.15F : Math.max(2.0F, user.getMaxHealth() * 0.02F)));
@@ -337,9 +337,9 @@ public enum Signature {
                     e.addEffect(new MobEffectInstance(MobEffects.WEAKNESS, 120, 0));
                     e.addEffect(new MobEffectInstance(MobEffects.GLOWING, 120, 0));
                     god.applyTargetEffect(e);
-                    level.sendParticles(ParticleTypes.WITCH, e.getX(), e.getY() + e.getBbHeight() + 0.3, e.getZ(), 12, 0.3, 0.3, 0.3, 0.05);
+                    level.sendParticles(com.thefarawaydev.realmsofchaos.fx.RocParticles.CHAOS_MOTE.type(), e.getX(), e.getY() + e.getBbHeight() + 0.3, e.getZ(), 12, 0.3, 0.3, 0.3, 0.05);
                 }
-                ring(level, ParticleTypes.WITCH, at, 2.5, 0.2);
+                ring(level, com.thefarawaydev.realmsofchaos.fx.RocParticles.CHAOS_MOTE.type(), at, 2.5, 0.2);
                 sound(level, user, SoundEvents.EVOKER_CAST_SPELL, 1.5F, 0.6F);
                 // the hex bursts two seconds later - unless the cursed got well away from whoever laid it
                 Scheduler.after(level.getServer(), 40, () -> {
@@ -347,7 +347,7 @@ public enum Signature {
                     for (LivingEntity e : marked) {
                         if (!e.isAlive() || e.level() != level || !Power.canHurt(user, e) || e.distanceToSqr(user) > 14.0 * 14.0) continue;
                         strike(level, user, e, god, damage * 0.9F);
-                        level.sendParticles(ParticleTypes.SCULK_SOUL, e.getX(), e.getY(0.6), e.getZ(), 20, 0.4, 0.6, 0.4, 0.05);
+                        level.sendParticles(com.thefarawaydev.realmsofchaos.fx.RocParticles.SOUL_WISP.type(), e.getX(), e.getY(0.6), e.getZ(), 20, 0.4, 0.6, 0.4, 0.05);
                         level.playSound(null, e.blockPosition(), SoundEvents.SOUL_ESCAPE.value(), SoundSource.HOSTILE, 2.0F, 0.7F);
                     }
                 });
@@ -359,8 +359,8 @@ public enum Signature {
                     e.addEffect(new MobEffectInstance(MobEffects.SLOWNESS, 100, 2));
                 }
                 user.clearFire();
-                for (double r = 2.0; r <= 8.0; r += 2.0) ring(level, ParticleTypes.SNOWFLAKE, at, r, 0.3);
-                level.sendParticles(ParticleTypes.SNOWFLAKE, at.x, at.y + 1.0, at.z, 60, 3.0, 0.8, 3.0, 0.05);
+                for (double r = 2.0; r <= 8.0; r += 2.0) ring(level, com.thefarawaydev.realmsofchaos.fx.RocParticles.FROST.type(), at, r, 0.3);
+                level.sendParticles(com.thefarawaydev.realmsofchaos.fx.RocParticles.FROST.type(), at.x, at.y + 1.0, at.z, 60, 3.0, 0.8, 3.0, 0.05);
                 sound(level, user, SoundEvents.GLASS_BREAK, 1.4F, 0.6F);
                 sound(level, user, SoundEvents.POWDER_SNOW_BREAK, 1.6F, 0.8F);
             }
@@ -372,7 +372,7 @@ public enum Signature {
                     level.sendParticles(ParticleTypes.GUST, e.getX(), e.getY() + 0.2, e.getZ(), 1, 0, 0, 0, 0);
                 }
                 user.addEffect(new MobEffectInstance(MobEffects.SLOW_FALLING, 80, 0));
-                level.sendParticles(ParticleTypes.CLOUD, at.x, at.y + 0.5, at.z, 50, 3.0, 0.3, 3.0, 0.08);
+                level.sendParticles(com.thefarawaydev.realmsofchaos.fx.RocParticles.DUST.type(), at.x, at.y + 0.5, at.z, 50, 3.0, 0.3, 3.0, 0.08);
                 ring(level, ParticleTypes.SMALL_GUST, at, 4.0, 0.6);
                 sound(level, user, SoundEvents.WIND_CHARGE_BURST.value(), 1.6F, 0.9F);
             }
@@ -385,8 +385,8 @@ public enum Signature {
                     Vec3 away = flat(e.position().subtract(at));
                     push(e, away.x * 0.9, 0.3, away.z * 0.9);
                 }
-                for (double h = 0.2; h <= 2.0; h += 0.6) ring(level, ParticleTypes.END_ROD, at, 1.6, h);
-                ring(level, ParticleTypes.ENCHANTED_HIT, at, 5.0, 0.5);
+                for (double h = 0.2; h <= 2.0; h += 0.6) ring(level, com.thefarawaydev.realmsofchaos.fx.RocParticles.GLINT.type(), at, 1.6, h);
+                ring(level, com.thefarawaydev.realmsofchaos.fx.RocParticles.STRIKE.type(), at, 5.0, 0.5);
                 sound(level, user, SoundEvents.SHIELD_BLOCK.value(), 1.4F, 0.7F);
                 sound(level, user, SoundEvents.BEACON_ACTIVATE, 1.0F, 1.5F);
             }
@@ -420,7 +420,7 @@ public enum Signature {
                         }
                         level.sendParticles(ParticleTypes.EXPLOSION, m.x, m.y + 0.8, m.z, 2, 0.5, 0.2, 0.5, 0.0);
                         Fx.impact(level, m, 8);
-                        level.sendParticles(ParticleTypes.LAVA, m.x, m.y + 0.3, m.z, 8, 0.8, 0.1, 0.8, 0.0);
+                        level.sendParticles(com.thefarawaydev.realmsofchaos.fx.RocParticles.EMBER.type(), m.x, m.y + 0.3, m.z, 8, 0.8, 0.1, 0.8, 0.0);
                         level.playSound(null, m.x, m.y, m.z, SoundEvents.GENERIC_EXPLODE.value(), SoundSource.HOSTILE, 1.0F, 0.8F);
                     }
                 });

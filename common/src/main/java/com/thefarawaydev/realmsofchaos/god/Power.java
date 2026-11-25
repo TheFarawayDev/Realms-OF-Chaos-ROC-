@@ -41,14 +41,14 @@ public enum Power {
             }
             case FIRE -> {
                 target.igniteForSeconds(3.0F + 5.0F * strength);
-                level.sendParticles(ParticleTypes.FLAME, x, y, z, 10, 0.25, 0.35, 0.25, 0.03);
+                level.sendParticles(com.thefarawaydev.realmsofchaos.fx.RocParticles.FLAME_STORM.type(), x, y, z, 10, 0.25, 0.35, 0.25, 0.03);
             }
             case KNOCKBACK -> {
                 Vec3 away = target.position().subtract(attacker.position());
                 away = new Vec3(away.x, 0, away.z).normalize();
                 target.setDeltaMovement(target.getDeltaMovement().add(away.x * (0.8 + strength), 0.35, away.z * (0.8 + strength)));
                 target.needsSync = true;
-                level.sendParticles(ParticleTypes.CLOUD, x, y, z, 8, 0.2, 0.2, 0.2, 0.06);
+                level.sendParticles(com.thefarawaydev.realmsofchaos.fx.RocParticles.DUST.type(), x, y, z, 8, 0.2, 0.2, 0.2, 0.06);
             }
             case DRAIN -> {
                 attacker.heal(1.0F + 5.0F * strength);
@@ -57,12 +57,12 @@ public enum Power {
             }
             case FREEZE -> {
                 target.setTicksFrozen(target.getTicksFrozen() + 80 + (int) (140 * strength));
-                level.sendParticles(ParticleTypes.SNOWFLAKE, x, y, z, 12, 0.25, 0.4, 0.25, 0.02);
+                level.sendParticles(com.thefarawaydev.realmsofchaos.fx.RocParticles.FROST.type(), x, y, z, 12, 0.25, 0.4, 0.25, 0.02);
             }
             case SWEEP -> {
                 sweep(level, target, attacker, 3.5F * strength + 2.0F, 3.0);
                 level.sendParticles(ParticleTypes.SWEEP_ATTACK, x, y, z, 2, 0.6, 0.1, 0.6, 0.0);
-                level.sendParticles(ParticleTypes.SPLASH, x, y, z, 20, 1.2, 0.3, 1.2, 0.2);
+                level.sendParticles(com.thefarawaydev.realmsofchaos.fx.RocParticles.SEA_SPRAY.type(), x, y, z, 20, 1.2, 0.3, 1.2, 0.2);
             }
             case NONE -> { }
         }

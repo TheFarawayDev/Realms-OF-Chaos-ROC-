@@ -123,7 +123,7 @@ public final class FloorShifts {
                 TowerBuilder.reshape(level, s.line, s.floor, TowerBuilder.heights(s.floor, s.position), TowerBuilder.heights(s.floor, next));
                 s.position = next;
                 carry(level, s.floor);
-                level.sendParticles(ParticleTypes.POOF, 0.5, Tower.floorY(s.floor) + 1.5, 0.5, 40, 7.0, 0.6, 7.0, 0.01);
+                level.sendParticles(com.thefarawaydev.realmsofchaos.fx.RocParticles.DUST.type(), 0.5, Tower.floorY(s.floor) + 1.5, 0.5, 40, 7.0, 0.6, 7.0, 0.01);
             }
             if (s.position == 0 && s.target == 0) {
                 ProgressData.get(server).clearShifted(entry.getKey());

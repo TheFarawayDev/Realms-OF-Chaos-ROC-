@@ -165,9 +165,9 @@ public final class Waygates {
             channel.ticks++;
             // the obelisk gathers: a spiral closing on the traveller, and a bar that fills
             double a = channel.ticks * 0.45, r = 1.6 * (1.0 - channel.ticks / (double) channel.needed) + 0.3;
-            level.sendParticles(ParticleTypes.PORTAL, player.getX() + Math.cos(a) * r, player.getY() + 0.2 + channel.ticks / (double) channel.needed * 1.8,
+            level.sendParticles(com.thefarawaydev.realmsofchaos.fx.RocParticles.CHAOS_MOTE.type(), player.getX() + Math.cos(a) * r, player.getY() + 0.2 + channel.ticks / (double) channel.needed * 1.8,
                     player.getZ() + Math.sin(a) * r, 2, 0.02, 0.02, 0.02, 0.0);
-            level.sendParticles(ParticleTypes.END_ROD, channel.obelisk.getX() + 0.5, channel.obelisk.getY() + 1.2, channel.obelisk.getZ() + 0.5, 1, 0.1, 0.3, 0.1, 0.01);
+            level.sendParticles(com.thefarawaydev.realmsofchaos.fx.RocParticles.GLINT.type(), channel.obelisk.getX() + 0.5, channel.obelisk.getY() + 1.2, channel.obelisk.getZ() + 0.5, 1, 0.1, 0.3, 0.1, 0.01);
             if (channel.ticks % 5 == 0) {
                 int lit = (int) Math.round(channel.ticks / (double) channel.needed * 10);
                 Hud.actionBar(player, Hud.colored(Component.translatable(HUD + "channel", "▮".repeat(lit) + "▯".repeat(10 - lit)), 0xA55AD6));
@@ -195,7 +195,7 @@ public final class Waygates {
             }
         }
         if (!player.isCreative()) take(player, cost(), price(server));
-        level.sendParticles(ParticleTypes.REVERSE_PORTAL, player.getX(), player.getY() + 1, player.getZ(), 60, 0.4, 0.8, 0.4, 0.1);
+        level.sendParticles(com.thefarawaydev.realmsofchaos.fx.RocParticles.CHAOS_MOTE.type(), player.getX(), player.getY() + 1, player.getZ(), 60, 0.4, 0.8, 0.4, 0.1);
         level.playSound(null, player.blockPosition(), SoundEvents.ENDERMAN_TELEPORT, SoundSource.PLAYERS, 1.0F, 0.8F);
         if (to == null) {
             Teleports.toHub(player);
@@ -204,7 +204,7 @@ public final class Waygates {
         ServerLevel dest = to.level(server);
         BlockPos stand = standBy(dest, to.pos());
         Teleports.moveTo(player, dest, new Vec3(stand.getX() + 0.5, stand.getY(), stand.getZ() + 0.5), player.getYRot());
-        dest.sendParticles(ParticleTypes.REVERSE_PORTAL, stand.getX() + 0.5, stand.getY() + 1, stand.getZ() + 0.5, 60, 0.4, 0.8, 0.4, 0.1);
+        dest.sendParticles(com.thefarawaydev.realmsofchaos.fx.RocParticles.CHAOS_MOTE.type(), stand.getX() + 0.5, stand.getY() + 1, stand.getZ() + 0.5, 60, 0.4, 0.8, 0.4, 0.1);
         dest.playSound(null, stand, SoundEvents.ENDERMAN_TELEPORT, SoundSource.PLAYERS, 1.0F, 1.0F);
         Hud.actionBar(player, Hud.colored(Component.translatable(HUD + "arrived", Scanner.coords(to.pos())), 0x55FF55));
     }

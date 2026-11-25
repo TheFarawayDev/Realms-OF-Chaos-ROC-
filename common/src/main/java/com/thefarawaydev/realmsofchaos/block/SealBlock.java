@@ -39,7 +39,7 @@ public class SealBlock extends Block {
                 Passages.wake(level, plan, cell);           // in case the player got here faster than the chamber noticed
                 int standing = Passages.guardians(level, plan, cell).size();
                 if (standing > 0) {
-                    Hud.actionBar(player, Hud.colored(Component.translatable("hud." + RealmsOfChaos.MOD_ID + ".passage.guarded", standing), 0xFF5555));
+                    Hud.above(player, pos, Component.translatable("hud." + RealmsOfChaos.MOD_ID + ".passage.guarded", standing), 0xFF5555);
                     return false;
                 }
             }
@@ -65,11 +65,11 @@ public class SealBlock extends Block {
     public void animateTick(BlockState state, Level level, BlockPos pos, RandomSource random) {
         for (int i = 0; i < 2; i++) {
             double a = random.nextDouble() * Math.PI * 2;
-            level.addParticle(ParticleTypes.ENCHANT, pos.getX() + 0.5 + Math.cos(a) * 1.2, pos.getY() + 0.3 + random.nextDouble(), pos.getZ() + 0.5 + Math.sin(a) * 1.2,
+            level.addParticle(com.thefarawaydev.realmsofchaos.fx.RocParticles.RUNE.type(), pos.getX() + 0.5 + Math.cos(a) * 1.2, pos.getY() + 0.3 + random.nextDouble(), pos.getZ() + 0.5 + Math.sin(a) * 1.2,
                     -Math.cos(a) * 0.8, 0.1, -Math.sin(a) * 0.8);
         }
         if (random.nextInt(5) == 0) {
-            level.addParticle(ParticleTypes.END_ROD, pos.getX() + 0.5, pos.getY() + 1.1, pos.getZ() + 0.5, 0, 0.03, 0);
+            level.addParticle(com.thefarawaydev.realmsofchaos.fx.RocParticles.GLINT.type(), pos.getX() + 0.5, pos.getY() + 1.1, pos.getZ() + 0.5, 0, 0.03, 0);
         }
     }
 }

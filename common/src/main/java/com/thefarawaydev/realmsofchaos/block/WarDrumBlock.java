@@ -39,7 +39,7 @@ public class WarDrumBlock extends Block {
     public static void beat(ServerLevel level, BlockPos pos) {
         level.playSound(null, pos, SoundEvents.NOTE_BLOCK_BASEDRUM.value(), SoundSource.BLOCKS, 2.0F, 0.6F);
         level.playSound(null, pos, SoundEvents.WARDEN_HEARTBEAT, SoundSource.BLOCKS, 1.2F, 0.7F);
-        level.sendParticles(ParticleTypes.CLOUD, pos.getX() + 0.5, pos.getY() + 0.95, pos.getZ() + 0.5, 6, 0.3, 0.02, 0.3, 0.01);
+        level.sendParticles(com.thefarawaydev.realmsofchaos.fx.RocParticles.DUST.type(), pos.getX() + 0.5, pos.getY() + 0.95, pos.getZ() + 0.5, 6, 0.3, 0.02, 0.3, 0.01);
     }
 
     @Override

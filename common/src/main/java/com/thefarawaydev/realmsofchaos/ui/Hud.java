@@ -56,6 +56,15 @@ public final class Hud {
         return new int[]{said, hushed};
     }
 
+    /**
+     * Something a block has to say: shown in a panel floating over the block. A player in another dimension (or with no
+     * level) gets it in the action bar instead.
+     */
+    public static void above(ServerPlayer player, net.minecraft.core.BlockPos pos, Component text, int colour) {
+        if (player.level() instanceof net.minecraft.server.level.ServerLevel level) BlockLabel.show(level, pos, text, colour);
+        else actionBar(player, colored(text, colour));
+    }
+
     public static void actionBar(ServerPlayer player, Component text) {
         // (a room, a trap or a god that says the same thing every second is not saying anything)
         if (player.level().getServer() != null) {

@@ -40,6 +40,8 @@ public final class RealmSafety {
         Snares.tick(server);
         Combat.tick(server);
         Seats.tick(server);
+        com.thefarawaydev.realmsofchaos.ui.BlockLabel.tick(server);
+        Lockpicking.tick(server);
         Passages.tick(server);
         Hazards.tick(server);
         Onslaughts.tick(server);

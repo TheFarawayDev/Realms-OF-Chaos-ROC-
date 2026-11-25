@@ -230,7 +230,7 @@ public enum Tarot {
             }
         }
         if (player.level() instanceof ServerLevel now) {
-            now.sendParticles(ParticleTypes.ENCHANT, player.getX(), player.getY() + 1.2, player.getZ(), 40, 0.5, 0.6, 0.5, 0.4);
+            now.sendParticles(com.thefarawaydev.realmsofchaos.fx.RocParticles.RUNE.type(), player.getX(), player.getY() + 1.2, player.getZ(), 40, 0.5, 0.6, 0.5, 0.4);
             now.playSound(null, player.blockPosition(), SoundEvents.BOOK_PAGE_TURN, SoundSource.PLAYERS, 1.0F, 0.8F);
             now.playSound(null, player.blockPosition(), SoundEvents.ENCHANTMENT_TABLE_USE, SoundSource.PLAYERS, 0.7F, 1.3F);
         }

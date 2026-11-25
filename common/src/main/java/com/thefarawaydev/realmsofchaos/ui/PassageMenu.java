@@ -103,6 +103,8 @@ public class PassageMenu extends ButtonMenu {
                 case ARENA -> Items.IRON_SWORD;
                 case VAULT -> Items.AMETHYST_SHARD;
                 case SHUTTERS -> Items.SNOWBALL;
+                case DIALS -> Items.CLOCK;
+                case SLIDES -> Items.PISTON;
                 case SMITHY -> Items.ANVIL;
                 case CRYPT -> Items.SKELETON_SKULL;
                 case WAR_ROOM -> Items.MAP;

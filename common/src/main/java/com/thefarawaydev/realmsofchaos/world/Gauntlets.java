@@ -192,7 +192,7 @@ public final class Gauntlets {
                     double x = m.getX() + dx + 0.5, y = m.getY() + 1.05, z = m.getZ() + dz + 0.5;
                     if (path) {
                         // (a path hall shows only its path, and only while the rest is being warned of)
-                        if (shimmer < warn && shimmer % 8 == 0 && Gauntlet.onPath(r, doors, seed, dx, dz)) level.sendParticles(ParticleTypes.END_ROD, x, y + 0.1, z, 1, 0.1, 0.0, 0.1, 0.0);
+                        if (shimmer < warn && shimmer % 8 == 0 && Gauntlet.onPath(r, doors, seed, dx, dz)) level.sendParticles(com.thefarawaydev.realmsofchaos.fx.RocParticles.GLINT.type(), x, y + 0.1, z, 1, 0.1, 0.0, 0.1, 0.0);
                     }
                     int state = state(plan, cell, dx, dz, now);
                     if (state == Gauntlet.WARN && !path && ((dx + dz + (now >> 2)) & 1) == 0) level.sendParticles(wisp(v.hazard), x, y, z, 1, 0.15, 0.02, 0.15, 0.0);
@@ -302,17 +302,17 @@ public final class Gauntlets {
 
     private static ParticleOptions wisp(Hazard hazard) {
         return switch (hazard) {
-            case SPIKE -> ParticleTypes.CRIT;
-            case FLAME, SOULFIRE -> ParticleTypes.SMOKE;
-            case FROST -> ParticleTypes.SNOWFLAKE;
+            case SPIKE -> com.thefarawaydev.realmsofchaos.fx.RocParticles.STRIKE.type();
+            case FLAME, SOULFIRE -> com.thefarawaydev.realmsofchaos.fx.RocParticles.SMOKE.type();
+            case FROST -> com.thefarawaydev.realmsofchaos.fx.RocParticles.FROST.type();
             case VENOM -> ParticleTypes.ITEM_SLIME;
-            case SHOCK -> ParticleTypes.ELECTRIC_SPARK;
-            case WITHER -> ParticleTypes.ASH;
+            case SHOCK -> com.thefarawaydev.realmsofchaos.fx.RocParticles.STORM_SPARK.type();
+            case WITHER -> com.thefarawaydev.realmsofchaos.fx.RocParticles.GLOOM.type();
             case GEYSER -> ParticleTypes.BUBBLE_POP;
-            case GALE -> ParticleTypes.WHITE_ASH;
-            case LEVITATE -> ParticleTypes.WITCH;
-            case BLIGHT -> ParticleTypes.SQUID_INK;
-            case CRUSH -> ParticleTypes.POOF;
+            case GALE -> com.thefarawaydev.realmsofchaos.fx.RocParticles.DUST.type();
+            case LEVITATE -> com.thefarawaydev.realmsofchaos.fx.RocParticles.CHAOS_MOTE.type();
+            case BLIGHT -> com.thefarawaydev.realmsofchaos.fx.RocParticles.GLOOM.type();
+            case CRUSH -> com.thefarawaydev.realmsofchaos.fx.RocParticles.DUST.type();
             case SNARE -> ParticleTypes.SPORE_BLOSSOM_AIR;
             case DRAIN -> ParticleTypes.DAMAGE_INDICATOR;
         };
@@ -320,17 +320,17 @@ public final class Gauntlets {
 
     private static ParticleOptions burst(Hazard hazard) {
         return switch (hazard) {
-            case SPIKE -> ParticleTypes.ENCHANTED_HIT;
-            case FLAME -> ParticleTypes.FLAME;
-            case SOULFIRE -> ParticleTypes.SOUL_FIRE_FLAME;
-            case FROST -> ParticleTypes.SNOWFLAKE;
+            case SPIKE -> com.thefarawaydev.realmsofchaos.fx.RocParticles.STRIKE.type();
+            case FLAME -> com.thefarawaydev.realmsofchaos.fx.RocParticles.FLAME_STORM.type();
+            case SOULFIRE -> com.thefarawaydev.realmsofchaos.fx.RocParticles.SOUL_WISP.type();
+            case FROST -> com.thefarawaydev.realmsofchaos.fx.RocParticles.FROST.type();
             case VENOM -> ParticleTypes.SNEEZE;
-            case SHOCK -> ParticleTypes.ELECTRIC_SPARK;
-            case WITHER -> ParticleTypes.SOUL;
-            case GEYSER -> ParticleTypes.SPLASH;
-            case GALE -> ParticleTypes.CLOUD;
-            case LEVITATE -> ParticleTypes.END_ROD;
-            case BLIGHT -> ParticleTypes.LARGE_SMOKE;
+            case SHOCK -> com.thefarawaydev.realmsofchaos.fx.RocParticles.STORM_SPARK.type();
+            case WITHER -> com.thefarawaydev.realmsofchaos.fx.RocParticles.SOUL_WISP.type();
+            case GEYSER -> com.thefarawaydev.realmsofchaos.fx.RocParticles.SEA_SPRAY.type();
+            case GALE -> com.thefarawaydev.realmsofchaos.fx.RocParticles.DUST.type();
+            case LEVITATE -> com.thefarawaydev.realmsofchaos.fx.RocParticles.GLINT.type();
+            case BLIGHT -> com.thefarawaydev.realmsofchaos.fx.RocParticles.SMOKE.type();
             case CRUSH -> ParticleTypes.EXPLOSION;
             case SNARE -> ParticleTypes.COMPOSTER;
             case DRAIN -> ParticleTypes.CRIMSON_SPORE;

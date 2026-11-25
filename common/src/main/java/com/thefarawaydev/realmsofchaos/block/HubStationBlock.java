@@ -51,7 +51,7 @@ public class HubStationBlock extends Block {
     public void animateTick(BlockState state, Level level, BlockPos pos, RandomSource random) {
         if (kind != Kind.HEART) return;
         double a = random.nextDouble() * Math.PI * 2;
-        level.addParticle(ParticleTypes.ENCHANT, pos.getX() + 0.5 + Math.cos(a) * 1.4, pos.getY() + 1.6, pos.getZ() + 0.5 + Math.sin(a) * 1.4, -Math.cos(a), -0.6, -Math.sin(a));
-        if (random.nextInt(3) == 0) level.addParticle(ParticleTypes.END_ROD, pos.getX() + 0.5, pos.getY() + 1.1, pos.getZ() + 0.5, 0, 0.04, 0);
+        level.addParticle(com.thefarawaydev.realmsofchaos.fx.RocParticles.RUNE.type(), pos.getX() + 0.5 + Math.cos(a) * 1.4, pos.getY() + 1.6, pos.getZ() + 0.5 + Math.sin(a) * 1.4, -Math.cos(a), -0.6, -Math.sin(a));
+        if (random.nextInt(3) == 0) level.addParticle(com.thefarawaydev.realmsofchaos.fx.RocParticles.GLINT.type(), pos.getX() + 0.5, pos.getY() + 1.1, pos.getZ() + 0.5, 0, 0.04, 0);
     }
 }

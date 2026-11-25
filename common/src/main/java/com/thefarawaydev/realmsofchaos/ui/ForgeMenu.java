@@ -186,7 +186,7 @@ public class ForgeMenu extends ButtonMenu {
         float pitch = hit == StrikeBar.Hit.PERFECT ? 1.6F : hit == StrikeBar.Hit.GOOD ? 1.2F : 0.6F;
         viewer.level().playSound(null, viewer.blockPosition(), hit == StrikeBar.Hit.MISS ? SoundEvents.ANVIL_LAND : SoundEvents.ANVIL_USE, SoundSource.PLAYERS, 0.7F, pitch);
         if (hit == StrikeBar.Hit.PERFECT) viewer.level().playSound(null, viewer.blockPosition(), SoundEvents.AMETHYST_BLOCK_CHIME, SoundSource.PLAYERS, 1.5F, 1.4F);
-        effects(hit == StrikeBar.Hit.MISS ? ParticleTypes.SMOKE : ParticleTypes.LAVA, hit == StrikeBar.Hit.PERFECT ? 10 : 4);
+        effects(hit == StrikeBar.Hit.MISS ? com.thefarawaydev.realmsofchaos.fx.RocParticles.SMOKE.type() : com.thefarawaydev.realmsofchaos.fx.RocParticles.EMBER.type(), hit == StrikeBar.Hit.PERFECT ? 10 : 4);
         Hud.actionBar(viewer, Hud.colored(Component.translatable("menu." + RealmsOfChaos.MOD_ID + ".strike." + hit.name().toLowerCase() + ".hit"),
                 hit == StrikeBar.Hit.PERFECT ? 0xFFFF55 : hit == StrikeBar.Hit.GOOD ? 0x55FF55 : 0xFF5555));
         if (hits.size() >= STRIKES) {
@@ -220,7 +220,7 @@ public class ForgeMenu extends ButtonMenu {
             if (finish == Finish.MASTERWORK) {
                 WeaponProgress.setTemper(weapon, WeaponProgress.temper(weapon) + 1);
                 viewer.level().playSound(null, viewer.blockPosition(), SoundEvents.PLAYER_LEVELUP, SoundSource.PLAYERS, 0.7F, 1.4F);
-                effects(ParticleTypes.END_ROD, 30);
+                effects(com.thefarawaydev.realmsofchaos.fx.RocParticles.GLINT.type(), 30);
                 Hud.title(viewer, Hud.colored(Component.translatable(hud + "finish.masterwork"), 0x55FFFF),
                         Hud.colored(Component.translatable(hud + "finish.tempered", WeaponProgress.temper(weapon) * 2), 0xFFFFFF), 5, 40, 15);
             } else {
@@ -238,9 +238,9 @@ public class ForgeMenu extends ButtonMenu {
         boolean milestone = next == GodWeaponItem.EMPOWERED_STARS || next == GodWeaponItem.AWAKENED_STARS;
         viewer.level().playSound(null, viewer.blockPosition(), milestone ? SoundEvents.UI_TOAST_CHALLENGE_COMPLETE : SoundEvents.PLAYER_LEVELUP,
                 SoundSource.PLAYERS, 0.7F, milestone ? 1.2F : 0.8F);
-        effects(ParticleTypes.FLAME, 30);
+        effects(com.thefarawaydev.realmsofchaos.fx.RocParticles.FLAME_STORM.type(), 30);
         effects(Signature.spark(god.line()), 20 * next);
-        if (milestone || finish == Finish.MASTERWORK) effects(ParticleTypes.END_ROD, 40);
+        if (milestone || finish == Finish.MASTERWORK) effects(com.thefarawaydev.realmsofchaos.fx.RocParticles.GLINT.type(), 40);
         Component what = next == GodWeaponItem.AWAKENED_STARS ? Component.translatable(hud + "forged.awakened", god.moveName())
                 : next == GodWeaponItem.EMPOWERED_STARS ? Component.translatable(hud + "forged.empowered", god.moveName())
                 : Component.translatable(hud + "finish." + finish.name().toLowerCase() + ".sub");
@@ -308,7 +308,7 @@ public class ForgeMenu extends ButtonMenu {
         boolean levelled = WeaponProgress.level(weapon) > before;
         viewer.level().playSound(null, viewer.blockPosition(), levelled ? SoundEvents.PLAYER_LEVELUP : SoundEvents.EXPERIENCE_ORB_PICKUP,
                 SoundSource.PLAYERS, 0.7F, levelled ? 1.2F : 0.8F);
-        effects(ParticleTypes.ENCHANT, 30);
+        effects(com.thefarawaydev.realmsofchaos.fx.RocParticles.RUNE.type(), 30);
         Hud.actionBar(viewer, Hud.colored(Component.translatable("hud." + RealmsOfChaos.MOD_ID + ".infused", weapon.getHoverName(), given * INFUSE_XP), 0x55FF55));
         render();
     }

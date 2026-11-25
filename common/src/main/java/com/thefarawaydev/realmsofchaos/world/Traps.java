@@ -78,8 +78,15 @@ public final class Traps {
         /** The order the runes light in, and the order they have to be pressed in: the same, except in the gloom. */
         final int[] shown;
         final int[] order;
-        int pressed, ticks, water, fullTicks, lit = -1, flashUntil;
+        int pressed, ticks, water, fullTicks, lit = -1, flashUntil, perTick;
         boolean full;
+        /** The blocks of the layer the water is still creeping across, and how many it covers each tick. */
+        final java.util.ArrayDeque<BlockPos> pending = new java.util.ArrayDeque<>();
+
+        /** How many blocks of the newest layer the water has yet to reach. */
+        public int pending() {
+            return pending.size();
+        }
 
         Trap(ServerLevel level, Passages.Plan plan, Passages.Cell cell, int[] shown) {
             this.level = level;
@@ -170,6 +177,7 @@ public final class Traps {
             level.setBlock(at.below(), pillar.defaultBlockState(), 2);
             level.setBlock(at, stone.setValue(RuneStoneBlock.RUNE, n), 2);
         }
+        hangSprinklers(level, plan, cell);
     }
 
     public static Trap active(Passages.Plan plan, Passages.Cell cell) {
@@ -252,18 +260,49 @@ public final class Traps {
         }
     }
 
-    /** One more layer of water. @return false if the room was already full. */
+    /** How many ticks the water takes to creep across one layer. */
+    public static final int CREEP_TICKS = 60;
+
+    /** Where a rune chamber's sprinklers hang: under the ring of trim round its ceiling, one to each side. */
+    public static List<BlockPos> sprinklers(Passages.Plan plan, Passages.Cell cell) {
+        BlockPos m = plan.centre(cell);
+        int h = plan.height(cell);
+        return List.of(m.offset(3, h, 0), m.offset(-3, h, 0), m.offset(0, h, 3), m.offset(0, h, -3));
+    }
+
+    /** Hangs the sprinklers in a rune chamber's ceiling. */
+    public static void hangSprinklers(ServerLevel level, Passages.Plan plan, Passages.Cell cell) {
+        for (BlockPos at : sprinklers(plan, cell)) {
+            if (level.getBlockState(at).isAir() && !level.getBlockState(at.above()).isAir()) level.setBlock(at, ModContent.SPRINKLER.get().defaultBlockState(), 2);
+        }
+    }
+
+    /** Lays the water over as much of the creeping layer as it reaches this tick. */
+    private static void creep(Trap trap, int blocks) {
+        for (int i = 0; i < blocks && !trap.pending.isEmpty(); i++) {
+            BlockPos at = trap.pending.poll();
+            if (trap.level.getBlockState(at).isAir()) trap.level.setBlock(at, Blocks.WATER.defaultBlockState(), 2);
+        }
+    }
+
+    /** One more layer of water: it creeps in from the walls over a few seconds. @return false if the room was already full. */
     private static boolean raise(Trap trap) {
         if (trap.water >= LAYERS) return false;
+        creep(trap, Integer.MAX_VALUE);                     // (whatever of the last layer was still coming, comes now)
         trap.water++;
         BlockPos m = trap.plan.centre(trap.cell);
         if (trap.peril == Peril.FLOOD) {
-            for (int dx = -4; dx <= 4; dx++) {
-                for (int dz = -4; dz <= 4; dz++) {
-                    BlockPos at = m.offset(dx, trap.water, dz);
-                    if (trap.level.getBlockState(at).isAir()) trap.level.setBlock(at, Blocks.WATER.defaultBlockState(), 2);
+            // from the walls in, ring by ring, each ring in no particular order
+            java.util.Random order = new java.util.Random(trap.plan.seed + trap.water);
+            for (int ring = 4; ring >= 0; ring--) {
+                List<BlockPos> here = new ArrayList<>();
+                for (int dx = -4; dx <= 4; dx++) {
+                    for (int dz = -4; dz <= 4; dz++) if (Math.max(Math.abs(dx), Math.abs(dz)) == ring) here.add(m.offset(dx, trap.water, dz));
                 }
+                java.util.Collections.shuffle(here, order);
+                trap.pending.addAll(here);
             }
+            trap.perTick = Math.max(1, (trap.pending.size() + CREEP_TICKS - 1) / CREEP_TICKS);
             trap.level.playSound(null, m, SoundEvents.GENERIC_SPLASH, SoundSource.BLOCKS, 1.5F, 0.6F);
         } else {
             // (heat and dark are not built of blocks: the room only gets worse to stand in)
@@ -301,6 +340,7 @@ public final class Traps {
 
     private static void end(Trap trap) {
         ACTIVE.remove(key(trap.plan, trap.cell));
+        trap.pending.clear();
         restore(trap.level, trap.plan, trap.cell);
         trap.level.playSound(null, trap.plan.centre(trap.cell), SoundEvents.IRON_DOOR_OPEN, SoundSource.BLOCKS, 2.0F, 0.6F);
     }
@@ -312,7 +352,7 @@ public final class Traps {
         ProgressData data = ProgressData.get(trap.level.getServer());
         BlockPos m = trap.plan.centre(trap.cell);
         trap.level.playSound(null, m, SoundEvents.UI_TOAST_CHALLENGE_COMPLETE, SoundSource.BLOCKS, 1.0F, 1.2F);
-        trap.level.sendParticles(ParticleTypes.END_ROD, m.getX() + 0.5, m.getY() + 2.0, m.getZ() + 0.5, 80, 2.5, 1.0, 2.5, 0.05);
+        trap.level.sendParticles(com.thefarawaydev.realmsofchaos.fx.RocParticles.GLINT.type(), m.getX() + 0.5, m.getY() + 2.0, m.getZ() + 0.5, 80, 2.5, 1.0, 2.5, 0.05);
         for (ServerPlayer p : solvers) {
             Hud.title(p, Hud.colored(Component.translatable(HUD + "solved"), 0x55FF55), Hud.colored(Component.translatable(HUD + "solved.sub"), 0xCCCCCC), 5, 50, 15);
             if (data.isBuilt(solvedKey(trap.plan, trap.cell, p))) continue;
@@ -342,7 +382,7 @@ public final class Traps {
                     trap.flashUntil = trap.ticks + GLOW;
                     setLit(trap, -1);
                     setLit(trap, n);
-                    level.sendParticles(ParticleTypes.HAPPY_VILLAGER, pos.getX() + 0.5, pos.getY() + 1.1, pos.getZ() + 0.5, 8, 0.3, 0.2, 0.3, 0.0);
+                    level.sendParticles(com.thefarawaydev.realmsofchaos.fx.RocParticles.GLINT.type(), pos.getX() + 0.5, pos.getY() + 1.1, pos.getZ() + 0.5, 8, 0.3, 0.2, 0.3, 0.0);
                     if (trap.pressed >= trap.order.length) solve(trap);
                     return true;
                 }
@@ -352,12 +392,12 @@ public final class Traps {
                 setLit(trap, -1);
                 raise(trap);
                 level.playSound(null, pos, SoundEvents.NOTE_BLOCK_BASS.value(), SoundSource.BLOCKS, 2.0F, 0.5F);
-                level.sendParticles(ParticleTypes.SMOKE, pos.getX() + 0.5, pos.getY() + 1.1, pos.getZ() + 0.5, 12, 0.3, 0.2, 0.3, 0.02);
-                for (ServerPlayer p : inside(level, trap.plan, trap.cell)) Hud.actionBar(p, Hud.colored(Component.translatable(HUD + "wrong" + trap.peril.suffix()), 0xFF5555));
+                level.sendParticles(com.thefarawaydev.realmsofchaos.fx.RocParticles.SMOKE.type(), pos.getX() + 0.5, pos.getY() + 1.1, pos.getZ() + 0.5, 12, 0.3, 0.2, 0.3, 0.02);
+                for (ServerPlayer p : inside(level, trap.plan, trap.cell)) Hud.above(p, pos, Component.translatable(HUD + "wrong" + trap.peril.suffix()), 0xFF5555);
                 return false;
             }
         }
-        Hud.actionBar(player, Hud.colored(Component.translatable(HUD + "dormant"), 0xAAAAAA));
+        Hud.above(player, pos, Component.translatable(HUD + "dormant"), 0xAAAAAA);
         level.playSound(null, pos, SoundEvents.STONE_HIT, SoundSource.BLOCKS, 1.0F, 0.8F);
         return false;
     }
@@ -394,12 +434,23 @@ public final class Traps {
             return;
         }
         trap.ticks++;
+        if (trap.peril == Peril.FLOOD) {
+            creep(trap, trap.perTick);
+            // the sprinklers pour while the room fills
+            if (!trap.full && trap.ticks % 3 == 0) {
+                for (BlockPos s : sprinklers(trap.plan, trap.cell)) {
+                    if (!trap.level.getBlockState(s).is(ModContent.SPRINKLER.get())) continue;
+                    trap.level.sendParticles(com.thefarawaydev.realmsofchaos.fx.RocParticles.WATER_DROP.type(), s.getX() + 0.5, s.getY() + 0.15, s.getZ() + 0.5, 6, 0.35, 0.02, 0.35, 0.02);
+                }
+                if (trap.ticks % 30 == 0) trap.level.playSound(null, trap.plan.centre(trap.cell).above(3), SoundEvents.WEATHER_RAIN, SoundSource.BLOCKS, 0.6F, 1.3F);
+            }
+        }
         if (trap.ticks >= trap.flashUntil) setLit(trap, trap.peril == Peril.EMBERS ? shownOnce(trap.shown, trap.ticks) : shown(trap.shown, trap.ticks));
         if (trap.peril != Peril.FLOOD && trap.water > 0) {
             // what a furnace or the gloom does while it builds: seen every half second, felt every two
             BlockPos m = trap.plan.centre(trap.cell);
             if (trap.ticks % 10 == 0) {
-                trap.level.sendParticles(trap.peril == Peril.EMBERS ? ParticleTypes.FLAME : ParticleTypes.SQUID_INK, m.getX() + 0.5, m.getY() + (trap.peril == Peril.EMBERS ? 1.1 : 2.0), m.getZ() + 0.5,
+                trap.level.sendParticles(trap.peril == Peril.EMBERS ? com.thefarawaydev.realmsofchaos.fx.RocParticles.FLAME_STORM.type() : com.thefarawaydev.realmsofchaos.fx.RocParticles.GLOOM.type(), m.getX() + 0.5, m.getY() + (trap.peril == Peril.EMBERS ? 1.1 : 2.0), m.getZ() + 0.5,
                         6 * trap.water, 3.5, trap.peril == Peril.EMBERS ? 0.1 : 1.0, 3.5, 0.01);
             }
             if (trap.ticks % 40 == 0 && !trap.full) {

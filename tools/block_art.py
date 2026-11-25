@@ -605,6 +605,9 @@ def run(assets, data=None):
         gen_combat(assets, data)
         gen_furnish2(assets, data)
         gen_cache_brazier(assets)
+        gen_particles(assets)
+        gen_sprinkler(assets, data)
+        gen_puzzle2(assets, data)
         for floor in ("sunstone_panel", "pearl_panel", "ember_panel", "sky_mosaic", "sea_mosaic", "shade_mosaic"):
             connected_breaks(assets, floor)
 
@@ -2610,39 +2613,129 @@ def gen_cache_brazier(assets):
     def save(name, fn):
         paint_hi(fn).save(os.path.join(T, name + ".png"))
 
-    # ---- the caches: a chest of the tower's wood with a metal rim round each face, a gold latch
-    woods = {"zeus": (186, 140, 86), "poseidon": (58, 112, 116), "hades": (64, 48, 72)}
-    metals = {"zeus": (224, 180, 72), "poseidon": (200, 208, 214), "hades": (156, 104, 206)}
+    # ---- the caches: a chest in the game's manner, drawn face by face. A tower's wood in five tones and its metal in
+    # four: a dark outline, boards with their seams, a lit edge along the top of each part, iron corners on the body,
+    # straps over the lid, a latch - and, on a locked one, a padlock.
+    woods = {"zeus": ((70, 44, 22), (128, 88, 48), (168, 120, 70), (196, 150, 94), (220, 182, 124)),
+             "poseidon": ((18, 46, 50), (34, 82, 88), (52, 112, 118), (74, 140, 144), (110, 176, 176)),
+             "hades": ((22, 14, 26), (44, 30, 52), (64, 46, 74), (86, 64, 98), (116, 92, 130))}
+    metals = {"zeus": ((96, 62, 18), (176, 128, 40), (232, 186, 74), (255, 230, 140)),
+              "poseidon": ((70, 78, 86), (140, 150, 160), (196, 206, 214), (242, 246, 250)),
+              "hades": ((54, 28, 78), (110, 66, 160), (160, 110, 214), (214, 180, 250))}
     for line in LINES3:
-        w, m = woods[line], metals[line]
-        dark, light, mdark = shade(w, 0.72), shade(w, 1.12), shade(m, 0.7)
+        o, d, b, l, h = woods[line]
+        mo, md, mb, mh = metals[line]
 
-        def face(x, y, w=w, m=m, dark=dark, light=light, mdark=mdark):
-            if x in (0, 15) or y in (0, 15): return mdark
-            if x in (1, 14) or y in (1, 14): return m
-            if y % 4 == 1: return dark              # the joins between the boards
-            if y % 4 == 2 and (x * 5) % 7 == 0: return light
-            return w
-        save(f"cache_wood_{line}", face)
-    save("cache_lock", lambda x, y: (60, 40, 16) if x in (0, 15) or y in (0, 15) else (40, 26, 14) if x in (7, 8) and 5 <= y <= 10 else
-         GOLD_HI if x == 1 or y == 1 else GOLD)
-    save("cache_inside", lambda x, y: GOLD_HI if (x * 3 + y * 5) % 7 == 0 else GOLD if (x + y * 3) % 4 == 0 else (54, 36, 22))
+        def boards(x, y, top, o=o, d=d, b=b, l=l, h=h):
+            if y == top: return h                       # the lit edge
+            if (y - top) % 4 == 0: return d             # seams between boards
+            if (x * 5 + y * 3) % 13 == 0: return l
+            if (x * 7 + y) % 17 == 0: return d
+            return b
 
-    def chest(line, open_):
-        tx = {"particle": t(f"cache_wood_{line}"), "wood": t(f"cache_wood_{line}"), "lock": t("cache_lock"), "in": t("cache_inside")}
-        hinge = {"origin": [8, 9, 15], "axis": "x", "angle": 45.0} if open_ else None
-        return {"parent": "minecraft:block/block", "textures": tx, "elements": [
-            _el((1, 0, 1), (15, 9, 15), _all("wood", up="in")),
-            _el((1, 9, 1), (15, 14, 15), _all("wood"), hinge),
-            _el((7, 7, 0), (9, 11, 1), _all("lock"), hinge)]}
-    for line in LINES3:
+        # the body's sides: boards between an outline, iron at the bottom corners (the face is x 1..14, y 6..15)
+        def body(x, y, o=o, mo=mo, md=md, mb=mb, mh=mh):
+            if x in (1, 14) or y == 15: return o
+            if y < 6: return o
+            if (x in (2, 3, 12, 13)) and y >= 13: return mh if (x in (2, 12) and y == 13) else mb if y == 13 else md
+            return boards(x, y, 6)
+        save(f"cache_body_{line}", body)
+
+        # the lid's sides (x 1..14, y 1..4): boards, a lit top edge, a dark lip along the bottom
+        def lid(x, y, o=o, d=d):
+            if x in (1, 14) or y == 0: return o
+            if y == 5 or y == 4: return d if y == 4 else o
+            return boards(x, y, 1)
+        save(f"cache_lid_{line}", lid)
+
+        # the lid's top: boards running the long way, two metal straps across, a rivet where each meets the rim
+        def top(x, y, o=o, mo=mo, md=md, mb=mb, mh=mh):
+            if x in (1, 14) or y in (1, 14): return o
+            if x in (4, 11):
+                if y in (2, 13): return mh
+                return mb if x == 4 else md
+            if x in (3, 12): return mo
+            return boards(y, x, 2)
+        save(f"cache_top_{line}", top)
+
+        # the latch: a gold plate with a keyhole; and a padlock for a locked cache
+        def latch(x, y, mo=mo, md=md, mb=mb, mh=mh):
+            if x in (0, 3) or y in (0, 5): return mo
+            if x == 1 and y < 4: return mh
+            if x in (1, 2) and y in (2, 3): return (20, 14, 10)
+            return mb
+        save(f"cache_latch_{line}", latch)
+
+    def padlock(x, y):
+        steel = ((40, 40, 46), (110, 112, 124), (168, 172, 184), (226, 230, 238))
+        if y <= 4:                                       # the shackle
+            if x in (1, 6) or (y == 0 and 1 <= x <= 6): return steel[2] if x == 1 or y == 0 else steel[1]
+            return None
+        if x == 0 or x == 7 or y == 15: return steel[0]
+        if x == 1 or y == 5: return steel[3]
+        if x in (3, 4) and y in (8, 9, 10): return (16, 14, 18)
+        return steel[2]
+    img = Image.new("RGBA", (16, 16), (0, 0, 0, 0))
+    for y in range(16):
+        for x in range(8):
+            c = padlock(x, y)
+            if c: img.putpixel((x, y), tuple(c) + (255,))
+    img.save(os.path.join(T, "cache_padlock.png"))
+    # what lies inside: coins on dark velvet
+    rnd_c = random.Random(229)
+    coin = {(rnd_c.randrange(16), rnd_c.randrange(16)) for _ in range(60)}
+    save("cache_inside", lambda x, y: GOLD_HI if (x, y) in coin and (x + y) % 3 == 0 else GOLD if (x, y) in coin else (110, 28, 36) if (x + y) % 2 else (90, 22, 30))
+    for old in ("cache_wood_zeus", "cache_wood_poseidon", "cache_wood_hades", "cache_lock"):
+        if os.path.exists(os.path.join(T, old + ".png")): os.remove(os.path.join(T, old + ".png"))
+
+    def face_box(a, b, side, side_uv, up=None, up_uv=None, down=None, down_uv=None, rot=None):
+        faces = {dd: {"texture": f"#{side}", "uv": list(side_uv)} for dd in ("north", "south", "east", "west")}
+        faces["up"] = {"texture": f"#{up or side}", "uv": list(up_uv or side_uv)}
+        faces["down"] = {"texture": f"#{down or side}", "uv": list(down_uv or side_uv)}
+        el = {"from": list(a), "to": list(b), "faces": faces}
+        if rot: el["rotation"] = rot
+        return el
+
+    def chest(line, open_, locked):
+        tx = {"particle": t(f"cache_body_{line}"), "body": t(f"cache_body_{line}"), "lid": t(f"cache_lid_{line}"), "top": t(f"cache_top_{line}"),
+              "latch": t(f"cache_latch_{line}"), "in": t("cache_inside"), "lock": t("cache_padlock")}
+        hinge = {"origin": [8, 10, 15], "axis": "x", "angle": 45.0} if open_ else None
+        els = [face_box((1, 0, 1), (15, 10, 15), "body", [1, 6, 15, 16], "in", [1, 1, 15, 15], "top", [1, 1, 15, 15]),
+               face_box((1, 10, 1), (15, 15, 15), "lid", [1, 0, 15, 5], "top", [1, 1, 15, 15], "top", [1, 1, 15, 15], hinge),
+               face_box((7, 8, 0), (9, 12, 1), "latch", [0, 0, 2, 4], "latch", [0, 0, 2, 1], "latch", [0, 0, 2, 1], hinge)]
+        if locked:
+            els.append({"from": [6, 4, -1], "to": [10, 9, 0], "faces": {
+                "north": {"texture": "#lock", "uv": [0, 5, 4, 10]}, "south": {"texture": "#lock", "uv": [0, 5, 4, 10]},
+                "east": {"texture": "#lock", "uv": [0, 5, 1, 10]}, "west": {"texture": "#lock", "uv": [0, 5, 1, 10]},
+                "up": {"texture": "#lock", "uv": [0, 5, 4, 6]}, "down": {"texture": "#lock", "uv": [0, 14, 4, 15]}}})
+            els.append({"from": [6.5, 9, -0.5], "to": [9.5, 11, -0.5], "faces": {
+                "north": {"texture": "#lock", "uv": [1, 0, 7, 4]}, "south": {"texture": "#lock", "uv": [1, 0, 7, 4]}}})
+        return {"parent": "minecraft:block/block", "textures": tx, "elements": els}
+    variants = {}
+    for i, line in enumerate(LINES3):
         for open_ in (False, True):
-            wj(os.path.join(M, f"passage_cache_{line}{'_open' if open_ else ''}.json"), chest(line, open_))
-    wj(os.path.join(assets, "blockstates/passage_cache.json"),
-       {"variants": {f"facing={f},open={'true' if o else 'false'},tower={i}": {"model": f"{MOD}:block/passage_cache_{line}{'_open' if o else ''}", "y": r}
-                     for f, r in rot.items() for o in (False, True) for i, line in enumerate(LINES3)}})
+            for locked in (False, True):
+                name = f"passage_cache_{line}{'_open' if open_ else ''}{'_locked' if locked else ''}"
+                wj(os.path.join(M, f"{name}.json"), chest(line, open_, locked))
+                for f, r in rot.items():
+                    variants[f"facing={f},locked={'true' if locked else 'false'},open={'true' if open_ else 'false'},tower={i}"] = {"model": f"{MOD}:block/{name}", "y": r}
+    wj(os.path.join(assets, "blockstates/passage_cache.json"), {"variants": variants})
     wj(os.path.join(M, "passage_cache.json"), {"parent": f"{MOD}:block/passage_cache_zeus"})
     wj(os.path.join(assets, "items/passage_cache.json"), {"model": {"type": "minecraft:model", "model": f"{MOD}:block/passage_cache_zeus"}})
+
+    # ---- the lockpick, as an item: a hooked steel pick with a wrapped grip, drawn at 16 and kept simple
+    pick = ["................", "................", "................", "............##..", "...........#ab#.", "..........#ab#..",
+            ".........#ab#...", "........#ab#....", ".......#ab#.....", "......#ab#......", ".....#cd#.......", "....#cdc#.......",
+            "...#cdc#........", "..#cdc#.........", "..#dd#..........", "...##..........."]
+    pc = {"#": (34, 30, 36), "a": (222, 226, 236), "b": (140, 146, 160), "c": (150, 92, 52), "d": (104, 60, 34)}
+    item = Image.new("RGBA", (16, 16), (0, 0, 0, 0))
+    for y, row in enumerate(pick):
+        for x, ch in enumerate(row):
+            if ch in pc: item.putpixel((x, y), pc[ch] + (255,))
+    # the hook at its tip
+    for (x, y) in ((13, 2), (14, 2), (14, 3)): item.putpixel((x, y), (34, 30, 36, 255))
+    item.putpixel((13, 3), (222, 226, 236, 255))
+    item.save(os.path.join(assets, "textures/item/lockpick.png"))
 
     # ---- braziers: drawn one texture pixel to one model pixel. Each tower's metal in five tones - outline, shadow,
     # base, light, and an accent for its rivets - a lip that catches the light round the bowl, coals glowing in it,
@@ -2766,3 +2859,225 @@ def gen_cache_brazier(assets):
     wj(os.path.join(assets, "blockstates/tower_brazier.json"), {"variants": variants})
     wj(os.path.join(M, "tower_brazier.json"), {"parent": f"{MOD}:block/tower_brazier_standing_zeus"})
     wj(os.path.join(assets, "items/tower_brazier.json"), {"model": {"type": "minecraft:model", "model": f"{MOD}:block/tower_brazier_standing_zeus"}})
+
+
+# ---- the mod's own particles: 8x8 sprites like the game's own, a few frames each, read left to right as they age --
+
+def gen_particles(assets):
+    P = os.path.join(assets, "textures/particle")
+    D = os.path.join(assets, "particles")
+    os.makedirs(P, exist_ok=True)
+    os.makedirs(D, exist_ok=True)
+    import glob as _glob
+    for old in _glob.glob(os.path.join(P, "*.png")):
+        os.remove(old)
+
+    def sprite(rows, colours):
+        img = Image.new("RGBA", (8, 8), (0, 0, 0, 0))
+        for y, row in enumerate(rows):
+            for x, ch in enumerate(row):
+                if ch in colours: img.putpixel((x, y), colours[ch] + (255,))
+        return img
+
+    def write(pid, frames):
+        names = []
+        for n, f in enumerate(frames):
+            f.save(os.path.join(P, f"{pid}_{n}.png"))
+            names.append(f"{MOD}:{pid}_{n}")
+        wj(os.path.join(D, f"{pid}.json"), {"textures": names})
+
+    # a star that shrinks: four frames from big to a point
+    star = [["...#....", "...#....", "..#@#...", "##@O@##.", "..#@#...", "...#....", "...#....", "........"],
+            ["........", "...#....", "..#@#...", ".#@O@#..", "..#@#...", "...#....", "........", "........"],
+            ["........", "........", "...#....", "..#O#...", "...#....", "........", "........", "........"],
+            ["........", "........", "........", "...O....", "........", "........", "........", "........"]]
+    # a jagged spark
+    spark = [["#.....#.", ".#...#..", "..#O#...", "...O@...", "..#O#...", ".#...#..", "#.....#.", "........"],
+             ["........", ".#...#..", "..#O#...", "...@....", "..#O#...", ".#...#..", "........", "........"],
+             ["........", "........", "..#.#...", "...O....", "..#.#...", "........", "........", "........"]]
+    # a drop
+    drop = [["........", "...#....", "..#O#...", ".#O@O#..", ".#OOO#..", "..###...", "........", "........"],
+            ["........", "........", "...#....", "..#O#...", "..#@#...", "...#....", "........", "........"],
+            ["........", "........", "........", "...#....", "..#O#...", "...#....", "........", "........"]]
+    # a wisp / flame tongue, from full to a flicker
+    tongue = [["...#....", "..#O#...", "..#O#...", ".#O@O#..", ".#O@O#..", ".#O@O#..", "..#O#...", "........"],
+              ["........", "...#....", "..#O#...", "..#@#...", ".#O@O#..", "..#O#...", "........", "........"],
+              ["........", "........", "...#....", "..#O#...", "..#@#...", "...#....", "........", "........"],
+              ["........", "........", "........", "...#....", "...O....", "........", "........", "........"]]
+    # a puff, opening out and thinning
+    puff = [["........", "........", "...##...", "..#OO#..", "..#OO#..", "...##...", "........", "........"],
+            ["........", "..###...", ".#OO#O..", ".#O..O#.", ".#O..O#.", "..#OO#..", "...##...", "........"],
+            [".#..##..", "#.....#.", "........", "#......#", "#......#", "........", ".#....#.", "..##.#.."]]
+    # a flake
+    flake = [["...#....", ".#.#.#..", "..###...", "###@###.", "..###...", ".#.#.#..", "...#....", "........"],
+             ["........", "...#....", "..#.#...", ".#.@.#..", "..#.#...", "...#....", "........", "........"]]
+    # runes: three glyphs, each fading as it rises
+    glyphs = [[".####...", ".#..#...", ".####...", ".#.#....", ".#..#...", "........", "........", "........"],
+              ["..#.....", ".###....", "..#.....", ".#.#....", "#...#...", "........", "........", "........"],
+              ["#...#...", ".#.#....", "..#.....", ".#.#....", "#...#...", "........", "........", "........"]]
+    # a strike: a cross of light, fanning out
+    strike = [["........", "........", "...@....", "..@O@...", "...@....", "........", "........", "........"],
+              ["#.....#.", ".#...#..", "...@....", "..@O@...", "...@....", ".#...#..", "#.....#.", "........"],
+              ["#.....#.", "........", "........", "...#....", "........", "........", "#.....#.", "........"]]
+
+    def tone(c, k): return shade(c, k)
+    tower_fire = {"flame_storm": ((255, 250, 210), (255, 206, 80), (220, 120, 30)),
+                  "flame_sea": ((230, 255, 250), (110, 236, 222), (30, 150, 160)),
+                  "flame_shade": ((240, 230, 255), (176, 130, 255), (96, 50, 180))}
+    for pid, (hi, mid, lo) in tower_fire.items():
+        write(pid, [sprite(r, {"@": hi, "O": mid, "#": lo}) for r in tongue])
+    write("soul_wisp", [sprite(r, {"@": (236, 250, 255), "O": (120, 220, 255), "#": (60, 120, 200)}) for r in tongue])
+    write("storm_spark", [sprite(r, {"@": (255, 255, 255), "O": (255, 240, 140), "#": (160, 200, 255)}) for r in spark])
+    write("sea_spray", [sprite(r, {"@": (240, 255, 255), "O": (120, 210, 220), "#": (40, 120, 150)}) for r in drop])
+    write("water_drop", [sprite(r, {"@": (220, 240, 255), "O": (90, 150, 230), "#": (40, 80, 170)}) for r in drop])
+    write("glint", [sprite(r, {"@": (255, 244, 170), "O": (255, 255, 255), "#": (230, 180, 60)}) for r in star])
+    write("rune", [sprite(r, {"#": c}) for r, c in zip(glyphs + glyphs[:1], [(170, 230, 255), (150, 200, 250), (120, 160, 230), (90, 120, 200)])])
+    write("strike", [sprite(r, {"@": (255, 255, 230), "O": (255, 255, 255), "#": (255, 220, 120)}) for r in strike])
+    write("dust", [sprite(r, {"O": (176, 168, 156), "#": (126, 120, 112)}) for r in puff])
+    write("frost", [sprite(r, {"@": (255, 255, 255), "#": (190, 226, 255)}) for r in flake])
+    write("chaos_mote", [sprite(r, {"@": (255, 210, 255), "O": (210, 110, 255), "#": (110, 50, 170)}) for r in star[:3]])
+    write("smoke", [sprite(r, {"O": (120, 116, 112), "#": (78, 74, 72)}) for r in puff])
+    write("gloom", [sprite(r, {"O": (96, 52, 132), "#": (50, 24, 72)}) for r in puff])
+    # an ember: a hot point with a cooling rim, going out
+    ember = [["........", "...#....", "..#O#...", ".#O@O#..", "..#O#...", "...#....", "........", "........"],
+             ["........", "........", "...#....", "..#@#...", "...#....", "........", "........", "........"],
+             ["........", "........", "........", "...O....", "........", "........", "........", "........"]]
+    write("ember", [sprite(r, {"@": (255, 244, 180), "O": (255, 170, 60), "#": (200, 80, 30)}) for r in ember])
+
+
+def gen_sprinkler(assets, data):
+    """A bronze rose on a short pipe, drawn one texture pixel to one model pixel."""
+    T = os.path.join(assets, "textures/block")
+    M = os.path.join(assets, "models/block")
+    t = lambda n: f"{MOD}:block/{n}"
+    o, d, b, l, h = (64, 36, 18), (122, 72, 34), (176, 112, 52), (224, 164, 90), (255, 220, 150)
+
+    def pipe(x, y):
+        return l if x % 16 == 0 else d if x % 16 >= 1 and x % 3 == 2 else b
+
+    def rose(x, y):
+        # the face of the rose: a ring of holes round a boss
+        r = math.hypot(x - 7.5, y - 7.5)
+        if r > 7.6: return o
+        if r > 6.6: return l
+        if r < 1.6: return h
+        if r < 2.4: return o
+        if (round(r) in (4, 6)) and ((x + y) % 2 == 0): return (30, 22, 18)
+        return b
+
+    def rim(x, y):
+        return l if y == 0 else o if y == 3 else b
+    paint_hi(pipe).save(os.path.join(T, "sprinkler_pipe.png"))
+    paint_hi(rose).save(os.path.join(T, "sprinkler_rose.png"))
+    paint_hi(rim).save(os.path.join(T, "sprinkler_rim.png"))
+    tx = {"particle": t("sprinkler_rose"), "pipe": t("sprinkler_pipe"), "rose": t("sprinkler_rose"), "rim": t("sprinkler_rim")}
+
+    def box(a, bb, side, side_uv, up, up_uv, down, down_uv):
+        faces = {k: {"texture": f"#{side}", "uv": list(side_uv)} for k in ("north", "south", "east", "west")}
+        faces["up"] = {"texture": f"#{up}", "uv": list(up_uv)}
+        faces["down"] = {"texture": f"#{down}", "uv": list(down_uv)}
+        return {"from": list(a), "to": list(bb), "faces": faces}
+    els = [box((5, 15, 5), (11, 16, 11), "rim", [0, 0, 6, 1], "rim", [0, 0, 6, 6], "rim", [0, 0, 6, 6]),
+           box((7, 12, 7), (9, 15, 9), "pipe", [0, 0, 2, 3], "pipe", [0, 0, 2, 2], "pipe", [0, 0, 2, 2]),
+           box((4, 9, 4), (12, 12, 12), "rim", [0, 0, 8, 3], "rim", [0, 0, 8, 8], "rose", [0, 0, 16, 16])]
+    wj(os.path.join(M, "sprinkler.json"), {"parent": "minecraft:block/block", "textures": tx, "elements": els})
+    wj(os.path.join(assets, "blockstates/sprinkler.json"), {"variants": {"": {"model": f"{MOD}:block/sprinkler"}}})
+    wj(os.path.join(assets, "items/sprinkler.json"), {"model": {"type": "minecraft:model", "model": f"{MOD}:block/sprinkler"}})
+    wj(os.path.join(data, "recipe/sprinkler.json"), {"type": "minecraft:crafting_shaped", "category": "building",
+                                                     "key": {"C": "minecraft:copper_ingot", "I": "minecraft:iron_bars"}, "pattern": [" C ", "CIC"],
+                                                     "result": {"id": f"{MOD}:sprinkler", "count": 2}})
+
+
+def gen_puzzle2(assets, data):
+    """The dial hall and the sliding stones: dials, frescoes, carved stones and sockets."""
+    T = os.path.join(assets, "textures/block")
+    M = os.path.join(assets, "models/block")
+    t = lambda n: f"{MOD}:block/{n}"
+    sigils = ["sun", "trident", "skull", "star"]
+    stone = ((52, 50, 56), (96, 94, 102), (128, 126, 134), (160, 158, 166), (196, 194, 202))
+    bronze = ((80, 46, 20), (150, 94, 40), (196, 132, 60), (240, 190, 110))
+    g = grain(233, 0.04)
+
+    def block_stone(x, y):
+        o, d, b, l, h = stone
+        if x in (0, 15) or y in (0, 15): return d
+        if x == 1 or y == 1: return l
+        if x == 14 or y == 14: return d
+        return shade(b, g[y][x])
+
+    def glyph(name, x, y):
+        ex, ey = x - 4, y - 4
+        return 0 <= ex < 8 and 0 <= ey < 8 and EMBLEMS[name][ey][ex] in "#+"
+
+    # ---- dials: a stone face, a bronze ring, the sigil inlaid in gold; the sides plain dressed stone
+    paint_hi(block_stone).save(os.path.join(T, "dial_stone_side.png"))
+    for n, name in enumerate(sigils):
+        def face(x, y, name=name):
+            r = math.hypot(x - 7.5, y - 7.5)
+            if 6.0 < r < 7.4: return bronze[3] if (x + y) < 15 else bronze[1]
+            if 5.2 < r <= 6.0: return bronze[0]
+            if glyph(name, x, y): return GOLD_HI if y < 8 else GOLD
+            if r <= 5.2: return stone[1]
+            return block_stone(x, y)
+        paint_hi(face).save(os.path.join(T, f"dial_stone_{n}.png"))
+        wj(os.path.join(M, f"dial_stone_{n}.json"), {"parent": "minecraft:block/orientable", "textures": {"front": t(f"dial_stone_{n}"), "side": t("dial_stone_side"), "top": t("dial_stone_side")}})
+    wj(os.path.join(assets, "blockstates/dial_stone.json"), {"variants": {f"facing={f},sigil={n}": {"model": f"{MOD}:block/dial_stone_{n}", "y": r}
+                                                                           for f, r in {"north": 0, "east": 90, "south": 180, "west": 270}.items() for n in range(4)}})
+    wj(os.path.join(M, "dial_stone.json"), {"parent": f"{MOD}:block/dial_stone_0"})
+    wj(os.path.join(assets, "items/dial_stone.json"), {"model": {"type": "minecraft:model", "model": f"{MOD}:block/dial_stone_0"}})
+
+    # ---- frescoes: a plaster panel with a painted border and its sigil in ochre; lit, the paint glows gold
+    for n, name in enumerate(sigils):
+        for lit in (False, True):
+            def fresco(x, y, name=name, lit=lit):
+                plaster = (226, 214, 188) if not lit else (250, 236, 200)
+                if x in (0, 15) or y in (0, 15): return (120, 64, 40)
+                if x in (1, 14) or y in (1, 14): return (176, 96, 56) if not lit else GOLD
+                if glyph(name, x, y): return (150, 70, 40) if not lit else GOLD_HI
+                if (x * 3 + y * 7) % 23 == 0: return shade(plaster, 0.9)
+                return plaster
+            nm = f"fresco_tile_{n}{'_lit' if lit else ''}"
+            paint_hi(fresco).save(os.path.join(T, nm + ".png"))
+            cube(assets, nm)
+    wj(os.path.join(assets, "blockstates/fresco_tile.json"), {"variants": {f"lit={'true' if l else 'false'},sigil={n}": {"model": f"{MOD}:block/fresco_tile_{n}{'_lit' if l else ''}"}
+                                                                            for n in range(4) for l in (False, True)}})
+    wj(os.path.join(M, "fresco_tile.json"), {"parent": f"{MOD}:block/fresco_tile_0"})
+    wj(os.path.join(assets, "items/fresco_tile.json"), {"model": {"type": "minecraft:model", "model": f"{MOD}:block/fresco_tile_0"}})
+    for n in range(4):
+        for lit in (False, True):
+            p = os.path.join(assets, f"items/fresco_tile_{n}{'_lit' if lit else ''}.json")
+            if os.path.exists(p): os.remove(p)
+            p = os.path.join(assets, f"blockstates/fresco_tile_{n}{'_lit' if lit else ''}.json")
+            if os.path.exists(p): os.remove(p)
+
+    # ---- the sliding stone: a heavy block, arrows cut in its sides, a spiral on top
+    def slide_side(x, y):
+        c = block_stone(x, y)
+        arrow = {(7, 4), (8, 4), (6, 5), (9, 5), (5, 6), (10, 6), (7, 6), (8, 6), (7, 7), (8, 7), (7, 8), (8, 8), (7, 9), (8, 9), (7, 10), (8, 10), (7, 11), (8, 11)}
+        if (x, y) in arrow: return stone[0]
+        if (x - 1, y) in arrow or (x, y - 1) in arrow: return stone[4] if (x, y) not in arrow else c
+        return c
+
+    def slide_top(x, y):
+        c = block_stone(x, y)
+        r, a = math.hypot(x - 7.5, y - 7.5), math.atan2(y - 7.5, x - 7.5)
+        if 1.0 < r < 6.0 and abs(((r - a * 1.1) % 2.6) - 1.3) < 0.45: return stone[0]
+        return c
+    paint_hi(slide_side).save(os.path.join(T, "slide_stone_side.png"))
+    paint_hi(slide_top).save(os.path.join(T, "slide_stone_top.png"))
+    cube(assets, "slide_stone", side="slide_stone_side", top="slide_stone_top")
+
+    # ---- the socket: a floor tile with a sunk square and a ring of runes round it; lit, the runes glow
+    for lit in (False, True):
+        def sock(x, y, lit=lit):
+            e = min(x, y, 15 - x, 15 - y)
+            if e == 0: return stone[1]
+            if e == 1: return stone[3]
+            if e == 2: return (90, 180, 230) if lit and (x + y) % 2 else (180, 240, 255) if lit else stone[0] if (x + y) % 3 == 0 else stone[2]
+            if e == 3: return stone[0]
+            return stone[1] if not lit else (60, 110, 150)
+        nm = f"stone_socket{'_lit' if lit else ''}"
+        paint_hi(sock).save(os.path.join(T, nm + ".png"))
+        wj(os.path.join(M, f"{nm}.json"), {"parent": "minecraft:block/cube_all", "textures": {"all": t(nm)}})
+    wj(os.path.join(assets, "blockstates/stone_socket.json"), {"variants": {"lit=false": {"model": f"{MOD}:block/stone_socket"}, "lit=true": {"model": f"{MOD}:block/stone_socket_lit"}}})
+    wj(os.path.join(assets, "items/stone_socket.json"), {"model": {"type": "minecraft:model", "model": f"{MOD}:block/stone_socket"}})

@@ -36,6 +36,7 @@ public final class RealmsOfChaosForge {
     private static final DeferredRegister<EntityType<?>> ENTITIES = DeferredRegister.create(Registries.ENTITY_TYPE, RealmsOfChaos.MOD_ID);
     private static final DeferredRegister<CreativeModeTab> TABS = DeferredRegister.create(Registries.CREATIVE_MODE_TAB, RealmsOfChaos.MOD_ID);
     private static final DeferredRegister<net.minecraft.world.inventory.MenuType<?>> MENUS = DeferredRegister.create(Registries.MENU, RealmsOfChaos.MOD_ID);
+    private static final DeferredRegister<net.minecraft.core.particles.ParticleType<?>> PARTICLES = DeferredRegister.create(Registries.PARTICLE_TYPE, RealmsOfChaos.MOD_ID);
 
     public RealmsOfChaosForge(FMLJavaModLoadingContext context) {
         var modBus = context.getModBusGroup();
@@ -93,6 +94,11 @@ public final class RealmsOfChaosForge {
             net.minecraft.world.inventory.MenuType<com.thefarawaydev.realmsofchaos.ui.PageMenu> type = (net.minecraft.world.inventory.MenuType<com.thefarawaydev.realmsofchaos.ui.PageMenu>) page.get();
             return type;
         });
+        for (var entry : ModContent.PARTICLES.entrySet()) {
+            RegistryObject<net.minecraft.core.particles.ParticleType<?>> ro = PARTICLES.register(entry.getKey(), com.thefarawaydev.realmsofchaos.fx.RocParticles.Type::new);
+            entry.getValue().bind(() -> (net.minecraft.core.particles.SimpleParticleType) ro.get());
+        }
+        PARTICLES.register(modBus);
         MENUS.register(modBus);
         BLOCKS.register(modBus);
         ITEMS.register(modBus);

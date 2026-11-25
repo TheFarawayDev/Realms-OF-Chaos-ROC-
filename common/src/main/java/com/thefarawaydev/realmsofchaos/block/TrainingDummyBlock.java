@@ -161,12 +161,12 @@ public class TrainingDummyBlock extends Block {
         level.playSound(null, pos, SoundEvents.ARMOR_STAND_HIT, SoundSource.BLOCKS, 1.0F, pitch);
         level.sendParticles(new BlockParticleOption(ParticleTypes.BLOCK, Blocks.HAY_BLOCK.defaultBlockState()), pos.getX() + 0.5, pos.getY() + 0.7, pos.getZ() + 0.5,
                 6 + (int) worth, 0.25, 0.25, 0.25, 0.05);
-        level.sendParticles(riposte ? ParticleTypes.ENCHANTED_HIT : ParticleTypes.CRIT, pos.getX() + 0.5, pos.getY() + 0.8, pos.getZ() + 0.5, 4 + (int) combo[1], 0.2, 0.2, 0.2, 0.1);
+        level.sendParticles(riposte ? com.thefarawaydev.realmsofchaos.fx.RocParticles.STRIKE.type() : com.thefarawaydev.realmsofchaos.fx.RocParticles.STRIKE.type(), pos.getX() + 0.5, pos.getY() + 0.8, pos.getZ() + 0.5, 4 + (int) combo[1], 0.2, 0.2, 0.2, 0.1);
         String k = "hud." + RealmsOfChaos.MOD_ID + ".dummy.";
         Component line = Component.translatable(k + "hit", String.format(java.util.Locale.ROOT, "%.1f", worth), combo[1]);
         if (riposte) line = line.copy().append(Component.translatable(k + "riposte"));
         if (momentum > 0) line = line.copy().append(Component.translatable(k + "momentum", momentum));
-        Hud.actionBar(player, Hud.colored(line, riposte ? 0xFFAA00 : combo[1] >= 3 ? 0x55FF55 : 0xFFFFFF));
+        Hud.above(player, pos, line, riposte ? 0xFFAA00 : combo[1] >= 3 ? 0x55FF55 : 0xFFFFFF);
         return worth;
     }
 

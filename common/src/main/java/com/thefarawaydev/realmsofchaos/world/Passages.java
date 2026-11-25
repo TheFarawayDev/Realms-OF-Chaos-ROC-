@@ -71,13 +71,13 @@ public final class Passages {
     public static final int TALL = 8;
     public static final int MAX_SIZE = 6;
     public static final int X0 = 600, PITCH = 160;
-    public static final int LAYOUT_VERSION = 27;
+    public static final int LAYOUT_VERSION = 29;
     public static final String GUARDIAN_TAG = "realms_of_chaos_guardian";
     private static final String HUD = "hud." + RealmsOfChaos.MOD_ID + ".passage.";
 
     public enum Kind { START, EXIT, SEAL, TREASURE, SHRINE, HALL, ROOM, TRAP, GARDEN, LIBRARY, POOL, ARENA, VAULT, CHIMES, BEAM, PLATES, CRUSHER, DARTS,
         SPIKES, FLAMES, BLADES, STAIRWELL, ARC, GAS, CELLS, STORE, GAUNTLET, OBSERVATORY, ARMORY, BATHS, SANCTUM,
-        PROVING, BARRACKS, DUEL, AMBUSH, OVERLOOK, SHUTTERS, SMITHY, CRYPT, WAR_ROOM }
+        PROVING, BARRACKS, DUEL, AMBUSH, OVERLOOK, SHUTTERS, SMITHY, CRYPT, WAR_ROOM, DIALS, SLIDES }
 
     /** How the corridor between two rooms runs: straight, round a baffle to one side or either, or past a nook. */
     public static final int RUN_STRAIGHT = 0, RUN_BEND_LOW = 1, RUN_BEND_HIGH = 2, RUN_SPLIT = 3, RUN_NOOK_LOW = 4, RUN_NOOK_HIGH = 5, RUN_GALLERY = 6, RUN_CAUSEWAY = 7;
@@ -212,7 +212,8 @@ public final class Passages {
             // rooms: 4 x 4 low in the tower and 5 x 5 higher; any level after a passage's first may be a row and a
             // column larger, and the last level of the highest passages always is
             Random shape = new Random(worldSeed ^ (0xD1B54A32D192ED03L * (line.ordinal() * 1000L + index * 16L + this.stage + 1)));
-            int base = tier == 1 ? 4 : 5;
+            // (a god's tower is no burrow: five rooms square at the least, six on its grander levels)
+            int base = 5;
             boolean grand = tier == 3 && this.stage == stages - 1;
             this.size = Math.min(MAX_SIZE, base + (grand || (this.stage > 0 && shape.nextFloat() < 0.4F) ? 1 : 0));
             this.threat = Sentinel.threat(index, this.stage);
@@ -287,7 +288,7 @@ public final class Passages {
                     case ROOM, GARDEN, LIBRARY, POOL, OBSERVATORY, ARMORY, BATHS, SANCTUM -> {
                         float roll = random.nextFloat();
                         // (more of them are tall, and more than half a step wider: room to breathe between the halls)
-                        h = roll < 0.25F ? HEADROOM : roll < 0.6F ? 7 : TALL;
+                        h = roll < 0.15F ? HEADROOM : roll < 0.5F ? 7 : TALL;
                         wide = random.nextFloat() < 0.7F;
                         form = kinds[c.x][c.z] == Kind.ROOM ? random.nextInt(4) : random.nextInt(2);
                     }
@@ -511,7 +512,7 @@ public final class Passages {
                 kinds[c.x][c.z] = Kind.ARENA;
             }
             // puzzle rooms: one on a small level, up to three on the largest, never the same kind twice
-            List<Kind> puzzles = new ArrayList<>(List.of(Kind.VAULT, Kind.CHIMES, Kind.BEAM, Kind.PLATES, Kind.SHUTTERS));
+            List<Kind> puzzles = new ArrayList<>(List.of(Kind.VAULT, Kind.CHIMES, Kind.BEAM, Kind.PLATES, Kind.SHUTTERS, Kind.DIALS, Kind.SLIDES));
             Collections.shuffle(puzzles, random);
             for (int i = 0; i < size - 3 && !free.isEmpty(); i++) {
                 Cell c = free.remove(0);
@@ -596,6 +597,8 @@ public final class Passages {
                         case ARENA -> 'A';
                         case VAULT -> 'v';
                         case SHUTTERS -> 'u';
+                        case DIALS -> 'd';
+                        case SLIDES -> 's';
                         case CHIMES -> 'c';
                         case BEAM -> '/';
                         case PLATES -> 'p';
@@ -1379,7 +1382,7 @@ public final class Passages {
                 for (int[] k : CORNERS) set(level, m.offset(k[0], 1, k[1]), Blocks.FLOWERING_AZALEA);
                 for (int[] k : CORNERS) set(level, m.offset(k[0], 0, k[1]), Blocks.MOSS_BLOCK);
             }
-            case VAULT, CHIMES, BEAM, PLATES, DARTS, SHUTTERS -> Rooms.build(level, plan, c, random);
+            case VAULT, CHIMES, BEAM, PLATES, DARTS, SHUTTERS, DIALS, SLIDES -> Rooms.build(level, plan, c, random);
             case SPIKES, FLAMES, BLADES, ARC, GAS -> Snares.build(level, plan, c, p);
             case GAUNTLET -> Gauntlets.build(level, plan, c, random);
             case CELLS -> {
@@ -1832,6 +1835,11 @@ public final class Passages {
         for (int side = -1; side <= 1; side += 2) level.setBlock(m.offset(side * 2, 1, far), brazier(plan, STANDING, null), 2);
     }
 
+    /** True for the treasure rooms whose cache is locked: about half of them, decided by the level's seed. */
+    public static boolean locked(Plan plan, Cell c) {
+        return plan.kind(c) == Kind.TREASURE && new Random(plan.seed ^ (c.x * 7919L + c.z * 104729L)).nextBoolean();
+    }
+
     /**
      * Turns every cache on a level to face the middle of its room, and dresses it in its tower's wood and metal.
      * Builders set caches without asking which way they should face.
@@ -1846,7 +1854,8 @@ public final class Passages {
                 int dx = m.getX() - at.getX(), dz = m.getZ() - at.getZ();
                 var facing = dx == 0 && dz == 0 ? net.minecraft.core.Direction.SOUTH : net.minecraft.core.Direction.getApproximateNearest(dx, 0, dz);
                 BlockState dressed = state.setValue(com.thefarawaydev.realmsofchaos.block.CacheBlock.TOWER, plan.line.ordinal())
-                        .setValue(com.thefarawaydev.realmsofchaos.block.CacheBlock.FACING, facing);
+                        .setValue(com.thefarawaydev.realmsofchaos.block.CacheBlock.FACING, facing)
+                        .setValue(com.thefarawaydev.realmsofchaos.block.CacheBlock.LOCKED, locked(plan, c));
                 if (dressed != state) level.setBlock(at, dressed, 2);
             }
         }
@@ -1993,6 +2002,7 @@ public final class Passages {
             kit.setItem(random.nextInt(9), new ItemStack(Items.ARROW, 3 + random.nextInt(6)));
             kit.setItem(9 + random.nextInt(9), new ItemStack(Items.BREAD, 1 + random.nextInt(2)));
             if (random.nextFloat() < 0.3F) kit.setItem(18 + random.nextInt(9), new ItemStack(Items.HONEY_BOTTLE));
+            kit.setItem(26, new ItemStack(ModContent.LOCKPICK.get()));
         }
     }
 
@@ -2397,12 +2407,12 @@ public final class Passages {
         if (c == null || plan.kind(c) != Kind.PROVING || player.isSpectator()) return;
         int stage = provingStage(level, plan, c);
         if (stage > PROVING_WAVES) {
-            Hud.actionBar(player, Hud.colored(Component.translatable(HUD + "proving.done"), 0xAAAAAA));
+            Hud.above(player, pos, Component.translatable(HUD + "proving.done"), 0xAAAAAA);
         } else if (stage > 0) {
-            Hud.actionBar(player, Hud.colored(Component.translatable(HUD + "proving.underway", stage, PROVING_WAVES), 0xFFAA00));
+            Hud.above(player, pos, Component.translatable(HUD + "proving.underway", stage, PROVING_WAVES), 0xFFAA00);
         } else if (level.getDifficulty() == Difficulty.PEACEFUL) {
             ProgressData.get(level.getServer()).setCounter(provingKey(plan, c), PROVING_WAVES + 1);
-            Hud.actionBar(player, Hud.colored(Component.translatable(HUD + "proving.peaceful"), 0xAAAAAA));
+            Hud.above(player, pos, Component.translatable(HUD + "proving.peaceful"), 0xAAAAAA);
         } else {
             letOut(level, plan, c, 1);
         }
@@ -2444,6 +2454,7 @@ public final class Passages {
         if (random.nextFloat() < 0.6F) loot.add(new ItemStack(Items.ARROW, 6 + random.nextInt(11)));
         if (arena || random.nextFloat() < 0.25F + 0.15F * plan.tier) loot.add(new ItemStack(Items.GOLDEN_APPLE));
         if (random.nextFloat() < 0.35F) loot.add(new ItemStack(Items.ENDER_PEARL, 1 + random.nextInt(2)));
+        if (random.nextFloat() < 0.4F) loot.add(new ItemStack(ModContent.LOCKPICK.get(), 1 + random.nextInt(2)));
         if (plan.tier >= 2 && random.nextFloat() < 0.4F) loot.add(new ItemStack(ModContent.materialItem(plan.line, plan.tier - 1), 1 + random.nextInt(2)));
         if (plan.kind(cell) == Kind.PROVING) {
             // the proving pays best of all: a second share of the tier's material, and something to fight on with
@@ -2475,37 +2486,37 @@ public final class Passages {
         Cell cell = plan == null ? null : plan.cellAt(pos);
         if (cell == null || (plan.kind(cell) != Kind.TREASURE && plan.kind(cell) != Kind.ARENA && plan.kind(cell) != Kind.STAIRWELL && plan.kind(cell) != Kind.PROVING
                 && plan.kind(cell) != Kind.DUEL && plan.kind(cell) != Kind.AMBUSH && plan.kind(cell) != Kind.OVERLOOK && !Rooms.isPuzzle(plan.kind(cell)))) {
-            Hud.actionBar(player, Hud.colored(Component.translatable(hud + "empty"), 0xAAAAAA));
+            Hud.above(player, pos, Component.translatable(hud + "empty"), 0xAAAAAA);
             return false;
         }
         if (Rooms.isPuzzle(plan.kind(cell)) && !Rooms.solved(level, plan, cell)) {
-            Hud.actionBar(player, Hud.colored(Component.translatable(hud + "locked"), 0xFF5555));
+            Hud.above(player, pos, Component.translatable(hud + "locked"), 0xFF5555);
             return false;
         }
         if (plan.kind(cell) == Kind.PROVING && provingStage(level, plan, cell) <= PROVING_WAVES) {
             int stage = provingStage(level, plan, cell);
-            Hud.actionBar(player, Hud.colored(stage == 0 ? Component.translatable(HUD + "proving.locked")
-                    : Component.translatable(HUD + "proving.underway", stage, PROVING_WAVES), 0xFF5555));
+            Hud.above(player, pos, stage == 0 ? Component.translatable(HUD + "proving.locked")
+                    : Component.translatable(HUD + "proving.underway", stage, PROVING_WAVES), 0xFF5555);
             return false;
         }
         if (plan.kind(cell) == Kind.AMBUSH && ambushStage(level, plan, cell) < 2) {
             // the bait: reaching for it springs the ambush, if walking in had not
             if (ambushStage(level, plan, cell) == 0) spring(level, plan, cell);
-            Hud.actionBar(player, Hud.colored(Component.translatable(HUD + "guarded", guardians(level, plan, cell).size()), 0xFF5555));
+            Hud.above(player, pos, Component.translatable(HUD + "guarded", guardians(level, plan, cell).size()), 0xFF5555);
             return false;
         }
         if (plan.kind(cell) == Kind.ARENA || plan.kind(cell) == Kind.DUEL || plan.kind(cell) == Kind.OVERLOOK) {
             wake(level, plan, cell);
             int standing = guardians(level, plan, cell).size();
             if (standing > 0) {
-                Hud.actionBar(player, Hud.colored(Component.translatable(HUD + "guarded", standing), 0xFF5555));
+                Hud.above(player, pos, Component.translatable(HUD + "guarded", standing), 0xFF5555);
                 return false;
             }
         }
         ProgressData data = ProgressData.get(level.getServer());
         String key = lootKey(plan, cell, player.getUUID());
         if (data.isBuilt(key)) {
-            Hud.actionBar(player, Hud.colored(Component.translatable(hud + "taken"), 0xAAAAAA));
+            Hud.above(player, pos, Component.translatable(hud + "taken"), 0xAAAAAA);
             return false;
         }
         data.markBuilt(key);
@@ -2519,8 +2530,8 @@ public final class Passages {
         }
         level.playSound(null, pos, SoundEvents.CHEST_OPEN, SoundSource.BLOCKS, 0.8F, 1.0F);
         level.playSound(null, pos, SoundEvents.PLAYER_LEVELUP, SoundSource.BLOCKS, 0.4F, 1.6F);
-        level.sendParticles(ParticleTypes.HAPPY_VILLAGER, pos.getX() + 0.5, pos.getY() + 1.2, pos.getZ() + 0.5, 16, 0.4, 0.3, 0.4, 0.0);
-        Hud.actionBar(player, Hud.colored(Component.translatable(hud + "loot", stacks), 0xF5B82E));
+        level.sendParticles(com.thefarawaydev.realmsofchaos.fx.RocParticles.GLINT.type(), pos.getX() + 0.5, pos.getY() + 1.2, pos.getZ() + 0.5, 16, 0.4, 0.3, 0.4, 0.0);
+        Hud.above(player, pos, Component.translatable(hud + "loot", stacks), 0xF5B82E);
         return true;
     }
 
@@ -2667,6 +2678,7 @@ public final class Passages {
         ProgressData.get(level.getServer()).clearCounters("ambush/" + builtKey(plan) + "/");
         for (Cell c : plan.cells()) if (plan.kind(c) == Kind.AMBUSH) bar(level, plan, c, false);
         for (Cell c : plan.cells()) if (plan.kind(c) == Kind.AMBUSH) glaze(level, plan, c);
+        settleCaches(level, plan);
         for (Cell c : plan.cells()) if (plan.kind(c) == Kind.PROVING) provingGates(level, plan, c, false);
         for (Cell c : plan.cells()) if (plan.kind(c) == Kind.SPIKES) Snares.lower(level, plan, c);
         shutGate(level, plan);
@@ -2682,7 +2694,7 @@ public final class Passages {
         if (gateOpen(level, plan)) return;
         for (BlockPos g : plan.gatePositions()) {
             level.setBlock(g, ModContent.GATE_ASCEND.get().defaultBlockState(), 3);
-            level.sendParticles(ParticleTypes.END_ROD, g.getX() + 0.5, g.getY() + 0.5, g.getZ() + 0.5, 4, 0.3, 0.3, 0.3, 0.03);
+            level.sendParticles(com.thefarawaydev.realmsofchaos.fx.RocParticles.GLINT.type(), g.getX() + 0.5, g.getY() + 0.5, g.getZ() + 0.5, 4, 0.3, 0.3, 0.3, 0.03);
         }
         BlockPos middle = plan.gateOffset(0, 2);
         level.playSound(null, middle, SoundEvents.END_PORTAL_SPAWN, SoundSource.BLOCKS, 0.6F, 1.4F);
@@ -2718,8 +2730,8 @@ public final class Passages {
             com.thefarawaydev.realmsofchaos.ui.Tutorial.tip(breaker, com.thefarawaydev.realmsofchaos.ui.Tutorial.Tip.BOON);
         }
         double x = pos.getX() + 0.5, y = pos.getY() + 0.5, z = pos.getZ() + 0.5;
-        level.sendParticles(ParticleTypes.END_ROD, x, y, z, 60, 0.3, 0.3, 0.3, 0.15);
-        level.sendParticles(ParticleTypes.ENCHANT, x, y + 0.5, z, 80, 0.6, 0.6, 0.6, 0.5);
+        level.sendParticles(com.thefarawaydev.realmsofchaos.fx.RocParticles.GLINT.type(), x, y, z, 60, 0.3, 0.3, 0.3, 0.15);
+        level.sendParticles(com.thefarawaydev.realmsofchaos.fx.RocParticles.RUNE.type(), x, y + 0.5, z, 80, 0.6, 0.6, 0.6, 0.5);
         level.sendParticles(ParticleTypes.EXPLOSION, x, y, z, 3, 0.4, 0.4, 0.4, 0.0);
         level.playSound(null, pos, SoundEvents.GLASS_BREAK, SoundSource.BLOCKS, 1.5F, 0.6F);
         level.playSound(null, pos, SoundEvents.BEACON_DEACTIVATE, SoundSource.BLOCKS, 1.2F, 1.2F);
@@ -2746,7 +2758,7 @@ public final class Passages {
             }
         }
         if (left == 0) {
-            for (BlockPos g : plan.gatePositions()) level.sendParticles(ParticleTypes.END_ROD, g.getX() + 0.5, g.getY() + 0.5, g.getZ() + 0.5, 12, 0.3, 0.3, 0.3, 0.05);
+            for (BlockPos g : plan.gatePositions()) level.sendParticles(com.thefarawaydev.realmsofchaos.fx.RocParticles.GLINT.type(), g.getX() + 0.5, g.getY() + 0.5, g.getZ() + 0.5, 12, 0.3, 0.3, 0.3, 0.05);
         }
     }
 
@@ -2918,6 +2930,8 @@ public final class Passages {
                     case BEAM -> "beam";
                     case PLATES -> "plates";
                     case SHUTTERS -> "shutters";
+                    case DIALS -> "dials";
+                    case SLIDES -> "slides";
                     case CRUSHER -> "crusher";
                     case DARTS -> "darts";
                     case SPIKES -> "spikes";
@@ -2972,7 +2986,7 @@ public final class Passages {
                 Component.translatable(Ruins.directionKey(dx, dz))), plan.line.color()));
         if (dist > 0.5) {
             for (int i = 1; i <= 8; i++) {
-                level.sendParticles(ParticleTypes.END_ROD, player.getX() + dx / dist * i * 0.6, player.getY() + 1.2, player.getZ() + dz / dist * i * 0.6, 1, 0, 0, 0, 0);
+                level.sendParticles(com.thefarawaydev.realmsofchaos.fx.RocParticles.GLINT.type(), player.getX() + dx / dist * i * 0.6, player.getY() + 1.2, player.getZ() + dz / dist * i * 0.6, 1, 0, 0, 0, 0);
             }
         }
         return best;

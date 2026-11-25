@@ -411,7 +411,7 @@ public class GodBoss extends Monster implements RangedAttackMob {
 
     /** Puts the boss back somewhere it can fight from. Called when it is out of bounds, inside a block or stuck. */
     private void warpTo(ServerLevel level, Vec3 to) {
-        level.sendParticles(ParticleTypes.POOF, getX(), getY() + 1, getZ(), 20, 0.4, 0.8, 0.4, 0.02);
+        level.sendParticles(com.thefarawaydev.realmsofchaos.fx.RocParticles.DUST.type(), getX(), getY() + 1, getZ(), 20, 0.4, 0.8, 0.4, 0.02);
         getNavigation().stop();
         setDeltaMovement(Vec3.ZERO);
         teleportTo(to.x, to.y, to.z);
@@ -965,7 +965,7 @@ public class GodBoss extends Monster implements RangedAttackMob {
             if (aegis && source.getEntity() instanceof ServerPlayer player && level.getServer().getTickCount() >= hintReady) {
                 hintReady = level.getServer().getTickCount() + 30;
                 level.playSound(null, blockPosition(), SoundEvents.SHIELD_BLOCK.value(), SoundSource.HOSTILE, 1.2F, 0.7F);
-                level.sendParticles(ParticleTypes.ENCHANTED_HIT, getX(), getY() + 1.2, getZ(), 14, 0.5, 0.8, 0.5, 0.2);
+                level.sendParticles(com.thefarawaydev.realmsofchaos.fx.RocParticles.STRIKE.type(), getX(), getY() + 1.2, getZ(), 14, 0.5, 0.8, 0.5, 0.2);
                 Hud.actionBar(player, Hud.colored(Component.translatable("hud." + RealmsOfChaos.MOD_ID + ".aegis.shielded", pylons.size()), 0x55FFFF));
             }
             return false;
@@ -977,7 +977,7 @@ public class GodBoss extends Monster implements RangedAttackMob {
         if (afar && striker != null) amount *= 1.0F - 0.12F * Insight.level(striker, Insight.Habit.ARCHER);
         if (afar && stance == Stance.DEFLECT) {
             amount *= 0.4F;
-            level.sendParticles(ParticleTypes.ENCHANTED_HIT, getX(), getY() + 1.2, getZ(), 8, 0.4, 0.7, 0.4, 0.2);
+            level.sendParticles(com.thefarawaydev.realmsofchaos.fx.RocParticles.STRIKE.type(), getX(), getY() + 1.2, getZ(), 8, 0.4, 0.7, 0.4, 0.2);
         }
         float before = getHealth();
         boolean hurt;
@@ -1091,7 +1091,7 @@ public class GodBoss extends Monster implements RangedAttackMob {
         for (BlockPos spot : pylonSpots(level, Adapt.pylons(level.getDifficulty(), challengers, tempo))) {
             level.setBlock(spot, pylon, 3);
             pylons.put(spot, PYLON_HITS);
-            level.sendParticles(ParticleTypes.END_ROD, spot.getX() + 0.5, spot.getY() + 0.5, spot.getZ() + 0.5, 30, 0.2, 1.2, 0.2, 0.05);
+            level.sendParticles(com.thefarawaydev.realmsofchaos.fx.RocParticles.GLINT.type(), spot.getX() + 0.5, spot.getY() + 0.5, spot.getZ() + 0.5, 30, 0.2, 1.2, 0.2, 0.05);
             LightningBolt bolt = EntityTypes.LIGHTNING_BOLT.create(level, EntitySpawnReason.TRIGGERED);
             if (bolt != null) {
                 bolt.setPos(spot.getX() + 0.5, spot.getY(), spot.getZ() + 0.5);
@@ -1151,7 +1151,7 @@ public class GodBoss extends Monster implements RangedAttackMob {
         if (last != null && now >= last && now - last < PYLON_REST) return true;       // too soon: this blow glances off
         pylonStruck.put(pos, now);
         double x = pos.getX() + 0.5, y = pos.getY() + 0.6, z = pos.getZ() + 0.5;
-        level.sendParticles(ParticleTypes.CRIT, x, y, z, 14, 0.3, 0.5, 0.3, 0.3);
+        level.sendParticles(com.thefarawaydev.realmsofchaos.fx.RocParticles.STRIKE.type(), x, y, z, 14, 0.3, 0.5, 0.3, 0.3);
         if (left > 1) {
             pylons.put(pos, left - 1);
             level.playSound(null, pos, SoundEvents.AMETHYST_BLOCK_HIT, SoundSource.BLOCKS, 1.6F, 0.6F + 0.25F * (PYLON_HITS - left));
@@ -1191,7 +1191,7 @@ public class GodBoss extends Monster implements RangedAttackMob {
         abilityCooldown = Math.max(abilityCooldown, broken ? 90 : 50);
         level.playSound(null, blockPosition(), SoundEvents.GLASS_BREAK, SoundSource.HOSTILE, 2.0F, 0.4F);
         level.playSound(null, blockPosition(), SoundEvents.TRIDENT_THUNDER.value(), SoundSource.HOSTILE, 1.0F, 1.5F);
-        level.sendParticles(ParticleTypes.ENCHANTED_HIT, getX(), getY() + 1.2, getZ(), 80, 0.8, 1.0, 0.8, 0.5);
+        level.sendParticles(com.thefarawaydev.realmsofchaos.fx.RocParticles.STRIKE.type(), getX(), getY() + 1.2, getZ(), 80, 0.8, 1.0, 0.8, 0.5);
         Arena.shockwave(level, position(), lineParticle(), 3);
         for (Player p : nearbyPlayers(level, 48)) {
             if (p instanceof ServerPlayer sp) {
@@ -1321,7 +1321,7 @@ public class GodBoss extends Monster implements RangedAttackMob {
             if (dx * dx + dz * dz <= (safeRadius + 0.5) * (safeRadius + 0.5) || Math.abs(p.getY() - h.y) > 8) continue;
             p.hurtServer(level, damageSources().indirectMagic(this, this), (1.5F + 2.5F * s) * damageScale());
             switch (god().line()) {
-                case ZEUS -> level.sendParticles(ParticleTypes.ELECTRIC_SPARK, p.getX(), p.getY() + 1, p.getZ(), 20, 0.3, 0.6, 0.3, 0.2);
+                case ZEUS -> level.sendParticles(com.thefarawaydev.realmsofchaos.fx.RocParticles.STORM_SPARK.type(), p.getX(), p.getY() + 1, p.getZ(), 20, 0.3, 0.6, 0.3, 0.2);
                 case POSEIDON -> p.addEffect(new MobEffectInstance(MobEffects.SLOWNESS, 40, 1));
                 case HADES -> p.setRemainingFireTicks(60);
             }
@@ -1423,13 +1423,13 @@ public class GodBoss extends Monster implements RangedAttackMob {
                 }
             }
             case POSEIDON -> {
-                level.sendParticles(ParticleTypes.SPLASH, m.x, m.y + 0.5, m.z, 120, 1.0, 1.5, 1.0, 0.5);
+                level.sendParticles(com.thefarawaydev.realmsofchaos.fx.RocParticles.SEA_SPRAY.type(), m.x, m.y + 0.5, m.z, 120, 1.0, 1.5, 1.0, 0.5);
                 level.sendParticles(ParticleTypes.BUBBLE_POP, m.x, m.y + 1.5, m.z, 60, 0.8, 1.5, 0.8, 0.1);
                 level.playSound(null, BlockPos.containing(m), SoundEvents.GENERIC_SPLASH, SoundSource.HOSTILE, 2.0F, 0.5F);
             }
             case HADES -> {
-                level.sendParticles(ParticleTypes.LAVA, m.x, m.y + 0.3, m.z, 30, 1.0, 0.2, 1.0, 0.0);
-                level.sendParticles(ParticleTypes.FLAME, m.x, m.y + 0.3, m.z, 60, 1.0, 0.3, 1.0, 0.08);
+                level.sendParticles(com.thefarawaydev.realmsofchaos.fx.RocParticles.EMBER.type(), m.x, m.y + 0.3, m.z, 30, 1.0, 0.2, 1.0, 0.0);
+                level.sendParticles(com.thefarawaydev.realmsofchaos.fx.RocParticles.FLAME_STORM.type(), m.x, m.y + 0.3, m.z, 60, 1.0, 0.3, 1.0, 0.08);
                 level.sendParticles(ParticleTypes.EXPLOSION, m.x, m.y + 0.5, m.z, 2, 0.5, 0.2, 0.5, 0.0);
                 level.playSound(null, BlockPos.containing(m), SoundEvents.GENERIC_EXPLODE.value(), SoundSource.HOSTILE, 1.2F, 0.7F);
             }
@@ -1588,7 +1588,7 @@ public class GodBoss extends Monster implements RangedAttackMob {
         }
         setDeltaMovement(dir.x * 0.85, 0.42, dir.z * 0.85);
         needsSync = true;
-        level.sendParticles(ParticleTypes.CLOUD, getX(), getY() + 0.1, getZ(), 8, 0.3, 0.05, 0.3, 0.02);
+        level.sendParticles(com.thefarawaydev.realmsofchaos.fx.RocParticles.DUST.type(), getX(), getY() + 0.1, getZ(), 8, 0.3, 0.05, 0.3, 0.02);
         level.playSound(null, blockPosition(), SoundEvents.PLAYER_ATTACK_STRONG, SoundSource.HOSTILE, 1.0F, 0.6F);
         return true;
     }
@@ -1632,7 +1632,7 @@ public class GodBoss extends Monster implements RangedAttackMob {
             }
             case POSEIDON -> {
                 level.playSound(null, blockPosition(), SoundEvents.GENERIC_SPLASH, SoundSource.HOSTILE, 2.0F, 0.6F);
-                level.sendParticles(ParticleTypes.SPLASH, getX(), getY() + 1, getZ(), 120, 3.0, 1.0, 3.0, 0.4);
+                level.sendParticles(com.thefarawaydev.realmsofchaos.fx.RocParticles.SEA_SPRAY.type(), getX(), getY() + 1, getZ(), 120, 3.0, 1.0, 3.0, 0.4);
                 for (Player p : nearbyPlayers(level, 18)) {
                     Vec3 d = p.position().subtract(position());
                     double dist = d.length();
@@ -1651,7 +1651,7 @@ public class GodBoss extends Monster implements RangedAttackMob {
             }
             case HADES -> {
                 level.playSound(null, blockPosition(), SoundEvents.WITHER_SHOOT, SoundSource.HOSTILE, 1.5F, 0.5F);
-                level.sendParticles(ParticleTypes.SOUL_FIRE_FLAME, getX(), getY() + 1, getZ(), 80, 2.0, 1.0, 2.0, 0.08);
+                level.sendParticles(com.thefarawaydev.realmsofchaos.fx.RocParticles.SOUL_WISP.type(), getX(), getY() + 1, getZ(), 80, 2.0, 1.0, 2.0, 0.08);
                 for (Player p : nearbyPlayers(level, 20)) {
                     p.hurtServer(level, damageSources().indirectMagic(this, this), (3.0F + 5.0F * s) * m);
                     p.addEffect(new MobEffectInstance(MobEffects.WITHER, 80, 0));
@@ -1724,7 +1724,7 @@ public class GodBoss extends Monster implements RangedAttackMob {
         level.playSound(null, blockPosition(), SoundEvents.UI_TOAST_CHALLENGE_COMPLETE, SoundSource.HOSTILE, 2.0F, 1.0F);
         // the god comes apart in its line's light
         level.sendParticles(lineParticle(), getX(), getY() + 1.2, getZ(), 160, 0.6, 1.0, 0.6, 0.35);
-        level.sendParticles(ParticleTypes.END_ROD, getX(), getY() + 1.2, getZ(), 60, 0.4, 0.9, 0.4, 0.12);
+        level.sendParticles(com.thefarawaydev.realmsofchaos.fx.RocParticles.GLINT.type(), getX(), getY() + 1.2, getZ(), 60, 0.4, 0.9, 0.4, 0.12);
         level.sendParticles(ParticleTypes.TOTEM_OF_UNDYING, getX(), getY() + 1.5, getZ(), 50, 0.5, 0.8, 0.5, 0.4);
         level.playSound(null, blockPosition(), SoundEvents.TRIDENT_THUNDER.value(), SoundSource.HOSTILE, 1.2F, 1.4F);
     }

@@ -220,7 +220,7 @@ public final class TarotEffects {
                 }
                 for (int i = 0; i < 16; i++) {
                     double a = Math.PI * 2 * i / 16;
-                    level.sendParticles(ParticleTypes.END_ROD, player.getX() + Math.cos(a) * 3, player.getY() + 1, player.getZ() + Math.sin(a) * 3, 1, 0, 0.3, 0, 0);
+                    level.sendParticles(com.thefarawaydev.realmsofchaos.fx.RocParticles.GLINT.type(), player.getX() + Math.cos(a) * 3, player.getY() + 1, player.getZ() + Math.sin(a) * 3, 1, 0, 0.3, 0, 0);
                 }
             }
         }

@@ -30,6 +30,14 @@ public final class RealmsOfChaosForgeClient {
         net.minecraft.client.gui.screens.MenuScreens.register(ModContent.PAGE.get(), com.thefarawaydev.realmsofchaos.client.PageScreen::new);
     }
 
+    /** The mod's own particles, each drawn from its own sprites. */
+    @SubscribeEvent
+    public static void registerParticles(net.minecraftforge.client.event.RegisterParticleProvidersEvent event) {
+        for (com.thefarawaydev.realmsofchaos.fx.RocParticles kind : com.thefarawaydev.realmsofchaos.fx.RocParticles.values()) {
+            event.registerSpriteSet(kind.type(), sprites -> com.thefarawaydev.realmsofchaos.client.RocQuadParticle.provider(kind, sprites));
+        }
+    }
+
     /** The HUD is drawn by the mod: the boss panel, the floor plaque, cards, the combat meter. */
     @SubscribeEvent
     public static void addHud(net.minecraftforge.client.event.AddGuiOverlayLayersEvent event) {

@@ -350,8 +350,7 @@ public final class Furniture {
         @Override
         protected InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hit) {
             if (player instanceof ServerPlayer sp) {
-                com.thefarawaydev.realmsofchaos.ui.Hud.actionBar(sp, com.thefarawaydev.realmsofchaos.ui.Hud.colored(
-                        net.minecraft.network.chat.Component.translatable("hud.realms_of_chaos.bunk"), 0xAAAAAA));
+                com.thefarawaydev.realmsofchaos.ui.Hud.above(sp, pos, net.minecraft.network.chat.Component.translatable("hud.realms_of_chaos.bunk"), 0xAAAAAA);
             }
             return InteractionResult.SUCCESS;
         }
