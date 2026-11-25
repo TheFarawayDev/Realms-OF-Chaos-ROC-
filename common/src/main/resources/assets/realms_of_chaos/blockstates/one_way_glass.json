@@ -1,1156 +1,1156 @@
 {
   "variants": {
     "facing=north,down=false,east=false,north=false,south=false,up=false,west=false": {
-      "model": "realms_of_chaos:block/one_way_glass_north_0_0"
+      "model": "realms_of_chaos:block/one_way_glass_north_______"
     },
     "facing=north,down=true,east=false,north=false,south=false,up=false,west=false": {
-      "model": "realms_of_chaos:block/one_way_glass_north_2_2"
+      "model": "realms_of_chaos:block/one_way_glass_north_d_____"
     },
     "facing=north,down=false,east=true,north=false,south=false,up=false,west=false": {
-      "model": "realms_of_chaos:block/one_way_glass_north_4_8"
+      "model": "realms_of_chaos:block/one_way_glass_north__e____"
     },
     "facing=north,down=true,east=true,north=false,south=false,up=false,west=false": {
-      "model": "realms_of_chaos:block/one_way_glass_north_6_10"
+      "model": "realms_of_chaos:block/one_way_glass_north_de____"
     },
     "facing=north,down=false,east=false,north=true,south=false,up=false,west=false": {
-      "model": "realms_of_chaos:block/one_way_glass_north_0_0"
+      "model": "realms_of_chaos:block/one_way_glass_north___n___"
     },
     "facing=north,down=true,east=false,north=true,south=false,up=false,west=false": {
-      "model": "realms_of_chaos:block/one_way_glass_north_2_2"
+      "model": "realms_of_chaos:block/one_way_glass_north_d_n___"
     },
     "facing=north,down=false,east=true,north=true,south=false,up=false,west=false": {
-      "model": "realms_of_chaos:block/one_way_glass_north_4_8"
+      "model": "realms_of_chaos:block/one_way_glass_north__en___"
     },
     "facing=north,down=true,east=true,north=true,south=false,up=false,west=false": {
-      "model": "realms_of_chaos:block/one_way_glass_north_6_10"
+      "model": "realms_of_chaos:block/one_way_glass_north_den___"
     },
     "facing=north,down=false,east=false,north=false,south=true,up=false,west=false": {
-      "model": "realms_of_chaos:block/one_way_glass_north_0_0"
+      "model": "realms_of_chaos:block/one_way_glass_north____s__"
     },
     "facing=north,down=true,east=false,north=false,south=true,up=false,west=false": {
-      "model": "realms_of_chaos:block/one_way_glass_north_2_2"
+      "model": "realms_of_chaos:block/one_way_glass_north_d__s__"
     },
     "facing=north,down=false,east=true,north=false,south=true,up=false,west=false": {
-      "model": "realms_of_chaos:block/one_way_glass_north_4_8"
+      "model": "realms_of_chaos:block/one_way_glass_north__e_s__"
     },
     "facing=north,down=true,east=true,north=false,south=true,up=false,west=false": {
-      "model": "realms_of_chaos:block/one_way_glass_north_6_10"
+      "model": "realms_of_chaos:block/one_way_glass_north_de_s__"
     },
     "facing=north,down=false,east=false,north=true,south=true,up=false,west=false": {
-      "model": "realms_of_chaos:block/one_way_glass_north_0_0"
+      "model": "realms_of_chaos:block/one_way_glass_north___ns__"
     },
     "facing=north,down=true,east=false,north=true,south=true,up=false,west=false": {
-      "model": "realms_of_chaos:block/one_way_glass_north_2_2"
+      "model": "realms_of_chaos:block/one_way_glass_north_d_ns__"
     },
     "facing=north,down=false,east=true,north=true,south=true,up=false,west=false": {
-      "model": "realms_of_chaos:block/one_way_glass_north_4_8"
+      "model": "realms_of_chaos:block/one_way_glass_north__ens__"
     },
     "facing=north,down=true,east=true,north=true,south=true,up=false,west=false": {
-      "model": "realms_of_chaos:block/one_way_glass_north_6_10"
+      "model": "realms_of_chaos:block/one_way_glass_north_dens__"
     },
     "facing=north,down=false,east=false,north=false,south=false,up=true,west=false": {
-      "model": "realms_of_chaos:block/one_way_glass_north_1_1"
+      "model": "realms_of_chaos:block/one_way_glass_north_____u_"
     },
     "facing=north,down=true,east=false,north=false,south=false,up=true,west=false": {
-      "model": "realms_of_chaos:block/one_way_glass_north_3_3"
+      "model": "realms_of_chaos:block/one_way_glass_north_d___u_"
     },
     "facing=north,down=false,east=true,north=false,south=false,up=true,west=false": {
-      "model": "realms_of_chaos:block/one_way_glass_north_5_9"
+      "model": "realms_of_chaos:block/one_way_glass_north__e__u_"
     },
     "facing=north,down=true,east=true,north=false,south=false,up=true,west=false": {
-      "model": "realms_of_chaos:block/one_way_glass_north_7_11"
+      "model": "realms_of_chaos:block/one_way_glass_north_de__u_"
     },
     "facing=north,down=false,east=false,north=true,south=false,up=true,west=false": {
-      "model": "realms_of_chaos:block/one_way_glass_north_1_1"
+      "model": "realms_of_chaos:block/one_way_glass_north___n_u_"
     },
     "facing=north,down=true,east=false,north=true,south=false,up=true,west=false": {
-      "model": "realms_of_chaos:block/one_way_glass_north_3_3"
+      "model": "realms_of_chaos:block/one_way_glass_north_d_n_u_"
     },
     "facing=north,down=false,east=true,north=true,south=false,up=true,west=false": {
-      "model": "realms_of_chaos:block/one_way_glass_north_5_9"
+      "model": "realms_of_chaos:block/one_way_glass_north__en_u_"
     },
     "facing=north,down=true,east=true,north=true,south=false,up=true,west=false": {
-      "model": "realms_of_chaos:block/one_way_glass_north_7_11"
+      "model": "realms_of_chaos:block/one_way_glass_north_den_u_"
     },
     "facing=north,down=false,east=false,north=false,south=true,up=true,west=false": {
-      "model": "realms_of_chaos:block/one_way_glass_north_1_1"
+      "model": "realms_of_chaos:block/one_way_glass_north____su_"
     },
     "facing=north,down=true,east=false,north=false,south=true,up=true,west=false": {
-      "model": "realms_of_chaos:block/one_way_glass_north_3_3"
+      "model": "realms_of_chaos:block/one_way_glass_north_d__su_"
     },
     "facing=north,down=false,east=true,north=false,south=true,up=true,west=false": {
-      "model": "realms_of_chaos:block/one_way_glass_north_5_9"
+      "model": "realms_of_chaos:block/one_way_glass_north__e_su_"
     },
     "facing=north,down=true,east=true,north=false,south=true,up=true,west=false": {
-      "model": "realms_of_chaos:block/one_way_glass_north_7_11"
+      "model": "realms_of_chaos:block/one_way_glass_north_de_su_"
     },
     "facing=north,down=false,east=false,north=true,south=true,up=true,west=false": {
-      "model": "realms_of_chaos:block/one_way_glass_north_1_1"
+      "model": "realms_of_chaos:block/one_way_glass_north___nsu_"
     },
     "facing=north,down=true,east=false,north=true,south=true,up=true,west=false": {
-      "model": "realms_of_chaos:block/one_way_glass_north_3_3"
+      "model": "realms_of_chaos:block/one_way_glass_north_d_nsu_"
     },
     "facing=north,down=false,east=true,north=true,south=true,up=true,west=false": {
-      "model": "realms_of_chaos:block/one_way_glass_north_5_9"
+      "model": "realms_of_chaos:block/one_way_glass_north__ensu_"
     },
     "facing=north,down=true,east=true,north=true,south=true,up=true,west=false": {
-      "model": "realms_of_chaos:block/one_way_glass_north_7_11"
+      "model": "realms_of_chaos:block/one_way_glass_north_densu_"
     },
     "facing=north,down=false,east=false,north=false,south=false,up=false,west=true": {
-      "model": "realms_of_chaos:block/one_way_glass_north_8_4"
+      "model": "realms_of_chaos:block/one_way_glass_north______w"
     },
     "facing=north,down=true,east=false,north=false,south=false,up=false,west=true": {
-      "model": "realms_of_chaos:block/one_way_glass_north_10_6"
+      "model": "realms_of_chaos:block/one_way_glass_north_d____w"
     },
     "facing=north,down=false,east=true,north=false,south=false,up=false,west=true": {
-      "model": "realms_of_chaos:block/one_way_glass_north_12_12"
+      "model": "realms_of_chaos:block/one_way_glass_north__e___w"
     },
     "facing=north,down=true,east=true,north=false,south=false,up=false,west=true": {
-      "model": "realms_of_chaos:block/one_way_glass_north_14_14"
+      "model": "realms_of_chaos:block/one_way_glass_north_de___w"
     },
     "facing=north,down=false,east=false,north=true,south=false,up=false,west=true": {
-      "model": "realms_of_chaos:block/one_way_glass_north_8_4"
+      "model": "realms_of_chaos:block/one_way_glass_north___n__w"
     },
     "facing=north,down=true,east=false,north=true,south=false,up=false,west=true": {
-      "model": "realms_of_chaos:block/one_way_glass_north_10_6"
+      "model": "realms_of_chaos:block/one_way_glass_north_d_n__w"
     },
     "facing=north,down=false,east=true,north=true,south=false,up=false,west=true": {
-      "model": "realms_of_chaos:block/one_way_glass_north_12_12"
+      "model": "realms_of_chaos:block/one_way_glass_north__en__w"
     },
     "facing=north,down=true,east=true,north=true,south=false,up=false,west=true": {
-      "model": "realms_of_chaos:block/one_way_glass_north_14_14"
+      "model": "realms_of_chaos:block/one_way_glass_north_den__w"
     },
     "facing=north,down=false,east=false,north=false,south=true,up=false,west=true": {
-      "model": "realms_of_chaos:block/one_way_glass_north_8_4"
+      "model": "realms_of_chaos:block/one_way_glass_north____s_w"
     },
     "facing=north,down=true,east=false,north=false,south=true,up=false,west=true": {
-      "model": "realms_of_chaos:block/one_way_glass_north_10_6"
+      "model": "realms_of_chaos:block/one_way_glass_north_d__s_w"
     },
     "facing=north,down=false,east=true,north=false,south=true,up=false,west=true": {
-      "model": "realms_of_chaos:block/one_way_glass_north_12_12"
+      "model": "realms_of_chaos:block/one_way_glass_north__e_s_w"
     },
     "facing=north,down=true,east=true,north=false,south=true,up=false,west=true": {
-      "model": "realms_of_chaos:block/one_way_glass_north_14_14"
+      "model": "realms_of_chaos:block/one_way_glass_north_de_s_w"
     },
     "facing=north,down=false,east=false,north=true,south=true,up=false,west=true": {
-      "model": "realms_of_chaos:block/one_way_glass_north_8_4"
+      "model": "realms_of_chaos:block/one_way_glass_north___ns_w"
     },
     "facing=north,down=true,east=false,north=true,south=true,up=false,west=true": {
-      "model": "realms_of_chaos:block/one_way_glass_north_10_6"
+      "model": "realms_of_chaos:block/one_way_glass_north_d_ns_w"
     },
     "facing=north,down=false,east=true,north=true,south=true,up=false,west=true": {
-      "model": "realms_of_chaos:block/one_way_glass_north_12_12"
+      "model": "realms_of_chaos:block/one_way_glass_north__ens_w"
     },
     "facing=north,down=true,east=true,north=true,south=true,up=false,west=true": {
-      "model": "realms_of_chaos:block/one_way_glass_north_14_14"
+      "model": "realms_of_chaos:block/one_way_glass_north_dens_w"
     },
     "facing=north,down=false,east=false,north=false,south=false,up=true,west=true": {
-      "model": "realms_of_chaos:block/one_way_glass_north_9_5"
+      "model": "realms_of_chaos:block/one_way_glass_north_____uw"
     },
     "facing=north,down=true,east=false,north=false,south=false,up=true,west=true": {
-      "model": "realms_of_chaos:block/one_way_glass_north_11_7"
+      "model": "realms_of_chaos:block/one_way_glass_north_d___uw"
     },
     "facing=north,down=false,east=true,north=false,south=false,up=true,west=true": {
-      "model": "realms_of_chaos:block/one_way_glass_north_13_13"
+      "model": "realms_of_chaos:block/one_way_glass_north__e__uw"
     },
     "facing=north,down=true,east=true,north=false,south=false,up=true,west=true": {
-      "model": "realms_of_chaos:block/one_way_glass_north_15_15"
+      "model": "realms_of_chaos:block/one_way_glass_north_de__uw"
     },
     "facing=north,down=false,east=false,north=true,south=false,up=true,west=true": {
-      "model": "realms_of_chaos:block/one_way_glass_north_9_5"
+      "model": "realms_of_chaos:block/one_way_glass_north___n_uw"
     },
     "facing=north,down=true,east=false,north=true,south=false,up=true,west=true": {
-      "model": "realms_of_chaos:block/one_way_glass_north_11_7"
+      "model": "realms_of_chaos:block/one_way_glass_north_d_n_uw"
     },
     "facing=north,down=false,east=true,north=true,south=false,up=true,west=true": {
-      "model": "realms_of_chaos:block/one_way_glass_north_13_13"
+      "model": "realms_of_chaos:block/one_way_glass_north__en_uw"
     },
     "facing=north,down=true,east=true,north=true,south=false,up=true,west=true": {
-      "model": "realms_of_chaos:block/one_way_glass_north_15_15"
+      "model": "realms_of_chaos:block/one_way_glass_north_den_uw"
     },
     "facing=north,down=false,east=false,north=false,south=true,up=true,west=true": {
-      "model": "realms_of_chaos:block/one_way_glass_north_9_5"
+      "model": "realms_of_chaos:block/one_way_glass_north____suw"
     },
     "facing=north,down=true,east=false,north=false,south=true,up=true,west=true": {
-      "model": "realms_of_chaos:block/one_way_glass_north_11_7"
+      "model": "realms_of_chaos:block/one_way_glass_north_d__suw"
     },
     "facing=north,down=false,east=true,north=false,south=true,up=true,west=true": {
-      "model": "realms_of_chaos:block/one_way_glass_north_13_13"
+      "model": "realms_of_chaos:block/one_way_glass_north__e_suw"
     },
     "facing=north,down=true,east=true,north=false,south=true,up=true,west=true": {
-      "model": "realms_of_chaos:block/one_way_glass_north_15_15"
+      "model": "realms_of_chaos:block/one_way_glass_north_de_suw"
     },
     "facing=north,down=false,east=false,north=true,south=true,up=true,west=true": {
-      "model": "realms_of_chaos:block/one_way_glass_north_9_5"
+      "model": "realms_of_chaos:block/one_way_glass_north___nsuw"
     },
     "facing=north,down=true,east=false,north=true,south=true,up=true,west=true": {
-      "model": "realms_of_chaos:block/one_way_glass_north_11_7"
+      "model": "realms_of_chaos:block/one_way_glass_north_d_nsuw"
     },
     "facing=north,down=false,east=true,north=true,south=true,up=true,west=true": {
-      "model": "realms_of_chaos:block/one_way_glass_north_13_13"
+      "model": "realms_of_chaos:block/one_way_glass_north__ensuw"
     },
     "facing=north,down=true,east=true,north=true,south=true,up=true,west=true": {
-      "model": "realms_of_chaos:block/one_way_glass_north_15_15"
+      "model": "realms_of_chaos:block/one_way_glass_north_densuw"
     },
     "facing=south,down=false,east=false,north=false,south=false,up=false,west=false": {
-      "model": "realms_of_chaos:block/one_way_glass_south_0_0"
+      "model": "realms_of_chaos:block/one_way_glass_south_______"
     },
     "facing=south,down=true,east=false,north=false,south=false,up=false,west=false": {
-      "model": "realms_of_chaos:block/one_way_glass_south_2_2"
+      "model": "realms_of_chaos:block/one_way_glass_south_d_____"
     },
     "facing=south,down=false,east=true,north=false,south=false,up=false,west=false": {
-      "model": "realms_of_chaos:block/one_way_glass_south_8_4"
+      "model": "realms_of_chaos:block/one_way_glass_south__e____"
     },
     "facing=south,down=true,east=true,north=false,south=false,up=false,west=false": {
-      "model": "realms_of_chaos:block/one_way_glass_south_10_6"
+      "model": "realms_of_chaos:block/one_way_glass_south_de____"
     },
     "facing=south,down=false,east=false,north=true,south=false,up=false,west=false": {
-      "model": "realms_of_chaos:block/one_way_glass_south_0_0"
+      "model": "realms_of_chaos:block/one_way_glass_south___n___"
     },
     "facing=south,down=true,east=false,north=true,south=false,up=false,west=false": {
-      "model": "realms_of_chaos:block/one_way_glass_south_2_2"
+      "model": "realms_of_chaos:block/one_way_glass_south_d_n___"
     },
     "facing=south,down=false,east=true,north=true,south=false,up=false,west=false": {
-      "model": "realms_of_chaos:block/one_way_glass_south_8_4"
+      "model": "realms_of_chaos:block/one_way_glass_south__en___"
     },
     "facing=south,down=true,east=true,north=true,south=false,up=false,west=false": {
-      "model": "realms_of_chaos:block/one_way_glass_south_10_6"
+      "model": "realms_of_chaos:block/one_way_glass_south_den___"
     },
     "facing=south,down=false,east=false,north=false,south=true,up=false,west=false": {
-      "model": "realms_of_chaos:block/one_way_glass_south_0_0"
+      "model": "realms_of_chaos:block/one_way_glass_south____s__"
     },
     "facing=south,down=true,east=false,north=false,south=true,up=false,west=false": {
-      "model": "realms_of_chaos:block/one_way_glass_south_2_2"
+      "model": "realms_of_chaos:block/one_way_glass_south_d__s__"
     },
     "facing=south,down=false,east=true,north=false,south=true,up=false,west=false": {
-      "model": "realms_of_chaos:block/one_way_glass_south_8_4"
+      "model": "realms_of_chaos:block/one_way_glass_south__e_s__"
     },
     "facing=south,down=true,east=true,north=false,south=true,up=false,west=false": {
-      "model": "realms_of_chaos:block/one_way_glass_south_10_6"
+      "model": "realms_of_chaos:block/one_way_glass_south_de_s__"
     },
     "facing=south,down=false,east=false,north=true,south=true,up=false,west=false": {
-      "model": "realms_of_chaos:block/one_way_glass_south_0_0"
+      "model": "realms_of_chaos:block/one_way_glass_south___ns__"
     },
     "facing=south,down=true,east=false,north=true,south=true,up=false,west=false": {
-      "model": "realms_of_chaos:block/one_way_glass_south_2_2"
+      "model": "realms_of_chaos:block/one_way_glass_south_d_ns__"
     },
     "facing=south,down=false,east=true,north=true,south=true,up=false,west=false": {
-      "model": "realms_of_chaos:block/one_way_glass_south_8_4"
+      "model": "realms_of_chaos:block/one_way_glass_south__ens__"
     },
     "facing=south,down=true,east=true,north=true,south=true,up=false,west=false": {
-      "model": "realms_of_chaos:block/one_way_glass_south_10_6"
+      "model": "realms_of_chaos:block/one_way_glass_south_dens__"
     },
     "facing=south,down=false,east=false,north=false,south=false,up=true,west=false": {
-      "model": "realms_of_chaos:block/one_way_glass_south_1_1"
+      "model": "realms_of_chaos:block/one_way_glass_south_____u_"
     },
     "facing=south,down=true,east=false,north=false,south=false,up=true,west=false": {
-      "model": "realms_of_chaos:block/one_way_glass_south_3_3"
+      "model": "realms_of_chaos:block/one_way_glass_south_d___u_"
     },
     "facing=south,down=false,east=true,north=false,south=false,up=true,west=false": {
-      "model": "realms_of_chaos:block/one_way_glass_south_9_5"
+      "model": "realms_of_chaos:block/one_way_glass_south__e__u_"
     },
     "facing=south,down=true,east=true,north=false,south=false,up=true,west=false": {
-      "model": "realms_of_chaos:block/one_way_glass_south_11_7"
+      "model": "realms_of_chaos:block/one_way_glass_south_de__u_"
     },
     "facing=south,down=false,east=false,north=true,south=false,up=true,west=false": {
-      "model": "realms_of_chaos:block/one_way_glass_south_1_1"
+      "model": "realms_of_chaos:block/one_way_glass_south___n_u_"
     },
     "facing=south,down=true,east=false,north=true,south=false,up=true,west=false": {
-      "model": "realms_of_chaos:block/one_way_glass_south_3_3"
+      "model": "realms_of_chaos:block/one_way_glass_south_d_n_u_"
     },
     "facing=south,down=false,east=true,north=true,south=false,up=true,west=false": {
-      "model": "realms_of_chaos:block/one_way_glass_south_9_5"
+      "model": "realms_of_chaos:block/one_way_glass_south__en_u_"
     },
     "facing=south,down=true,east=true,north=true,south=false,up=true,west=false": {
-      "model": "realms_of_chaos:block/one_way_glass_south_11_7"
+      "model": "realms_of_chaos:block/one_way_glass_south_den_u_"
     },
     "facing=south,down=false,east=false,north=false,south=true,up=true,west=false": {
-      "model": "realms_of_chaos:block/one_way_glass_south_1_1"
+      "model": "realms_of_chaos:block/one_way_glass_south____su_"
     },
     "facing=south,down=true,east=false,north=false,south=true,up=true,west=false": {
-      "model": "realms_of_chaos:block/one_way_glass_south_3_3"
+      "model": "realms_of_chaos:block/one_way_glass_south_d__su_"
     },
     "facing=south,down=false,east=true,north=false,south=true,up=true,west=false": {
-      "model": "realms_of_chaos:block/one_way_glass_south_9_5"
+      "model": "realms_of_chaos:block/one_way_glass_south__e_su_"
     },
     "facing=south,down=true,east=true,north=false,south=true,up=true,west=false": {
-      "model": "realms_of_chaos:block/one_way_glass_south_11_7"
+      "model": "realms_of_chaos:block/one_way_glass_south_de_su_"
     },
     "facing=south,down=false,east=false,north=true,south=true,up=true,west=false": {
-      "model": "realms_of_chaos:block/one_way_glass_south_1_1"
+      "model": "realms_of_chaos:block/one_way_glass_south___nsu_"
     },
     "facing=south,down=true,east=false,north=true,south=true,up=true,west=false": {
-      "model": "realms_of_chaos:block/one_way_glass_south_3_3"
+      "model": "realms_of_chaos:block/one_way_glass_south_d_nsu_"
     },
     "facing=south,down=false,east=true,north=true,south=true,up=true,west=false": {
-      "model": "realms_of_chaos:block/one_way_glass_south_9_5"
+      "model": "realms_of_chaos:block/one_way_glass_south__ensu_"
     },
     "facing=south,down=true,east=true,north=true,south=true,up=true,west=false": {
-      "model": "realms_of_chaos:block/one_way_glass_south_11_7"
+      "model": "realms_of_chaos:block/one_way_glass_south_densu_"
     },
     "facing=south,down=false,east=false,north=false,south=false,up=false,west=true": {
-      "model": "realms_of_chaos:block/one_way_glass_south_4_8"
+      "model": "realms_of_chaos:block/one_way_glass_south______w"
     },
     "facing=south,down=true,east=false,north=false,south=false,up=false,west=true": {
-      "model": "realms_of_chaos:block/one_way_glass_south_6_10"
+      "model": "realms_of_chaos:block/one_way_glass_south_d____w"
     },
     "facing=south,down=false,east=true,north=false,south=false,up=false,west=true": {
-      "model": "realms_of_chaos:block/one_way_glass_south_12_12"
+      "model": "realms_of_chaos:block/one_way_glass_south__e___w"
     },
     "facing=south,down=true,east=true,north=false,south=false,up=false,west=true": {
-      "model": "realms_of_chaos:block/one_way_glass_south_14_14"
+      "model": "realms_of_chaos:block/one_way_glass_south_de___w"
     },
     "facing=south,down=false,east=false,north=true,south=false,up=false,west=true": {
-      "model": "realms_of_chaos:block/one_way_glass_south_4_8"
+      "model": "realms_of_chaos:block/one_way_glass_south___n__w"
     },
     "facing=south,down=true,east=false,north=true,south=false,up=false,west=true": {
-      "model": "realms_of_chaos:block/one_way_glass_south_6_10"
+      "model": "realms_of_chaos:block/one_way_glass_south_d_n__w"
     },
     "facing=south,down=false,east=true,north=true,south=false,up=false,west=true": {
-      "model": "realms_of_chaos:block/one_way_glass_south_12_12"
+      "model": "realms_of_chaos:block/one_way_glass_south__en__w"
     },
     "facing=south,down=true,east=true,north=true,south=false,up=false,west=true": {
-      "model": "realms_of_chaos:block/one_way_glass_south_14_14"
+      "model": "realms_of_chaos:block/one_way_glass_south_den__w"
     },
     "facing=south,down=false,east=false,north=false,south=true,up=false,west=true": {
-      "model": "realms_of_chaos:block/one_way_glass_south_4_8"
+      "model": "realms_of_chaos:block/one_way_glass_south____s_w"
     },
     "facing=south,down=true,east=false,north=false,south=true,up=false,west=true": {
-      "model": "realms_of_chaos:block/one_way_glass_south_6_10"
+      "model": "realms_of_chaos:block/one_way_glass_south_d__s_w"
     },
     "facing=south,down=false,east=true,north=false,south=true,up=false,west=true": {
-      "model": "realms_of_chaos:block/one_way_glass_south_12_12"
+      "model": "realms_of_chaos:block/one_way_glass_south__e_s_w"
     },
     "facing=south,down=true,east=true,north=false,south=true,up=false,west=true": {
-      "model": "realms_of_chaos:block/one_way_glass_south_14_14"
+      "model": "realms_of_chaos:block/one_way_glass_south_de_s_w"
     },
     "facing=south,down=false,east=false,north=true,south=true,up=false,west=true": {
-      "model": "realms_of_chaos:block/one_way_glass_south_4_8"
+      "model": "realms_of_chaos:block/one_way_glass_south___ns_w"
     },
     "facing=south,down=true,east=false,north=true,south=true,up=false,west=true": {
-      "model": "realms_of_chaos:block/one_way_glass_south_6_10"
+      "model": "realms_of_chaos:block/one_way_glass_south_d_ns_w"
     },
     "facing=south,down=false,east=true,north=true,south=true,up=false,west=true": {
-      "model": "realms_of_chaos:block/one_way_glass_south_12_12"
+      "model": "realms_of_chaos:block/one_way_glass_south__ens_w"
     },
     "facing=south,down=true,east=true,north=true,south=true,up=false,west=true": {
-      "model": "realms_of_chaos:block/one_way_glass_south_14_14"
+      "model": "realms_of_chaos:block/one_way_glass_south_dens_w"
     },
     "facing=south,down=false,east=false,north=false,south=false,up=true,west=true": {
-      "model": "realms_of_chaos:block/one_way_glass_south_5_9"
+      "model": "realms_of_chaos:block/one_way_glass_south_____uw"
     },
     "facing=south,down=true,east=false,north=false,south=false,up=true,west=true": {
-      "model": "realms_of_chaos:block/one_way_glass_south_7_11"
+      "model": "realms_of_chaos:block/one_way_glass_south_d___uw"
     },
     "facing=south,down=false,east=true,north=false,south=false,up=true,west=true": {
-      "model": "realms_of_chaos:block/one_way_glass_south_13_13"
+      "model": "realms_of_chaos:block/one_way_glass_south__e__uw"
     },
     "facing=south,down=true,east=true,north=false,south=false,up=true,west=true": {
-      "model": "realms_of_chaos:block/one_way_glass_south_15_15"
+      "model": "realms_of_chaos:block/one_way_glass_south_de__uw"
     },
     "facing=south,down=false,east=false,north=true,south=false,up=true,west=true": {
-      "model": "realms_of_chaos:block/one_way_glass_south_5_9"
+      "model": "realms_of_chaos:block/one_way_glass_south___n_uw"
     },
     "facing=south,down=true,east=false,north=true,south=false,up=true,west=true": {
-      "model": "realms_of_chaos:block/one_way_glass_south_7_11"
+      "model": "realms_of_chaos:block/one_way_glass_south_d_n_uw"
     },
     "facing=south,down=false,east=true,north=true,south=false,up=true,west=true": {
-      "model": "realms_of_chaos:block/one_way_glass_south_13_13"
+      "model": "realms_of_chaos:block/one_way_glass_south__en_uw"
     },
     "facing=south,down=true,east=true,north=true,south=false,up=true,west=true": {
-      "model": "realms_of_chaos:block/one_way_glass_south_15_15"
+      "model": "realms_of_chaos:block/one_way_glass_south_den_uw"
     },
     "facing=south,down=false,east=false,north=false,south=true,up=true,west=true": {
-      "model": "realms_of_chaos:block/one_way_glass_south_5_9"
+      "model": "realms_of_chaos:block/one_way_glass_south____suw"
     },
     "facing=south,down=true,east=false,north=false,south=true,up=true,west=true": {
-      "model": "realms_of_chaos:block/one_way_glass_south_7_11"
+      "model": "realms_of_chaos:block/one_way_glass_south_d__suw"
     },
     "facing=south,down=false,east=true,north=false,south=true,up=true,west=true": {
-      "model": "realms_of_chaos:block/one_way_glass_south_13_13"
+      "model": "realms_of_chaos:block/one_way_glass_south__e_suw"
     },
     "facing=south,down=true,east=true,north=false,south=true,up=true,west=true": {
-      "model": "realms_of_chaos:block/one_way_glass_south_15_15"
+      "model": "realms_of_chaos:block/one_way_glass_south_de_suw"
     },
     "facing=south,down=false,east=false,north=true,south=true,up=true,west=true": {
-      "model": "realms_of_chaos:block/one_way_glass_south_5_9"
+      "model": "realms_of_chaos:block/one_way_glass_south___nsuw"
     },
     "facing=south,down=true,east=false,north=true,south=true,up=true,west=true": {
-      "model": "realms_of_chaos:block/one_way_glass_south_7_11"
+      "model": "realms_of_chaos:block/one_way_glass_south_d_nsuw"
     },
     "facing=south,down=false,east=true,north=true,south=true,up=true,west=true": {
-      "model": "realms_of_chaos:block/one_way_glass_south_13_13"
+      "model": "realms_of_chaos:block/one_way_glass_south__ensuw"
     },
     "facing=south,down=true,east=true,north=true,south=true,up=true,west=true": {
-      "model": "realms_of_chaos:block/one_way_glass_south_15_15"
+      "model": "realms_of_chaos:block/one_way_glass_south_densuw"
     },
     "facing=west,down=false,east=false,north=false,south=false,up=false,west=false": {
-      "model": "realms_of_chaos:block/one_way_glass_west_0_0"
+      "model": "realms_of_chaos:block/one_way_glass_west_______"
     },
     "facing=west,down=true,east=false,north=false,south=false,up=false,west=false": {
-      "model": "realms_of_chaos:block/one_way_glass_west_2_2"
+      "model": "realms_of_chaos:block/one_way_glass_west_d_____"
     },
     "facing=west,down=false,east=true,north=false,south=false,up=false,west=false": {
-      "model": "realms_of_chaos:block/one_way_glass_west_0_0"
+      "model": "realms_of_chaos:block/one_way_glass_west__e____"
     },
     "facing=west,down=true,east=true,north=false,south=false,up=false,west=false": {
-      "model": "realms_of_chaos:block/one_way_glass_west_2_2"
+      "model": "realms_of_chaos:block/one_way_glass_west_de____"
     },
     "facing=west,down=false,east=false,north=true,south=false,up=false,west=false": {
-      "model": "realms_of_chaos:block/one_way_glass_west_4_8"
+      "model": "realms_of_chaos:block/one_way_glass_west___n___"
     },
     "facing=west,down=true,east=false,north=true,south=false,up=false,west=false": {
-      "model": "realms_of_chaos:block/one_way_glass_west_6_10"
+      "model": "realms_of_chaos:block/one_way_glass_west_d_n___"
     },
     "facing=west,down=false,east=true,north=true,south=false,up=false,west=false": {
-      "model": "realms_of_chaos:block/one_way_glass_west_4_8"
+      "model": "realms_of_chaos:block/one_way_glass_west__en___"
     },
     "facing=west,down=true,east=true,north=true,south=false,up=false,west=false": {
-      "model": "realms_of_chaos:block/one_way_glass_west_6_10"
+      "model": "realms_of_chaos:block/one_way_glass_west_den___"
     },
     "facing=west,down=false,east=false,north=false,south=true,up=false,west=false": {
-      "model": "realms_of_chaos:block/one_way_glass_west_8_4"
+      "model": "realms_of_chaos:block/one_way_glass_west____s__"
     },
     "facing=west,down=true,east=false,north=false,south=true,up=false,west=false": {
-      "model": "realms_of_chaos:block/one_way_glass_west_10_6"
+      "model": "realms_of_chaos:block/one_way_glass_west_d__s__"
     },
     "facing=west,down=false,east=true,north=false,south=true,up=false,west=false": {
-      "model": "realms_of_chaos:block/one_way_glass_west_8_4"
+      "model": "realms_of_chaos:block/one_way_glass_west__e_s__"
     },
     "facing=west,down=true,east=true,north=false,south=true,up=false,west=false": {
-      "model": "realms_of_chaos:block/one_way_glass_west_10_6"
+      "model": "realms_of_chaos:block/one_way_glass_west_de_s__"
     },
     "facing=west,down=false,east=false,north=true,south=true,up=false,west=false": {
-      "model": "realms_of_chaos:block/one_way_glass_west_12_12"
+      "model": "realms_of_chaos:block/one_way_glass_west___ns__"
     },
     "facing=west,down=true,east=false,north=true,south=true,up=false,west=false": {
-      "model": "realms_of_chaos:block/one_way_glass_west_14_14"
+      "model": "realms_of_chaos:block/one_way_glass_west_d_ns__"
     },
     "facing=west,down=false,east=true,north=true,south=true,up=false,west=false": {
-      "model": "realms_of_chaos:block/one_way_glass_west_12_12"
+      "model": "realms_of_chaos:block/one_way_glass_west__ens__"
     },
     "facing=west,down=true,east=true,north=true,south=true,up=false,west=false": {
-      "model": "realms_of_chaos:block/one_way_glass_west_14_14"
+      "model": "realms_of_chaos:block/one_way_glass_west_dens__"
     },
     "facing=west,down=false,east=false,north=false,south=false,up=true,west=false": {
-      "model": "realms_of_chaos:block/one_way_glass_west_1_1"
+      "model": "realms_of_chaos:block/one_way_glass_west_____u_"
     },
     "facing=west,down=true,east=false,north=false,south=false,up=true,west=false": {
-      "model": "realms_of_chaos:block/one_way_glass_west_3_3"
+      "model": "realms_of_chaos:block/one_way_glass_west_d___u_"
     },
     "facing=west,down=false,east=true,north=false,south=false,up=true,west=false": {
-      "model": "realms_of_chaos:block/one_way_glass_west_1_1"
+      "model": "realms_of_chaos:block/one_way_glass_west__e__u_"
     },
     "facing=west,down=true,east=true,north=false,south=false,up=true,west=false": {
-      "model": "realms_of_chaos:block/one_way_glass_west_3_3"
+      "model": "realms_of_chaos:block/one_way_glass_west_de__u_"
     },
     "facing=west,down=false,east=false,north=true,south=false,up=true,west=false": {
-      "model": "realms_of_chaos:block/one_way_glass_west_5_9"
+      "model": "realms_of_chaos:block/one_way_glass_west___n_u_"
     },
     "facing=west,down=true,east=false,north=true,south=false,up=true,west=false": {
-      "model": "realms_of_chaos:block/one_way_glass_west_7_11"
+      "model": "realms_of_chaos:block/one_way_glass_west_d_n_u_"
     },
     "facing=west,down=false,east=true,north=true,south=false,up=true,west=false": {
-      "model": "realms_of_chaos:block/one_way_glass_west_5_9"
+      "model": "realms_of_chaos:block/one_way_glass_west__en_u_"
     },
     "facing=west,down=true,east=true,north=true,south=false,up=true,west=false": {
-      "model": "realms_of_chaos:block/one_way_glass_west_7_11"
+      "model": "realms_of_chaos:block/one_way_glass_west_den_u_"
     },
     "facing=west,down=false,east=false,north=false,south=true,up=true,west=false": {
-      "model": "realms_of_chaos:block/one_way_glass_west_9_5"
+      "model": "realms_of_chaos:block/one_way_glass_west____su_"
     },
     "facing=west,down=true,east=false,north=false,south=true,up=true,west=false": {
-      "model": "realms_of_chaos:block/one_way_glass_west_11_7"
+      "model": "realms_of_chaos:block/one_way_glass_west_d__su_"
     },
     "facing=west,down=false,east=true,north=false,south=true,up=true,west=false": {
-      "model": "realms_of_chaos:block/one_way_glass_west_9_5"
+      "model": "realms_of_chaos:block/one_way_glass_west__e_su_"
     },
     "facing=west,down=true,east=true,north=false,south=true,up=true,west=false": {
-      "model": "realms_of_chaos:block/one_way_glass_west_11_7"
+      "model": "realms_of_chaos:block/one_way_glass_west_de_su_"
     },
     "facing=west,down=false,east=false,north=true,south=true,up=true,west=false": {
-      "model": "realms_of_chaos:block/one_way_glass_west_13_13"
+      "model": "realms_of_chaos:block/one_way_glass_west___nsu_"
     },
     "facing=west,down=true,east=false,north=true,south=true,up=true,west=false": {
-      "model": "realms_of_chaos:block/one_way_glass_west_15_15"
+      "model": "realms_of_chaos:block/one_way_glass_west_d_nsu_"
     },
     "facing=west,down=false,east=true,north=true,south=true,up=true,west=false": {
-      "model": "realms_of_chaos:block/one_way_glass_west_13_13"
+      "model": "realms_of_chaos:block/one_way_glass_west__ensu_"
     },
     "facing=west,down=true,east=true,north=true,south=true,up=true,west=false": {
-      "model": "realms_of_chaos:block/one_way_glass_west_15_15"
+      "model": "realms_of_chaos:block/one_way_glass_west_densu_"
     },
     "facing=west,down=false,east=false,north=false,south=false,up=false,west=true": {
-      "model": "realms_of_chaos:block/one_way_glass_west_0_0"
+      "model": "realms_of_chaos:block/one_way_glass_west______w"
     },
     "facing=west,down=true,east=false,north=false,south=false,up=false,west=true": {
-      "model": "realms_of_chaos:block/one_way_glass_west_2_2"
+      "model": "realms_of_chaos:block/one_way_glass_west_d____w"
     },
     "facing=west,down=false,east=true,north=false,south=false,up=false,west=true": {
-      "model": "realms_of_chaos:block/one_way_glass_west_0_0"
+      "model": "realms_of_chaos:block/one_way_glass_west__e___w"
     },
     "facing=west,down=true,east=true,north=false,south=false,up=false,west=true": {
-      "model": "realms_of_chaos:block/one_way_glass_west_2_2"
+      "model": "realms_of_chaos:block/one_way_glass_west_de___w"
     },
     "facing=west,down=false,east=false,north=true,south=false,up=false,west=true": {
-      "model": "realms_of_chaos:block/one_way_glass_west_4_8"
+      "model": "realms_of_chaos:block/one_way_glass_west___n__w"
     },
     "facing=west,down=true,east=false,north=true,south=false,up=false,west=true": {
-      "model": "realms_of_chaos:block/one_way_glass_west_6_10"
+      "model": "realms_of_chaos:block/one_way_glass_west_d_n__w"
     },
     "facing=west,down=false,east=true,north=true,south=false,up=false,west=true": {
-      "model": "realms_of_chaos:block/one_way_glass_west_4_8"
+      "model": "realms_of_chaos:block/one_way_glass_west__en__w"
     },
     "facing=west,down=true,east=true,north=true,south=false,up=false,west=true": {
-      "model": "realms_of_chaos:block/one_way_glass_west_6_10"
+      "model": "realms_of_chaos:block/one_way_glass_west_den__w"
     },
     "facing=west,down=false,east=false,north=false,south=true,up=false,west=true": {
-      "model": "realms_of_chaos:block/one_way_glass_west_8_4"
+      "model": "realms_of_chaos:block/one_way_glass_west____s_w"
     },
     "facing=west,down=true,east=false,north=false,south=true,up=false,west=true": {
-      "model": "realms_of_chaos:block/one_way_glass_west_10_6"
+      "model": "realms_of_chaos:block/one_way_glass_west_d__s_w"
     },
     "facing=west,down=false,east=true,north=false,south=true,up=false,west=true": {
-      "model": "realms_of_chaos:block/one_way_glass_west_8_4"
+      "model": "realms_of_chaos:block/one_way_glass_west__e_s_w"
     },
     "facing=west,down=true,east=true,north=false,south=true,up=false,west=true": {
-      "model": "realms_of_chaos:block/one_way_glass_west_10_6"
+      "model": "realms_of_chaos:block/one_way_glass_west_de_s_w"
     },
     "facing=west,down=false,east=false,north=true,south=true,up=false,west=true": {
-      "model": "realms_of_chaos:block/one_way_glass_west_12_12"
+      "model": "realms_of_chaos:block/one_way_glass_west___ns_w"
     },
     "facing=west,down=true,east=false,north=true,south=true,up=false,west=true": {
-      "model": "realms_of_chaos:block/one_way_glass_west_14_14"
+      "model": "realms_of_chaos:block/one_way_glass_west_d_ns_w"
     },
     "facing=west,down=false,east=true,north=true,south=true,up=false,west=true": {
-      "model": "realms_of_chaos:block/one_way_glass_west_12_12"
+      "model": "realms_of_chaos:block/one_way_glass_west__ens_w"
     },
     "facing=west,down=true,east=true,north=true,south=true,up=false,west=true": {
-      "model": "realms_of_chaos:block/one_way_glass_west_14_14"
+      "model": "realms_of_chaos:block/one_way_glass_west_dens_w"
     },
     "facing=west,down=false,east=false,north=false,south=false,up=true,west=true": {
-      "model": "realms_of_chaos:block/one_way_glass_west_1_1"
+      "model": "realms_of_chaos:block/one_way_glass_west_____uw"
     },
     "facing=west,down=true,east=false,north=false,south=false,up=true,west=true": {
-      "model": "realms_of_chaos:block/one_way_glass_west_3_3"
+      "model": "realms_of_chaos:block/one_way_glass_west_d___uw"
     },
     "facing=west,down=false,east=true,north=false,south=false,up=true,west=true": {
-      "model": "realms_of_chaos:block/one_way_glass_west_1_1"
+      "model": "realms_of_chaos:block/one_way_glass_west__e__uw"
     },
     "facing=west,down=true,east=true,north=false,south=false,up=true,west=true": {
-      "model": "realms_of_chaos:block/one_way_glass_west_3_3"
+      "model": "realms_of_chaos:block/one_way_glass_west_de__uw"
     },
     "facing=west,down=false,east=false,north=true,south=false,up=true,west=true": {
-      "model": "realms_of_chaos:block/one_way_glass_west_5_9"
+      "model": "realms_of_chaos:block/one_way_glass_west___n_uw"
     },
     "facing=west,down=true,east=false,north=true,south=false,up=true,west=true": {
-      "model": "realms_of_chaos:block/one_way_glass_west_7_11"
+      "model": "realms_of_chaos:block/one_way_glass_west_d_n_uw"
     },
     "facing=west,down=false,east=true,north=true,south=false,up=true,west=true": {
-      "model": "realms_of_chaos:block/one_way_glass_west_5_9"
+      "model": "realms_of_chaos:block/one_way_glass_west__en_uw"
     },
     "facing=west,down=true,east=true,north=true,south=false,up=true,west=true": {
-      "model": "realms_of_chaos:block/one_way_glass_west_7_11"
+      "model": "realms_of_chaos:block/one_way_glass_west_den_uw"
     },
     "facing=west,down=false,east=false,north=false,south=true,up=true,west=true": {
-      "model": "realms_of_chaos:block/one_way_glass_west_9_5"
+      "model": "realms_of_chaos:block/one_way_glass_west____suw"
     },
     "facing=west,down=true,east=false,north=false,south=true,up=true,west=true": {
-      "model": "realms_of_chaos:block/one_way_glass_west_11_7"
+      "model": "realms_of_chaos:block/one_way_glass_west_d__suw"
     },
     "facing=west,down=false,east=true,north=false,south=true,up=true,west=true": {
-      "model": "realms_of_chaos:block/one_way_glass_west_9_5"
+      "model": "realms_of_chaos:block/one_way_glass_west__e_suw"
     },
     "facing=west,down=true,east=true,north=false,south=true,up=true,west=true": {
-      "model": "realms_of_chaos:block/one_way_glass_west_11_7"
+      "model": "realms_of_chaos:block/one_way_glass_west_de_suw"
     },
     "facing=west,down=false,east=false,north=true,south=true,up=true,west=true": {
-      "model": "realms_of_chaos:block/one_way_glass_west_13_13"
+      "model": "realms_of_chaos:block/one_way_glass_west___nsuw"
     },
     "facing=west,down=true,east=false,north=true,south=true,up=true,west=true": {
-      "model": "realms_of_chaos:block/one_way_glass_west_15_15"
+      "model": "realms_of_chaos:block/one_way_glass_west_d_nsuw"
     },
     "facing=west,down=false,east=true,north=true,south=true,up=true,west=true": {
-      "model": "realms_of_chaos:block/one_way_glass_west_13_13"
+      "model": "realms_of_chaos:block/one_way_glass_west__ensuw"
     },
     "facing=west,down=true,east=true,north=true,south=true,up=true,west=true": {
-      "model": "realms_of_chaos:block/one_way_glass_west_15_15"
+      "model": "realms_of_chaos:block/one_way_glass_west_densuw"
     },
     "facing=east,down=false,east=false,north=false,south=false,up=false,west=false": {
-      "model": "realms_of_chaos:block/one_way_glass_east_0_0"
+      "model": "realms_of_chaos:block/one_way_glass_east_______"
     },
     "facing=east,down=true,east=false,north=false,south=false,up=false,west=false": {
-      "model": "realms_of_chaos:block/one_way_glass_east_2_2"
+      "model": "realms_of_chaos:block/one_way_glass_east_d_____"
     },
     "facing=east,down=false,east=true,north=false,south=false,up=false,west=false": {
-      "model": "realms_of_chaos:block/one_way_glass_east_0_0"
+      "model": "realms_of_chaos:block/one_way_glass_east__e____"
     },
     "facing=east,down=true,east=true,north=false,south=false,up=false,west=false": {
-      "model": "realms_of_chaos:block/one_way_glass_east_2_2"
+      "model": "realms_of_chaos:block/one_way_glass_east_de____"
     },
     "facing=east,down=false,east=false,north=true,south=false,up=false,west=false": {
-      "model": "realms_of_chaos:block/one_way_glass_east_8_4"
+      "model": "realms_of_chaos:block/one_way_glass_east___n___"
     },
     "facing=east,down=true,east=false,north=true,south=false,up=false,west=false": {
-      "model": "realms_of_chaos:block/one_way_glass_east_10_6"
+      "model": "realms_of_chaos:block/one_way_glass_east_d_n___"
     },
     "facing=east,down=false,east=true,north=true,south=false,up=false,west=false": {
-      "model": "realms_of_chaos:block/one_way_glass_east_8_4"
+      "model": "realms_of_chaos:block/one_way_glass_east__en___"
     },
     "facing=east,down=true,east=true,north=true,south=false,up=false,west=false": {
-      "model": "realms_of_chaos:block/one_way_glass_east_10_6"
+      "model": "realms_of_chaos:block/one_way_glass_east_den___"
     },
     "facing=east,down=false,east=false,north=false,south=true,up=false,west=false": {
-      "model": "realms_of_chaos:block/one_way_glass_east_4_8"
+      "model": "realms_of_chaos:block/one_way_glass_east____s__"
     },
     "facing=east,down=true,east=false,north=false,south=true,up=false,west=false": {
-      "model": "realms_of_chaos:block/one_way_glass_east_6_10"
+      "model": "realms_of_chaos:block/one_way_glass_east_d__s__"
     },
     "facing=east,down=false,east=true,north=false,south=true,up=false,west=false": {
-      "model": "realms_of_chaos:block/one_way_glass_east_4_8"
+      "model": "realms_of_chaos:block/one_way_glass_east__e_s__"
     },
     "facing=east,down=true,east=true,north=false,south=true,up=false,west=false": {
-      "model": "realms_of_chaos:block/one_way_glass_east_6_10"
+      "model": "realms_of_chaos:block/one_way_glass_east_de_s__"
     },
     "facing=east,down=false,east=false,north=true,south=true,up=false,west=false": {
-      "model": "realms_of_chaos:block/one_way_glass_east_12_12"
+      "model": "realms_of_chaos:block/one_way_glass_east___ns__"
     },
     "facing=east,down=true,east=false,north=true,south=true,up=false,west=false": {
-      "model": "realms_of_chaos:block/one_way_glass_east_14_14"
+      "model": "realms_of_chaos:block/one_way_glass_east_d_ns__"
     },
     "facing=east,down=false,east=true,north=true,south=true,up=false,west=false": {
-      "model": "realms_of_chaos:block/one_way_glass_east_12_12"
+      "model": "realms_of_chaos:block/one_way_glass_east__ens__"
     },
     "facing=east,down=true,east=true,north=true,south=true,up=false,west=false": {
-      "model": "realms_of_chaos:block/one_way_glass_east_14_14"
+      "model": "realms_of_chaos:block/one_way_glass_east_dens__"
     },
     "facing=east,down=false,east=false,north=false,south=false,up=true,west=false": {
-      "model": "realms_of_chaos:block/one_way_glass_east_1_1"
+      "model": "realms_of_chaos:block/one_way_glass_east_____u_"
     },
     "facing=east,down=true,east=false,north=false,south=false,up=true,west=false": {
-      "model": "realms_of_chaos:block/one_way_glass_east_3_3"
+      "model": "realms_of_chaos:block/one_way_glass_east_d___u_"
     },
     "facing=east,down=false,east=true,north=false,south=false,up=true,west=false": {
-      "model": "realms_of_chaos:block/one_way_glass_east_1_1"
+      "model": "realms_of_chaos:block/one_way_glass_east__e__u_"
     },
     "facing=east,down=true,east=true,north=false,south=false,up=true,west=false": {
-      "model": "realms_of_chaos:block/one_way_glass_east_3_3"
+      "model": "realms_of_chaos:block/one_way_glass_east_de__u_"
     },
     "facing=east,down=false,east=false,north=true,south=false,up=true,west=false": {
-      "model": "realms_of_chaos:block/one_way_glass_east_9_5"
+      "model": "realms_of_chaos:block/one_way_glass_east___n_u_"
     },
     "facing=east,down=true,east=false,north=true,south=false,up=true,west=false": {
-      "model": "realms_of_chaos:block/one_way_glass_east_11_7"
+      "model": "realms_of_chaos:block/one_way_glass_east_d_n_u_"
     },
     "facing=east,down=false,east=true,north=true,south=false,up=true,west=false": {
-      "model": "realms_of_chaos:block/one_way_glass_east_9_5"
+      "model": "realms_of_chaos:block/one_way_glass_east__en_u_"
     },
     "facing=east,down=true,east=true,north=true,south=false,up=true,west=false": {
-      "model": "realms_of_chaos:block/one_way_glass_east_11_7"
+      "model": "realms_of_chaos:block/one_way_glass_east_den_u_"
     },
     "facing=east,down=false,east=false,north=false,south=true,up=true,west=false": {
-      "model": "realms_of_chaos:block/one_way_glass_east_5_9"
+      "model": "realms_of_chaos:block/one_way_glass_east____su_"
     },
     "facing=east,down=true,east=false,north=false,south=true,up=true,west=false": {
-      "model": "realms_of_chaos:block/one_way_glass_east_7_11"
+      "model": "realms_of_chaos:block/one_way_glass_east_d__su_"
     },
     "facing=east,down=false,east=true,north=false,south=true,up=true,west=false": {
-      "model": "realms_of_chaos:block/one_way_glass_east_5_9"
+      "model": "realms_of_chaos:block/one_way_glass_east__e_su_"
     },
     "facing=east,down=true,east=true,north=false,south=true,up=true,west=false": {
-      "model": "realms_of_chaos:block/one_way_glass_east_7_11"
+      "model": "realms_of_chaos:block/one_way_glass_east_de_su_"
     },
     "facing=east,down=false,east=false,north=true,south=true,up=true,west=false": {
-      "model": "realms_of_chaos:block/one_way_glass_east_13_13"
+      "model": "realms_of_chaos:block/one_way_glass_east___nsu_"
     },
     "facing=east,down=true,east=false,north=true,south=true,up=true,west=false": {
-      "model": "realms_of_chaos:block/one_way_glass_east_15_15"
+      "model": "realms_of_chaos:block/one_way_glass_east_d_nsu_"
     },
     "facing=east,down=false,east=true,north=true,south=true,up=true,west=false": {
-      "model": "realms_of_chaos:block/one_way_glass_east_13_13"
+      "model": "realms_of_chaos:block/one_way_glass_east__ensu_"
     },
     "facing=east,down=true,east=true,north=true,south=true,up=true,west=false": {
-      "model": "realms_of_chaos:block/one_way_glass_east_15_15"
+      "model": "realms_of_chaos:block/one_way_glass_east_densu_"
     },
     "facing=east,down=false,east=false,north=false,south=false,up=false,west=true": {
-      "model": "realms_of_chaos:block/one_way_glass_east_0_0"
+      "model": "realms_of_chaos:block/one_way_glass_east______w"
     },
     "facing=east,down=true,east=false,north=false,south=false,up=false,west=true": {
-      "model": "realms_of_chaos:block/one_way_glass_east_2_2"
+      "model": "realms_of_chaos:block/one_way_glass_east_d____w"
     },
     "facing=east,down=false,east=true,north=false,south=false,up=false,west=true": {
-      "model": "realms_of_chaos:block/one_way_glass_east_0_0"
+      "model": "realms_of_chaos:block/one_way_glass_east__e___w"
     },
     "facing=east,down=true,east=true,north=false,south=false,up=false,west=true": {
-      "model": "realms_of_chaos:block/one_way_glass_east_2_2"
+      "model": "realms_of_chaos:block/one_way_glass_east_de___w"
     },
     "facing=east,down=false,east=false,north=true,south=false,up=false,west=true": {
-      "model": "realms_of_chaos:block/one_way_glass_east_8_4"
+      "model": "realms_of_chaos:block/one_way_glass_east___n__w"
     },
     "facing=east,down=true,east=false,north=true,south=false,up=false,west=true": {
-      "model": "realms_of_chaos:block/one_way_glass_east_10_6"
+      "model": "realms_of_chaos:block/one_way_glass_east_d_n__w"
     },
     "facing=east,down=false,east=true,north=true,south=false,up=false,west=true": {
-      "model": "realms_of_chaos:block/one_way_glass_east_8_4"
+      "model": "realms_of_chaos:block/one_way_glass_east__en__w"
     },
     "facing=east,down=true,east=true,north=true,south=false,up=false,west=true": {
-      "model": "realms_of_chaos:block/one_way_glass_east_10_6"
+      "model": "realms_of_chaos:block/one_way_glass_east_den__w"
     },
     "facing=east,down=false,east=false,north=false,south=true,up=false,west=true": {
-      "model": "realms_of_chaos:block/one_way_glass_east_4_8"
+      "model": "realms_of_chaos:block/one_way_glass_east____s_w"
     },
     "facing=east,down=true,east=false,north=false,south=true,up=false,west=true": {
-      "model": "realms_of_chaos:block/one_way_glass_east_6_10"
+      "model": "realms_of_chaos:block/one_way_glass_east_d__s_w"
     },
     "facing=east,down=false,east=true,north=false,south=true,up=false,west=true": {
-      "model": "realms_of_chaos:block/one_way_glass_east_4_8"
+      "model": "realms_of_chaos:block/one_way_glass_east__e_s_w"
     },
     "facing=east,down=true,east=true,north=false,south=true,up=false,west=true": {
-      "model": "realms_of_chaos:block/one_way_glass_east_6_10"
+      "model": "realms_of_chaos:block/one_way_glass_east_de_s_w"
     },
     "facing=east,down=false,east=false,north=true,south=true,up=false,west=true": {
-      "model": "realms_of_chaos:block/one_way_glass_east_12_12"
+      "model": "realms_of_chaos:block/one_way_glass_east___ns_w"
     },
     "facing=east,down=true,east=false,north=true,south=true,up=false,west=true": {
-      "model": "realms_of_chaos:block/one_way_glass_east_14_14"
+      "model": "realms_of_chaos:block/one_way_glass_east_d_ns_w"
     },
     "facing=east,down=false,east=true,north=true,south=true,up=false,west=true": {
-      "model": "realms_of_chaos:block/one_way_glass_east_12_12"
+      "model": "realms_of_chaos:block/one_way_glass_east__ens_w"
     },
     "facing=east,down=true,east=true,north=true,south=true,up=false,west=true": {
-      "model": "realms_of_chaos:block/one_way_glass_east_14_14"
+      "model": "realms_of_chaos:block/one_way_glass_east_dens_w"
     },
     "facing=east,down=false,east=false,north=false,south=false,up=true,west=true": {
-      "model": "realms_of_chaos:block/one_way_glass_east_1_1"
+      "model": "realms_of_chaos:block/one_way_glass_east_____uw"
     },
     "facing=east,down=true,east=false,north=false,south=false,up=true,west=true": {
-      "model": "realms_of_chaos:block/one_way_glass_east_3_3"
+      "model": "realms_of_chaos:block/one_way_glass_east_d___uw"
     },
     "facing=east,down=false,east=true,north=false,south=false,up=true,west=true": {
-      "model": "realms_of_chaos:block/one_way_glass_east_1_1"
+      "model": "realms_of_chaos:block/one_way_glass_east__e__uw"
     },
     "facing=east,down=true,east=true,north=false,south=false,up=true,west=true": {
-      "model": "realms_of_chaos:block/one_way_glass_east_3_3"
+      "model": "realms_of_chaos:block/one_way_glass_east_de__uw"
     },
     "facing=east,down=false,east=false,north=true,south=false,up=true,west=true": {
-      "model": "realms_of_chaos:block/one_way_glass_east_9_5"
+      "model": "realms_of_chaos:block/one_way_glass_east___n_uw"
     },
     "facing=east,down=true,east=false,north=true,south=false,up=true,west=true": {
-      "model": "realms_of_chaos:block/one_way_glass_east_11_7"
+      "model": "realms_of_chaos:block/one_way_glass_east_d_n_uw"
     },
     "facing=east,down=false,east=true,north=true,south=false,up=true,west=true": {
-      "model": "realms_of_chaos:block/one_way_glass_east_9_5"
+      "model": "realms_of_chaos:block/one_way_glass_east__en_uw"
     },
     "facing=east,down=true,east=true,north=true,south=false,up=true,west=true": {
-      "model": "realms_of_chaos:block/one_way_glass_east_11_7"
+      "model": "realms_of_chaos:block/one_way_glass_east_den_uw"
     },
     "facing=east,down=false,east=false,north=false,south=true,up=true,west=true": {
-      "model": "realms_of_chaos:block/one_way_glass_east_5_9"
+      "model": "realms_of_chaos:block/one_way_glass_east____suw"
     },
     "facing=east,down=true,east=false,north=false,south=true,up=true,west=true": {
-      "model": "realms_of_chaos:block/one_way_glass_east_7_11"
+      "model": "realms_of_chaos:block/one_way_glass_east_d__suw"
     },
     "facing=east,down=false,east=true,north=false,south=true,up=true,west=true": {
-      "model": "realms_of_chaos:block/one_way_glass_east_5_9"
+      "model": "realms_of_chaos:block/one_way_glass_east__e_suw"
     },
     "facing=east,down=true,east=true,north=false,south=true,up=true,west=true": {
-      "model": "realms_of_chaos:block/one_way_glass_east_7_11"
+      "model": "realms_of_chaos:block/one_way_glass_east_de_suw"
     },
     "facing=east,down=false,east=false,north=true,south=true,up=true,west=true": {
-      "model": "realms_of_chaos:block/one_way_glass_east_13_13"
+      "model": "realms_of_chaos:block/one_way_glass_east___nsuw"
     },
     "facing=east,down=true,east=false,north=true,south=true,up=true,west=true": {
-      "model": "realms_of_chaos:block/one_way_glass_east_15_15"
+      "model": "realms_of_chaos:block/one_way_glass_east_d_nsuw"
     },
     "facing=east,down=false,east=true,north=true,south=true,up=true,west=true": {
-      "model": "realms_of_chaos:block/one_way_glass_east_13_13"
+      "model": "realms_of_chaos:block/one_way_glass_east__ensuw"
     },
     "facing=east,down=true,east=true,north=true,south=true,up=true,west=true": {
-      "model": "realms_of_chaos:block/one_way_glass_east_15_15"
+      "model": "realms_of_chaos:block/one_way_glass_east_densuw"
     },
     "facing=up,down=false,east=false,north=false,south=false,up=false,west=false": {
-      "model": "realms_of_chaos:block/one_way_glass_up_0_0"
+      "model": "realms_of_chaos:block/one_way_glass_up_______"
     },
     "facing=up,down=true,east=false,north=false,south=false,up=false,west=false": {
-      "model": "realms_of_chaos:block/one_way_glass_up_0_0"
+      "model": "realms_of_chaos:block/one_way_glass_up_d_____"
     },
     "facing=up,down=false,east=true,north=false,south=false,up=false,west=false": {
-      "model": "realms_of_chaos:block/one_way_glass_up_8_8"
+      "model": "realms_of_chaos:block/one_way_glass_up__e____"
     },
     "facing=up,down=true,east=true,north=false,south=false,up=false,west=false": {
-      "model": "realms_of_chaos:block/one_way_glass_up_8_8"
+      "model": "realms_of_chaos:block/one_way_glass_up_de____"
     },
     "facing=up,down=false,east=false,north=true,south=false,up=false,west=false": {
-      "model": "realms_of_chaos:block/one_way_glass_up_1_2"
+      "model": "realms_of_chaos:block/one_way_glass_up___n___"
     },
     "facing=up,down=true,east=false,north=true,south=false,up=false,west=false": {
-      "model": "realms_of_chaos:block/one_way_glass_up_1_2"
+      "model": "realms_of_chaos:block/one_way_glass_up_d_n___"
     },
     "facing=up,down=false,east=true,north=true,south=false,up=false,west=false": {
-      "model": "realms_of_chaos:block/one_way_glass_up_9_10"
+      "model": "realms_of_chaos:block/one_way_glass_up__en___"
     },
     "facing=up,down=true,east=true,north=true,south=false,up=false,west=false": {
-      "model": "realms_of_chaos:block/one_way_glass_up_9_10"
+      "model": "realms_of_chaos:block/one_way_glass_up_den___"
     },
     "facing=up,down=false,east=false,north=false,south=true,up=false,west=false": {
-      "model": "realms_of_chaos:block/one_way_glass_up_2_1"
+      "model": "realms_of_chaos:block/one_way_glass_up____s__"
     },
     "facing=up,down=true,east=false,north=false,south=true,up=false,west=false": {
-      "model": "realms_of_chaos:block/one_way_glass_up_2_1"
+      "model": "realms_of_chaos:block/one_way_glass_up_d__s__"
     },
     "facing=up,down=false,east=true,north=false,south=true,up=false,west=false": {
-      "model": "realms_of_chaos:block/one_way_glass_up_10_9"
+      "model": "realms_of_chaos:block/one_way_glass_up__e_s__"
     },
     "facing=up,down=true,east=true,north=false,south=true,up=false,west=false": {
-      "model": "realms_of_chaos:block/one_way_glass_up_10_9"
+      "model": "realms_of_chaos:block/one_way_glass_up_de_s__"
     },
     "facing=up,down=false,east=false,north=true,south=true,up=false,west=false": {
-      "model": "realms_of_chaos:block/one_way_glass_up_3_3"
+      "model": "realms_of_chaos:block/one_way_glass_up___ns__"
     },
     "facing=up,down=true,east=false,north=true,south=true,up=false,west=false": {
-      "model": "realms_of_chaos:block/one_way_glass_up_3_3"
+      "model": "realms_of_chaos:block/one_way_glass_up_d_ns__"
     },
     "facing=up,down=false,east=true,north=true,south=true,up=false,west=false": {
-      "model": "realms_of_chaos:block/one_way_glass_up_11_11"
+      "model": "realms_of_chaos:block/one_way_glass_up__ens__"
     },
     "facing=up,down=true,east=true,north=true,south=true,up=false,west=false": {
-      "model": "realms_of_chaos:block/one_way_glass_up_11_11"
+      "model": "realms_of_chaos:block/one_way_glass_up_dens__"
     },
     "facing=up,down=false,east=false,north=false,south=false,up=true,west=false": {
-      "model": "realms_of_chaos:block/one_way_glass_up_0_0"
+      "model": "realms_of_chaos:block/one_way_glass_up_____u_"
     },
     "facing=up,down=true,east=false,north=false,south=false,up=true,west=false": {
-      "model": "realms_of_chaos:block/one_way_glass_up_0_0"
+      "model": "realms_of_chaos:block/one_way_glass_up_d___u_"
     },
     "facing=up,down=false,east=true,north=false,south=false,up=true,west=false": {
-      "model": "realms_of_chaos:block/one_way_glass_up_8_8"
+      "model": "realms_of_chaos:block/one_way_glass_up__e__u_"
     },
     "facing=up,down=true,east=true,north=false,south=false,up=true,west=false": {
-      "model": "realms_of_chaos:block/one_way_glass_up_8_8"
+      "model": "realms_of_chaos:block/one_way_glass_up_de__u_"
     },
     "facing=up,down=false,east=false,north=true,south=false,up=true,west=false": {
-      "model": "realms_of_chaos:block/one_way_glass_up_1_2"
+      "model": "realms_of_chaos:block/one_way_glass_up___n_u_"
     },
     "facing=up,down=true,east=false,north=true,south=false,up=true,west=false": {
-      "model": "realms_of_chaos:block/one_way_glass_up_1_2"
+      "model": "realms_of_chaos:block/one_way_glass_up_d_n_u_"
     },
     "facing=up,down=false,east=true,north=true,south=false,up=true,west=false": {
-      "model": "realms_of_chaos:block/one_way_glass_up_9_10"
+      "model": "realms_of_chaos:block/one_way_glass_up__en_u_"
     },
     "facing=up,down=true,east=true,north=true,south=false,up=true,west=false": {
-      "model": "realms_of_chaos:block/one_way_glass_up_9_10"
+      "model": "realms_of_chaos:block/one_way_glass_up_den_u_"
     },
     "facing=up,down=false,east=false,north=false,south=true,up=true,west=false": {
-      "model": "realms_of_chaos:block/one_way_glass_up_2_1"
+      "model": "realms_of_chaos:block/one_way_glass_up____su_"
     },
     "facing=up,down=true,east=false,north=false,south=true,up=true,west=false": {
-      "model": "realms_of_chaos:block/one_way_glass_up_2_1"
+      "model": "realms_of_chaos:block/one_way_glass_up_d__su_"
     },
     "facing=up,down=false,east=true,north=false,south=true,up=true,west=false": {
-      "model": "realms_of_chaos:block/one_way_glass_up_10_9"
+      "model": "realms_of_chaos:block/one_way_glass_up__e_su_"
     },
     "facing=up,down=true,east=true,north=false,south=true,up=true,west=false": {
-      "model": "realms_of_chaos:block/one_way_glass_up_10_9"
+      "model": "realms_of_chaos:block/one_way_glass_up_de_su_"
     },
     "facing=up,down=false,east=false,north=true,south=true,up=true,west=false": {
-      "model": "realms_of_chaos:block/one_way_glass_up_3_3"
+      "model": "realms_of_chaos:block/one_way_glass_up___nsu_"
     },
     "facing=up,down=true,east=false,north=true,south=true,up=true,west=false": {
-      "model": "realms_of_chaos:block/one_way_glass_up_3_3"
+      "model": "realms_of_chaos:block/one_way_glass_up_d_nsu_"
     },
     "facing=up,down=false,east=true,north=true,south=true,up=true,west=false": {
-      "model": "realms_of_chaos:block/one_way_glass_up_11_11"
+      "model": "realms_of_chaos:block/one_way_glass_up__ensu_"
     },
     "facing=up,down=true,east=true,north=true,south=true,up=true,west=false": {
-      "model": "realms_of_chaos:block/one_way_glass_up_11_11"
+      "model": "realms_of_chaos:block/one_way_glass_up_densu_"
     },
     "facing=up,down=false,east=false,north=false,south=false,up=false,west=true": {
-      "model": "realms_of_chaos:block/one_way_glass_up_4_4"
+      "model": "realms_of_chaos:block/one_way_glass_up______w"
     },
     "facing=up,down=true,east=false,north=false,south=false,up=false,west=true": {
-      "model": "realms_of_chaos:block/one_way_glass_up_4_4"
+      "model": "realms_of_chaos:block/one_way_glass_up_d____w"
     },
     "facing=up,down=false,east=true,north=false,south=false,up=false,west=true": {
-      "model": "realms_of_chaos:block/one_way_glass_up_12_12"
+      "model": "realms_of_chaos:block/one_way_glass_up__e___w"
     },
     "facing=up,down=true,east=true,north=false,south=false,up=false,west=true": {
-      "model": "realms_of_chaos:block/one_way_glass_up_12_12"
+      "model": "realms_of_chaos:block/one_way_glass_up_de___w"
     },
     "facing=up,down=false,east=false,north=true,south=false,up=false,west=true": {
-      "model": "realms_of_chaos:block/one_way_glass_up_5_6"
+      "model": "realms_of_chaos:block/one_way_glass_up___n__w"
     },
     "facing=up,down=true,east=false,north=true,south=false,up=false,west=true": {
-      "model": "realms_of_chaos:block/one_way_glass_up_5_6"
+      "model": "realms_of_chaos:block/one_way_glass_up_d_n__w"
     },
     "facing=up,down=false,east=true,north=true,south=false,up=false,west=true": {
-      "model": "realms_of_chaos:block/one_way_glass_up_13_14"
+      "model": "realms_of_chaos:block/one_way_glass_up__en__w"
     },
     "facing=up,down=true,east=true,north=true,south=false,up=false,west=true": {
-      "model": "realms_of_chaos:block/one_way_glass_up_13_14"
+      "model": "realms_of_chaos:block/one_way_glass_up_den__w"
     },
     "facing=up,down=false,east=false,north=false,south=true,up=false,west=true": {
-      "model": "realms_of_chaos:block/one_way_glass_up_6_5"
+      "model": "realms_of_chaos:block/one_way_glass_up____s_w"
     },
     "facing=up,down=true,east=false,north=false,south=true,up=false,west=true": {
-      "model": "realms_of_chaos:block/one_way_glass_up_6_5"
+      "model": "realms_of_chaos:block/one_way_glass_up_d__s_w"
     },
     "facing=up,down=false,east=true,north=false,south=true,up=false,west=true": {
-      "model": "realms_of_chaos:block/one_way_glass_up_14_13"
+      "model": "realms_of_chaos:block/one_way_glass_up__e_s_w"
     },
     "facing=up,down=true,east=true,north=false,south=true,up=false,west=true": {
-      "model": "realms_of_chaos:block/one_way_glass_up_14_13"
+      "model": "realms_of_chaos:block/one_way_glass_up_de_s_w"
     },
     "facing=up,down=false,east=false,north=true,south=true,up=false,west=true": {
-      "model": "realms_of_chaos:block/one_way_glass_up_7_7"
+      "model": "realms_of_chaos:block/one_way_glass_up___ns_w"
     },
     "facing=up,down=true,east=false,north=true,south=true,up=false,west=true": {
-      "model": "realms_of_chaos:block/one_way_glass_up_7_7"
+      "model": "realms_of_chaos:block/one_way_glass_up_d_ns_w"
     },
     "facing=up,down=false,east=true,north=true,south=true,up=false,west=true": {
-      "model": "realms_of_chaos:block/one_way_glass_up_15_15"
+      "model": "realms_of_chaos:block/one_way_glass_up__ens_w"
     },
     "facing=up,down=true,east=true,north=true,south=true,up=false,west=true": {
-      "model": "realms_of_chaos:block/one_way_glass_up_15_15"
+      "model": "realms_of_chaos:block/one_way_glass_up_dens_w"
     },
     "facing=up,down=false,east=false,north=false,south=false,up=true,west=true": {
-      "model": "realms_of_chaos:block/one_way_glass_up_4_4"
+      "model": "realms_of_chaos:block/one_way_glass_up_____uw"
     },
     "facing=up,down=true,east=false,north=false,south=false,up=true,west=true": {
-      "model": "realms_of_chaos:block/one_way_glass_up_4_4"
+      "model": "realms_of_chaos:block/one_way_glass_up_d___uw"
     },
     "facing=up,down=false,east=true,north=false,south=false,up=true,west=true": {
-      "model": "realms_of_chaos:block/one_way_glass_up_12_12"
+      "model": "realms_of_chaos:block/one_way_glass_up__e__uw"
     },
     "facing=up,down=true,east=true,north=false,south=false,up=true,west=true": {
-      "model": "realms_of_chaos:block/one_way_glass_up_12_12"
+      "model": "realms_of_chaos:block/one_way_glass_up_de__uw"
     },
     "facing=up,down=false,east=false,north=true,south=false,up=true,west=true": {
-      "model": "realms_of_chaos:block/one_way_glass_up_5_6"
+      "model": "realms_of_chaos:block/one_way_glass_up___n_uw"
     },
     "facing=up,down=true,east=false,north=true,south=false,up=true,west=true": {
-      "model": "realms_of_chaos:block/one_way_glass_up_5_6"
+      "model": "realms_of_chaos:block/one_way_glass_up_d_n_uw"
     },
     "facing=up,down=false,east=true,north=true,south=false,up=true,west=true": {
-      "model": "realms_of_chaos:block/one_way_glass_up_13_14"
+      "model": "realms_of_chaos:block/one_way_glass_up__en_uw"
     },
     "facing=up,down=true,east=true,north=true,south=false,up=true,west=true": {
-      "model": "realms_of_chaos:block/one_way_glass_up_13_14"
+      "model": "realms_of_chaos:block/one_way_glass_up_den_uw"
     },
     "facing=up,down=false,east=false,north=false,south=true,up=true,west=true": {
-      "model": "realms_of_chaos:block/one_way_glass_up_6_5"
+      "model": "realms_of_chaos:block/one_way_glass_up____suw"
     },
     "facing=up,down=true,east=false,north=false,south=true,up=true,west=true": {
-      "model": "realms_of_chaos:block/one_way_glass_up_6_5"
+      "model": "realms_of_chaos:block/one_way_glass_up_d__suw"
     },
     "facing=up,down=false,east=true,north=false,south=true,up=true,west=true": {
-      "model": "realms_of_chaos:block/one_way_glass_up_14_13"
+      "model": "realms_of_chaos:block/one_way_glass_up__e_suw"
     },
     "facing=up,down=true,east=true,north=false,south=true,up=true,west=true": {
-      "model": "realms_of_chaos:block/one_way_glass_up_14_13"
+      "model": "realms_of_chaos:block/one_way_glass_up_de_suw"
     },
     "facing=up,down=false,east=false,north=true,south=true,up=true,west=true": {
-      "model": "realms_of_chaos:block/one_way_glass_up_7_7"
+      "model": "realms_of_chaos:block/one_way_glass_up___nsuw"
     },
     "facing=up,down=true,east=false,north=true,south=true,up=true,west=true": {
-      "model": "realms_of_chaos:block/one_way_glass_up_7_7"
+      "model": "realms_of_chaos:block/one_way_glass_up_d_nsuw"
     },
     "facing=up,down=false,east=true,north=true,south=true,up=true,west=true": {
-      "model": "realms_of_chaos:block/one_way_glass_up_15_15"
+      "model": "realms_of_chaos:block/one_way_glass_up__ensuw"
     },
     "facing=up,down=true,east=true,north=true,south=true,up=true,west=true": {
-      "model": "realms_of_chaos:block/one_way_glass_up_15_15"
+      "model": "realms_of_chaos:block/one_way_glass_up_densuw"
     },
     "facing=down,down=false,east=false,north=false,south=false,up=false,west=false": {
-      "model": "realms_of_chaos:block/one_way_glass_down_0_0"
+      "model": "realms_of_chaos:block/one_way_glass_down_______"
     },
     "facing=down,down=true,east=false,north=false,south=false,up=false,west=false": {
-      "model": "realms_of_chaos:block/one_way_glass_down_0_0"
+      "model": "realms_of_chaos:block/one_way_glass_down_d_____"
     },
     "facing=down,down=false,east=true,north=false,south=false,up=false,west=false": {
-      "model": "realms_of_chaos:block/one_way_glass_down_8_8"
+      "model": "realms_of_chaos:block/one_way_glass_down__e____"
     },
     "facing=down,down=true,east=true,north=false,south=false,up=false,west=false": {
-      "model": "realms_of_chaos:block/one_way_glass_down_8_8"
+      "model": "realms_of_chaos:block/one_way_glass_down_de____"
     },
     "facing=down,down=false,east=false,north=true,south=false,up=false,west=false": {
-      "model": "realms_of_chaos:block/one_way_glass_down_2_1"
+      "model": "realms_of_chaos:block/one_way_glass_down___n___"
     },
     "facing=down,down=true,east=false,north=true,south=false,up=false,west=false": {
-      "model": "realms_of_chaos:block/one_way_glass_down_2_1"
+      "model": "realms_of_chaos:block/one_way_glass_down_d_n___"
     },
     "facing=down,down=false,east=true,north=true,south=false,up=false,west=false": {
-      "model": "realms_of_chaos:block/one_way_glass_down_10_9"
+      "model": "realms_of_chaos:block/one_way_glass_down__en___"
     },
     "facing=down,down=true,east=true,north=true,south=false,up=false,west=false": {
-      "model": "realms_of_chaos:block/one_way_glass_down_10_9"
+      "model": "realms_of_chaos:block/one_way_glass_down_den___"
     },
     "facing=down,down=false,east=false,north=false,south=true,up=false,west=false": {
-      "model": "realms_of_chaos:block/one_way_glass_down_1_2"
+      "model": "realms_of_chaos:block/one_way_glass_down____s__"
     },
     "facing=down,down=true,east=false,north=false,south=true,up=false,west=false": {
-      "model": "realms_of_chaos:block/one_way_glass_down_1_2"
+      "model": "realms_of_chaos:block/one_way_glass_down_d__s__"
     },
     "facing=down,down=false,east=true,north=false,south=true,up=false,west=false": {
-      "model": "realms_of_chaos:block/one_way_glass_down_9_10"
+      "model": "realms_of_chaos:block/one_way_glass_down__e_s__"
     },
     "facing=down,down=true,east=true,north=false,south=true,up=false,west=false": {
-      "model": "realms_of_chaos:block/one_way_glass_down_9_10"
+      "model": "realms_of_chaos:block/one_way_glass_down_de_s__"
     },
     "facing=down,down=false,east=false,north=true,south=true,up=false,west=false": {
-      "model": "realms_of_chaos:block/one_way_glass_down_3_3"
+      "model": "realms_of_chaos:block/one_way_glass_down___ns__"
     },
     "facing=down,down=true,east=false,north=true,south=true,up=false,west=false": {
-      "model": "realms_of_chaos:block/one_way_glass_down_3_3"
+      "model": "realms_of_chaos:block/one_way_glass_down_d_ns__"
     },
     "facing=down,down=false,east=true,north=true,south=true,up=false,west=false": {
-      "model": "realms_of_chaos:block/one_way_glass_down_11_11"
+      "model": "realms_of_chaos:block/one_way_glass_down__ens__"
     },
     "facing=down,down=true,east=true,north=true,south=true,up=false,west=false": {
-      "model": "realms_of_chaos:block/one_way_glass_down_11_11"
+      "model": "realms_of_chaos:block/one_way_glass_down_dens__"
     },
     "facing=down,down=false,east=false,north=false,south=false,up=true,west=false": {
-      "model": "realms_of_chaos:block/one_way_glass_down_0_0"
+      "model": "realms_of_chaos:block/one_way_glass_down_____u_"
     },
     "facing=down,down=true,east=false,north=false,south=false,up=true,west=false": {
-      "model": "realms_of_chaos:block/one_way_glass_down_0_0"
+      "model": "realms_of_chaos:block/one_way_glass_down_d___u_"
     },
     "facing=down,down=false,east=true,north=false,south=false,up=true,west=false": {
-      "model": "realms_of_chaos:block/one_way_glass_down_8_8"
+      "model": "realms_of_chaos:block/one_way_glass_down__e__u_"
     },
     "facing=down,down=true,east=true,north=false,south=false,up=true,west=false": {
-      "model": "realms_of_chaos:block/one_way_glass_down_8_8"
+      "model": "realms_of_chaos:block/one_way_glass_down_de__u_"
     },
     "facing=down,down=false,east=false,north=true,south=false,up=true,west=false": {
-      "model": "realms_of_chaos:block/one_way_glass_down_2_1"
+      "model": "realms_of_chaos:block/one_way_glass_down___n_u_"
     },
     "facing=down,down=true,east=false,north=true,south=false,up=true,west=false": {
-      "model": "realms_of_chaos:block/one_way_glass_down_2_1"
+      "model": "realms_of_chaos:block/one_way_glass_down_d_n_u_"
     },
     "facing=down,down=false,east=true,north=true,south=false,up=true,west=false": {
-      "model": "realms_of_chaos:block/one_way_glass_down_10_9"
+      "model": "realms_of_chaos:block/one_way_glass_down__en_u_"
     },
     "facing=down,down=true,east=true,north=true,south=false,up=true,west=false": {
-      "model": "realms_of_chaos:block/one_way_glass_down_10_9"
+      "model": "realms_of_chaos:block/one_way_glass_down_den_u_"
     },
     "facing=down,down=false,east=false,north=false,south=true,up=true,west=false": {
-      "model": "realms_of_chaos:block/one_way_glass_down_1_2"
+      "model": "realms_of_chaos:block/one_way_glass_down____su_"
     },
     "facing=down,down=true,east=false,north=false,south=true,up=true,west=false": {
-      "model": "realms_of_chaos:block/one_way_glass_down_1_2"
+      "model": "realms_of_chaos:block/one_way_glass_down_d__su_"
     },
     "facing=down,down=false,east=true,north=false,south=true,up=true,west=false": {
-      "model": "realms_of_chaos:block/one_way_glass_down_9_10"
+      "model": "realms_of_chaos:block/one_way_glass_down__e_su_"
     },
     "facing=down,down=true,east=true,north=false,south=true,up=true,west=false": {
-      "model": "realms_of_chaos:block/one_way_glass_down_9_10"
+      "model": "realms_of_chaos:block/one_way_glass_down_de_su_"
     },
     "facing=down,down=false,east=false,north=true,south=true,up=true,west=false": {
-      "model": "realms_of_chaos:block/one_way_glass_down_3_3"
+      "model": "realms_of_chaos:block/one_way_glass_down___nsu_"
     },
     "facing=down,down=true,east=false,north=true,south=true,up=true,west=false": {
-      "model": "realms_of_chaos:block/one_way_glass_down_3_3"
+      "model": "realms_of_chaos:block/one_way_glass_down_d_nsu_"
     },
     "facing=down,down=false,east=true,north=true,south=true,up=true,west=false": {
-      "model": "realms_of_chaos:block/one_way_glass_down_11_11"
+      "model": "realms_of_chaos:block/one_way_glass_down__ensu_"
     },
     "facing=down,down=true,east=true,north=true,south=true,up=true,west=false": {
-      "model": "realms_of_chaos:block/one_way_glass_down_11_11"
+      "model": "realms_of_chaos:block/one_way_glass_down_densu_"
     },
     "facing=down,down=false,east=false,north=false,south=false,up=false,west=true": {
-      "model": "realms_of_chaos:block/one_way_glass_down_4_4"
+      "model": "realms_of_chaos:block/one_way_glass_down______w"
     },
     "facing=down,down=true,east=false,north=false,south=false,up=false,west=true": {
-      "model": "realms_of_chaos:block/one_way_glass_down_4_4"
+      "model": "realms_of_chaos:block/one_way_glass_down_d____w"
     },
     "facing=down,down=false,east=true,north=false,south=false,up=false,west=true": {
-      "model": "realms_of_chaos:block/one_way_glass_down_12_12"
+      "model": "realms_of_chaos:block/one_way_glass_down__e___w"
     },
     "facing=down,down=true,east=true,north=false,south=false,up=false,west=true": {
-      "model": "realms_of_chaos:block/one_way_glass_down_12_12"
+      "model": "realms_of_chaos:block/one_way_glass_down_de___w"
     },
     "facing=down,down=false,east=false,north=true,south=false,up=false,west=true": {
-      "model": "realms_of_chaos:block/one_way_glass_down_6_5"
+      "model": "realms_of_chaos:block/one_way_glass_down___n__w"
     },
     "facing=down,down=true,east=false,north=true,south=false,up=false,west=true": {
-      "model": "realms_of_chaos:block/one_way_glass_down_6_5"
+      "model": "realms_of_chaos:block/one_way_glass_down_d_n__w"
     },
     "facing=down,down=false,east=true,north=true,south=false,up=false,west=true": {
-      "model": "realms_of_chaos:block/one_way_glass_down_14_13"
+      "model": "realms_of_chaos:block/one_way_glass_down__en__w"
     },
     "facing=down,down=true,east=true,north=true,south=false,up=false,west=true": {
-      "model": "realms_of_chaos:block/one_way_glass_down_14_13"
+      "model": "realms_of_chaos:block/one_way_glass_down_den__w"
     },
     "facing=down,down=false,east=false,north=false,south=true,up=false,west=true": {
-      "model": "realms_of_chaos:block/one_way_glass_down_5_6"
+      "model": "realms_of_chaos:block/one_way_glass_down____s_w"
     },
     "facing=down,down=true,east=false,north=false,south=true,up=false,west=true": {
-      "model": "realms_of_chaos:block/one_way_glass_down_5_6"
+      "model": "realms_of_chaos:block/one_way_glass_down_d__s_w"
     },
     "facing=down,down=false,east=true,north=false,south=true,up=false,west=true": {
-      "model": "realms_of_chaos:block/one_way_glass_down_13_14"
+      "model": "realms_of_chaos:block/one_way_glass_down__e_s_w"
     },
     "facing=down,down=true,east=true,north=false,south=true,up=false,west=true": {
-      "model": "realms_of_chaos:block/one_way_glass_down_13_14"
+      "model": "realms_of_chaos:block/one_way_glass_down_de_s_w"
     },
     "facing=down,down=false,east=false,north=true,south=true,up=false,west=true": {
-      "model": "realms_of_chaos:block/one_way_glass_down_7_7"
+      "model": "realms_of_chaos:block/one_way_glass_down___ns_w"
     },
     "facing=down,down=true,east=false,north=true,south=true,up=false,west=true": {
-      "model": "realms_of_chaos:block/one_way_glass_down_7_7"
+      "model": "realms_of_chaos:block/one_way_glass_down_d_ns_w"
     },
     "facing=down,down=false,east=true,north=true,south=true,up=false,west=true": {
-      "model": "realms_of_chaos:block/one_way_glass_down_15_15"
+      "model": "realms_of_chaos:block/one_way_glass_down__ens_w"
     },
     "facing=down,down=true,east=true,north=true,south=true,up=false,west=true": {
-      "model": "realms_of_chaos:block/one_way_glass_down_15_15"
+      "model": "realms_of_chaos:block/one_way_glass_down_dens_w"
     },
     "facing=down,down=false,east=false,north=false,south=false,up=true,west=true": {
-      "model": "realms_of_chaos:block/one_way_glass_down_4_4"
+      "model": "realms_of_chaos:block/one_way_glass_down_____uw"
     },
     "facing=down,down=true,east=false,north=false,south=false,up=true,west=true": {
-      "model": "realms_of_chaos:block/one_way_glass_down_4_4"
+      "model": "realms_of_chaos:block/one_way_glass_down_d___uw"
     },
     "facing=down,down=false,east=true,north=false,south=false,up=true,west=true": {
-      "model": "realms_of_chaos:block/one_way_glass_down_12_12"
+      "model": "realms_of_chaos:block/one_way_glass_down__e__uw"
     },
     "facing=down,down=true,east=true,north=false,south=false,up=true,west=true": {
-      "model": "realms_of_chaos:block/one_way_glass_down_12_12"
+      "model": "realms_of_chaos:block/one_way_glass_down_de__uw"
     },
     "facing=down,down=false,east=false,north=true,south=false,up=true,west=true": {
-      "model": "realms_of_chaos:block/one_way_glass_down_6_5"
+      "model": "realms_of_chaos:block/one_way_glass_down___n_uw"
     },
     "facing=down,down=true,east=false,north=true,south=false,up=true,west=true": {
-      "model": "realms_of_chaos:block/one_way_glass_down_6_5"
+      "model": "realms_of_chaos:block/one_way_glass_down_d_n_uw"
     },
     "facing=down,down=false,east=true,north=true,south=false,up=true,west=true": {
-      "model": "realms_of_chaos:block/one_way_glass_down_14_13"
+      "model": "realms_of_chaos:block/one_way_glass_down__en_uw"
     },
     "facing=down,down=true,east=true,north=true,south=false,up=true,west=true": {
-      "model": "realms_of_chaos:block/one_way_glass_down_14_13"
+      "model": "realms_of_chaos:block/one_way_glass_down_den_uw"
     },
     "facing=down,down=false,east=false,north=false,south=true,up=true,west=true": {
-      "model": "realms_of_chaos:block/one_way_glass_down_5_6"
+      "model": "realms_of_chaos:block/one_way_glass_down____suw"
     },
     "facing=down,down=true,east=false,north=false,south=true,up=true,west=true": {
-      "model": "realms_of_chaos:block/one_way_glass_down_5_6"
+      "model": "realms_of_chaos:block/one_way_glass_down_d__suw"
     },
     "facing=down,down=false,east=true,north=false,south=true,up=true,west=true": {
-      "model": "realms_of_chaos:block/one_way_glass_down_13_14"
+      "model": "realms_of_chaos:block/one_way_glass_down__e_suw"
     },
     "facing=down,down=true,east=true,north=false,south=true,up=true,west=true": {
-      "model": "realms_of_chaos:block/one_way_glass_down_13_14"
+      "model": "realms_of_chaos:block/one_way_glass_down_de_suw"
     },
     "facing=down,down=false,east=false,north=true,south=true,up=true,west=true": {
-      "model": "realms_of_chaos:block/one_way_glass_down_7_7"
+      "model": "realms_of_chaos:block/one_way_glass_down___nsuw"
     },
     "facing=down,down=true,east=false,north=true,south=true,up=true,west=true": {
-      "model": "realms_of_chaos:block/one_way_glass_down_7_7"
+      "model": "realms_of_chaos:block/one_way_glass_down_d_nsuw"
     },
     "facing=down,down=false,east=true,north=true,south=true,up=true,west=true": {
-      "model": "realms_of_chaos:block/one_way_glass_down_15_15"
+      "model": "realms_of_chaos:block/one_way_glass_down__ensuw"
     },
     "facing=down,down=true,east=true,north=true,south=true,up=true,west=true": {
-      "model": "realms_of_chaos:block/one_way_glass_down_15_15"
+      "model": "realms_of_chaos:block/one_way_glass_down_densuw"
     }
   }
 }

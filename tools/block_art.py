@@ -2525,40 +2525,44 @@ def gen_furnish2(assets, data):
         return tuple(c) + (255,)
     glass_set("one_way_glass", silvered, pewter, 1)
     # from behind: the same frame round the window, nothing inside it; along its edges, the frame's own side
-    glass_set("one_way_glass_back", lambda x, y: CLEAR, pewter, 1)
-    paint_hi(lambda x, y: (206, 210, 214) if x in (0, 15) or y in (0, 15) else (150, 154, 160) if (x + y) % 5 else (120, 124, 130)).save(
-        os.path.join(T, "one_way_glass_edge.png"))
+    # from behind: a wider frame, so the back can be told, round a faint pane of glass that can be seen through
+    def back_pane(x, y):
+        a = sheen(x, y, 1.0)
+        return (236, 242, 248, 56 + a) if a else (214, 224, 232, 44)
+
+    def back_frame(x, y, near, side):
+        if near == 0: return (96, 100, 106, 255)
+        if near == 2: return (176, 180, 186, 255)
+        return ((206, 210, 214) if side in ("t", "l") else (150, 154, 160)) + (255,)
+    glass_set("one_way_glass_back", back_pane, back_frame, 3)
     face_box = {"north": ((0, 0, 0), (16, 16, 0)), "south": ((0, 0, 16), (16, 16, 16)), "west": ((0, 0, 0), (0, 16, 16)),
                 "east": ((16, 0, 0), (16, 16, 16)), "up": ((0, 16, 0), (16, 16, 16)), "down": ((0, 0, 0), (16, 0, 16))}
     opposite = {"north": "south", "south": "north", "east": "west", "west": "east", "up": "down", "down": "up"}
     import glob as _glob
-    for old in _glob.glob(os.path.join(M, "one_way_glass_*.json")):
+    for old in _glob.glob(os.path.join(M, "one_way_glass_*.json")) + _glob.glob(os.path.join(T, "one_way_glass_edge.png")):
         os.remove(old)
     one_way = {}
     for facing in face_box:
+        back = opposite[facing]
         for bits in range(64):
             j = {d: bool(bits >> i & 1) for i, d in enumerate(dirs)}
-            m = masks(j)[facing]
-            mb = masks(j)[opposite[facing]]
-            model = f"one_way_glass_{facing}_{m}_{mb}"
-            path = os.path.join(M, f"{model}.json")
-            if not os.path.exists(path):
-                back = opposite[facing]
-                elements = [{"from": list(face_box[facing][0]), "to": list(face_box[facing][1]),
-                             "faces": {facing: {"uv": [0, 0, 16, 16], "texture": "#f", "cullface": facing}}},
-                            {"from": list(face_box[back][0]), "to": list(face_box[back][1]),
-                             "faces": {back: {"uv": [0, 0, 16, 16], "texture": "#b", "cullface": back}}}]
-                for side in face_box:
-                    if side in (facing, opposite[facing]): continue
-                    elements.append({"from": list(face_box[side][0]), "to": list(face_box[side][1]),
-                                     "faces": {side: {"uv": [0, 0, 16, 16], "texture": "#s", "cullface": side}}})
-                wj(path, {"parent": "minecraft:block/block", "ambientocclusion": False,
-                          "textures": {"particle": t(f"one_way_glass_{m}"), "f": t(f"one_way_glass_{m}"),
-                                       "b": {"sprite": t(f"one_way_glass_back_{mb}"), "force_translucent": True}, "s": t("one_way_glass_edge")},
-                          "elements": elements})
+            m = masks(j)
+            # every face drawn - the front and the sides silvered, the back framed and faint - each joined to the run
+            # it belongs to; a face against another block, or another pane of it, is not drawn
+            tex = {"particle": t(f"one_way_glass_{m[facing]}")}
+            elements = []
+            for face in face_box:
+                if face == back:
+                    tex[face] = {"sprite": t(f"one_way_glass_back_{m[face]}"), "force_translucent": True}
+                else:
+                    tex[face] = t(f"one_way_glass_{m[face]}")
+                elements.append({"from": list(face_box[face][0]), "to": list(face_box[face][1]),
+                                  "faces": {face: {"uv": [0, 0, 16, 16], "texture": f"#{face}", "cullface": face}}})
+            model = f"one_way_glass_{facing}_" + "".join(d[0] if j[d] else "_" for d in dirs)
+            wj(os.path.join(M, f"{model}.json"), {"parent": "minecraft:block/block", "ambientocclusion": False, "textures": tex, "elements": elements})
             one_way[f"facing={facing}," + ",".join(f"{d}={'true' if j[d] else 'false'}" for d in dirs)] = {"model": f"{MOD}:block/{model}"}
     wj(os.path.join(assets, "blockstates/one_way_glass.json"), {"variants": one_way})
-    wj(os.path.join(M, "one_way_glass.json"), {"parent": "minecraft:block/cube_all", "textures": {"all": t("one_way_glass_0")}})
+    wj(os.path.join(M, "one_way_glass.json"), {"parent": f"{MOD}:block/one_way_glass_north_______"})
     wj(os.path.join(assets, "items/one_way_glass.json"), {"model": {"type": "minecraft:model", "model": f"{MOD}:block/one_way_glass"}})
 
     # ---- recipes and loot

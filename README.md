@@ -91,13 +91,13 @@ The current build is an **Alpha**.
   and nothing between its blocks - and all craftable. All 16x16.
   * **Reinforced Glass** - clear, framed in two pixels of bronze with rivets at the corners, as hard as stone.
   * **Frosted Glass** - milky white with crystals of frost in it: light comes through, nothing else.
-  * **One-Way Glass** - a solid pane of untinted, silvered glass from the side it faces; from behind, the same pewter
-    frame round the window with nothing inside it, and along its edges the frame's own side - so it has a border
-    seen from every side, and only from behind is it open. (`art/renders/one-way-glass-all-sides.png`)
-    Set it down and its face is turned towards you, so a floor laid from above looks solid from above and is open
-    sky from below. Where a run of it steps - round a curved wall - the sides of the steps are drawn as well, so no
-    gap shows from the front. (`art/renders/one-way-floor-both-sides.png`, `one-way-window-both-sides.png`,
-    `one-way-window-curve.png`, `art/videos/one-way-floor.mp4`)
+  * **One-Way Glass** - every face is drawn: the front and the four sides are solid, untinted silvered glass;
+    the back has a wider pewter border round a faint pane of glass you can see through, so you can always tell
+    which side is which. A face is left off only where it meets another block or another pane of it, and every
+    face's frame joins across a run, so a whole window or floor has one border round it. Set it down and its solid
+    face is turned towards you: a floor laid from above looks solid from above and shows the sky from below.
+    (`art/renders/one-way-glass-all-sides.png`, `one-way-floor-below.png`, `one-way-window-curve.png`,
+    `art/videos/one-way-floor.mp4`)
   * **Smart Glass** - a smoked, shaded pane until it has a redstone signal; then clear.
   * **Veil Glass** - a solid-looking pane of pale glass, untinted, that turns clear - on a redstone signal, or when
     anything shot or thrown strikes it, which turns it whichever way it is not. (`art/videos/veil-glass-arrows.mp4`)
