@@ -139,7 +139,7 @@ public final class Combat {
         st.dodgeReady = now + DODGE_RECOVERY;
         if (player.level() instanceof ServerLevel level) {
             level.sendParticles(com.thefarawaydev.realmsofchaos.fx.RocParticles.DUST.type(), player.getX(), player.getY() + 0.1, player.getZ(), 8, 0.3, 0.05, 0.3, 0.02);
-            level.playSound(null, player.blockPosition(), SoundEvents.PLAYER_ATTACK_SWEEP, SoundSource.PLAYERS, 0.6F, 1.7F);
+            com.thefarawaydev.realmsofchaos.fx.RocSounds.by(level, player, "dodge", 0.8F, 1.0F);
         }
         return true;
     }
@@ -168,7 +168,7 @@ public final class Combat {
             st.riposteUntil = now + RIPOSTE_TICKS;
             st.momentum = Math.min(MAX_MOMENTUM, st.momentum + 1);
             st.lastBlow = now;
-            level.playSound(null, player.blockPosition(), SoundEvents.PLAYER_ATTACK_NODAMAGE, SoundSource.PLAYERS, 1.0F, 1.4F);
+            com.thefarawaydev.realmsofchaos.fx.RocSounds.by(level, player, "dodge", 0.9F, 1.1F);
             level.sendParticles(com.thefarawaydev.realmsofchaos.fx.RocParticles.DUST.type(), player.getX(), player.getY() + 1.0, player.getZ(), 10, 0.3, 0.4, 0.3, 0.05);
             ProgressData.get(level.getServer()).addCounter("dodges/" + player.getUUID(), 1);
             show(player, st, now);
@@ -182,8 +182,7 @@ public final class Combat {
         st.momentum = Math.min(MAX_MOMENTUM, st.momentum + 1);
         st.lastBlow = now;
         if (attacker != null) stagger(level, attacker, STAGGER_TICKS);
-        level.playSound(null, player.blockPosition(), SoundEvents.SHIELD_BLOCK.value(), SoundSource.PLAYERS, 1.0F, 1.6F);
-        level.playSound(null, player.blockPosition(), SoundEvents.ANVIL_PLACE, SoundSource.PLAYERS, 0.5F, 1.8F);
+        com.thefarawaydev.realmsofchaos.fx.RocSounds.by(level, player, "parry", 1.0F, 1.0F);
         level.sendParticles(com.thefarawaydev.realmsofchaos.fx.RocParticles.STRIKE.type(), player.getX(), player.getY() + 1.1, player.getZ(), 18, 0.4, 0.4, 0.4, 0.3);
         ProgressData.get(level.getServer()).addCounter("parries/" + player.getUUID(), 1);
         show(player, st, now);
@@ -235,7 +234,7 @@ public final class Combat {
         if (st.riposteUntil != 0 && now <= st.riposteUntil) {
             out *= RIPOSTE;
             st.riposteUntil = 0;
-            level.playSound(null, victim.blockPosition(), SoundEvents.PLAYER_ATTACK_CRIT, SoundSource.PLAYERS, 1.2F, 0.7F);
+            com.thefarawaydev.realmsofchaos.fx.RocSounds.at(level, victim.blockPosition(), "riposte", 1.1F, 1.0F);
             level.sendParticles(ParticleTypes.SWEEP_ATTACK, victim.getX(), victim.getY() + 1.0, victim.getZ(), 3, 0.3, 0.3, 0.3, 0.0);
         }
         if (player.fallDistance >= PLUNGE_FALL && !player.onGround() && now >= st.plungeReady) {

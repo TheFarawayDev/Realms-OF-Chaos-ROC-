@@ -18,10 +18,13 @@ import random
 
 import numpy as np
 
-from compose import (Score, render, finish, SR, HARP, NYLON, FLUTE, STRINGS, SLOW_STRINGS, CHOIR, OOHS, HORN, BRASS, TRUMPET,
+from compose import (Score, render, finish, SR, VIBES, ORGAN, KALIMBA, CRYSTAL, HARP, NYLON, FLUTE, STRINGS, SLOW_STRINGS, CHOIR, OOHS, HORN, BRASS, TRUMPET,
                      TROMBONE, TUBA, TIMPANI, TAIKO, PIZZ, CELLO, CONTRABASS, CELESTA, GLOCK, TUBULAR, ORCH_HIT, TREMOLO, WARM_PAD,
                      BIRDS, SEASHORE, CRASH, SNARE, TRIANGLE, LO_CONGA, MUTE_CONGA, HI_BONGO, TAMB, HI_WOOD, LO_WOOD, KICK, ORCH_KIT)
 
+SHANAI, CONTRABASSOON = 111, 70
+HIJAZ = [0, 1, 4, 5, 7, 8, 10]
+HARMONIC = [0, 2, 3, 5, 7, 8, 11]
 PAN_FLUTE, OBOE, CLARINET, BASSOON, ENGLISH_HORN, VIOLA, VIOLIN, SYNTH_CHOIR, BOWED, MELODIC_TOM = 75, 68, 71, 70, 69, 41, 40, 54, 92, 117
 SPLASH, RIDE_BELL, CHINA, LOW_TOM, MID_TOM, HIGH_TOM, FLOOR_TOM = 55, 53, 52, 45, 47, 50, 41
 
@@ -301,12 +304,12 @@ def olympus_peak():
 
 
 def abyss():
-    """Poseidon's halls under the sea, rolling in six: the harp in waves, strings, voices far off, a clarinet's slow song."""
+    """Poseidon's halls under the sea, rolling in six: a vibraphone in waves, strings, voices far off, a clarinet's slow song."""
     rng = random.Random(141)
     prog = ["Bm", "G", "D", "A", "Bm", "Em", "G", "F#7"] * 5
     h = Harmony(11, MINOR, prog, 6)
     s = Score(150, 6, 40)                                  # eighths: two dotted beats to a bar
-    harp, strings, oohs, clar, cel, cb, sea = (s.instrument(HARP, 92, 40, 80), s.instrument(SLOW_STRINGS, 74, 64, 90), s.instrument(OOHS, 74, 64, 100),
+    harp, strings, oohs, clar, cel, cb, sea = (s.instrument(VIBES, 88, 40, 90), s.instrument(SLOW_STRINGS, 74, 64, 90), s.instrument(OOHS, 74, 64, 100),
                                                s.instrument(CLARINET, 96, 74, 80), s.instrument(CELESTA, 62, 96, 100), s.instrument(CONTRABASS, 84, 64, 70),
                                                s.instrument(SEASHORE, 40, 64, 100))
     arpeggio(s, harp, h, 40, 47, 78, 1.0, [0, 2, 4, 5, 4, 2], vel=58)
@@ -360,24 +363,61 @@ def underworld():
 
 
 def tartarus():
-    """Tartarus, the pit beneath the Underworld: low brass and a choir in fear, taiko pounding, strings shuddering."""
+    """Tartarus, the pit beneath the Underworld, in five: a low organ, a chant of men's voices, frame drums in three and
+    two, a bowed shimmer above - a rite, not a battle."""
     rng = random.Random(171)
-    prog = ["C#m", "A", "D", "G#7", "C#m", "F#m", "D", "G#7"] * 6
-    h = Harmony(1, MINOR, prog, 4)
-    s = Score(84, 4, 44)
-    trem, bones, tuba, choir, taiko, timp, dr = (s.instrument(TREMOLO, 84, 64, 70), s.instrument(TROMBONE, 96, 50, 65), s.instrument(TUBA, 96, 70, 60),
-                                                 s.instrument(CHOIR, 86, 64, 80), s.instrument(TAIKO, 110, 64, 55), s.instrument(TIMPANI, 100, 64, 60), s.drums(ORCH_KIT, 90, 60))
-    pad(s, trem, h, 44, 49, 68, vel=62, swell=(50, 115))
-    pad(s, bones, h, 40, 44, 58, vel=76, swell=(60, 120), size=3, start_bar=4)
-    bass(s, tuba, h, 40, 25, pattern=((0, 1.8, 0), (2, 1.8, 0)), vel=82, start_bar=4)
-    pad(s, choir, h, 24, 56, 73, vel=74, swell=(50, 120), start_bar=16)
-    play(s, choir, melody(rng, h, 8, [[2, 2], [3, 1], [4]], 61, 73, (0, 2), start_bar=32), 90)
-    for b in range(4, 42):
-        for beat, v in ((0, 120), (1.5, 90), (2, 110), (3.5, 80)): s.note(taiko, s.at(b, beat), 0.6, drum_pitch(h.at(b, beat)), v)
+    prog = ["C#m", "A", "F#m", "G#7", "C#m", "E", "A", "G#"] * 4
+    h = Harmony(1, MINOR, prog, 5)
+    s = Score(76, 5, 30)
+    org, chant, bowed, cb, timp, dr = (s.instrument(ORGAN, 82, 64, 90), s.instrument(CHOIR, 96, 64, 85), s.instrument(BOWED, 56, 64, 110),
+                                       s.instrument(CONTRABASS, 92, 64, 70), s.instrument(TIMPANI, 96, 64, 70), s.drums(0, 90, 50))
+    pad(s, org, h, 30, 44, 60, vel=64, swell=None)
+    bass(s, cb, h, 30, 25, pattern=((0, 2.9, 0), (3, 1.9, 7)), vel=84)
+    pad(s, bowed, h, 26, 68, 80, vel=44, swell=(20, 80), start_bar=4)
+    for b in range(2, 30):
+        for beat, note, v in ((0, LO_CONGA, 110), (1, MUTE_CONGA, 70), (2, MUTE_CONGA, 80), (3, LO_CONGA, 100), (4, HI_BONGO, 70)): s.note(dr, s.at(b, beat), 0.3, note, v)
         if b % 4 == 3:
-            for i in range(8): s.note(timp, s.at(b, 2 + i / 4), 0.1, drum_pitch(h.at(b, 2), 36), 60 + i * 7)
-            s.note(dr, s.at(b + 1, 0), 2.0, CRASH, 100)
-    return finish(render(s, room=0.7, damp=0.5, level=0.6))
+            for i in range(10): s.note(timp, s.at(b, 3 + i / 5), 0.1, drum_pitch(h.at(b, 3), 36), 55 + i * 6)
+    line = melody(rng, h, 8, [[3, 2], [2, 1, 2], [1, 2, 2], [5]], 49, 62, (0, 3), start_bar=6, cadence=[5])
+    play(s, chant, line, 96)
+    play(s, chant, [(b + 8, beat, dur, m) for b, beat, dur, m in line], 100)
+    play(s, chant, [(b + 8, beat, dur, m + 7) for b, beat, dur, m in thirds_below(h, line)], 80)
+    return finish(render(s, room=0.95, damp=0.6, level=0.8))
+
+
+def titan():
+    """A fallen Titan roused on its keep, in seven (2+2+3): a drum ensemble - taiko, toms, the great bass drum - with
+    trombones and tuba hammering under it, and a choir roaring over the last of it."""
+    rng = random.Random(211)
+    prog = ["Cm", "Ab", "Fm", "G", "Cm", "Eb", "Ab", "G7"] * 7
+    h = Harmony(0, MINOR, prog, 7)
+    s = Score(176, 7, 56)
+    taiko, toms, bones, tuba, choir, timp, dr = (s.instrument(TAIKO, 122, 64, 45), s.instrument(MELODIC_TOM, 100, 70, 45), s.instrument(TROMBONE, 104, 50, 55),
+                                                 s.instrument(TUBA, 104, 70, 50), s.instrument(CHOIR, 100, 64, 65), s.instrument(TIMPANI, 108, 64, 55), s.drums(ORCH_KIT, 105, 50))
+    groups = (0, 2, 4)
+    for b in range(56):
+        chord = h.at(b, 0)
+        root = 36 + (chord.root - 36) % 12
+        loud = b >= 4
+        for i in range(7):
+            if i in groups:
+                s.note(taiko, s.at(b, i), 0.5, drum_pitch(chord), 124 if i == 0 else 104)
+                s.note(dr, s.at(b, i), 0.3, KICK, 110 if i == 0 else 80)
+            elif loud and (i == 6 or rng.random() < 0.4):
+                s.note(taiko, s.at(b, i), 0.3, drum_pitch(chord) + 7 if chord.has(drum_pitch(chord) + 7) else drum_pitch(chord), 78)
+        if loud:
+            for i, beat in enumerate((5, 5.5, 6, 6.5)):
+                if b % 2 == 1: s.note(toms, s.at(b, beat), 0.2, sorted(notes_in(chord.pcs, 43, 55), reverse=True)[i % 3], 96)
+            # trombones and tuba: the root on each group, the fifth at the end of the bar
+            for i in groups:
+                m = root - 12 + (7 if i == 4 and chord.has(root - 5) else 0)
+                s.note(tuba, s.at(b, i), 1.6, m, 98)
+                s.chord(bones, s.at(b, i), 1.6 if i < 4 else 2.6, voice(chord, None, 46, 60, 2), 100)
+        if b % 8 == 7:
+            for i in range(14): s.note(timp, s.at(b, i / 2), 0.1, root, 60 + i * 4)
+            s.note(dr, s.at(b + 1), 2.0, CRASH, 120)
+    pad(s, choir, h, 24, 55, 72, vel=96, swell=(70, 127), start_bar=32)
+    return finish(render(s, room=0.55, damp=0.45, level=0.5, gain=0.45))
 
 
 def passage():
@@ -502,36 +542,6 @@ def summit():
     return finish(render(s, room=0.75, damp=0.3, level=0.6, gain=0.42))
 
 
-def titan():
-    """A fallen Titan on its keep: primal and heavy, in half time - taiko and toms, low brass and basses, a choir roaring."""
-    rng = random.Random(211)
-    prog = ["Cm", "Ab", "Fm", "G", "Cm", "Eb", "Ab", "G7"]
-    h = Harmony(0, MINOR, prog * 6, 4)
-    s = Score(92, 4, 44)
-    taiko, toms, bones, tuba, cb, choir, trem, timp, dr = (
-        s.instrument(TAIKO, 120, 64, 45), s.instrument(MELODIC_TOM, 96, 70, 45), s.instrument(TROMBONE, 104, 50, 55), s.instrument(TUBA, 104, 70, 50),
-        s.instrument(CONTRABASS, 100, 64, 50), s.instrument(CHOIR, 98, 64, 65), s.instrument(TREMOLO, 84, 64, 60), s.instrument(TIMPANI, 108, 64, 55), s.drums(ORCH_KIT, 100, 50))
-    for b in range(44):
-        chord = h.at(b, 0)
-        root = 36 + (chord.root - 36) % 12
-        if b >= 2:
-            for beat, v in ((0, 127), (1.5, 100), (2.25, 92), (3, 118)): s.note(taiko, s.at(b, beat), 0.6, drum_pitch(chord), v)
-            tom_tones = sorted(notes_in(chord.pcs, 43, 55), reverse=True)
-            for i, beat in enumerate((3.25, 3.5, 3.75)): s.note(toms, s.at(b, beat), 0.2, tom_tones[i % len(tom_tones)], 90)
-        s.note(cb, s.at(b), 3.8, root - 12, 96)
-        s.note(tuba, s.at(b), 3.8, root - 12, 92)
-        if b >= 4: s.chord(bones, s.at(b), 3.8, voice(chord, None, 43, 58, 3), 100)
-        if b % 4 == 3:
-            for i in range(12): s.note(timp, s.at(b, 2 + i / 6), 0.1, root, 60 + i * 5)
-            s.note(dr, s.at(b + 1), 2.0, CRASH, 118)
-    pad(s, trem, h, 44, 48, 67, vel=70, swell=(60, 120))
-    pad(s, choir, h, 32, 55, 72, vel=88, swell=(60, 127), start_bar=12)
-    roar = melody(rng, h, 16, [[2, 2], [3, 1], [1, 1, 2], [4]], 55, 70, (0, 2), start_bar=16)
-    play(s, bones, roar, 110)
-    play(s, choir, [(b, beat, dur, m + 12) for b, beat, dur, m in roar], 100)
-    return finish(render(s, room=0.6, damp=0.45, level=0.55, gain=0.45))
-
-
 def citadel():
     """A half-kin garrison's citadel: a march of horns and trumpets, strings striding, the snare drum and the timpani."""
     rng = random.Random(221)
@@ -564,6 +574,137 @@ def citadel():
     return finish(render(s, room=0.55, damp=0.35, level=0.5))
 
 
+def arena():
+    """A passage's arena: a Greek war dance in nine (2+2+2+3) - a double reed like an aulos wailing, a lute strumming,
+    a darbuka's doum and tek and a riq's jingles driving the dancers on."""
+    rng = random.Random(231)
+    prog = ["D", "Eb", "D", "Gm", "D", "Eb", "Cm", "D"] * 8
+    h = Harmony(2, HIJAZ, prog, 9)
+    s = Score(300, 9, 64)
+    reed, lute, cb, dr = s.instrument(SHANAI, 100, 60, 45), s.instrument(NYLON, 92, 74, 40), s.instrument(CONTRABASS, 92, 64, 40), s.drums(0, 105, 30)
+    groups = (0, 2, 4, 6)
+    for b in range(64):
+        chord = h.at(b, 0)
+        for g in groups:
+            s.chord(lute, s.at(b, g), 0.5, voice(chord, None, 55, 69, 3), 92 if g == 0 else 74)
+            s.note(dr, s.at(b, g), 0.2, LO_CONGA if g in (0, 6) else MUTE_CONGA, 110 if g == 0 else 86)
+        s.note(dr, s.at(b, 7), 0.15, HI_BONGO, 84)
+        s.note(dr, s.at(b, 8), 0.15, HI_BONGO, 70)
+        for i in range(9): s.note(dr, s.at(b, i + 0.5), 0.1, TAMB, 50 + (20 if i in groups else 0))
+        s.note(cb, s.at(b, 0), 1.8, 26 + (chord.root - 26) % 12, 92)
+        s.note(cb, s.at(b, 6), 1.8, 26 + (chord.root - 26) % 12 + (7 if chord.has(33 + (chord.root - 26) % 12) else 0), 84)
+    play(s, reed, melody(rng, h, 16, [[2, 2, 2, 3], [1, 1, 2, 2, 3], [2, 2, 1, 1, 3], [4, 2, 3]], 62, 76, groups, start_bar=8, cadence=[9]), 100)
+    play(s, reed, melody(random.Random(232), h, 16, [[2, 2, 2, 3], [3, 3, 3], [2, 1, 1, 2, 3]], 64, 79, groups, start_bar=32, cadence=[9]), 104)
+    return finish(render(s, room=0.4, damp=0.5, level=0.4))
+
+
+def oracle():
+    """The Oracle's flame at the heart of the hub, in three: a single voice singing over glass, a celesta turning slowly,
+    a bowed sound and a cello - patient, listening."""
+    rng = random.Random(241)
+    prog = ["Em", "D", "C", "Em", "Am", "Em", "D", "B7"] * 5
+    h = Harmony(4, DORIAN, prog, 3)
+    s = Score(60, 3, 40)
+    voice_, cel, bowed, cello, glass_ = (s.instrument(OOHS, 96, 64, 100), s.instrument(CELESTA, 80, 40, 100), s.instrument(BOWED, 60, 64, 110),
+                                         s.instrument(CELLO, 84, 84, 90), s.instrument(CRYSTAL, 56, 96, 110))
+    pad(s, bowed, h, 38, 52, 67, vel=50, swell=(25, 85))
+    bass(s, cello, h, 38, 40, pattern=((0, 2.9, 0),), vel=72)
+    arpeggio(s, cel, h, 40, 64, 88, 1.0, [0, 2, 1], vel=52, dur=1.5)
+    play(s, voice_, melody(rng, h, 12, [[2, 1], [3], [1, 2], [1.5, 0.5, 1]], 64, 79, (0,), start_bar=8, cadence=[3]), 88)
+    play(s, voice_, melody(random.Random(242), h, 12, [[3], [2, 1], [1, 1, 1]], 66, 81, (0,), start_bar=24, cadence=[3]), 90)
+    for b in range(4, 38, 6): s.note(glass_, s.at(b), 3.0, 76 + (h.at(b, 0).root - 76) % 12, 50)
+    return finish(render(s, room=0.95, damp=0.25, level=0.85))
+
+
+def citadel_sea():
+    """The Citadel of the Tides: a march that rolls like a deck in a swell, in six - horns singing, a tuba and the
+    pizzicato strings rocking under them, snare and tambourine, the sea at the start."""
+    rng = random.Random(251)
+    prog = ["G", "C", "D", "G", "Em", "C", "D", "D7"] * 12
+    h = Harmony(7, MAJOR, prog, 6)
+    s = Score(300, 6, 96)
+    horn, tuba, pizz, strings, dr, sea = (s.instrument(HORN, 100, 50, 60), s.instrument(TUBA, 96, 70, 45), s.instrument(PIZZ, 92, 84, 50),
+                                          s.instrument(SLOW_STRINGS, 66, 64, 70), s.drums(ORCH_KIT, 92, 45), s.instrument(SEASHORE, 40, 64, 90))
+    s.note(sea, s.at(0), 24.0, 55, 70)
+    for b in range(96):
+        chord = h.at(b, 0)
+        root = 31 + (chord.root - 31) % 12
+        s.note(tuba, s.at(b, 0), 1.5, root, 94)
+        s.note(tuba, s.at(b, 3), 1.5, root + (7 if chord.has(root + 7) else 0), 82)
+        v = voice(chord, None, 55, 67, 3)
+        for beat in (2, 5): s.chord(pizz, s.at(b, beat), 0.5, v, 70)
+        if b >= 8:
+            s.note(dr, s.at(b, 0), 0.15, SNARE, 96)
+            s.note(dr, s.at(b, 3), 0.15, SNARE, 84)
+            s.note(dr, s.at(b, 5), 0.1, SNARE, 60)
+            for beat in (1, 2, 4, 5): s.note(dr, s.at(b, beat), 0.1, TAMB, 50)
+        if b % 8 == 7 and b >= 8:
+            for i in range(6): s.note(dr, s.at(b, i), 0.08, SNARE, 60 + i * 8)
+    pad(s, strings, h, 80, 55, 71, vel=52, swell=(35, 95), start_bar=16)
+    tune = melody(rng, h, 32, [[3, 3], [2, 1, 3], [3, 2, 1], [1, 1, 1, 3]], 60, 74, (0, 3), start_bar=16, cadence=[6])
+    play(s, horn, tune, 100)
+    play(s, horn, [(b + 40, beat, dur, m) for b, beat, dur, m in tune if b + 40 < 96], 104)
+    return finish(render(s, room=0.6, damp=0.35, level=0.55))
+
+
+def citadel_shade():
+    """The Citadel of the Shades: a dirge in three for the half-kin of the dead - bassoons low, basses plucked, muffled
+    drums, voices humming in the dark."""
+    rng = random.Random(261)
+    prog = ["Fm", "Db", "Bbm", "C", "Fm", "Ab", "Bbm", "C7"] * 6
+    h = Harmony(5, MINOR, prog, 3)
+    s = Score(72, 3, 48)
+    bsn, cbsn, pizz, hum_, timp, strings = (s.instrument(BASSOON, 100, 50, 70), s.instrument(CONTRABASSOON, 90, 80, 70), s.instrument(PIZZ, 96, 64, 60),
+                                            s.instrument(OOHS, 70, 64, 100), s.instrument(TIMPANI, 92, 64, 70), s.instrument(SLOW_STRINGS, 64, 64, 85))
+    for b in range(48):
+        chord = h.at(b, 0)
+        root = 29 + (chord.root - 29) % 12
+        s.note(pizz, s.at(b, 0), 0.8, root, 96)
+        s.note(timp, s.at(b, 0), 0.8, drum_pitch(chord, 36), 82)
+        if b % 2: s.note(timp, s.at(b, 2), 0.5, drum_pitch(chord, 36), 60)
+    pad(s, strings, h, 44, 48, 63, vel=52, swell=(30, 90), start_bar=2)
+    pad(s, hum_, h, 32, 53, 67, vel=54, swell=(25, 90), start_bar=12)
+    line = melody(rng, h, 16, [[2, 1], [3], [1, 1, 1], [1.5, 0.5, 1]], 48, 62, (0,), start_bar=8, cadence=[3])
+    play(s, bsn, line, 96)
+    play(s, cbsn, [(b, beat, dur, m - 12) for b, beat, dur, m in line], 80)
+    play(s, bsn, melody(random.Random(262), h, 16, [[3], [2, 1], [1, 2]], 50, 64, (0,), start_bar=28, cadence=[3]), 98)
+    return finish(render(s, room=0.8, damp=0.6, level=0.7))
+
+
+def wrath():
+    """A god's last stand: a gallop in twelve, faster than any trial - the choir chanting the theme, brass stabbing,
+    strings in triplets, taiko and toms and snare without a breath."""
+    rng = random.Random(271)
+    prog = ["Em", "C", "Am", "B", "Em", "G", "C", "B7"] * 7
+    h = Harmony(4, HARMONIC, prog, 12)
+    s = Score(480, 12, 56)
+    choir, brass, strings, low, taiko, toms, timp, dr = (s.instrument(CHOIR, 104, 64, 60), s.instrument(BRASS, 102, 50, 50), s.instrument(STRINGS, 96, 70, 45),
+                                                         s.instrument(STRINGS, 100, 58, 45), s.instrument(TAIKO, 122, 64, 40), s.instrument(MELODIC_TOM, 100, 70, 40),
+                                                         s.instrument(TIMPANI, 108, 64, 50), s.drums(ORCH_KIT, 105, 40))
+    for b in range(56):
+        chord = h.at(b, 0)
+        root = 40 + (chord.root - 40) % 12
+        tones = notes_in(chord.pcs, 64, 83)
+        for i in range(12):
+            s.note(strings, s.at(b, i), 0.12, tones[[0, 1, 2, 1, 2, 3, 2, 3, 4, 3, 2, 1][i] % len(tones)], 86 if i % 3 == 0 else 66)
+            if i % 3 == 0: s.note(low, s.at(b, i), 0.3, root, 96)
+        for i, v in ((0, 126), (3, 104), (5, 90), (6, 120), (9, 104), (11, 92)): s.note(taiko, s.at(b, i), 0.3, drum_pitch(chord), v)
+        for i in (3, 9): s.note(dr, s.at(b, i), 0.1, SNARE, 104)
+        if b % 2 == 0: s.note(dr, s.at(b, 0), 1.5, CRASH, 116)
+        v3 = voice(chord, None, 59, 74, 3)
+        for i in (0, 4, 8): s.chord(brass, s.at(b, i), 0.5, v3, 108)
+        if b % 4 == 3:
+            for i, beat in enumerate((8, 9, 10, 11)): s.note(toms, s.at(b, beat), 0.2, sorted(notes_in(chord.pcs, 43, 55), reverse=True)[i % 3], 104)
+        if b % 8 == 7:
+            for i in range(12): s.note(timp, s.at(b, i), 0.1, root, 70 + i * 4)
+    pad(s, choir, h, 56, 52, 70, vel=84, swell=(70, 120))
+    theme = melody(rng, h, 16, [[6, 6], [3, 3, 6], [4, 2, 6], [6, 3, 3]], 64, 79, (0, 6), start_bar=8, cadence=[12])
+    play(s, choir, theme, 112)
+    play(s, choir, [(b + 32, beat, dur, m) for b, beat, dur, m in theme if b + 32 < 56], 118)
+    play(s, brass, [(b + 32, beat, dur, m - 12) for b, beat, dur, m in theme if b + 32 < 56], 104)
+    return finish(render(s, room=0.5, damp=0.35, level=0.45, gain=0.42))
+
+
 def gate():
     """The Ruined Gate: the synthesised track, kept exactly as it was."""
     import score
@@ -571,5 +712,6 @@ def gate():
 
 
 TRACKS = {"hub": hub, "hermitage": hermitage, "olympus": olympus, "olympus_peak": olympus_peak, "abyss": abyss, "abyss_trench": abyss_trench,
-          "underworld": underworld, "tartarus": tartarus, "passage": passage, "trial": trial, "summit": summit, "titan": titan,
-          "citadel": citadel, "gate": gate}
+          "underworld": underworld, "tartarus": tartarus, "passage": passage, "arena": arena, "trial": trial, "summit": summit,
+          "wrath": wrath, "titan": titan, "oracle": oracle, "citadel": citadel, "citadel_sea": citadel_sea, "citadel_shade": citadel_shade,
+          "gate": gate}

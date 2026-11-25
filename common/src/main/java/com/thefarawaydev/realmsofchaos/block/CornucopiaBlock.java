@@ -293,6 +293,8 @@ public class CornucopiaBlock extends Block implements net.minecraft.world.level.
     @Override
     public void animateTick(BlockState state, Level level, BlockPos pos, RandomSource random) {
         if (!state.getValue(FORMED)) return;
+        // a whole shrine with a core in it hums at its work
+        if (state.getValue(CORE) != Core.NONE) com.thefarawaydev.realmsofchaos.fx.RocSounds.idle(level, pos, random, "idle_orb", 0.04F, 0.45F);
         // threads of light run from the tops of the columns into the horn
         if (random.nextInt(2) == 0) {
             int dx = random.nextBoolean() ? 1 : -1, dz = random.nextBoolean() ? 1 : -1;

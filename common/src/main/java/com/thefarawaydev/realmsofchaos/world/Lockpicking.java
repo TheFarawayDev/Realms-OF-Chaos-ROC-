@@ -121,7 +121,7 @@ public final class Lockpicking {
         int mark = a.mark(now);
         if (a.inGap(mark)) {
             a.set++;
-            level.playSound(null, pos, SoundEvents.IRON_TRAPDOOR_CLOSE, SoundSource.BLOCKS, 0.6F, 1.6F + 0.1F * a.set);
+            com.thefarawaydev.realmsofchaos.fx.RocSounds.at(level, pos, "lock_pin", 0.8F, 1.0F + 0.08F * a.set);
             level.sendParticles(RocParticles.GLINT.type(), pos.getX() + 0.5, pos.getY() + 0.6, pos.getZ() + 0.5, 4, 0.2, 0.1, 0.2, 0.0);
             if (a.set >= a.pins) {
                 ATTEMPTS.remove(player.getUUID());
@@ -139,7 +139,7 @@ public final class Lockpicking {
         boolean snapped = !player.isCreative() && a.random.nextFloat() < SNAP_CHANCE;
         if (snapped) {
             pick(player).shrink(1);
-            level.playSound(null, pos, SoundEvents.ITEM_BREAK.value(), SoundSource.PLAYERS, 0.9F, 1.3F);
+            com.thefarawaydev.realmsofchaos.fx.RocSounds.at(level, pos, "lock_break", 1.0F, 1.0F);
         } else {
             level.playSound(null, pos, SoundEvents.CHAIN_FALL, SoundSource.BLOCKS, 0.8F, 1.2F);
         }
@@ -154,7 +154,7 @@ public final class Lockpicking {
         var state = level.getBlockState(pos);
         if (!(state.getBlock() instanceof CacheBlock)) return;
         level.setBlock(pos, state.setValue(CacheBlock.LOCKED, false), 3);
-        level.playSound(null, pos, SoundEvents.IRON_DOOR_OPEN, SoundSource.BLOCKS, 0.8F, 1.5F);
+        com.thefarawaydev.realmsofchaos.fx.RocSounds.at(level, pos, "lock_open", 1.0F, 1.0F);
         level.sendParticles(RocParticles.GLINT.type(), pos.getX() + 0.5, pos.getY() + 0.8, pos.getZ() + 0.5, 16, 0.3, 0.3, 0.3, 0.02);
     }
 

@@ -103,6 +103,8 @@ public class FieldBlock extends Block {
     @Override
     public void animateTick(BlockState state, Level level, BlockPos pos, RandomSource random) {
         double x = pos.getX() + 0.5, y = pos.getY() + 1.05, z = pos.getZ() + 0.5;
+        com.thefarawaydev.realmsofchaos.fx.RocSounds.idle(level, pos, random, kind == com.thefarawaydev.realmsofchaos.world.Network.Kind.RELAY ? "idle_relay"
+                : kind == com.thefarawaydev.realmsofchaos.world.Network.Kind.JAMMER ? "idle_jammer" : "idle_waygate", 0.04F, 0.4F);
         switch (kind) {
             case RELAY -> {
                 // a thin beam going up, so a relay can be picked out from a distance

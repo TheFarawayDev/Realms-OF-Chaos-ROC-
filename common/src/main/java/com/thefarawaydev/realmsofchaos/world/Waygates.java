@@ -172,7 +172,7 @@ public final class Waygates {
                 int lit = (int) Math.round(channel.ticks / (double) channel.needed * 10);
                 Hud.actionBar(player, Hud.colored(Component.translatable(HUD + "channel", "▮".repeat(lit) + "▯".repeat(10 - lit)), 0xA55AD6));
             }
-            if (channel.ticks % 20 == 0) level.playSound(null, player.blockPosition(), SoundEvents.BEACON_AMBIENT, SoundSource.PLAYERS, 1.0F, 0.8F + channel.ticks / (float) channel.needed);
+            if (channel.ticks % 30 == 0) com.thefarawaydev.realmsofchaos.fx.RocSounds.by(level, player, "waygate_charge", 0.8F, 0.8F + 0.5F * channel.ticks / (float) channel.needed);
             if (channel.ticks >= channel.needed) {
                 it.remove();
                 arrive(player, level, channel);
@@ -196,7 +196,7 @@ public final class Waygates {
         }
         if (!player.isCreative()) take(player, cost(), price(server));
         level.sendParticles(com.thefarawaydev.realmsofchaos.fx.RocParticles.CHAOS_MOTE.type(), player.getX(), player.getY() + 1, player.getZ(), 60, 0.4, 0.8, 0.4, 0.1);
-        level.playSound(null, player.blockPosition(), SoundEvents.ENDERMAN_TELEPORT, SoundSource.PLAYERS, 1.0F, 0.8F);
+        com.thefarawaydev.realmsofchaos.fx.RocSounds.by(level, player, "waygate_travel", 1.0F, 1.0F);
         if (to == null) {
             Teleports.toHub(player);
             return;
@@ -205,7 +205,7 @@ public final class Waygates {
         BlockPos stand = standBy(dest, to.pos());
         Teleports.moveTo(player, dest, new Vec3(stand.getX() + 0.5, stand.getY(), stand.getZ() + 0.5), player.getYRot());
         dest.sendParticles(com.thefarawaydev.realmsofchaos.fx.RocParticles.CHAOS_MOTE.type(), stand.getX() + 0.5, stand.getY() + 1, stand.getZ() + 0.5, 60, 0.4, 0.8, 0.4, 0.1);
-        dest.playSound(null, stand, SoundEvents.ENDERMAN_TELEPORT, SoundSource.PLAYERS, 1.0F, 1.0F);
+        com.thefarawaydev.realmsofchaos.fx.RocSounds.at(dest, stand, "waygate_travel", 1.0F, 1.1F);
         Hud.actionBar(player, Hud.colored(Component.translatable(HUD + "arrived", Scanner.coords(to.pos())), 0x55FF55));
     }
 

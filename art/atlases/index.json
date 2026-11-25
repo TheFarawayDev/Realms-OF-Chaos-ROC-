@@ -5,7 +5,7 @@
       16
     ],
     "columns": 16,
-    "count": 169,
+    "count": 174,
     "source": "assets/realms_of_chaos/textures/item",
     "tiles": {
       "abyssal_pearl": [
@@ -312,376 +312,396 @@
         11,
         4
       ],
-      "music_disc_citadel": [
+      "music_disc_arena": [
         12,
+        4
+      ],
+      "music_disc_citadel": [
+        13,
+        4
+      ],
+      "music_disc_citadel_sea": [
+        14,
+        4
+      ],
+      "music_disc_citadel_shade": [
+        15,
         4
       ],
       "music_disc_gate": [
-        13,
-        4
+        0,
+        5
       ],
       "music_disc_hermitage": [
-        14,
-        4
+        1,
+        5
       ],
       "music_disc_hub": [
-        15,
-        4
+        2,
+        5
       ],
       "music_disc_olympus": [
-        0,
+        3,
         5
       ],
       "music_disc_olympus_peak": [
-        1,
+        4,
+        5
+      ],
+      "music_disc_oracle": [
+        5,
         5
       ],
       "music_disc_passage": [
-        2,
+        6,
         5
       ],
       "music_disc_summit": [
-        3,
+        7,
         5
       ],
       "music_disc_tartarus": [
-        4,
+        8,
         5
       ],
       "music_disc_titan": [
-        5,
+        9,
         5
       ],
       "music_disc_trial": [
-        6,
+        10,
         5
       ],
       "music_disc_underworld": [
-        7,
+        11,
+        5
+      ],
+      "music_disc_wrath": [
+        12,
         5
       ],
       "nemean_pelt": [
-        8,
+        13,
         5
       ],
       "nereus_weapon": [
-        9,
+        14,
         5
       ],
       "nike_weapon": [
-        10,
+        15,
         5
       ],
       "nyx_weapon": [
-        11,
-        5
+        0,
+        6
       ],
       "oneiroi_weapon": [
-        12,
-        5
+        1,
+        6
       ],
       "orb_drain": [
-        13,
-        5
+        2,
+        6
       ],
       "orb_fire": [
-        14,
-        5
+        3,
+        6
       ],
       "orb_freeze": [
-        15,
-        5
+        4,
+        6
       ],
       "orb_knockback": [
-        0,
+        5,
         6
       ],
       "orb_lightning": [
-        1,
+        6,
         6
       ],
       "orb_none": [
-        2,
+        7,
         6
       ],
       "orb_sweep": [
-        3,
+        8,
         6
       ],
       "orichalcum_boots": [
-        4,
+        9,
         6
       ],
       "orichalcum_chestplate": [
-        5,
+        10,
         6
       ],
       "orichalcum_helmet": [
-        6,
+        11,
         6
       ],
       "orichalcum_ingot": [
-        7,
+        12,
         6
       ],
       "orichalcum_leggings": [
-        8,
+        13,
         6
       ],
       "palaemon_weapon": [
-        9,
+        14,
         6
       ],
       "pan_weapon": [
-        10,
+        15,
         6
       ],
       "pegasus_weapon": [
-        11,
-        6
+        0,
+        7
       ],
       "persephone_weapon": [
-        12,
-        6
+        1,
+        7
       ],
       "phobos_weapon": [
-        13,
-        6
+        2,
+        7
       ],
       "porphyry_door": [
-        14,
-        6
+        3,
+        7
       ],
       "poseidon_weapon": [
-        15,
-        6
+        4,
+        7
       ],
       "proteus_weapon": [
-        0,
+        5,
         7
       ],
       "raw_adamantine": [
-        1,
+        6,
         7
       ],
       "raw_stygian_iron": [
-        2,
+        7,
         7
       ],
       "rhode_weapon": [
-        3,
+        8,
         7
       ],
       "sea_door": [
-        4,
+        9,
         7
       ],
       "sea_sliding_door": [
-        5,
+        10,
         7
       ],
       "seeker_hades": [
-        6,
+        11,
         7
       ],
       "seeker_poseidon": [
-        7,
+        12,
         7
       ],
       "seeker_zeus": [
-        8,
+        13,
         7
       ],
       "shade_core": [
-        9,
+        14,
         7
       ],
       "shade_door": [
-        10,
+        15,
         7
       ],
       "shade_sliding_door": [
-        11,
-        7
+        0,
+        8
       ],
       "sky_door": [
-        12,
-        7
+        1,
+        8
       ],
       "sky_sliding_door": [
-        13,
-        7
+        2,
+        8
       ],
       "storm_glass": [
-        14,
-        7
+        3,
+        8
       ],
       "stygian_iron_boots": [
-        15,
-        7
+        4,
+        8
       ],
       "stygian_iron_chestplate": [
-        0,
+        5,
         8
       ],
       "stygian_iron_helmet": [
-        1,
+        6,
         8
       ],
       "stygian_iron_ingot": [
-        2,
+        7,
         8
       ],
       "stygian_iron_leggings": [
-        3,
+        8,
         8
       ],
       "styx_treads": [
-        4,
+        9,
         8
       ],
       "talaria": [
-        5,
+        10,
         8
       ],
       "tarot_chariot": [
-        6,
+        11,
         8
       ],
       "tarot_death": [
-        7,
+        12,
         8
       ],
       "tarot_deck": [
-        8,
+        13,
         8
       ],
       "tarot_devil": [
-        9,
+        14,
         8
       ],
       "tarot_emperor": [
-        10,
+        15,
         8
       ],
       "tarot_empress": [
-        11,
-        8
+        0,
+        9
       ],
       "tarot_fool": [
-        12,
-        8
+        1,
+        9
       ],
       "tarot_hanged_man": [
-        13,
-        8
+        2,
+        9
       ],
       "tarot_hermit": [
-        14,
-        8
+        3,
+        9
       ],
       "tarot_hierophant": [
-        15,
-        8
+        4,
+        9
       ],
       "tarot_high_priestess": [
-        0,
+        5,
         9
       ],
       "tarot_judgement": [
-        1,
+        6,
         9
       ],
       "tarot_justice": [
-        2,
+        7,
         9
       ],
       "tarot_lovers": [
-        3,
+        8,
         9
       ],
       "tarot_magician": [
-        4,
-        9
-      ],
-      "tarot_moon": [
-        5,
-        9
-      ],
-      "tarot_star": [
-        6,
-        9
-      ],
-      "tarot_strength": [
-        7,
-        9
-      ],
-      "tarot_sun": [
-        8,
-        9
-      ],
-      "tarot_temperance": [
         9,
         9
       ],
-      "tarot_tower": [
+      "tarot_moon": [
         10,
         9
       ],
-      "tarot_wheel_of_fortune": [
+      "tarot_star": [
         11,
         9
       ],
-      "tarot_world": [
+      "tarot_strength": [
         12,
         9
       ],
-      "thanatos_weapon": [
+      "tarot_sun": [
         13,
         9
       ],
-      "thetis_weapon": [
+      "tarot_temperance": [
         14,
         9
       ],
-      "thunder_core": [
+      "tarot_tower": [
         15,
         9
       ],
-      "tide_core": [
+      "tarot_wheel_of_fortune": [
         0,
         10
       ],
-      "triton_weapon": [
+      "tarot_world": [
         1,
         10
       ],
-      "verdigris_door": [
+      "thanatos_weapon": [
         2,
         10
       ],
-      "voodoo_doll_binding": [
+      "thetis_weapon": [
         3,
         10
       ],
-      "voodoo_doll_embers": [
+      "thunder_core": [
         4,
         10
       ],
-      "voodoo_doll_pain": [
+      "tide_core": [
         5,
         10
       ],
-      "voodoo_doll_rot": [
+      "triton_weapon": [
         6,
         10
       ],
-      "zagreus_weapon": [
+      "verdigris_door": [
         7,
         10
       ],
-      "zeus_weapon": [
+      "voodoo_doll_binding": [
         8,
+        10
+      ],
+      "voodoo_doll_embers": [
+        9,
+        10
+      ],
+      "voodoo_doll_pain": [
+        10,
+        10
+      ],
+      "voodoo_doll_rot": [
+        11,
+        10
+      ],
+      "zagreus_weapon": [
+        12,
+        10
+      ],
+      "zeus_weapon": [
+        13,
         10
       ]
     }

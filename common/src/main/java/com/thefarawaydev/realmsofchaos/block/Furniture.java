@@ -412,6 +412,7 @@ public final class Furniture {
         @Override
         public void animateTick(BlockState state, Level level, BlockPos pos, RandomSource random) {
             if (flames.length == 0) return;
+            com.thefarawaydev.realmsofchaos.fx.RocSounds.idle(level, pos, random, "idle_fire", 0.015F, 0.2F);
             Direction f = state.getValue(FACING);
             for (double[] at : flames) {
                 // (drawn facing north: turned with the piece)

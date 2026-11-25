@@ -19,10 +19,15 @@ DISCS = {
     "underworld": ((142, 68, 173), "The Underworld", ["#.#", "###", ".#."]),
     "tartarus": ((120, 30, 40), "Tartarus", ["###", ".#.", ".#."]),
     "passage": ((200, 120, 60), "The Passages", ["###", "#.#", "###"]),
+    "arena": ((220, 140, 50), "The War Dance", ["#.#", ".#.", "###"]),
     "trial": ((214, 60, 52), "A God's Trial", ["#.#", ".#.", "#.#"]),
     "summit": ((255, 200, 60), "The King on the Summit", ["#.#", "###", "###"]),
+    "wrath": ((255, 70, 40), "The Last Stand", ["###", "###", "#.#"]),
     "titan": ((170, 90, 50), "The Fallen Titan", [".#.", "###", "#.#"]),
-    "citadel": ((150, 150, 166), "The Citadels", ["#.#", "###", "###"]),
+    "oracle": ((250, 170, 90), "The Oracle's Flame", [".#.", ".#.", "###"]),
+    "citadel": ((150, 150, 166), "The Citadel of the Sky", ["#.#", "###", "###"]),
+    "citadel_sea": ((70, 150, 170), "The Citadel of the Tides", ["#.#", "###", "#.#"]),
+    "citadel_shade": ((90, 70, 110), "The Citadel of the Shades", ["###", "#.#", "#.#"]),
     "gate": ((165, 90, 214), "The Ruined Gate", [".#.", "#.#", "#.#"]),
 }
 
@@ -70,7 +75,7 @@ def gen(assets, data, wj):
         wj(os.path.join(assets, f"items/{iid}.json"), {"model": {"type": "minecraft:model", "model": f"{MOD}:item/{iid}"}})
         wj(os.path.join(data, f"jukebox_song/{track}.json"), {"sound_event": f"{MOD}:music.{track}",
                                                               "description": {"translate": f"jukebox_song.{MOD}.{track}"},
-                                                              "length_in_seconds": round(lengths.get(track, 120.0), 1), "comparator_output": i + 1})
+                                                              "length_in_seconds": round(lengths.get(track, 120.0), 1), "comparator_output": i % 15 + 1})
 
 
 def lang():

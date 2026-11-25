@@ -30,8 +30,15 @@ public class OracleBlock extends Block {
     @Override
     protected InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hit) {
         if (level instanceof ServerLevel serverLevel && player instanceof ServerPlayer sp) {
-            serverLevel.playSound(null, pos, SoundEvents.AMETHYST_BLOCK_CHIME, SoundSource.BLOCKS, 1.5F, 0.6F);
+            com.thefarawaydev.realmsofchaos.fx.RocSounds.at(serverLevel, pos, "oracle_speak", 1.2F, 1.0F);
             if (Story.Chapter.HUB.unlocked(sp)) Story.give(sp, Story.Chapter.HUB);
+            // the first time someone comes to the flame, the Oracle gives them its music
+            var data = com.thefarawaydev.realmsofchaos.world.ProgressData.get(serverLevel.getServer());
+            if (!data.isBuilt("oracle_disc/" + sp.getUUID())) {
+                data.markBuilt("oracle_disc/" + sp.getUUID());
+                ItemStack disc = new ItemStack(com.thefarawaydev.realmsofchaos.ModContent.disc("oracle"));
+                if (!sp.getInventory().add(disc)) sp.spawnAtLocation(serverLevel, disc);
+            }
             com.thefarawaydev.realmsofchaos.ui.Screens.show(sp, com.thefarawaydev.realmsofchaos.ui.Screens.chronicle(sp));
         }
         return InteractionResult.SUCCESS;
@@ -51,7 +58,7 @@ public class OracleBlock extends Block {
             level.addParticle(com.thefarawaydev.realmsofchaos.fx.RocParticles.RUNE.type(), x + (random.nextDouble() - 0.5) * 3.0, y + 1.5, z + (random.nextDouble() - 0.5) * 3.0, 0, -0.8, 0);
         }
         if (random.nextInt(40) == 0) {
-            level.playLocalSound(pos, SoundEvents.FIRE_AMBIENT, SoundSource.BLOCKS, 0.6F, 0.5F + random.nextFloat() * 0.3F, false);
+            com.thefarawaydev.realmsofchaos.fx.RocSounds.idle(level, pos, random, "idle_oracle", 1.0F, 0.5F);
         }
     }
 }

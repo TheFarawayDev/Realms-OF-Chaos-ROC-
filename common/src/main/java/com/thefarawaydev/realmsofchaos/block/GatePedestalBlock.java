@@ -92,6 +92,7 @@ public class GatePedestalBlock extends Block implements WorldlyContainerHolder {
             level.addParticle(com.thefarawaydev.realmsofchaos.fx.RocParticles.RUNE.type(), pos.getX() + 0.5 + (random.nextDouble() - 0.5) * 2.0, pos.getY() + 1.6,
                     pos.getZ() + 0.5 + (random.nextDouble() - 0.5) * 2.0, 0, -0.5, 0);
         }
+        if (state.getValue(ZEUS) || state.getValue(POSEIDON) || state.getValue(HADES)) com.thefarawaydev.realmsofchaos.fx.RocSounds.idle(level, pos, random, "idle_pedestal", 0.03F, 0.4F);
         // a set keystone breathes light up from its cradle
         for (Line line : Line.values()) {
             if (!state.getValue(set(line)) || random.nextInt(4) != 0) continue;

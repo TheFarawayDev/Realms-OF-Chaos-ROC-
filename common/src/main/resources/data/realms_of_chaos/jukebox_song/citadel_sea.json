@@ -1,0 +1,8 @@
+{
+  "sound_event": "realms_of_chaos:music.citadel_sea",
+  "description": {
+    "translate": "jukebox_song.realms_of_chaos.citadel_sea"
+  },
+  "length_in_seconds": 117.9,
+  "comparator_output": 2
+}

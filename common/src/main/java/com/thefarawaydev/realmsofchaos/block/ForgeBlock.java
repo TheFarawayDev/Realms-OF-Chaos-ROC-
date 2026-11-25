@@ -98,7 +98,7 @@ public class ForgeBlock extends Block {
             level.addParticle(com.thefarawaydev.realmsofchaos.fx.RocParticles.EMBER.type(), x, y + 0.1, z, 0, 0, 0);
         }
         if (random.nextInt(24) == 0) {
-            level.playLocalSound(pos, SoundEvents.BLASTFURNACE_FIRE_CRACKLE, SoundSource.BLOCKS, 0.6F, 0.7F + random.nextFloat() * 0.3F, false);
+            com.thefarawaydev.realmsofchaos.fx.RocSounds.idle(level, pos, random, "idle_forge", 1.0F, 0.5F);
         }
     }
 }

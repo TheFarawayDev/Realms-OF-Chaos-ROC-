@@ -152,7 +152,7 @@ public class AltarBlock extends Block {
             level.addFreshEntity(bolt);
         }
         level.sendParticles(com.thefarawaydev.realmsofchaos.fx.RocParticles.DUST.type(), spawn.x, spawn.y + 1, spawn.z, 60, 0.6, 1.0, 0.6, 0.08);
-        level.playSound(null, boss.blockPosition(), SoundEvents.WITHER_SPAWN, SoundSource.HOSTILE, 0.8F, 1.3F);
+        com.thefarawaydev.realmsofchaos.fx.RocSounds.at(level, boss.blockPosition(), "altar_summon", 1.6F, 1.0F);
         String hud = "hud." + RealmsOfChaos.MOD_ID + ".";
         for (ServerPlayer witness : level.getEntitiesOfClass(ServerPlayer.class, fightArea(level, altar, line), Player::isAlive)) {
             announce(witness, god, hud, rematch);
@@ -206,7 +206,7 @@ public class AltarBlock extends Block {
                     pos.getY() + 1.05, pos.getZ() + 0.25 + random.nextDouble() * 0.5, 0, 0.04, 0);
         }
         if (random.nextInt(60) == 0) {
-            level.playLocalSound(pos, SoundEvents.AMETHYST_BLOCK_CHIME, SoundSource.BLOCKS, 0.5F, 0.6F + random.nextFloat() * 0.4F, false);
+            com.thefarawaydev.realmsofchaos.fx.RocSounds.idle(level, pos, random, "idle_altar", 1.0F, 0.35F);
         }
     }
 }

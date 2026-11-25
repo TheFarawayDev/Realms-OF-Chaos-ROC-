@@ -86,6 +86,7 @@ public class BrazierBlock extends Block {
     @Override
     public void animateTick(BlockState state, Level level, BlockPos pos, RandomSource random) {
         var flame = com.thefarawaydev.realmsofchaos.fx.RocParticles.flame(state.getValue(TOWER)).type();
+        com.thefarawaydev.realmsofchaos.fx.RocSounds.idle(level, pos, random, "idle_fire", 0.03F, 0.4F);
         double[] at = fire(state);
         if (state.getValue(MOUNT) == Mount.WALL) {
             Direction f = state.getValue(FACING);

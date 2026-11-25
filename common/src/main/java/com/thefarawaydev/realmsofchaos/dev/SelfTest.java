@@ -7230,6 +7230,17 @@ public final class SelfTest {
                 check("citadel".equals(com.thefarawaydev.realmsofchaos.world.MusicCues.cue(hero)), "at a citadel, the citadels' music");
                 hero.setPos((gateSite.x() + sky.x()) / 2.0 + 2000, 100, (gateSite.z() + sky.z()) / 2.0 - 2000);
                 check(com.thefarawaydev.realmsofchaos.world.MusicCues.cue(hero) == null, "out in the wilds, the game's own music");
+                Ruins.Site sea = Ruins.site(level.getSeed(), Ruins.Kind.SEA), shade = Ruins.site(level.getSeed(), Ruins.Kind.SHADE);
+                hero.setPos(sea.x() + 0.5, 100, sea.z() + 0.5);
+                check("citadel_sea".equals(com.thefarawaydev.realmsofchaos.world.MusicCues.cue(hero)), "at the Citadel of the Tides, its own march");
+                hero.setPos(shade.x() + 0.5, 100, shade.z() + 0.5);
+                check("citadel_shade".equals(com.thefarawaydev.realmsofchaos.world.MusicCues.cue(hero)), "at the Citadel of the Shades, its dirge");
+                Realm.testAlias(Level.OVERWORLD, Realm.HUB);
+                var flame = com.thefarawaydev.realmsofchaos.world.RealmBuilder.ORACLE;
+                hero.setPos(flame.getX() + 0.5, flame.getY(), flame.getZ() + 3.5);
+                check("oracle".equals(com.thefarawaydev.realmsofchaos.world.MusicCues.cue(hero)), "by the Oracle's flame, its music: " + com.thefarawaydev.realmsofchaos.world.MusicCues.cue(hero));
+                hero.setPos(flame.getX() + 40.5, flame.getY(), flame.getZ() + 40.5);
+                check("hub".equals(com.thefarawaydev.realmsofchaos.world.MusicCues.cue(hero)), "elsewhere in the hub, the hub's");
                 Realm.testAlias(Level.OVERWORLD, Realm.OLYMPUS);
                 hero.setPos(5000.5, com.thefarawaydev.realmsofchaos.world.Tower.arrival(12).y, 5000.5);
                 check("olympus_peak".equals(com.thefarawaydev.realmsofchaos.world.MusicCues.cue(hero)), "high in Zeus's tower, the storm on the peak: " + com.thefarawaydev.realmsofchaos.world.MusicCues.cue(hero));
@@ -7238,6 +7249,15 @@ public final class SelfTest {
                 com.thefarawaydev.realmsofchaos.world.MusicCues.tell(hero);
                 check(Integer.valueOf(ModContent.TRACKS.indexOf("olympus") + 1).equals(com.thefarawaydev.realmsofchaos.ui.HudFeed.value(hero, com.thefarawaydev.realmsofchaos.ui.HudFeed.MUSIC)),
                         "and the player's game is told");
+                // every effect is a sound of the mod's own
+                for (String id : com.thefarawaydev.realmsofchaos.fx.RocSounds.EFFECTS) check(ModContent.sound(id) != null, id + ": a sound");
+                // a relic's move, once cast, tells its holder when it has charged again - once
+                if (level.getPlayerByUUID(hero.getUUID()) == null) level.addNewPlayer(hero);
+                var relic = (com.thefarawaydev.realmsofchaos.item.GodWeaponItem) ModContent.WEAPONS.get("zeus").get();
+                hero.setItemInHand(InteractionHand.MAIN_HAND, new ItemStack(relic));
+                relic.resetMove(hero);
+                check(!com.thefarawaydev.realmsofchaos.item.GodWeaponItem.readyCheck(hero), "a relic never cast has nothing to announce");
+                hero.setItemInHand(InteractionHand.MAIN_HAND, ItemStack.EMPTY);
                 // the discs are found: in the passages' caches now and then
                 int found = 0, rolls = 0;
                 for (Line line : Line.values()) {

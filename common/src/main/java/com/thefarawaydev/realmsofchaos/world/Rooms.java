@@ -110,7 +110,7 @@ public final class Rooms {
         // the veils over the room's lamps open, and the light comes in
         veils(level, plan, cell, true);
         BlockPos m = plan.centre(cell);
-        level.playSound(null, m, SoundEvents.UI_TOAST_CHALLENGE_COMPLETE, SoundSource.BLOCKS, 1.0F, 1.3F);
+        com.thefarawaydev.realmsofchaos.fx.RocSounds.at(level, m, "puzzle_solved", 1.4F, 1.0F);
         level.sendParticles(com.thefarawaydev.realmsofchaos.fx.RocParticles.GLINT.type(), m.getX() + 0.5, m.getY() + 2.0, m.getZ() + 0.5, 80, 2.5, 1.0, 2.5, 0.05);
         for (ServerPlayer p : inside(level, plan, cell)) {
             Hud.title(p, Hud.colored(Component.translatable(HUD + "solved"), 0x55FF55), Hud.colored(Component.translatable(HUD + "solved.sub"), 0xCCCCCC), 5, 50, 15);

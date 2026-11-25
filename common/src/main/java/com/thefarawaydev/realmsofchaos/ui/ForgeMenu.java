@@ -184,8 +184,7 @@ public class ForgeMenu extends ButtonMenu {
         StrikeBar.Hit hit = bar.hit(now());
         hits.add(hit);
         float pitch = hit == StrikeBar.Hit.PERFECT ? 1.6F : hit == StrikeBar.Hit.GOOD ? 1.2F : 0.6F;
-        viewer.level().playSound(null, viewer.blockPosition(), hit == StrikeBar.Hit.MISS ? SoundEvents.ANVIL_LAND : SoundEvents.ANVIL_USE, SoundSource.PLAYERS, 0.7F, pitch);
-        if (hit == StrikeBar.Hit.PERFECT) viewer.level().playSound(null, viewer.blockPosition(), SoundEvents.AMETHYST_BLOCK_CHIME, SoundSource.PLAYERS, 1.5F, 1.4F);
+        com.thefarawaydev.realmsofchaos.fx.RocSounds.by(viewer.level(), viewer, hit == StrikeBar.Hit.MISS ? "forge_miss" : hit == StrikeBar.Hit.PERFECT ? "forge_perfect" : "forge_strike", 0.9F, pitch);
         effects(hit == StrikeBar.Hit.MISS ? com.thefarawaydev.realmsofchaos.fx.RocParticles.SMOKE.type() : com.thefarawaydev.realmsofchaos.fx.RocParticles.EMBER.type(), hit == StrikeBar.Hit.PERFECT ? 10 : 4);
         Hud.actionBar(viewer, Hud.colored(Component.translatable("menu." + RealmsOfChaos.MOD_ID + ".strike." + hit.name().toLowerCase() + ".hit"),
                 hit == StrikeBar.Hit.PERFECT ? 0xFFFF55 : hit == StrikeBar.Hit.GOOD ? 0x55FF55 : 0xFF5555));
@@ -219,7 +218,7 @@ public class ForgeMenu extends ButtonMenu {
         if (tempering) {
             if (finish == Finish.MASTERWORK) {
                 WeaponProgress.setTemper(weapon, WeaponProgress.temper(weapon) + 1);
-                viewer.level().playSound(null, viewer.blockPosition(), SoundEvents.PLAYER_LEVELUP, SoundSource.PLAYERS, 0.7F, 1.4F);
+                com.thefarawaydev.realmsofchaos.fx.RocSounds.by(viewer.level(), viewer, "forge_done", 0.9F, 1.0F);
                 effects(com.thefarawaydev.realmsofchaos.fx.RocParticles.GLINT.type(), 30);
                 Hud.title(viewer, Hud.colored(Component.translatable(hud + "finish.masterwork"), 0x55FFFF),
                         Hud.colored(Component.translatable(hud + "finish.tempered", WeaponProgress.temper(weapon) * 2), 0xFFFFFF), 5, 40, 15);

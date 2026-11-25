@@ -18,6 +18,8 @@ public final class MusicCues {
     public static final int GATE_REACH = 48, CITADEL_REACH = 40;
     /** From this floor of a tower up, its upper music plays. */
     public static final int UPPER_FLOOR = 11;
+    /** How near the Oracle's flame its music is heard. */
+    public static final int ORACLE_REACH = 14;
 
     private MusicCues() {}
 
@@ -26,14 +28,26 @@ public final class MusicCues {
         if (!(player.level() instanceof ServerLevel level)) return null;
         // a fight: a tower's king on its summit, any other god's trial, a fallen Titan roused on its keep
         var trials = level.getEntitiesOfClass(GodBoss.class, player.getBoundingBox().inflate(40), GodBoss::inTrial);
-        if (!trials.isEmpty()) return trials.stream().anyMatch(g -> Tower.floorOf(g.god()) >= Tower.FLOORS) ? "summit" : "trial";
+        if (!trials.isEmpty()) {
+            // a god driven to its last stand is fought to the wildest music of all
+            if (trials.stream().anyMatch(g -> g.phase() >= 3)) return "wrath";
+            return trials.stream().anyMatch(g -> Tower.floorOf(g.god()) >= Tower.FLOORS) ? "summit" : "trial";
+        }
         if (!level.getEntitiesOfClass(com.thefarawaydev.realmsofchaos.entity.Titan.class, player.getBoundingBox().inflate(48),
                 t -> t.isAlive() && t.getTarget() instanceof net.minecraft.world.entity.player.Player).isEmpty()) return "titan";
         if (Hermitage.isIn(level)) return "hermitage";
         Realm realm = Realm.of(level.dimension());
         if (realm != null) {
-            if (Passages.locate(player) != null) return "passage";
-            if (realm.line() == null) return "hub";
+            if (Passages.locate(player) != null) {
+                // a passage's guardians roused and on the player: the war dance
+                boolean fighting = !level.getEntitiesOfClass(com.thefarawaydev.realmsofchaos.entity.Sentinel.class, player.getBoundingBox().inflate(24),
+                        e -> e.isAlive() && e.getTarget() == player).isEmpty();
+                return fighting ? "arena" : "passage";
+            }
+            if (realm.line() == null) {
+                // by the Oracle's flame, its own music; elsewhere in the hub, the hub's
+                return player.distanceToSqr(net.minecraft.world.phys.Vec3.atCenterOf(RealmBuilder.ORACLE)) <= ORACLE_REACH * ORACLE_REACH ? "oracle" : "hub";
+            }
             // a tower's own music, and from its upper floors on, the music of its heights (or depths)
             boolean high = Tower.floorAt(player.getY()) >= UPPER_FLOOR;
             return switch (realm.line()) {
@@ -47,7 +61,7 @@ public final class MusicCues {
         Ruins.Site gate = Ruins.site(seed, Ruins.Kind.GATE);
         if (near(player, gate, GATE_REACH)) return "gate";
         for (Ruins.Kind kind : new Ruins.Kind[]{Ruins.Kind.SKY, Ruins.Kind.SEA, Ruins.Kind.SHADE}) {
-            if (near(player, Ruins.site(seed, kind), Citadels.HALF + CITADEL_REACH)) return "citadel";
+            if (near(player, Ruins.site(seed, kind), Citadels.HALF + CITADEL_REACH)) return kind == Ruins.Kind.SKY ? "citadel" : kind == Ruins.Kind.SEA ? "citadel_sea" : "citadel_shade";
         }
         return null;
     }

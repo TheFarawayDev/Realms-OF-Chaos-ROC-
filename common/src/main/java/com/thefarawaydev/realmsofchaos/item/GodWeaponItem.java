@@ -49,6 +49,22 @@ public class GodWeaponItem extends Item {
     public static final int EMPOWERED_STARS = 3, AWAKENED_STARS = 5, FLOURISH_HITS = 4;
     /** When each player's move with each relic is ready again, in server ticks. */
     private static final Map<String, Long> MOVE_READY = new ConcurrentHashMap<>();
+    /** The ready time each relic's move was last announced at, so it is announced once. */
+    private static final Map<String, Long> ANNOUNCED = new ConcurrentHashMap<>();
+
+    /**
+     * Each tick, for a player holding a relic: the moment its move has charged again, a shimmer tells them so (only
+     * them). @return true if it was announced just now
+     */
+    public static boolean readyCheck(net.minecraft.server.level.ServerPlayer player) {
+        if (!(player.getMainHandItem().getItem() instanceof GodWeaponItem weapon) || player.level().getServer() == null) return false;
+        String key = player.getUUID() + "/" + weapon.god.id();
+        Long ready = MOVE_READY.get(key);
+        if (ready == null || player.level().getServer().getTickCount() < ready || ready.equals(ANNOUNCED.get(key))) return false;
+        ANNOUNCED.put(key, ready);
+        com.thefarawaydev.realmsofchaos.fx.RocSounds.to(player, "relic_ready", 0.7F, 1.0F);
+        return true;
+    }
     /** Hits in a row, per player: {count, tick of the last hit}. */
     private static final Map<UUID, long[]> COMBO = new ConcurrentHashMap<>();
 
@@ -120,7 +136,7 @@ public class GodWeaponItem extends Item {
                         (float) (god.baseDamage() * god.kind().meleeScale() * WeaponProgress.multiplier(stack) * 0.5));
                 level.sendParticles(com.thefarawaydev.realmsofchaos.fx.RocParticles.STRIKE.type(), target.getX(), target.getY(0.6), target.getZ(), 18, 0.3, 0.4, 0.3, 0.4);
                 level.sendParticles(com.thefarawaydev.realmsofchaos.fx.RocParticles.STRIKE.type(), target.getX(), target.getY(0.6), target.getZ(), 12, 0.3, 0.4, 0.3, 0.3);
-                level.playSound(null, target.blockPosition(), SoundEvents.PLAYER_ATTACK_CRIT, SoundSource.PLAYERS, 1.0F, 0.7F);
+                com.thefarawaydev.realmsofchaos.fx.RocSounds.at(level, target.blockPosition(), "relic_flourish", 1.0F, 1.0F);
                 com.thefarawaydev.realmsofchaos.world.Fx.impact(level, target.position(), 3);
                 if (player instanceof ServerPlayer sp) {
                     Hud.actionBar(sp, Hud.colored(Component.translatable("hud." + RealmsOfChaos.MOD_ID + ".flourish"), god.line().color()));
@@ -174,7 +190,7 @@ public class GodWeaponItem extends Item {
             god.applyTargetEffect(e);
         }
         god.applySelfEffect(player);
-        level.playSound(null, player.blockPosition(), SoundEvents.ILLUSIONER_PREPARE_MIRROR, SoundSource.PLAYERS, 1.0F, 1.3F);
+        com.thefarawaydev.realmsofchaos.fx.RocSounds.by(level, player, com.thefarawaydev.realmsofchaos.fx.RocSounds.of("relic_cast", god.line()), 0.9F, 1.1F);
     }
 
     /** Damage of this stack's signature move: level and stars count, and three stars empower it. */
@@ -242,7 +258,8 @@ public class GodWeaponItem extends Item {
         MOVE_READY.put(player.getUUID() + "/" + god.id(), now + Math.round(cooldown * (player instanceof ServerPlayer skilled ? com.thefarawaydev.realmsofchaos.world.Skills.moveScale(skilled) : 1.0)));
         // melee kinds have no shots to time, so the recharge can show on the item itself
         if (!god.kind().ranged()) player.getCooldowns().addCooldown(stack, cooldown);
-        level.playSound(null, player.blockPosition(), SoundEvents.BEACON_ACTIVATE, SoundSource.PLAYERS, 0.7F, 1.6F);
+        // the relic gathers its power and lets it go - lightning, the sea, or the dead, by its tower
+        com.thefarawaydev.realmsofchaos.fx.RocSounds.by(level, player, com.thefarawaydev.realmsofchaos.fx.RocSounds.of("relic_cast", god.line()), 1.0F, 1.0F);
         if (shown != null) Hud.actionBar(shown, Hud.colored(Component.translatable(hud + "cast", god.moveName()), god.line().color()));
         if (WeaponProgress.stars(stack) >= AWAKENED_STARS) {
             // an awakened relic answers itself: the move comes again, softer, a moment later
@@ -268,7 +285,7 @@ public class GodWeaponItem extends Item {
         if (gained > 0) {
             Hud.actionBar(player, Hud.colored(Component.translatable("hud." + RealmsOfChaos.MOD_ID + ".levelup",
                     held.getHoverName(), WeaponProgress.level(held)), weapon.god().line().color()));
-            player.level().playSound(null, player.blockPosition(), SoundEvents.PLAYER_LEVELUP, SoundSource.PLAYERS, 0.8F, 1.2F);
+            com.thefarawaydev.realmsofchaos.fx.RocSounds.by(player.level(), player, "relic_level", 0.9F, 1.0F);
         }
     }
 

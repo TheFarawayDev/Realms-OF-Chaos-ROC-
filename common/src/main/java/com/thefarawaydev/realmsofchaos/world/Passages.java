@@ -2534,6 +2534,8 @@ public final class Passages {
             })));
         }
         if (random.nextFloat() < DISC_CHANCE) loot.add(new ItemStack(ModContent.disc("passage")));
+        // the war dance is won in the arenas
+        if (arena && random.nextFloat() < 0.2F) loot.add(new ItemStack(ModContent.disc("arena")));
         if (plan.line == Line.HADES && random.nextFloat() < 0.5F) {
             Tarot card = Tarot.values()[random.nextInt(Tarot.values().length)];
             if (card != Tarot.DEVIL) loot.add(new ItemStack(ModContent.tarotItem(card)));
@@ -2601,8 +2603,7 @@ public final class Passages {
         for (ItemStack stack : loot) {
             if (!player.getInventory().add(stack) && !stack.isEmpty()) player.drop(stack, false, net.minecraft.util.Prediction.SERVER_ONLY);
         }
-        level.playSound(null, pos, SoundEvents.CHEST_OPEN, SoundSource.BLOCKS, 0.8F, 1.0F);
-        level.playSound(null, pos, SoundEvents.PLAYER_LEVELUP, SoundSource.BLOCKS, 0.4F, 1.6F);
+        com.thefarawaydev.realmsofchaos.fx.RocSounds.at(level, pos, "cache_open", 1.0F, 1.0F);
         level.sendParticles(com.thefarawaydev.realmsofchaos.fx.RocParticles.GLINT.type(), pos.getX() + 0.5, pos.getY() + 1.2, pos.getZ() + 0.5, 16, 0.4, 0.3, 0.4, 0.0);
         Hud.above(player, pos, Component.translatable(hud + "loot", stacks), 0xF5B82E);
         return true;
@@ -2770,8 +2771,7 @@ public final class Passages {
             level.sendParticles(com.thefarawaydev.realmsofchaos.fx.RocParticles.GLINT.type(), g.getX() + 0.5, g.getY() + 0.5, g.getZ() + 0.5, 4, 0.3, 0.3, 0.3, 0.03);
         }
         BlockPos middle = plan.gateOffset(0, 2);
-        level.playSound(null, middle, SoundEvents.END_PORTAL_SPAWN, SoundSource.BLOCKS, 0.6F, 1.4F);
-        level.playSound(null, middle, SoundEvents.GLASS_BREAK, SoundSource.BLOCKS, 1.2F, 0.5F);
+        com.thefarawaydev.realmsofchaos.fx.RocSounds.at(level, middle, "seal_break", 1.4F, 1.0F);
     }
 
     /** A level sealed again has its gate shut again. */

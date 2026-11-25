@@ -1,0 +1,8 @@
+{
+  "sound_event": "realms_of_chaos:music.arena",
+  "description": {
+    "translate": "jukebox_song.realms_of_chaos.arena"
+  },
+  "length_in_seconds": 116.7,
+  "comparator_output": 10
+}

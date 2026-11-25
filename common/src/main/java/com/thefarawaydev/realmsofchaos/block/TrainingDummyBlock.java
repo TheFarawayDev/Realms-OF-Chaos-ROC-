@@ -158,7 +158,7 @@ public class TrainingDummyBlock extends Block {
         if (riposte) worth *= 1.5F;
         worth *= 1.0F + 0.04F * momentum;
         float pitch = 0.7F + Math.min(0.8F, worth / 12.0F);
-        level.playSound(null, pos, SoundEvents.ARMOR_STAND_HIT, SoundSource.BLOCKS, 1.0F, pitch);
+        com.thefarawaydev.realmsofchaos.fx.RocSounds.at(level, pos, "dummy_hit", 1.0F, pitch);
         level.sendParticles(new BlockParticleOption(ParticleTypes.BLOCK, Blocks.HAY_BLOCK.defaultBlockState()), pos.getX() + 0.5, pos.getY() + 0.7, pos.getZ() + 0.5,
                 6 + (int) worth, 0.25, 0.25, 0.25, 0.05);
         level.sendParticles(riposte ? com.thefarawaydev.realmsofchaos.fx.RocParticles.STRIKE.type() : com.thefarawaydev.realmsofchaos.fx.RocParticles.STRIKE.type(), pos.getX() + 0.5, pos.getY() + 0.8, pos.getZ() + 0.5, 4 + (int) combo[1], 0.2, 0.2, 0.2, 0.1);

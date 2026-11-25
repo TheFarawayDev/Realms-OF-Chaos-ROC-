@@ -1749,6 +1749,7 @@ public class GodBoss extends Monster implements RangedAttackMob {
             if (god.id().equals("hades")) loot.add(new ItemStack(ModContent.TAROT_DECK.get()));
             // the trial's music: always from a tower's king, now and then from any other god
             if (Tower.floorOf(god) >= Tower.FLOORS) loot.add(new ItemStack(ModContent.disc("summit")));
+            else if (Tower.floorOf(god) >= 11) loot.add(new ItemStack(ModContent.disc("wrath")));
             else if (level.getRandom().nextFloat() < 0.15F || Tower.floorOf(god) % 5 == 0) loot.add(new ItemStack(ModContent.disc("trial")));
         }
         for (ItemStack stack : loot) {

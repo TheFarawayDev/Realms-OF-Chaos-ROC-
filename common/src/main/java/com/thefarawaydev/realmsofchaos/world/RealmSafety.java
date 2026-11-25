@@ -52,6 +52,7 @@ public final class RealmSafety {
         com.thefarawaydev.realmsofchaos.ui.Sidebar.tick(server);
         com.thefarawaydev.realmsofchaos.ui.Cards.tick(server);
         com.thefarawaydev.realmsofchaos.item.TarotEffects.tick(server);
+        for (ServerPlayer player : server.getPlayerList().getPlayers()) com.thefarawaydev.realmsofchaos.item.GodWeaponItem.readyCheck(player);
         if (++ticker % 20 != 0) return;
         for (ServerPlayer player : server.getPlayerList().getPlayers()) {
             Wards.service(player);

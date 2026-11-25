@@ -1,0 +1,8 @@
+{
+  "sound_event": "realms_of_chaos:music.wrath",
+  "description": {
+    "translate": "jukebox_song.realms_of_chaos.wrath"
+  },
+  "length_in_seconds": 86.5,
+  "comparator_output": 13
+}

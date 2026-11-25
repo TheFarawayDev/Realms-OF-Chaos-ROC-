@@ -71,6 +71,14 @@
       }
     ]
   },
+  "music.arena": {
+    "sounds": [
+      {
+        "name": "realms_of_chaos:music/arena",
+        "stream": true
+      }
+    ]
+  },
   "music.trial": {
     "sounds": [
       {
@@ -87,6 +95,14 @@
       }
     ]
   },
+  "music.wrath": {
+    "sounds": [
+      {
+        "name": "realms_of_chaos:music/wrath",
+        "stream": true
+      }
+    ]
+  },
   "music.titan": {
     "sounds": [
       {
@@ -95,10 +111,34 @@
       }
     ]
   },
+  "music.oracle": {
+    "sounds": [
+      {
+        "name": "realms_of_chaos:music/oracle",
+        "stream": true
+      }
+    ]
+  },
   "music.citadel": {
     "sounds": [
       {
         "name": "realms_of_chaos:music/citadel",
+        "stream": true
+      }
+    ]
+  },
+  "music.citadel_sea": {
+    "sounds": [
+      {
+        "name": "realms_of_chaos:music/citadel_sea",
+        "stream": true
+      }
+    ]
+  },
+  "music.citadel_shade": {
+    "sounds": [
+      {
+        "name": "realms_of_chaos:music/citadel_shade",
         "stream": true
       }
     ]
@@ -158,5 +198,245 @@
       "realms_of_chaos:fx/ui_click"
     ],
     "subtitle": "subtitles.realms_of_chaos.ui_click"
+  },
+  "relic_cast_zeus": {
+    "sounds": [
+      "realms_of_chaos:fx/relic_cast_zeus"
+    ],
+    "subtitle": "subtitles.realms_of_chaos.relic_cast_zeus"
+  },
+  "relic_cast_poseidon": {
+    "sounds": [
+      "realms_of_chaos:fx/relic_cast_poseidon"
+    ],
+    "subtitle": "subtitles.realms_of_chaos.relic_cast_poseidon"
+  },
+  "relic_cast_hades": {
+    "sounds": [
+      "realms_of_chaos:fx/relic_cast_hades"
+    ],
+    "subtitle": "subtitles.realms_of_chaos.relic_cast_hades"
+  },
+  "relic_shot_zeus": {
+    "sounds": [
+      "realms_of_chaos:fx/relic_shot_zeus"
+    ],
+    "subtitle": "subtitles.realms_of_chaos.relic_shot_zeus"
+  },
+  "relic_shot_poseidon": {
+    "sounds": [
+      "realms_of_chaos:fx/relic_shot_poseidon"
+    ],
+    "subtitle": "subtitles.realms_of_chaos.relic_shot_poseidon"
+  },
+  "relic_shot_hades": {
+    "sounds": [
+      "realms_of_chaos:fx/relic_shot_hades"
+    ],
+    "subtitle": "subtitles.realms_of_chaos.relic_shot_hades"
+  },
+  "relic_ready": {
+    "sounds": [
+      "realms_of_chaos:fx/relic_ready"
+    ],
+    "subtitle": "subtitles.realms_of_chaos.relic_ready"
+  },
+  "relic_flourish": {
+    "sounds": [
+      "realms_of_chaos:fx/relic_flourish"
+    ],
+    "subtitle": "subtitles.realms_of_chaos.relic_flourish"
+  },
+  "relic_level": {
+    "sounds": [
+      "realms_of_chaos:fx/relic_level"
+    ],
+    "subtitle": "subtitles.realms_of_chaos.relic_level"
+  },
+  "parry": {
+    "sounds": [
+      "realms_of_chaos:fx/parry"
+    ],
+    "subtitle": "subtitles.realms_of_chaos.parry"
+  },
+  "riposte": {
+    "sounds": [
+      "realms_of_chaos:fx/riposte"
+    ],
+    "subtitle": "subtitles.realms_of_chaos.riposte"
+  },
+  "dodge": {
+    "sounds": [
+      "realms_of_chaos:fx/dodge"
+    ],
+    "subtitle": "subtitles.realms_of_chaos.dodge"
+  },
+  "sliding_door": {
+    "sounds": [
+      "realms_of_chaos:fx/sliding_door"
+    ],
+    "subtitle": "subtitles.realms_of_chaos.sliding_door"
+  },
+  "forge_strike": {
+    "sounds": [
+      "realms_of_chaos:fx/forge_strike"
+    ],
+    "subtitle": "subtitles.realms_of_chaos.forge_strike"
+  },
+  "forge_perfect": {
+    "sounds": [
+      "realms_of_chaos:fx/forge_perfect"
+    ],
+    "subtitle": "subtitles.realms_of_chaos.forge_perfect"
+  },
+  "forge_miss": {
+    "sounds": [
+      "realms_of_chaos:fx/forge_miss"
+    ],
+    "subtitle": "subtitles.realms_of_chaos.forge_miss"
+  },
+  "forge_done": {
+    "sounds": [
+      "realms_of_chaos:fx/forge_done"
+    ],
+    "subtitle": "subtitles.realms_of_chaos.forge_done"
+  },
+  "seal_strike": {
+    "sounds": [
+      "realms_of_chaos:fx/seal_strike"
+    ],
+    "subtitle": "subtitles.realms_of_chaos.seal_strike"
+  },
+  "seal_break": {
+    "sounds": [
+      "realms_of_chaos:fx/seal_break"
+    ],
+    "subtitle": "subtitles.realms_of_chaos.seal_break"
+  },
+  "altar_summon": {
+    "sounds": [
+      "realms_of_chaos:fx/altar_summon"
+    ],
+    "subtitle": "subtitles.realms_of_chaos.altar_summon"
+  },
+  "cache_open": {
+    "sounds": [
+      "realms_of_chaos:fx/cache_open"
+    ],
+    "subtitle": "subtitles.realms_of_chaos.cache_open"
+  },
+  "lock_pin": {
+    "sounds": [
+      "realms_of_chaos:fx/lock_pin"
+    ],
+    "subtitle": "subtitles.realms_of_chaos.lock_pin"
+  },
+  "lock_break": {
+    "sounds": [
+      "realms_of_chaos:fx/lock_break"
+    ],
+    "subtitle": "subtitles.realms_of_chaos.lock_break"
+  },
+  "lock_open": {
+    "sounds": [
+      "realms_of_chaos:fx/lock_open"
+    ],
+    "subtitle": "subtitles.realms_of_chaos.lock_open"
+  },
+  "waygate_charge": {
+    "sounds": [
+      "realms_of_chaos:fx/waygate_charge"
+    ],
+    "subtitle": "subtitles.realms_of_chaos.waygate_charge"
+  },
+  "waygate_travel": {
+    "sounds": [
+      "realms_of_chaos:fx/waygate_travel"
+    ],
+    "subtitle": "subtitles.realms_of_chaos.waygate_travel"
+  },
+  "oracle_speak": {
+    "sounds": [
+      "realms_of_chaos:fx/oracle_speak"
+    ],
+    "subtitle": "subtitles.realms_of_chaos.oracle_speak"
+  },
+  "war_drum": {
+    "sounds": [
+      "realms_of_chaos:fx/war_drum"
+    ],
+    "subtitle": "subtitles.realms_of_chaos.war_drum"
+  },
+  "dummy_hit": {
+    "sounds": [
+      "realms_of_chaos:fx/dummy_hit"
+    ],
+    "subtitle": "subtitles.realms_of_chaos.dummy_hit"
+  },
+  "puzzle_solved": {
+    "sounds": [
+      "realms_of_chaos:fx/puzzle_solved"
+    ],
+    "subtitle": "subtitles.realms_of_chaos.puzzle_solved"
+  },
+  "idle_orb": {
+    "sounds": [
+      "realms_of_chaos:fx/idle_orb"
+    ],
+    "subtitle": "subtitles.realms_of_chaos.idle_orb"
+  },
+  "idle_forge": {
+    "sounds": [
+      "realms_of_chaos:fx/idle_forge"
+    ],
+    "subtitle": "subtitles.realms_of_chaos.idle_forge"
+  },
+  "idle_gate": {
+    "sounds": [
+      "realms_of_chaos:fx/idle_gate"
+    ],
+    "subtitle": "subtitles.realms_of_chaos.idle_gate"
+  },
+  "idle_relay": {
+    "sounds": [
+      "realms_of_chaos:fx/idle_relay"
+    ],
+    "subtitle": "subtitles.realms_of_chaos.idle_relay"
+  },
+  "idle_jammer": {
+    "sounds": [
+      "realms_of_chaos:fx/idle_jammer"
+    ],
+    "subtitle": "subtitles.realms_of_chaos.idle_jammer"
+  },
+  "idle_waygate": {
+    "sounds": [
+      "realms_of_chaos:fx/idle_waygate"
+    ],
+    "subtitle": "subtitles.realms_of_chaos.idle_waygate"
+  },
+  "idle_fire": {
+    "sounds": [
+      "realms_of_chaos:fx/idle_fire"
+    ],
+    "subtitle": "subtitles.realms_of_chaos.idle_fire"
+  },
+  "idle_oracle": {
+    "sounds": [
+      "realms_of_chaos:fx/idle_oracle"
+    ],
+    "subtitle": "subtitles.realms_of_chaos.idle_oracle"
+  },
+  "idle_altar": {
+    "sounds": [
+      "realms_of_chaos:fx/idle_altar"
+    ],
+    "subtitle": "subtitles.realms_of_chaos.idle_altar"
+  },
+  "idle_pedestal": {
+    "sounds": [
+      "realms_of_chaos:fx/idle_pedestal"
+    ],
+    "subtitle": "subtitles.realms_of_chaos.idle_pedestal"
   }
 }

@@ -314,10 +314,10 @@ def sfx():
 
 # every track, in order: the hub's is composed here, the rest in score.py
 TRACK_IDS = ["hub", "hermitage", "olympus", "olympus_peak", "abyss", "abyss_trench", "underworld", "tartarus", "passage",
-             "trial", "summit", "titan", "citadel", "gate"]
+             "arena", "trial", "summit", "wrath", "titan", "oracle", "citadel", "citadel_sea", "citadel_shade", "gate"]
 EFFECT_IDS = ["orb_make", "orb_core", "orb_pattern", "orb_ichor", "shrine_awaken", "keystone_set", "gate_awaken", "ui_click"]
 # bump to write every track and effect again
-SCORE_VERSION = 5
+SCORE_VERSION = 6
 
 
 def render(name):
@@ -350,6 +350,15 @@ def gen(assets, wj, only_missing=True):
                 effects = compose.effects()
             write_ogg(effects[name], path, quality=5)
         sounds[name] = {"sounds": [f"realms_of_chaos:fx/{name}"], "subtitle": f"subtitles.realms_of_chaos.{name}"}
+    # and the second set of effects - the relics, a fight, the blocks, idle machines (sfx_more.py) - made once
+    import sfx_more
+    more = None
+    for name in sfx_more.SUBTITLES:
+        path = os.path.join(base, "fx", f"{name}.ogg")
+        if not os.path.exists(path):
+            more = more or sfx_more.effects()
+            write_ogg(more[name], path, quality=5)
+        sounds[name] = {"sounds": [f"realms_of_chaos:fx/{name}"], "subtitle": f"subtitles.realms_of_chaos.{name}"}
     wj(os.path.join(assets, "sounds.json"), sounds)
     with open(stamp, "w") as f:
         f.write(str(SCORE_VERSION))
@@ -366,6 +375,12 @@ def lengths(assets):
     return out
 
 
+def _more_subtitles():
+    import sfx_more
+    return sfx_more.SUBTITLES
+
+
 SUBTITLES = {"orb_make": "The Orb of Plenty makes something", "orb_core": "A core is set in the orb", "orb_pattern": "The orb takes a pattern",
              "orb_ichor": "Ichor is poured", "shrine_awaken": "A shrine wakes", "keystone_set": "A keystone is set", "gate_awaken": "The gate wakes",
              "ui_click": "Click"}
+SUBTITLES.update(_more_subtitles())

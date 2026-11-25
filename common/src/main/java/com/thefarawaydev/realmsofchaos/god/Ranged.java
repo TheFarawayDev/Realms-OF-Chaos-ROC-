@@ -62,7 +62,8 @@ public final class Ranged {
             projectile.shoot(dx, dy + lift, dz, speed * 0.85F, yawOffset == 0.0F ? 4.0F : 1.0F);
         }
         level.addFreshEntity(projectile);
-        level.playSound(null, shooter.blockPosition(), sound, SoundSource.NEUTRAL, 1.0F, 1.1F);
+        level.playSound(null, shooter.blockPosition(), sound, SoundSource.NEUTRAL, 0.6F, 1.1F);
+        com.thefarawaydev.realmsofchaos.fx.RocSounds.by(level, shooter, com.thefarawaydev.realmsofchaos.fx.RocSounds.of("relic_shot", god.line()), 0.8F, 0.9F + level.getRandom().nextFloat() * 0.2F);
         return projectile;
     }
 }

@@ -556,7 +556,7 @@ public final class Citadels {
         loot.add(new ItemStack(Items.GOLDEN_APPLE, 2));
         loot.add(new ItemStack(Items.DIAMOND, 2 + random.nextInt(3)));
         loot.add(new ItemStack(ModContent.materialItem(line, 1), 6 + random.nextInt(5)));
-        loot.add(new ItemStack(ModContent.disc("citadel")));
+        loot.add(new ItemStack(ModContent.disc(line == Line.ZEUS ? "citadel" : line == Line.POSEIDON ? "citadel_sea" : "citadel_shade")));
         return loot;
     }
 

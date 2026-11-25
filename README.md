@@ -16,7 +16,7 @@ The current build is an **Alpha**.
 
 ## What's in 1.2.0
 
-* **Fourteen tracks, composed around their harmony and played by real instruments.** The score was written
+* **Nineteen tracks, composed around their harmony and played by real instruments.** The score was written
   again (`tools/harmony.py`) so that everything sounding at once belongs together: each track follows a chord
   progression in one key; its pads and sustained parts are voice-led from chord to chord and stop at each change
   rather than ringing into the next; its bass keeps to the chord's root; its melodies are built in phrases - a motif,
@@ -35,28 +35,34 @@ The current build is an **Alpha**.
   | The Hermitage | your Hermitage island | pan flute, harp, cello, soft strings, birdsong | F major, 66 bpm |
   | Olympus | floors 1-10 of Zeus's tower | stately waltz: pizzicato strings, harp, flute and oboe in thirds, horns, glockenspiel | G lydian, 96 bpm, 3/4 |
   | The Storm on the Peak | floors 11-15 of Zeus's tower | tremolo strings, driving cellos, horns and brass, choir, timpani thunder | E minor, 116 bpm |
-  | The Abyss | floors 1-10 of Poseidon's tower | harp in waves, strings, voices, clarinet, celesta, the sea | B minor, rolling 6/8 |
+  | The Abyss | floors 1-10 of Poseidon's tower | vibraphone in waves, strings, voices, clarinet, celesta, the sea | B minor, rolling 6/8 |
   | The Trench | floors 11-15 of Poseidon's tower | low strings and basses, English horn, voices, a bowed shimmer | F# minor, 52 bpm |
   | The Underworld | floors 1-10 of Hades's tower | trombone and tuba chorale, low strings, choir, cello, low harp, tolling bell, a heartbeat | C minor, 54 bpm |
-  | Tartarus | floors 11-15 of Hades's tower | low brass, tremolo strings, choir, pounding taiko, timpani rolls | C# minor, 84 bpm |
+  | Tartarus | floors 11-15 of Hades's tower | a rite: low organ, a chant of men's voices in thirds, frame drums, a bowed shimmer | C# minor, 76 bpm, 5/4 |
   | The Passages | any passage level | pizzicato strings tiptoeing, harp, clarinet and bassoon, celesta, a ticking clock | D minor, 100 bpm |
+  | The War Dance | fighting a passage's guardians | a Greek war dance: a double reed like an aulos, a lute strumming, darbuka and riq | D hijaz, 9/8 (2+2+2+3) |
   | A God's Trial | any god's trial | full orchestra: spiccato strings, driving low strings, a heroic horn theme doubled by brass at the climax, choir, taiko, timpani rolls, snare, crashes, orchestra hits; built in sections with a breakdown | D minor, 148 bpm |
+  | The Last Stand | a god driven to its wrath phase | a gallop in 12/8: the choir chanting the theme, brass stabs, strings in triplets, taiko, toms, snare | E harmonic minor |
   | The King on the Summit | a tower king's trial | a great choir over the full orchestra, the horn chant, tubular bells, the drums of war | B minor, 132 bpm |
-  | The Fallen Titan | fighting a roused Titan | taiko and toms, low brass and basses, tremolo strings, a roaring choir | C minor, 92 bpm |
-  | The Citadels | near the three citadels | a march: trumpet theme with horns in thirds, striding strings, tuba, snare and timpani | Bb major, 104 bpm |
+  | The Fallen Titan | fighting a roused Titan | a drum ensemble - taiko, toms, the great bass drum - with trombones and tuba hammering, a choir at the end | C minor, 7/8 (2+2+3) |
+  | The Oracle's Flame | by the Oracle in the hub | a single voice over glass, a celesta turning, a bowed sound and a cello | E dorian, 60 bpm, 3/4 |
+  | The Citadel of the Sky | near the Citadel of the Sky | a march: trumpet theme with horns in thirds, striding strings, tuba, snare and timpani | Bb major, 104 bpm |
+  | The Citadel of the Tides | near the Citadel of the Tides | a march that rolls like a deck: horns, tuba and pizzicato rocking, snare and tambourine, the sea | G major, 6/8 |
+  | The Citadel of the Shades | near the Citadel of the Shades | a dirge: bassoons and contrabassoon, plucked basses, muffled timpani, humming voices | F minor, 72 bpm, 3/4 |
   | The Ruined Gate | at the Ruined Gate | choir, glass harmonics, deep swells (synthesised) | Ab lydian, no beat |
 
   Each is about two minutes, with about forty seconds of quiet between plays; anywhere else the game's own music
   plays. (Making them again needs `fluidsynth` and the `fluid-soundfont-gm` package; the made files are in the repo.)
-* **A music disc for every track, to be found.** Fourteen discs (TheFarawayDev - The Hub, Olympus, ...), each its own
+* **A music disc for every track, to be found.** Nineteen discs (TheFarawayDev - The Hub, Olympus, ...), each its own
   label colour and mark, playable in any jukebox (each gives a different comparator signal) (`art/renders/music-disc-jukebox.png`):
-  * The Ruined Gate's disc is in the gate's chest; the Citadels' is with each keystone, and the Hub's among each
-    citadel's stores.
+  * The Ruined Gate's disc is in the gate's chest; each citadel's own is with its keystone, and the Hub's among each
+    citadel's stores. The Oracle gives you its own the first time you come to its flame.
+  * The War Dance is in an arena's cache one time in five.
   * The Hermitage's is in the chest of each new Hermitage island.
   * A passage cache holds its tower's disc one time in fourteen (on the upper floors, the Storm on the Peak, the
     Trench or Tartarus), and the Passages' disc as often.
-  * The King on the Summit is dropped by a tower's king the first time it falls; A God's Trial by the gods of floors
-    5 and 10 the first time, and now and then (15%) by any other god the first time.
+  * The King on the Summit is dropped by a tower's king the first time it falls; The Last Stand by the gods of floors
+    11-14 the first time; A God's Trial by the gods of floors 5 and 10 the first time, and now and then (15%) by any other god the first time.
   * The Fallen Titan drops from a Titan the first time it falls to you.
 * **Sound effects with weight, from real instruments.** The gate waking draws the air in with a reversed cymbal
   and a timpani roll, then lands on a timpani blow, a taiko, an orchestra hit and a crash, the brass section and a
@@ -65,6 +71,24 @@ The current build is an **Alpha**.
   horns answering and the timpani under them; the orb blooms with a celesta and glockenspiel run, a harp glissando and
   voices; a core rises through a sweep into a taiko and a brass swell; a pattern rings crystal and vibraphone out of a
   short reversed cymbal; ichor falls down a kalimba with voices and bubbles; the screens click with a woodblock.
+* **Forty more sound effects.** (`tools/sfx_more.py`: metal partials, filtered noise and hums, with soundfont
+  horns, choirs and harps where an effect wants a note.)
+  * *Relics:* casting a move (or a relic's area release) gathers a breath of charge and lets the power go - crackling
+    lightning and a thunderclap for Zeus's relics, a swell and a breaking wave for Poseidon's, hollow voices sliding
+    down for Hades's; each tower's shots have their own (a zap, a jet of water, a dark streak); the moment a move has
+    charged again, a celesta shimmer tells its holder (only them); a chain's fourth blow lands with a heavy ring; a
+    relic rising a level is answered by horns and a choir.
+  * *A fight:* a parry rings like struck steel; a riposte is a sharp slash and a blow; a dodge is a rush of air.
+  * *Blocks:* sliding stone doors grind and settle; the forge's hammer rings (brighter on a perfect strike, dull on a
+    miss) and a finished forging is a brass chord and a bell; a passage seal is struck with a stony crack and its
+    breaking is a shattering with a choir; calling a god at an altar is a war horn, trombones, a choir and a timpani
+    roll; a cache creaks open on a celesta's twinkle; lockpicking has a pin's click, a pick's snap and a lock's clunk;
+    a waygate gathers with a rising hum and you pass through on a rush and voices; the Oracle answers with voices and a
+    breath; war drums boom; training dummies thump; a solved puzzle is a harp and a choir.
+  * *Idle:* machines and fires sound now and then on their own - the Orb of Plenty hums at its work, the Chaos Forge
+    roars and crackles, an open gate thrums, relay cores hum, signal jammers buzz and spark, waygate obelisks hum,
+    braziers, lamps and candelabra crackle, the Oracle's flame breathes, altars murmur, a pedestal with keystones set
+    glows with a soft tone. (Played by each player's own game, quietly, so they cost the server nothing.)
 * **Seven creative tabs.** The one long tab is now: *Realms of Chaos* (the Codex, compass, keystones, seekers,
   cores, ichor, the orbs and their shrine, waygates and relays), *Chaos: Relics & Arms*, *Chaos: Materials*, *Chaos: Building Blocks*
   (stone, tile, glass, stairs, slabs and doors), *Chaos: Furniture*, *Chaos: Curios & Music* (discs, tarot, dolls) and *Chaos: Realm

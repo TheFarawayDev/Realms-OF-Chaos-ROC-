@@ -76,6 +76,8 @@ public class GateBlock extends Block {
     /** Client-side ambience: motes drift out of the gate in its own colour. */
     @Override
     public void animateTick(BlockState state, Level level, BlockPos pos, RandomSource random) {
+        // (a gate is many blocks: each hums only now and then, so together they thrum)
+        com.thefarawaydev.realmsofchaos.fx.RocSounds.idle(level, pos, random, "idle_gate", 0.012F, 0.45F);
         ParticleOptions particle = switch (kind) {
             case HUB -> com.thefarawaydev.realmsofchaos.fx.RocParticles.CHAOS_MOTE.type();
             case ZEUS -> com.thefarawaydev.realmsofchaos.fx.RocParticles.STORM_SPARK.type();

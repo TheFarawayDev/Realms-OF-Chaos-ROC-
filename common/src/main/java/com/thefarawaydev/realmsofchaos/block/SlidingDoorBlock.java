@@ -215,7 +215,7 @@ public class SlidingDoorBlock extends Block {
     /** Opens or shuts the door all the way, a block every few ticks, stopping early if something is in its way. */
     public static void run(ServerLevel level, BlockPos pos, boolean open) {
         if (!(level.getBlockState(pos).getBlock() instanceof SlidingDoorBlock)) return;
-        level.playSound(null, pos, SoundEvents.PISTON_EXTEND, SoundSource.BLOCKS, 0.6F, 0.5F);
+        com.thefarawaydev.realmsofchaos.fx.RocSounds.at(level, pos, "sliding_door", 0.9F, 0.9F + level.getRandom().nextFloat() * 0.15F);
         keepGoing(level, pos, open);
     }
 
