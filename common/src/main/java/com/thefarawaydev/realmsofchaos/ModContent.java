@@ -144,7 +144,13 @@ public final class ModContent {
     /** The resources, the god-metals forged from them, and the cores that the relics and the Cornucopia are made with. */
     public static final Ref<Item> STORM_GLASS = new Ref<>(), ABYSSAL_PEARL = new Ref<>(), RAW_STYGIAN_IRON = new Ref<>(),
             CELESTIAL_BRONZE_INGOT = new Ref<>(), ORICHALCUM_INGOT = new Ref<>(), STYGIAN_IRON_INGOT = new Ref<>(),
-            THUNDER_CORE = new Ref<>(), TIDE_CORE = new Ref<>(), SHADE_CORE = new Ref<>();
+            THUNDER_CORE = new Ref<>(), TIDE_CORE = new Ref<>(), SHADE_CORE = new Ref<>(), DIVINE_ICHOR = new Ref<>();
+    /** What the Orb of Plenty remembers. */
+    public static final Ref<net.minecraft.world.level.block.entity.BlockEntityType<com.thefarawaydev.realmsofchaos.block.OrbBlockEntity>> ORB_ENTITY = new Ref<>();
+
+    public static net.minecraft.world.level.block.entity.BlockEntityType<com.thefarawaydev.realmsofchaos.block.OrbBlockEntity> createOrbEntityType() {
+        return new net.minecraft.world.level.block.entity.BlockEntityType<>(com.thefarawaydev.realmsofchaos.block.OrbBlockEntity::new, java.util.Set.of(CORNUCOPIA.get()));
+    }
     /** The four armour sets, by set and then by piece. */
     public static final Map<com.thefarawaydev.realmsofchaos.item.ArmorSets.Set, Map<net.minecraft.world.item.equipment.ArmorType, Ref<Item>>> ARMOR = new java.util.EnumMap<>(com.thefarawaydev.realmsofchaos.item.ArmorSets.Set.class);
     public static final Map<String, Ref<Item>> WEAPONS = new HashMap<>();
@@ -438,6 +444,7 @@ public final class ModContent {
         item("thunder_core", THUNDER_CORE, key -> new Item(core(key, "thunder_core")));
         item("tide_core", TIDE_CORE, key -> new Item(core(key, "tide_core")));
         item("shade_core", SHADE_CORE, key -> new Item(core(key, "shade_core")));
+        item("divine_ichor", DIVINE_ICHOR, key -> new Item(core(key, "divine_ichor").stacksTo(64).rarity(net.minecraft.world.item.Rarity.RARE)));
         for (var set : com.thefarawaydev.realmsofchaos.item.ArmorSets.Set.values()) {
             Map<net.minecraft.world.item.equipment.ArmorType, Ref<Item>> pieces = new java.util.EnumMap<>(net.minecraft.world.item.equipment.ArmorType.class);
             ARMOR.put(set, pieces);
@@ -670,7 +677,7 @@ public final class ModContent {
         for (Ref<Item> r : List.of(RAW_ADAMANTINE, ADAMANTINE_SCRAP, ADAMANTINE_INGOT, ADAMANTINE_SWORD, ADAMANTINE_PICKAXE, ADAMANTINE_AXE, ADAMANTINE_SHOVEL, ADAMANTINE_HOE))
             out.add(r.get());
         for (Ref<Item> r : List.of(STORM_GLASS, ABYSSAL_PEARL, RAW_STYGIAN_IRON, CELESTIAL_BRONZE_INGOT, ORICHALCUM_INGOT, STYGIAN_IRON_INGOT,
-                THUNDER_CORE, TIDE_CORE, SHADE_CORE)) out.add(r.get());
+                THUNDER_CORE, TIDE_CORE, SHADE_CORE, DIVINE_ICHOR)) out.add(r.get());
         for (var pieces : ARMOR.values()) for (Ref<Item> r : pieces.values()) out.add(r.get());
         for (Line line : Line.values()) {
             for (God god : Gods.ofLine(line)) {

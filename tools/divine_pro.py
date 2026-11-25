@@ -152,6 +152,30 @@ def set_icon(piece, base, trim):
     return ic.render()
 
 
+def ichor_vial():
+    """Divine Ichor: a stoppered glass vial of glowing gold, a bead of light in it."""
+    glass = ramp((200, 220, 236))
+    gold = ramp((255, 206, 90), cool=0.04)
+    cells = {}
+    for y in range(4, 15):
+        for x in range(4, 12):
+            dx = x + 0.5 - 8
+            if y >= 7:
+                if abs(dx) > 3.6 - (0.5 if y == 14 else 0): continue
+                if y >= 9 and abs(dx) < 3.0 and y < 14:
+                    cells[(x, y)] = gold[5] if (x == 6 and y in (10, 11)) else gold[4] if dx < 0 else gold[3]
+                else:
+                    cells[(x, y)] = glass[4] if dx < 0 else glass[2]
+            elif y >= 5:
+                if abs(dx) > 1.6: continue
+                cells[(x, y)] = glass[4] if dx < 0 else glass[3]
+    for x in range(6, 10):
+        cells[(x, 3)] = (150, 96, 54)
+        cells[(x, 4)] = (120, 74, 40)
+    cells[(5, 9)] = (255, 255, 255)
+    return outline(cells, (40, 34, 52))
+
+
 def icon(piece, base, trim):
     t, tr = ramp(base), ramp(trim)
     return template(ICONS[piece], tones_pal(t, {"T": tr[4]}))
@@ -470,11 +494,14 @@ def gen(assets, data, wj):
         "stygian_iron_ingot": ingot((68, 68, 84), (96, 226, 216)),
         "adamantine_ingot": ingot((150, 200, 216), (168, 120, 236)),
         "thunder_core": core((212, 150, 62), (255, 226, 110), warm_shadow=True),
+        "divine_ichor": ichor_vial(),
         "tide_core": core((208, 104, 62), (80, 216, 230)),
         "shade_core": core((68, 68, 84), (164, 110, 250)),
     }
     for name, img in items.items():
         img.save(os.path.join(TI, f"{name}.png"))
+    wj(os.path.join(assets, "models/item/divine_ichor.json"), {"parent": "minecraft:item/generated", "textures": {"layer0": f"{MOD}:item/divine_ichor"}})
+    wj(os.path.join(assets, "items/divine_ichor.json"), {"model": {"type": "minecraft:model", "model": f"{MOD}:item/divine_ichor"}})
     for set_id, (base, trim) in SETS.items():
         for piece in ICONS:
             set_icon(piece, base, trim).save(os.path.join(TI, f"{set_id}_{piece}.png"))
@@ -581,6 +608,19 @@ def gen(assets, data, wj):
     wj(os.path.join(R, "cornucopia.json"), {"type": "minecraft:crafting_shaped", "category": "misc", "pattern": ["BNO", "AHA", "GSG"],
         "key": {"B": f"{MOD}:celestial_bronze_ingot", "N": "minecraft:nether_star", "O": f"{MOD}:orichalcum_ingot", "A": f"{MOD}:adamantine_block",
                 "H": "minecraft:heart_of_the_sea", "G": "minecraft:gold_block", "S": f"{MOD}:stygian_iron_ingot"}, "result": {"id": f"{MOD}:cornucopia"}})
+    wj(os.path.join(data, "tags/item/essences.json"), {"values": [f"{MOD}:essence_zeus", f"{MOD}:essence_poseidon", f"{MOD}:essence_hades"]})
+    wj(os.path.join(R, "divine_ichor.json"), {"type": "minecraft:crafting_shaped", "category": "misc", "pattern": ["GMG", "MEM", "GMG"],
+        "key": {"G": "minecraft:gold_ingot", "M": "minecraft:glistering_melon_slice", "E": f"#{MOD}:essences"}, "result": {"id": f"{MOD}:divine_ichor", "count": 4}})
+    # what the orb will not make: what cannot be had in survival, the gods' own gifts, and its own makings
+    never = ["minecraft:bedrock", "minecraft:command_block", "minecraft:chain_command_block", "minecraft:repeating_command_block",
+             "minecraft:command_block_minecart", "minecraft:barrier", "minecraft:structure_block", "minecraft:structure_void", "minecraft:jigsaw",
+             "minecraft:light", "minecraft:debug_stick", "minecraft:knowledge_book", "minecraft:spawner", "minecraft:trial_spawner", "minecraft:vault",
+             "minecraft:end_portal_frame", "minecraft:reinforced_deepslate", "minecraft:petrified_oak_slab", "minecraft:test_block",
+             "minecraft:test_instance_block", f"#{MOD}:relics", f"#{MOD}:essences", f"{MOD}:divine_ichor", f"{MOD}:thunder_core", f"{MOD}:tide_core",
+             f"{MOD}:shade_core", f"{MOD}:cornucopia", f"{MOD}:plinth_of_plenty", f"{MOD}:column_of_plenty", f"{MOD}:chaos_codex", f"{MOD}:tarot_deck",
+             f"{MOD}:helm_of_hades", f"{MOD}:helm_of_athena", f"{MOD}:aegis_cuirass", f"{MOD}:nemean_pelt", f"{MOD}:girdle_of_hippolyta",
+             f"{MOD}:greaves_of_achilles", f"{MOD}:talaria", f"{MOD}:styx_treads"]
+    wj(os.path.join(data, "tags/item/unreplicable.json"), {"values": [{"id": v, "required": False} if v.startswith("minecraft:test") else v for v in never]})
     wj(os.path.join(R, "plinth_of_plenty.json"), {"type": "minecraft:crafting_shaped", "category": "misc", "pattern": ["GCG", "PAP", "PPP"],
         "key": {"G": "minecraft:gold_ingot", "C": f"{MOD}:chiseled_porphyry", "P": f"{MOD}:polished_porphyry", "A": f"{MOD}:adamantine_ingot"},
         "result": {"id": f"{MOD}:plinth_of_plenty"}})
@@ -595,8 +635,14 @@ def lang():
         "block.realms_of_chaos.cornucopia.incomplete": "The shrine is not whole",
         "block.realms_of_chaos.cornucopia.needs_plinth": "Set the orb on a Plinth of Plenty",
         "block.realms_of_chaos.cornucopia.needs_columns": "Columns of Plenty: %s of %s, two high at the corners",
-        "block.realms_of_chaos.cornucopia.no_core": "The shrine stands whole. Set a core in the orb",
+        "block.realms_of_chaos.cornucopia.no_core": "The shrine stands whole. Set a core in the orb; show it anything, and pour in ichor, to have it made",
         "block.realms_of_chaos.cornucopia.working": "%s in %s",
+        "block.realms_of_chaos.cornucopia.making": "Making %s: %s ichor each, %s held",
+        "block.realms_of_chaos.cornucopia.next": "The next in %s",
+        "block.realms_of_chaos.cornucopia.needs_ichor": "Waiting for ichor: it needs %s",
+        "block.realms_of_chaos.cornucopia.refused": "The orb will not make %s",
+        "item.realms_of_chaos.divine_ichor": "Divine Ichor",
+        "item.realms_of_chaos.divine_ichor.lore": "The golden blood of the gods. Poured into the Orb of Plenty, it pays for what the orb makes",
         "block.realms_of_chaos.cornucopia.at_home.storm": "The storm feeds it: twice as fast",
         "block.realms_of_chaos.cornucopia.at_home.tide": "The sea feeds it: twice as fast",
         "block.realms_of_chaos.cornucopia.at_home.shade": "The underworld feeds it: twice as fast",

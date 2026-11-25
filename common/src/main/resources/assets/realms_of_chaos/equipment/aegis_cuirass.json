@@ -3,11 +3,17 @@
     "humanoid": [
       {
         "texture": "realms_of_chaos:aegis_cuirass"
+      },
+      {
+        "texture": "realms_of_chaos:aegis_cuirass_overlay"
       }
     ],
     "humanoid_leggings": [
       {
         "texture": "realms_of_chaos:aegis_cuirass"
+      },
+      {
+        "texture": "realms_of_chaos:aegis_cuirass_overlay"
       }
     ]
   }

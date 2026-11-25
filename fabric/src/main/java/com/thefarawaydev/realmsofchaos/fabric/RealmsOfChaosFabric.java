@@ -53,6 +53,9 @@ public class RealmsOfChaosFabric implements ModInitializer {
             def.ref().bind(() -> item);
         }
 
+        var orbType = Registry.register(BuiltInRegistries.BLOCK_ENTITY_TYPE, RealmsOfChaos.id("orb_of_plenty"), ModContent.createOrbEntityType());
+        ModContent.ORB_ENTITY.bind(() -> orbType);
+
         for (var entry : ModContent.PARTICLES.entrySet()) {
             var type = Registry.register(BuiltInRegistries.PARTICLE_TYPE, RealmsOfChaos.id(entry.getKey()), new com.thefarawaydev.realmsofchaos.fx.RocParticles.Type());
             entry.getValue().bind(() -> type);

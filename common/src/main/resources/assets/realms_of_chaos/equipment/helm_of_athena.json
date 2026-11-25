@@ -3,11 +3,17 @@
     "humanoid": [
       {
         "texture": "realms_of_chaos:helm_of_athena"
+      },
+      {
+        "texture": "realms_of_chaos:helm_of_athena_overlay"
       }
     ],
     "humanoid_leggings": [
       {
         "texture": "realms_of_chaos:helm_of_athena"
+      },
+      {
+        "texture": "realms_of_chaos:helm_of_athena_overlay"
       }
     ]
   }

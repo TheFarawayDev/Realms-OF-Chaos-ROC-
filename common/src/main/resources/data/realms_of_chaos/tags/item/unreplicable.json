@@ -1,0 +1,49 @@
+{
+  "values": [
+    "minecraft:bedrock",
+    "minecraft:command_block",
+    "minecraft:chain_command_block",
+    "minecraft:repeating_command_block",
+    "minecraft:command_block_minecart",
+    "minecraft:barrier",
+    "minecraft:structure_block",
+    "minecraft:structure_void",
+    "minecraft:jigsaw",
+    "minecraft:light",
+    "minecraft:debug_stick",
+    "minecraft:knowledge_book",
+    "minecraft:spawner",
+    "minecraft:trial_spawner",
+    "minecraft:vault",
+    "minecraft:end_portal_frame",
+    "minecraft:reinforced_deepslate",
+    "minecraft:petrified_oak_slab",
+    {
+      "id": "minecraft:test_block",
+      "required": false
+    },
+    {
+      "id": "minecraft:test_instance_block",
+      "required": false
+    },
+    "#realms_of_chaos:relics",
+    "#realms_of_chaos:essences",
+    "realms_of_chaos:divine_ichor",
+    "realms_of_chaos:thunder_core",
+    "realms_of_chaos:tide_core",
+    "realms_of_chaos:shade_core",
+    "realms_of_chaos:cornucopia",
+    "realms_of_chaos:plinth_of_plenty",
+    "realms_of_chaos:column_of_plenty",
+    "realms_of_chaos:chaos_codex",
+    "realms_of_chaos:tarot_deck",
+    "realms_of_chaos:helm_of_hades",
+    "realms_of_chaos:helm_of_athena",
+    "realms_of_chaos:aegis_cuirass",
+    "realms_of_chaos:nemean_pelt",
+    "realms_of_chaos:girdle_of_hippolyta",
+    "realms_of_chaos:greaves_of_achilles",
+    "realms_of_chaos:talaria",
+    "realms_of_chaos:styx_treads"
+  ]
+}

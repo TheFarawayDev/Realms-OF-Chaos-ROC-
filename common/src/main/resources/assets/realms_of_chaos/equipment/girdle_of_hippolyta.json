@@ -3,11 +3,17 @@
     "humanoid": [
       {
         "texture": "realms_of_chaos:girdle_of_hippolyta"
+      },
+      {
+        "texture": "realms_of_chaos:girdle_of_hippolyta_overlay"
       }
     ],
     "humanoid_leggings": [
       {
         "texture": "realms_of_chaos:girdle_of_hippolyta"
+      },
+      {
+        "texture": "realms_of_chaos:girdle_of_hippolyta_overlay"
       }
     ]
   }

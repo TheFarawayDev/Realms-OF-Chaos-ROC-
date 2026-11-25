@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "GMG",
+    "MEM",
+    "GMG"
+  ],
+  "key": {
+    "G": "minecraft:gold_ingot",
+    "M": "minecraft:glistering_melon_slice",
+    "E": "#realms_of_chaos:essences"
+  },
+  "result": {
+    "id": "realms_of_chaos:divine_ichor",
+    "count": 4
+  }
+}

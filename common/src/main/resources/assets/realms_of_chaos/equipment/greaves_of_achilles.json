@@ -3,11 +3,17 @@
     "humanoid": [
       {
         "texture": "realms_of_chaos:greaves_of_achilles"
+      },
+      {
+        "texture": "realms_of_chaos:greaves_of_achilles_overlay"
       }
     ],
     "humanoid_leggings": [
       {
         "texture": "realms_of_chaos:greaves_of_achilles"
+      },
+      {
+        "texture": "realms_of_chaos:greaves_of_achilles_overlay"
       }
     ]
   }

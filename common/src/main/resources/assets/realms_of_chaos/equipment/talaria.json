@@ -3,11 +3,17 @@
     "humanoid": [
       {
         "texture": "realms_of_chaos:talaria"
+      },
+      {
+        "texture": "realms_of_chaos:talaria_overlay"
       }
     ],
     "humanoid_leggings": [
       {
         "texture": "realms_of_chaos:talaria"
+      },
+      {
+        "texture": "realms_of_chaos:talaria_overlay"
       }
     ]
   }

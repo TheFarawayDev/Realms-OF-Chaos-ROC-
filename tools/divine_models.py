@@ -238,48 +238,67 @@ def crystal_overlay(base, glint, spots, seed):
 
 
 # ---------------------------------------------------------------------------------------------------- models
-def orb_tex(core):
-    """The orb's glass: a swirl of its core's light, brightest at the heart; without a core, dark smoked glass."""
-    if core == "none":
-        return tex(lambda x, y: (58, 46, 70) if (x * 3 + y * 5) % 7 else (84, 70, 100))
-    c = {"storm": (255, 222, 110), "tide": (80, 216, 230), "shade": (164, 110, 250)}[core]
-    t = ramp(c)
+CORE_LIGHT = {"storm": (255, 222, 110), "tide": (80, 216, 230), "shade": (164, 110, 250), "none": (120, 110, 140)}
+
+
+def orb_core_tex(core):
+    """The orb's heart: a swirl of its core's light, brightest at the centre; with no core, a dull ember."""
+    t = ramp(CORE_LIGHT[core])
 
     def px(x, y):
         dx, dy = x + 0.5 - 8, y + 0.5 - 8
         r = math.hypot(dx, dy)
-        a = math.atan2(dy, dx)
-        swirl = math.sin(a * 2 + r * 0.9)
-        if r < 2.2: return (255, 255, 250)
-        if swirl > 0.55: return t[5]
-        if swirl > -0.1: return t[4]
-        return t[3] if r < 6 else t[2]
+        swirl = math.sin(math.atan2(dy, dx) * 3 + r * 0.8)
+        if core == "none": return t[2] if swirl > 0 else t[1]
+        if r < 2.0: return (255, 255, 248)
+        return t[5] if swirl > 0.4 else t[4] if swirl > -0.3 else t[3]
+    return tex(px)
+
+
+def orb_glass_tex(core):
+    """The orb's shell: glass deeply tinted by its core, a bright streak of reflected light at the top left, a darker
+    rim - clear enough to see the heart glowing through it, solid enough to read as a sphere."""
+    t = ramp(CORE_LIGHT[core])
+
+    def px(x, y):
+        if (x + y) in (4, 5) and 1 < x < 8: return (255, 255, 255, 230)
+        if x in (0, 15) or y in (0, 15): return t[2] + (210,)
+        if x in (1, 14) or y in (1, 14): return t[3] + (175,)
+        return (t[4] if (x * 3 + y) % 7 else t[5]) + (135,)
     return tex(px)
 
 
 def orb_model(core):
-    """The Orb of Plenty: a glassy orb that glows with its core, held by a gold tripod inside a tilted gold ring."""
-    tx = {"particle": f"{MOD}:block/shrine_gold", "gold": f"{MOD}:block/shrine_gold", "orb": f"{MOD}:block/orb_of_plenty_{core}",
-          "dark": f"{MOD}:block/shrine_porphyry_dark"}
+    """The Orb of Plenty: a shell of tinted glass round a glowing heart, held in three gold claws on a tripod, inside
+    two crossing rings of gold set with studs - an armillary sphere."""
+    tx = {"particle": f"{MOD}:block/shrine_gold", "gold": f"{MOD}:block/shrine_gold", "core": f"{MOD}:block/orb_of_plenty_core_{core}",
+          "glass": {"sprite": f"{MOD}:block/orb_of_plenty_glass_{core}", "force_translucent": True}, "dark": f"{MOD}:block/shrine_porphyry_dark"}
     glow = 15 if core != "none" else None
     els = [el((4, 0, 4), (12, 1, 12), "gold"),                                   # the foot
-           el((6.5, 1, 6.5), (9.5, 2, 9.5), "dark"),
+           el((6, 1, 6), (10, 2, 10), "dark"),
            el((7.3, 2, 7.3), (8.7, 4.5, 8.7), "gold")]                           # the stem
-    for ang in (0.0, 120.0, 240.0):                                              # three claws cupping the orb
-        r = {"origin": [8, 4, 8], "axis": "y", "angle": ang if ang <= 180 else ang - 360}
-        els.append(el((7.4, 3.6, 4.6), (8.6, 7.2, 5.4), "gold", rot=r))
-        els.append(el((7.4, 3.6, 5.4), (8.6, 4.4, 7.4), "gold", rot=r))
-    # the orb: a rounded body of three crossed blocks, turned again to round it further
+    for ang in (0.0, 120.0, -120.0):                                             # three claws cupping the orb
+        r = {"origin": [8, 4, 8], "axis": "y", "angle": ang}
+        els.append(el((7.4, 4, 4.4), (8.6, 7.6, 5.2), "gold", rot=r))
+        els.append(el((7.4, 3.6, 5.2), (8.6, 4.4, 7.4), "gold", rot=r))
     c = (8, 9, 8)
-    body = [((4, 6.5, 5.5), (12, 11.5, 10.5)), ((5.5, 5, 5.5), (10.5, 13, 10.5)), ((5.5, 6.5, 4), (10.5, 11.5, 12)), ((5, 6, 5), (11, 12, 11))]
-    for a, b in body:
-        els.append(el(a, b, "orb", uv=(2, 2, 14, 14), emit=glow))
-    for a, b in body[:3]:
-        els.append(el(a, b, "orb", uv=(2, 2, 14, 14), emit=glow, rot={"origin": list(c), "axis": "y", "angle": 45.0}))
-    # a tilted ring of gold round it
-    ring = {"origin": list(c), "x": 22.5, "y": 30.0, "z": 0.0}
-    for a, b in (((2.5, 8.6, 2.5), (13.5, 9.4, 3.3)), ((2.5, 8.6, 12.7), (13.5, 9.4, 13.5)), ((2.5, 8.6, 3.3), (3.3, 9.4, 12.7)), ((12.7, 8.6, 3.3), (13.5, 9.4, 12.7))):
-        els.append(el(a, b, "gold", rot=ring))
+    # the heart: three crossed blocks of light, turned to round them
+    heart = [((6, 7.6, 6.6), (10, 10.4, 9.4)), ((6.6, 7, 6.6), (9.4, 11, 9.4)), ((6.6, 7.6, 6), (9.4, 10.4, 10))]
+    for a, b in heart:
+        els.append(el(a, b, "core", emit=glow))
+        els.append(el(a, b, "core", emit=glow, rot={"origin": list(c), "axis": "y", "angle": 45.0}))
+    # the shell: a rounded body of glass, its texture laid by where each face lies so it is never stretched
+    shell = [((4, 6.5, 5.5), (12, 11.5, 10.5)), ((5.5, 5, 5.5), (10.5, 13, 10.5)), ((5.5, 6.5, 4), (10.5, 11.5, 12)), ((5, 6, 5), (11, 12, 11))]
+    for a, b in shell:
+        els.append(el(a, b, "glass"))
+    for a, b in shell[:3]:
+        els.append(el(a, b, "glass", rot={"origin": list(c), "axis": "y", "angle": 45.0}))
+    # two rings of gold crossing round it, each set with studs
+    for ring in ({"origin": list(c), "x": 22.5, "y": 30.0, "z": 0.0}, {"origin": list(c), "x": -22.5, "y": -30.0, "z": 0.0}):
+        for a, b in (((2.6, 8.65, 2.6), (13.4, 9.35, 3.2)), ((2.6, 8.65, 12.8), (13.4, 9.35, 13.4)), ((2.6, 8.65, 3.2), (3.2, 9.35, 12.8)), ((12.8, 8.65, 3.2), (13.4, 9.35, 12.8))):
+            els.append(el(a, b, "gold", rot=ring))
+        for sx, sz in ((8, 2.6), (8, 13.4), (2.6, 8), (13.4, 8)):
+            els.append(el((sx - 0.6, 8.4, sz - 0.6), (sx + 0.6, 9.6, sz + 0.6), "gold", rot=ring))
     return {"parent": "minecraft:block/block", "textures": tx, "elements": els,
             "display": {"gui": {"rotation": [25, 225, 0], "translation": [0, 0, 0], "scale": [0.75, 0.75, 0.75]}}}
 
@@ -399,7 +418,10 @@ def gen(assets, data, wj):
     rot = {"north": 0, "east": 90, "south": 180, "west": 270}
     cv = {}
     for core in ("none", "storm", "tide", "shade"):
-        orb_tex(core).save(os.path.join(T, f"orb_of_plenty_{core}.png"))
+        orb_core_tex(core).save(os.path.join(T, f"orb_of_plenty_core_{core}.png"))
+        orb_glass_tex(core).save(os.path.join(T, f"orb_of_plenty_glass_{core}.png"))
+        old = os.path.join(T, f"orb_of_plenty_{core}.png")
+        if os.path.exists(old): os.remove(old)
         wj(os.path.join(M, f"cornucopia_{core}.json"), orb_model(core))
         for f, r in rot.items():
             cv[f"core={core},facing={f}"] = {"model": f"{MOD}:block/cornucopia_{core}", "y": r}

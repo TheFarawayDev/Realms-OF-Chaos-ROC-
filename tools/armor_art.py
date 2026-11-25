@@ -96,41 +96,86 @@ def lay(img, box, rows, pal, mirror=False):
                 px[x0 + x, y0 + y] = tuple(pal[ch]) + (255,)
 
 
+PANOPLY = {
+    # piece: (kind, metal, trim, marks [(part, face, x, y, colour)])
+    "helm_of_hades": ("helmet", (58, 54, 82), (165, 90, 214), [("head", "front", 1, 3, (220, 170, 255)), ("head", "front", 6, 3, (220, 170, 255))]),
+    "helm_of_athena": ("helmet", (196, 146, 74), (210, 50, 50), [("head", "front", 3, 1, (255, 232, 140)), ("head", "front", 4, 1, (255, 232, 140))]),
+    "aegis_cuirass": ("chest", (226, 188, 84), (126, 235, 255), [("body", "front", x, y, (70, 140, 96)) for x, y in ((3, 3), (4, 3), (2, 4), (5, 4), (2, 5), (5, 5), (3, 6), (4, 6))]
+                      + [("body", "front", 3, 4, (255, 226, 120)), ("body", "front", 4, 4, (255, 226, 120)), ("body", "front", 3, 5, (40, 80, 56)), ("body", "front", 4, 5, (40, 80, 56))]),
+    "nemean_pelt": ("chest", (198, 152, 86), (120, 78, 40), [("body", "front", x, 1, (150, 96, 48)) for x in range(8)]
+                    + [("arm", "front", x, 0, (150, 96, 48)) for x in range(4)] + [("body", "front", 2, 3, (255, 220, 110)), ("body", "front", 5, 3, (255, 220, 110))]),
+    "girdle_of_hippolyta": ("legs", (168, 52, 52), (240, 208, 110), [("waist", "front", 3, 8, (255, 130, 150)), ("waist", "front", 4, 8, (255, 130, 150))]),
+    "greaves_of_achilles": ("legs", (132, 152, 184), (240, 208, 110), [("leg", "front", 1, 5, (255, 232, 140)), ("leg", "front", 2, 5, (255, 232, 140))]),
+    "talaria": ("boots", (156, 112, 70), (245, 245, 250), [("boot", side, x, y, (250, 250, 255)) for side in ("right", "left") for x, y in ((0, 7), (1, 7), (0, 8), (1, 8), (2, 8))]),
+    "styx_treads": ("boots", (44, 44, 58), (60, 200, 190), [("boot", "front", x, 9, (120, 255, 240)) for x in range(4)]),
+}
+
+
+def layers():
+    return (Image.new("RGBA", (64, 32), (0, 0, 0, 0)), Image.new("RGBA", (64, 32), (0, 0, 0, 0)),
+            Image.new("RGBA", (64, 32), (0, 0, 0, 0)), Image.new("RGBA", (64, 32), (0, 0, 0, 0)))
+
+
+HEAD_F, BODY_F, ARM_F, LEG_F = faces(0, 0, 8, 8, 8), faces(16, 16, 8, 12, 4), faces(40, 16, 4, 12, 4), faces(0, 16, 4, 12, 4)
+
+
+def paint_kind(kind, pal, base, legs):
+    """Lays one kind of piece onto its layer: a helm on the head, a breastplate on the body and arms, greaves on the
+    lower legs (all on the main layer); leggings on the legs and waist (on the leggings layer)."""
+    if kind == "helmet":
+        for name, box in HEAD_F.items(): lay(base, box, HEAD[name], pal)
+    elif kind == "chest":
+        for name, box in BODY_F.items(): lay(base, box, BODY[name], pal)
+        for name, box in ARM_F.items(): lay(base, box, ARM[name], pal)
+    elif kind == "boots":
+        for name, box in LEG_F.items():
+            if name in BOOTS: lay(base, box, BOOTS[name], pal)
+    else:
+        for name, box in LEG_F.items():
+            if name in LEGS: lay(legs, box, LEGS[name], pal)
+        for name, box in BODY_F.items():
+            if name in ("front", "back"): lay(legs, box, WAIST, pal)
+            elif name in ("right", "left"): lay(legs, box, WAIST_SIDE, pal)
+
+
+def mark(over, over_legs, marks):
+    parts = {"head": HEAD_F, "body": BODY_F, "arm": ARM_F, "leg": LEG_F, "boot": LEG_F, "waist": BODY_F}
+    for part, face, x, y, colour in marks:
+        x0, y0, w, h = parts[part][face]
+        target = over_legs if part in ("leg", "waist") else over
+        target.putpixel((x0 + x, y0 + y), tuple(colour) + (255,))
+
+
 def worn(set_id):
     metal, trim, motif = SETS[set_id]
     pal = palette(metal, trim)
-    base, legs = Image.new("RGBA", (64, 32), (0, 0, 0, 0)), Image.new("RGBA", (64, 32), (0, 0, 0, 0))
-    over, over_legs = Image.new("RGBA", (64, 32), (0, 0, 0, 0)), Image.new("RGBA", (64, 32), (0, 0, 0, 0))
-    head, body, arm, leg = faces(0, 0, 8, 8, 8), faces(16, 16, 8, 12, 4), faces(40, 16, 4, 12, 4), faces(0, 16, 4, 12, 4)
-    for name, box in head.items(): lay(base, box, HEAD[name], pal)
-    for name, box in body.items(): lay(base, box, BODY[name], pal)
-    for name, box in arm.items(): lay(base, box, ARM[name], pal)
-    for name, box in leg.items():
-        if name in BOOTS: lay(base, box, BOOTS[name], pal)
-    for name, box in leg.items():
-        if name in LEGS: lay(legs, box, LEGS[name], pal)
-    for name, box in body.items():
-        if name in ("front", "back"): lay(legs, box, WAIST, pal)
-        elif name in ("right", "left"): lay(legs, box, WAIST_SIDE, pal)
-    # the motif, on its own layer: a bright core and a softer rim of the motif's colour
-    parts = {"head": head, "body": body, "arm": arm, "leg": leg}
-    hi = tuple(motif)
+    base, over, legs, over_legs = layers()
+    for kind in ("helmet", "chest", "boots", "legs"): paint_kind(kind, pal, base, legs)
+    marks = []
     for spec, x, y in MOTIFS[set_id]:
         part, face = spec.split(".")
-        x0, y0, w, h = parts[part][face]
-        target = over_legs if part == "leg" else over
-        target.putpixel((x0 + x, y0 + y), hi + (255,))
+        marks.append((part, face, x, y, motif))
+    mark(over, over_legs, marks)
     return base, over, legs, over_legs
+
+
+def write(assets, wj, name, base, over, legs, over_legs):
+    for layer, b, o in (("humanoid", base, over), ("humanoid_leggings", legs, over_legs)):
+        folder = os.path.join(assets, f"textures/entity/equipment/{layer}")
+        os.makedirs(folder, exist_ok=True)
+        b.save(os.path.join(folder, f"{name}.png"))
+        o.save(os.path.join(folder, f"{name}_overlay.png"))
+    wj(os.path.join(assets, f"equipment/{name}.json"), {"layers": {
+        "humanoid": [{"texture": f"{MOD}:{name}"}, {"texture": f"{MOD}:{name}_overlay"}],
+        "humanoid_leggings": [{"texture": f"{MOD}:{name}"}, {"texture": f"{MOD}:{name}_overlay"}]}})
 
 
 def gen(assets, wj):
     for set_id in SETS:
-        base, over, legs, over_legs = worn(set_id)
-        for layer, b, o in (("humanoid", base, over), ("humanoid_leggings", legs, over_legs)):
-            folder = os.path.join(assets, f"textures/entity/equipment/{layer}")
-            os.makedirs(folder, exist_ok=True)
-            b.save(os.path.join(folder, f"{set_id}.png"))
-            o.save(os.path.join(folder, f"{set_id}_overlay.png"))
-        wj(os.path.join(assets, f"equipment/{set_id}.json"), {"layers": {
-            "humanoid": [{"texture": f"{MOD}:{set_id}"}, {"texture": f"{MOD}:{set_id}_overlay"}],
-            "humanoid_leggings": [{"texture": f"{MOD}:{set_id}"}, {"texture": f"{MOD}:{set_id}_overlay"}]}})
+        write(assets, wj, set_id, *worn(set_id))
+    # the panoply, each piece its own: laid the same way, in its own colours, with its own marks
+    for piece, (kind, metal, trim, marks) in PANOPLY.items():
+        base, over, legs, over_legs = layers()
+        paint_kind(kind, palette(metal, trim), base, legs)
+        mark(over, over_legs, marks)
+        write(assets, wj, piece, base, over, legs, over_legs)

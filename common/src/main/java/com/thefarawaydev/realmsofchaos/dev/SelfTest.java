@@ -7086,6 +7086,41 @@ public final class SelfTest {
                 for (int i = 0; i < chest.getContainerSize(); i++) if (chest.getItem(i).is(made.getItem())) stored += chest.getItem(i).getCount();
                 check((made.is(ModContent.STORM_GLASS.get()) || made.is(ModContent.RAW_ADAMANTINE.get())) && stored == made.getCount() && made.getCount() >= 1,
                         "it brings forth storm glass, into the chest beside the plinth: " + made);
+                // ---- shown anything, and paid in ichor, the orb makes that, given time
+                var orb = com.thefarawaydev.realmsofchaos.block.CornucopiaBlock.orb(level, horn);
+                check(orb != null, "the orb remembers what it is shown");
+                ItemStack diamond = new ItemStack(net.minecraft.world.item.Items.DIAMOND, 3);
+                level.getBlockState(horn).useItemOn(diamond, level, smith, net.minecraft.world.InteractionHand.MAIN_HAND, new BlockHitResult(Vec3.atCenterOf(horn), Direction.UP, horn, false));
+                check(orb.pattern() == net.minecraft.world.item.Items.DIAMOND && diamond.getCount() == 3, "shown a diamond, it takes it as its pattern - and gives it back");
+                ItemStack ichor = new ItemStack(ModContent.DIVINE_ICHOR.get(), 5);
+                level.getBlockState(horn).useItemOn(ichor, level, smith, net.minecraft.world.InteractionHand.MAIN_HAND, new BlockHitResult(Vec3.atCenterOf(horn), Direction.UP, horn, false));
+                check(orb.ichor() == 5 && ichor.isEmpty(), "ichor is poured in to pay for it");
+                int cost = com.thefarawaydev.realmsofchaos.block.OrbBlockEntity.cost(new ItemStack(net.minecraft.world.item.Items.DIAMOND));
+                check(cost == 2 && com.thefarawaydev.realmsofchaos.block.OrbBlockEntity.cost(new ItemStack(net.minecraft.world.item.Items.DIAMOND_BLOCK)) == 4
+                        && com.thefarawaydev.realmsofchaos.block.OrbBlockEntity.cost(new ItemStack(net.minecraft.world.item.Items.COBBLESTONE)) == 1, "a diamond costs two ichor, a block of them four, cobblestone one");
+                for (int i = 0; i < chest.getContainerSize(); i++) chest.setItem(i, ItemStack.EMPTY);
+                orb.addWork(com.thefarawaydev.realmsofchaos.block.OrbBlockEntity.steps(new ItemStack(net.minecraft.world.item.Items.DIAMOND)));
+                level.getBlockState(horn).tick(level, horn, level.getRandom());
+                int diamonds = 0;
+                for (int i = 0; i < chest.getContainerSize(); i++) if (chest.getItem(i).is(net.minecraft.world.item.Items.DIAMOND)) diamonds += chest.getItem(i).getCount();
+                check(diamonds == 1 && orb.ichor() == 5 - cost && orb.work() == 0, "its time come, it makes one, paid in ichor: " + diamonds + " made, " + orb.ichor() + " ichor left");
+                orb.spend(orb.ichor());
+                orb.addWork(100);
+                level.getBlockState(horn).tick(level, horn, level.getRandom());
+                check(orb.work() >= 100, "with no ichor left, it waits");
+                check(!com.thefarawaydev.realmsofchaos.block.OrbBlockEntity.replicable(new ItemStack(net.minecraft.world.item.Items.BEDROCK))
+                        && !com.thefarawaydev.realmsofchaos.block.OrbBlockEntity.replicable(new ItemStack(ModContent.WEAPONS.get("zeus").get()))
+                        && !com.thefarawaydev.realmsofchaos.block.OrbBlockEntity.replicable(new ItemStack(ModContent.essenceItem(Line.ZEUS)))
+                        && !com.thefarawaydev.realmsofchaos.block.OrbBlockEntity.replicable(new ItemStack(ModContent.DIVINE_ICHOR.get()))
+                        && com.thefarawaydev.realmsofchaos.block.OrbBlockEntity.replicable(new ItemStack(net.minecraft.world.item.Items.NETHER_STAR)),
+                        "it will not make bedrock, a god's relic, an essence or ichor itself - but anything won in the world");
+                smith.setShiftKeyDown(true);
+                level.getBlockState(horn).useWithoutItem(level, smith, new BlockHitResult(Vec3.atCenterOf(horn), Direction.UP, horn, false));
+                smith.setShiftKeyDown(false);
+                check(orb.pattern() == null && level.getBlockState(horn).getValue(com.thefarawaydev.realmsofchaos.block.CornucopiaBlock.CORE) != com.thefarawaydev.realmsofchaos.block.CornucopiaBlock.Core.NONE,
+                        "sneaking with an empty hand forgets the pattern first, and keeps the core");
+                check(server.getRecipeManager().byKey(net.minecraft.resources.ResourceKey.create(net.minecraft.core.registries.Registries.RECIPE, RealmsOfChaos.id("divine_ichor"))).isPresent(),
+                        "divine ichor can be made");
                 check(!com.thefarawaydev.realmsofchaos.block.CornucopiaBlock.atHome(level, horn, com.thefarawaydev.realmsofchaos.block.CornucopiaBlock.Core.SHADE),
                         "a shade core is not at home in the overworld");
                 level.setBlock(horn.offset(-1, 0, -1), Blocks.AIR.defaultBlockState(), 3);

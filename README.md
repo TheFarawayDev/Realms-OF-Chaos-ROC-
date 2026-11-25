@@ -16,6 +16,27 @@ The current build is an **Alpha**.
 
 ## What's in 1.2.0
 
+* **The Orb of Plenty makes anything - for time and ichor.** Show the orb any item (right-click it with the item -
+  it is remembered, not taken) and pour in **Divine Ichor**, and a whole shrine with a core set in it makes that item,
+  one at a time: five minutes for a common thing, ten for uncommon, fifteen for rare, twenty for epic (half that where
+  its core is at home), paid in ichor - one for a common thing, two uncommon, four rare, eight epic; twice that for an
+  ingot or gem, four times for a block of metal or gems. Out of ichor, it waits. The orb holds up to 64 ichor. It will
+  not make what cannot be had in survival, the gods' relics and essences, the panoply, the cores, ichor, or its own
+  shrine. Sneak with an empty hand to forget the pattern (and again to take the core back). **Divine Ichor**, the
+  golden blood of the gods, comes four at a time from a tower's essence, four gold ingots and four glistering melon
+  slices. (`art/renders/orb-making.png`)
+* **The orb, remade.** A shell of glass tinted by its core - its texture laid by where each face lies, so it is never
+  stretched - with a bright streak of reflected light, round a glowing heart that shows through it, held in three gold
+  claws inside two crossing rings of gold set with studs. (`art/renders/orb-of-plenty.png`)
+* **The panoply worn in layers too.** The Helm of Hades and of Athena, the Aegis Cuirass, the Nemean Pelt, the
+  Girdle of Hippolyta, the Greaves of Achilles, the Talaria and the Treads of the Styx are worn as the four sets are: a
+  base of shaped plates and an overlay with each piece's mark - violet eyes, a red crest, the gorgon's face, a mane,
+  a jewelled belt, gold knees, white wings at the ankles, the Styx's light at the straps. (`art/renders/panoply-worn.png`)
+* **The particles, drawn again.** Every one of the mod's particles is painted from shapes with a soft edge - a
+  white-hot heart fading through its colour to clear - and has more frames: flames that sway and burn down, puffs that
+  swell, a glint that pulses, a strike that rings outward, a snowflake that melts. In the world they turn as they
+  drift, swell or shrink over their life, glowing ones flicker, and each is a touch different in tone from the next.
+  (`art/renders/particles.png`, `art/renders/particles-in-game.png`)
 * **The shrine, the clam and the ores, modelled.** The physical blocks are built in layers with real depth, and their
   lit parts glow:
   * the **Orb of Plenty** (once the Cornucopia's horn) is a glassy orb glowing with the light of its core - gold for

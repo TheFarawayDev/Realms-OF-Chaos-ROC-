@@ -34,6 +34,7 @@ public final class RealmsOfChaosForge {
     private static final DeferredRegister<Block> BLOCKS = DeferredRegister.create(ForgeRegistries.BLOCKS, RealmsOfChaos.MOD_ID);
     private static final DeferredRegister<Item> ITEMS = DeferredRegister.create(ForgeRegistries.ITEMS, RealmsOfChaos.MOD_ID);
     private static final DeferredRegister<EntityType<?>> ENTITIES = DeferredRegister.create(Registries.ENTITY_TYPE, RealmsOfChaos.MOD_ID);
+    private static final DeferredRegister<net.minecraft.world.level.block.entity.BlockEntityType<?>> BLOCK_ENTITIES = DeferredRegister.create(Registries.BLOCK_ENTITY_TYPE, RealmsOfChaos.MOD_ID);
     private static final DeferredRegister<CreativeModeTab> TABS = DeferredRegister.create(Registries.CREATIVE_MODE_TAB, RealmsOfChaos.MOD_ID);
     private static final DeferredRegister<net.minecraft.world.inventory.MenuType<?>> MENUS = DeferredRegister.create(Registries.MENU, RealmsOfChaos.MOD_ID);
     private static final DeferredRegister<net.minecraft.core.particles.ParticleType<?>> PARTICLES = DeferredRegister.create(Registries.PARTICLE_TYPE, RealmsOfChaos.MOD_ID);
@@ -49,6 +50,12 @@ public final class RealmsOfChaosForge {
             RegistryObject<Item> ro = ITEMS.register(def.id(), () -> def.factory().apply(ITEMS.key(def.id())));
             def.ref().bind(ro);
         }
+        RegistryObject<net.minecraft.world.level.block.entity.BlockEntityType<?>> orb = BLOCK_ENTITIES.register("orb_of_plenty", ModContent::createOrbEntityType);
+        ModContent.ORB_ENTITY.bind(() -> {
+            @SuppressWarnings("unchecked")
+            var type = (net.minecraft.world.level.block.entity.BlockEntityType<com.thefarawaydev.realmsofchaos.block.OrbBlockEntity>) orb.get();
+            return type;
+        });
         RegistryObject<EntityType<?>> boss = ENTITIES.register("god_boss", () -> ModContent.createGodBossType(ENTITIES.key("god_boss")));
         ModContent.GOD_BOSS.bind(() -> {
             @SuppressWarnings("unchecked")
@@ -103,6 +110,7 @@ public final class RealmsOfChaosForge {
         BLOCKS.register(modBus);
         ITEMS.register(modBus);
         ENTITIES.register(modBus);
+        BLOCK_ENTITIES.register(modBus);
         TABS.register(modBus);
 
         EntityAttributeCreationEvent.BUS.addListener(event -> {

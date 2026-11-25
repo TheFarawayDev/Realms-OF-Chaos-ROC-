@@ -3,11 +3,17 @@
     "humanoid": [
       {
         "texture": "realms_of_chaos:styx_treads"
+      },
+      {
+        "texture": "realms_of_chaos:styx_treads_overlay"
       }
     ],
     "humanoid_leggings": [
       {
         "texture": "realms_of_chaos:styx_treads"
+      },
+      {
+        "texture": "realms_of_chaos:styx_treads_overlay"
       }
     ]
   }

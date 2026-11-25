@@ -37,7 +37,7 @@ import net.minecraft.world.phys.shapes.VoxelShape;
  * container beside or under the plinth, or spills out on top. Use it to see how the shrine stands; sneak with an
  * empty hand to take the core back.
  */
-public class CornucopiaBlock extends Block {
+public class CornucopiaBlock extends Block implements net.minecraft.world.level.block.EntityBlock {
     public enum Core implements StringRepresentable {
         NONE, STORM, TIDE, SHADE;
 
@@ -103,14 +103,51 @@ public class CornucopiaBlock extends Block {
     }
 
     @Override
+    public net.minecraft.world.level.block.entity.BlockEntity newBlockEntity(BlockPos pos, BlockState state) {
+        return new OrbBlockEntity(pos, state);
+    }
+
+    public static OrbBlockEntity orb(Level level, BlockPos pos) {
+        return level.getBlockEntity(pos) instanceof OrbBlockEntity o ? o : null;
+    }
+
+    @Override
     protected InteractionResult useItemOn(ItemStack stack, BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hit) {
+        if (stack.isEmpty()) return InteractionResult.TRY_WITH_EMPTY_HAND;
         Core core = Core.of(stack);
-        if (core == Core.NONE || state.getValue(CORE) != Core.NONE) return InteractionResult.TRY_WITH_EMPTY_HAND;
+        OrbBlockEntity orb = orb(level, pos);
+        if (core != Core.NONE) {
+            if (state.getValue(CORE) != Core.NONE) return InteractionResult.TRY_WITH_EMPTY_HAND;
+            if (level instanceof ServerLevel server) {
+                server.setBlock(pos, state.setValue(CORE, core).setValue(PROGRESS, 0), 3);
+                if (!player.getAbilities().instabuild) stack.shrink(1);
+                server.playSound(null, pos, SoundEvents.RESPAWN_ANCHOR_CHARGE, SoundSource.BLOCKS, 1.0F, 1.2F);
+                status(server, pos);
+            }
+            return InteractionResult.SUCCESS;
+        }
+        if (orb == null) return InteractionResult.TRY_WITH_EMPTY_HAND;
+        if (stack.is(ModContent.DIVINE_ICHOR.get())) {
+            // ichor is poured in, to pay for what the orb makes
+            if (level instanceof ServerLevel server) {
+                int poured = orb.pour(stack.getCount());
+                if (!player.getAbilities().instabuild) stack.shrink(poured);
+                server.playSound(null, pos, SoundEvents.BOTTLE_EMPTY, SoundSource.BLOCKS, 1.0F, 0.8F);
+                status(server, pos);
+            }
+            return InteractionResult.SUCCESS;
+        }
+        // anything else is shown to the orb as a pattern: it is not taken, only remembered
         if (level instanceof ServerLevel server) {
-            server.setBlock(pos, state.setValue(CORE, core).setValue(PROGRESS, 0), 3);
-            if (!player.getAbilities().instabuild) stack.shrink(1);
-            server.playSound(null, pos, SoundEvents.RESPAWN_ANCHOR_CHARGE, SoundSource.BLOCKS, 1.0F, 1.2F);
-            status(server, pos);
+            if (!OrbBlockEntity.replicable(stack)) {
+                com.thefarawaydev.realmsofchaos.ui.BlockLabel.show(server, pos, net.minecraft.network.chat.Component.translatable(
+                        "block." + com.thefarawaydev.realmsofchaos.RealmsOfChaos.MOD_ID + ".cornucopia.refused", stack.getHoverName()), 0xFF7A5A);
+            } else {
+                orb.setPattern(stack.getItem());
+                server.playSound(null, pos, SoundEvents.ENCHANTMENT_TABLE_USE, SoundSource.BLOCKS, 1.0F, 1.1F);
+                server.sendParticles(com.thefarawaydev.realmsofchaos.fx.RocParticles.RUNE.type(), pos.getX() + 0.5, pos.getY() + 0.6, pos.getZ() + 0.5, 16, 0.3, 0.3, 0.3, 0.02);
+                status(server, pos);
+            }
         }
         return InteractionResult.SUCCESS;
     }
@@ -119,7 +156,11 @@ public class CornucopiaBlock extends Block {
     protected InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hit) {
         Core core = state.getValue(CORE);
         if (level instanceof ServerLevel server) {
-            if (core != Core.NONE && player.isShiftKeyDown()) {
+            OrbBlockEntity orb = orb(level, pos);
+            if (player.isShiftKeyDown() && orb != null && orb.pattern() != null) {
+                orb.setPattern(null);
+                status(server, pos);
+            } else if (core != Core.NONE && player.isShiftKeyDown()) {
                 server.setBlock(pos, state.setValue(CORE, Core.NONE).setValue(PROGRESS, 0), 3);
                 Block.popResource(server, pos.above(), new ItemStack(core.core()));
             } else {
@@ -180,6 +221,18 @@ public class CornucopiaBlock extends Block {
         } else if (state.getValue(CORE) == Core.NONE) {
             text = net.minecraft.network.chat.Component.translatable(key + "no_core");
             colour = 0xF0D070;
+        } else if (orb(level, pos) != null && orb(level, pos).pattern() != null) {
+            OrbBlockEntity orb = orb(level, pos);
+            ItemStack pattern = new ItemStack(orb.pattern());
+            Core core = state.getValue(CORE);
+            boolean home = atHome(level, pos, core);
+            int cost = OrbBlockEntity.cost(pattern), steps = OrbBlockEntity.steps(pattern);
+            int left = Math.max(0, steps - orb.work()) * STEP / (home ? 2 : 1) / 20;
+            text = net.minecraft.network.chat.Component.translatable(key + "making", pattern.getHoverName(), cost, orb.ichor());
+            text.append("\n").append(orb.ichor() < cost && orb.work() >= steps
+                    ? net.minecraft.network.chat.Component.translatable(key + "needs_ichor", cost)
+                    : net.minecraft.network.chat.Component.translatable(key + "next", String.format(java.util.Locale.ROOT, "%d:%02d", left / 60, left % 60)));
+            colour = orb.ichor() < cost ? 0xF0D070 : 0xF4D28A;
         } else {
             Core core = state.getValue(CORE);
             boolean home = atHome(level, pos, core);
@@ -203,6 +256,16 @@ public class CornucopiaBlock extends Block {
         boolean formed = formed(level, pos);
         light(level, pos, formed);
         BlockState now = state.setValue(FORMED, formed);
+        OrbBlockEntity orb = orb(level, pos);
+        if (formed && state.getValue(CORE) != Core.NONE && orb != null && orb.pattern() != null) {
+            // making a pattern: it comes with time, and costs ichor
+            ItemStack pattern = new ItemStack(orb.pattern());
+            int steps = OrbBlockEntity.steps(pattern);
+            if (level.getGameTime() % STEP < CHECK && orb.work() < steps) orb.addWork(atHome(level, pos, state.getValue(CORE)) ? 2 : 1);
+            if (orb.work() >= steps && orb.spend(OrbBlockEntity.cost(pattern))) deliver(level, pos, state.getValue(CORE), pattern);
+            if (now != state) level.setBlock(pos, now, 3);
+            return;
+        }
         if (formed && state.getValue(CORE) != Core.NONE && level.getGameTime() % STEP < CHECK) {
             int progress = state.getValue(PROGRESS) + (atHome(level, pos, state.getValue(CORE)) ? 2 : 1);
             if (progress >= STEPS) {
@@ -233,6 +296,13 @@ public class CornucopiaBlock extends Block {
         Core core = state.getValue(CORE);
         ItemStack out = random.nextFloat() < ADAMANTINE_CHANCE ? new ItemStack(ModContent.RAW_ADAMANTINE.get()) : new ItemStack(core.yield(), 1 + random.nextInt(2));
         ItemStack made = out.copy();
+        deliver(level, pos, core, out);
+        return made;
+    }
+
+    /** Puts what the shrine made into a container beside or under the plinth, or out on top, with light and sound. */
+    public static void deliver(ServerLevel level, BlockPos pos, Core core, ItemStack out) {
+        out = out.copy();
         // into a container beside the plinth or under it
         BlockPos plinth = pos.below();
         for (Direction d : new Direction[]{Direction.DOWN, Direction.NORTH, Direction.SOUTH, Direction.EAST, Direction.WEST}) {
@@ -249,7 +319,6 @@ public class CornucopiaBlock extends Block {
         level.sendParticles(com.thefarawaydev.realmsofchaos.fx.RocParticles.GLINT.type(), pos.getX() + 0.5, pos.getY() + 0.8, pos.getZ() + 0.5, 10, 0.4, 0.3, 0.4, 0.0);
         level.playSound(null, pos, SoundEvents.AMETHYST_BLOCK_CHIME, SoundSource.BLOCKS, 1.2F, 0.7F);
         level.playSound(null, pos, SoundEvents.BEACON_POWER_SELECT, SoundSource.BLOCKS, 0.5F, 1.6F);
-        return made;
     }
 
     @Override

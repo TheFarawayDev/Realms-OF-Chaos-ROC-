@@ -3,11 +3,17 @@
     "humanoid": [
       {
         "texture": "realms_of_chaos:helm_of_hades"
+      },
+      {
+        "texture": "realms_of_chaos:helm_of_hades_overlay"
       }
     ],
     "humanoid_leggings": [
       {
         "texture": "realms_of_chaos:helm_of_hades"
+      },
+      {
+        "texture": "realms_of_chaos:helm_of_hades_overlay"
       }
     ]
   }

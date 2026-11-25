@@ -3,11 +3,17 @@
     "humanoid": [
       {
         "texture": "realms_of_chaos:nemean_pelt"
+      },
+      {
+        "texture": "realms_of_chaos:nemean_pelt_overlay"
       }
     ],
     "humanoid_leggings": [
       {
         "texture": "realms_of_chaos:nemean_pelt"
+      },
+      {
+        "texture": "realms_of_chaos:nemean_pelt_overlay"
       }
     ]
   }
