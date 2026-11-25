@@ -1,0 +1,147 @@
+{
+  "parent": "minecraft:block/block",
+  "textures": {
+    "particle": "realms_of_chaos:block/column_of_plenty_shaft_lit",
+    "shaft": "realms_of_chaos:block/column_of_plenty_shaft_lit",
+    "trim": "realms_of_chaos:block/column_of_plenty_trim_lit",
+    "end": "realms_of_chaos:block/polished_porphyry"
+  },
+  "elements": [
+    {
+      "from": [
+        2,
+        11,
+        2
+      ],
+      "to": [
+        14,
+        13,
+        14
+      ],
+      "faces": {
+        "north": {
+          "texture": "#trim",
+          "uv": [
+            2,
+            4,
+            14,
+            6
+          ]
+        },
+        "south": {
+          "texture": "#trim",
+          "uv": [
+            2,
+            4,
+            14,
+            6
+          ]
+        },
+        "east": {
+          "texture": "#trim",
+          "uv": [
+            2,
+            4,
+            14,
+            6
+          ]
+        },
+        "west": {
+          "texture": "#trim",
+          "uv": [
+            2,
+            4,
+            14,
+            6
+          ]
+        },
+        "up": {
+          "texture": "#trim",
+          "uv": [
+            2,
+            4,
+            14,
+            6
+          ]
+        },
+        "down": {
+          "texture": "#trim",
+          "uv": [
+            2,
+            4,
+            14,
+            6
+          ]
+        }
+      }
+    },
+    {
+      "from": [
+        1,
+        13,
+        1
+      ],
+      "to": [
+        15,
+        16,
+        15
+      ],
+      "faces": {
+        "north": {
+          "texture": "#trim",
+          "uv": [
+            1,
+            0,
+            15,
+            3
+          ]
+        },
+        "south": {
+          "texture": "#trim",
+          "uv": [
+            1,
+            0,
+            15,
+            3
+          ]
+        },
+        "east": {
+          "texture": "#trim",
+          "uv": [
+            1,
+            0,
+            15,
+            3
+          ]
+        },
+        "west": {
+          "texture": "#trim",
+          "uv": [
+            1,
+            0,
+            15,
+            3
+          ]
+        },
+        "up": {
+          "texture": "#end",
+          "uv": [
+            1,
+            1,
+            15,
+            15
+          ]
+        },
+        "down": {
+          "texture": "#end",
+          "uv": [
+            1,
+            1,
+            15,
+            15
+          ]
+        }
+      }
+    }
+  ]
+}

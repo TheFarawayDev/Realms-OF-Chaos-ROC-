@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "GCG",
+    "PAP",
+    "PPP"
+  ],
+  "key": {
+    "G": "minecraft:gold_ingot",
+    "C": "realms_of_chaos:chiseled_porphyry",
+    "P": "realms_of_chaos:polished_porphyry",
+    "A": "realms_of_chaos:adamantine_ingot"
+  },
+  "result": {
+    "id": "realms_of_chaos:plinth_of_plenty"
+  }
+}

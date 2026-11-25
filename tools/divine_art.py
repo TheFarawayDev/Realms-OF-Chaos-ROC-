@@ -212,60 +212,6 @@ def gen(assets, data, wj):
     wj(os.path.join(assets, "blockstates/giant_clam.json"), {"variants": variants})
     wj(os.path.join(assets, "items/giant_clam.json"), {"model": {"type": "minecraft:model", "model": f"{MOD}:block/giant_clam_pearl"}})
 
-    # ---- the Cornucopia: a golden horn banded in ivory on a porphyry plinth, spilling fruit, a core glowing in its mouth
-    def horn(x, y):
-        band = y % 5
-        if band == 0: return (240, 230, 200)
-        if band == 1: return (200, 186, 150)
-        return GOLD_HI if x < 4 else GOLD if x < 11 else GOLD_LO
-    paint(horn).save(os.path.join(T, "cornucopia_horn.png"))
-
-    def plinth(x, y):
-        if y in (0, 1): return GOLD if y == 0 else GOLD_LO
-        if y == 15: return (58, 18, 34)
-        return shade((120, 42, 66), g[y][x])
-    paint(plinth).save(os.path.join(T, "cornucopia_plinth.png"))
-
-    def fruit(x, y):
-        # apples, grapes and ears of grain, packed together
-        q = (x // 4 + y // 4) % 3
-        if q == 0: return (210, 50, 50) if (x + y) % 3 else (250, 120, 110)
-        if q == 1: return (120, 60, 160) if (x + y) % 2 else (170, 110, 210)
-        return (230, 190, 80) if y % 2 else (200, 150, 50)
-    paint(fruit).save(os.path.join(T, "cornucopia_fruit.png"))
-    glows = {"none": ((40, 24, 14), (70, 44, 24)), "storm": ((255, 236, 140), (255, 255, 230)), "tide": ((90, 220, 230), (220, 255, 255)),
-             "shade": ((150, 100, 240), (230, 210, 255))}
-    for core_id, (c1, c2) in glows.items():
-        def mouth(x, y, c1=c1, c2=c2):
-            r = math.hypot(x - 7.5, y - 7.5)
-            if r > 6.5: return GOLD_LO
-            return c2 if r < 2.2 else c1 if r < 4.5 else shade(c1, 0.7)
-        paint(mouth).save(os.path.join(T, f"cornucopia_mouth_{core_id}.png"))
-
-    def cornucopia(core_id):
-        tex = {"particle": t("cornucopia_horn"), "horn": t("cornucopia_horn"), "plinth": t("cornucopia_plinth"), "fruit": t("cornucopia_fruit"),
-               "mouth": t(f"cornucopia_mouth_{core_id}"), "top": t("polished_porphyry")}
-        els = [box((2, 0, 2), (14, 3, 14), "plinth", (2, 13, 14, 16), (2, 2, 14, 14), top_tex="top"),
-               box((1, 3, 1), (15, 4, 15), "plinth", (1, 0, 15, 1), (1, 1, 15, 15), top_tex="top")]
-        # the horn, narrowing from its mouth at the front to a tip curling up behind
-        segs = [((4, 4, 1), (12, 12, 5)), ((5, 5, 5), (11, 11, 8)), ((6, 6, 8), (10, 10, 11)), ((7, 7, 11), (9, 9, 13)),
-                ((7, 9, 12), (9, 12, 14)), ((7, 12, 11), (9, 14, 13))]
-        for n, (a, b) in enumerate(segs):
-            e = box(a, b, "horn", (0, n * 2, b[0] - a[0], n * 2 + b[1] - a[1]), (0, 0, b[0] - a[0], b[2] - a[2]))
-            if n == 0: e["faces"]["north"] = {"texture": "#mouth", "uv": [4, 4, 12, 12]}
-            els.append(e)
-        els += [box((3, 4, 0), (6, 7, 3), "fruit", (0, 0, 3, 3), (0, 0, 3, 3)), box((10, 4, 0), (13, 6, 3), "fruit", (4, 4, 7, 6), (4, 4, 7, 7)),
-                box((6, 4, 0), (10, 5, 2), "fruit", (8, 8, 12, 9), (8, 8, 12, 10))]
-        return {"parent": "minecraft:block/block", "textures": tex, "elements": els}
-    cv = {}
-    for core_id in glows:
-        wj(os.path.join(M, f"cornucopia_{core_id}.json"), cornucopia(core_id))
-        for f, r in rot.items():
-            cv[f"core={core_id},facing={f}"] = {"model": f"{MOD}:block/cornucopia_{core_id}", "y": r}
-    wj(os.path.join(M, "cornucopia.json"), {"parent": f"{MOD}:block/cornucopia_storm"})
-    wj(os.path.join(assets, "blockstates/cornucopia.json"), {"variants": cv})
-    wj(os.path.join(assets, "items/cornucopia.json"), {"model": {"type": "minecraft:model", "model": f"{MOD}:block/cornucopia_storm"}})
-
     # ---- items: the resources, the god-metals, the cores
     def pal(o, w, h, m, d, a):
         return {"O": o, "W": w, "H": h, "M": m, "D": d, "A": a}
@@ -327,8 +273,6 @@ def gen(assets, data, wj):
     shaped("hades_weapon_from_shade_core", {"K": "minecraft:wither_skeleton_skull", "C": f"{MOD}:shade_core", "I": f"{MOD}:stygian_iron_ingot",
                                             "E": f"{MOD}:essence_hades"}, ["KCK", "IEI", " I "], "hades_weapon", 1, "equipment")
     shaped("giant_clam", {"N": "minecraft:nautilus_shell", "C": "minecraft:prismarine_crystals", "S": "minecraft:sea_pickle"}, ["NCN", "CSC", "NCN"], "giant_clam")
-    shaped("cornucopia", {"T": f"{MOD}:thunder_core", "N": "minecraft:nether_star", "S": f"{MOD}:shade_core", "A": f"{MOD}:adamantine_block",
-                          "H": "minecraft:goat_horn", "G": "minecraft:gold_block", "D": f"{MOD}:tide_core"}, ["TNS", "AHA", "GDG"], "cornucopia")
     ingots = {"adamantine": A, "celestial_bronze": f"{MOD}:celestial_bronze_ingot", "orichalcum": f"{MOD}:orichalcum_ingot",
               "stygian_iron": f"{MOD}:stygian_iron_ingot"}
     patterns = {"helmet": ["###", "# #"], "chestplate": ["# #", "###", "###"], "leggings": ["###", "# #", "# #"], "boots": ["# #", "# #"]}
@@ -353,7 +297,8 @@ def gen(assets, data, wj):
     # ---- tags
     MC = os.path.join(os.path.dirname(data), "minecraft")
     wj(os.path.join(MC, "tags/block/needs_diamond_tool.json"), {"replace": False, "values": [f"{MOD}:deepslate_adamantine_ore", f"{MOD}:adamantine_block",
-                                                                                           f"{MOD}:stygian_iron_ore", f"{MOD}:cornucopia"]})
+                                                                                           f"{MOD}:stygian_iron_ore", f"{MOD}:cornucopia",
+                                                                                           f"{MOD}:plinth_of_plenty", f"{MOD}:column_of_plenty"]})
     for piece, tag in (("helmet", "head_armor"), ("chestplate", "chest_armor"), ("leggings", "leg_armor"), ("boots", "foot_armor")):
         wj(os.path.join(MC, f"tags/item/{tag}.json"), {"replace": False, "values": [f"{MOD}:{s}_{piece}" for s in ARMOR]})
 

@@ -1,0 +1,10 @@
+{
+  "variants": {
+    "lit=false": {
+      "model": "realms_of_chaos:block/plinth_of_plenty"
+    },
+    "lit=true": {
+      "model": "realms_of_chaos:block/plinth_of_plenty_lit"
+    }
+  }
+}

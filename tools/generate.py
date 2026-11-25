@@ -13,6 +13,7 @@ import hashlib, json, math, os, random
 import hud_art
 import panoply_art
 import divine_art
+import divine_pro
 from PIL import Image
 
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
@@ -2032,6 +2033,7 @@ def gen_lang():
                 f"Defeat {name}, {title}. Rank {rank} of the line of {info['label']}.")
     lang.update(panoply_art.lang())
     lang.update(divine_art.lang())
+    lang.update(divine_pro.lang())
     wj(os.path.join(ASSETS, "lang/en_us.json"), lang)
 
 # ----------------------------------------------------------------------------
@@ -2079,7 +2081,7 @@ DECOR = ["olympian_marble", "olympian_marble_pillar", "gilded_frieze", "abyssal_
          "portal_frame_sky", "portal_frame_sea", "portal_frame_shade", "portal_frame_hub", "arrival_sigil",
          "bronze_trapdoor", "sky_trapdoor", "shade_trapdoor",
          "arena_sand", "beast_gate", "war_drum", "war_standard", "sprinkler", "porphyry", "polished_porphyry", "porphyry_bricks", "porphyry_tiles", "chiseled_porphyry",
-         "porphyry_pillar", "adamantine_block", "fulgurite", "giant_clam", "bronze_sliding_door", "sky_sliding_door", "sea_sliding_door", "shade_sliding_door",
+         "porphyry_pillar", "adamantine_block", "fulgurite", "giant_clam", "plinth_of_plenty", "column_of_plenty", "bronze_sliding_door", "sky_sliding_door", "sea_sliding_door", "shade_sliding_door",
          "reinforced_glass", "frosted_glass", "smart_glass", "veil_glass", "one_way_glass"] + [f"{b}_{k}" for b in ("olympian_marble", "cloudstone", "trench_stone", "tartarus_stone", "storm_brick", "tide_brick", "ash_brick", "underworld_brick", "polished_porphyry", "porphyry_bricks") for k in ("stairs", "slab")]
 PICKAXE_ONLY = ["bronze_door", "sky_door", "shade_door", "verdigris_door", "verdigris_trapdoor", "porphyry_door", "porphyry_trapdoor", "deepslate_adamantine_ore", "stygian_iron_ore", "cornucopia"]
 AXE_ONLY = ["sea_door", "sea_trapdoor", "garrison_door", "garrison_trapdoor", "ivory_door", "ivory_trapdoor",
@@ -5127,6 +5129,7 @@ if __name__ == "__main__":
     import block_art
     block_art.run(ASSETS, DATA)
     divine_art.gen(ASSETS, DATA, wj)
+    divine_pro.gen(ASSETS, DATA, wj)
     gen_recipes()
     gen_field_data()
     gen_tags()

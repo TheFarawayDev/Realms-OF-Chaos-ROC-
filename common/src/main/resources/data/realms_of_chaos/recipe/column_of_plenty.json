@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "GMG",
+    "GPG",
+    "GMG"
+  ],
+  "key": {
+    "G": "minecraft:gold_ingot",
+    "M": "#realms_of_chaos:god_metals",
+    "P": "realms_of_chaos:porphyry_pillar"
+  },
+  "result": {
+    "id": "realms_of_chaos:column_of_plenty"
+  }
+}

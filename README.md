@@ -41,12 +41,28 @@ The current build is an **Alpha**.
   adamantine (the most protection - 24 points, toughness 4) gives resistance; celestial bronze gives speed and
   haste; orichalcum lets you breathe and swim like the sea's own; stygian iron keeps off fire and withering. They
   cannot burn and are mended with their ingot. (`art/renders/armor-sets.png`)
-* **The Cornucopia.** The horn of plenty: a golden horn banded in ivory on a porphyry plinth, spilling fruit. It is
-  very hard to make - all three cores, a nether star, two blocks of adamantine, a goat horn and two blocks of gold.
-  Set a core in its mouth and it glows with that core's colour and brings forth, every five minutes, the resource the
-  core belongs to: storm glass for a thunder core, abyssal pearls for a tide core, raw stygian iron for a shade core -
-  and now and then a lump of raw adamantine. It fills a chest or hopper under it, or spills out on top. Sneak with an
-  empty hand to take the core back. (`art/renders/cornucopia-and-clams.png`, `art/renders/cornucopia-cores.png`)
+* **The Shrine of Plenty: a resource generator of three parts.** The Cornucopia no longer works alone: it is the heart
+  of a shrine built of three blocks, each hard to make -
+  * the **Cornucopia**, a horn of ivory bound in gold, its round mouth glowing with whatever core is set in it (a
+    nether star, a goat horn, two blocks of adamantine, two blocks of gold and an ingot of each god-metal);
+  * the **Plinth of Plenty** it stands on, an altar of porphyry with a gold meander and an offering dish (chiseled and
+    polished porphyry, gold and an adamantine ingot);
+  * four **Columns of Plenty**, fluted porphyry with a gold base and capital, two high at the corners of the three by
+    three round the plinth (each from a porphyry pillar, gold and two god-metal ingots).
+
+  Whole, the shrine lights: the inlays of the columns and the plinth glow and threads of light run from the columns
+  into the horn. Set a core in the mouth and it brings forth one or two of that core's resource every five minutes -
+  storm glass for a thunder core, abyssal pearls for a tide core, raw stygian iron for a shade core, and now and then
+  raw adamantine - **twice as fast where its core is at home**: in a thunderstorm under open sky, by the sea, or in the
+  nether. What it makes goes into a chest or hopper beside or under the plinth, or spills out on top. Use the horn to
+  see a panel over it: what the shrine still lacks, or how long until its next yield. Sneak with an empty hand to take
+  the core back. (`art/renders/shrine-of-plenty.png`, `shrine-of-plenty-incomplete.png`, `shrine-of-plenty-above.png`)
+* **The new resources, drawn properly.** Storm glass, abyssal pearls, raw stygian iron and adamantine, the four
+  god-metal ingots, the three cores, the sixteen pieces of armour, fulgurite, stygian ore and the giant clam are
+  redrawn with ramps of colour that cool in the shadows and warm in the light: crystals cut in facets, pearls and gems
+  shaded as spheres, ores as clusters of nuggets, and the armour worn as a Corinthian helm with a crest, a muscled
+  cuirass with pauldrons and a belt of strips, greaves with knee plates, and strapped sandals.
+  (`art/renders/divine-resources-art.png`, `art/renders/armor-sets.png`)
 * **Adamantine, and the first tool set.** A new ore, **Deepslate Adamantine Ore**, lies in small veins in the deepest
   stone of the overworld (below y -40) - about twenty times rarer than diamond. It is as hard as ancient debris and
   wants a diamond pickaxe or better. It gives **Raw Adamantine**, which only a blast furnace will render into

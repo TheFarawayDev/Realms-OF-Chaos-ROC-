@@ -139,7 +139,8 @@ public final class ModContent {
             PORPHYRY_TILES = new Ref<>(), PORPHYRY_PILLAR = new Ref<>(), PORPHYRY_DOOR = new Ref<>(), PORPHYRY_TRAPDOOR = new Ref<>(),
             DEEPSLATE_ADAMANTINE_ORE = new Ref<>(), ADAMANTINE_BLOCK = new Ref<>();
     /** What is won from the world itself: fulgurite where lightning strikes sand, clams that grow pearls, iron from the soul valleys; and the Cornucopia. */
-    public static final Ref<Block> FULGURITE = new Ref<>(), GIANT_CLAM = new Ref<>(), STYGIAN_IRON_ORE = new Ref<>(), CORNUCOPIA = new Ref<>();
+    public static final Ref<Block> FULGURITE = new Ref<>(), GIANT_CLAM = new Ref<>(), STYGIAN_IRON_ORE = new Ref<>(), CORNUCOPIA = new Ref<>(),
+            PLENTY_PLINTH = new Ref<>(), PLENTY_COLUMN = new Ref<>();
     /** The resources, the god-metals forged from them, and the cores that the relics and the Cornucopia are made with. */
     public static final Ref<Item> STORM_GLASS = new Ref<>(), ABYSSAL_PEARL = new Ref<>(), RAW_STYGIAN_IRON = new Ref<>(),
             CELESTIAL_BRONZE_INGOT = new Ref<>(), ORICHALCUM_INGOT = new Ref<>(), STYGIAN_IRON_INGOT = new Ref<>(),
@@ -387,7 +388,14 @@ public final class ModContent {
                 BlockBehaviour.Properties.of().setId(key).mapColor(MapColor.COLOR_BROWN).requiresCorrectToolForDrops().strength(20.0F, 1200.0F).sound(SoundType.NETHER_ORE)));
         block("cornucopia", CORNUCOPIA, key -> new com.thefarawaydev.realmsofchaos.block.CornucopiaBlock(BlockBehaviour.Properties.of().setId(key)
                 .mapColor(MapColor.GOLD).requiresCorrectToolForDrops().strength(50.0F, 1200.0F).sound(SoundType.METAL).noOcclusion()
-                .lightLevel(st -> st.getValue(com.thefarawaydev.realmsofchaos.block.CornucopiaBlock.CORE) == com.thefarawaydev.realmsofchaos.block.CornucopiaBlock.Core.NONE ? 0 : 9)));
+                .lightLevel(st -> st.getValue(com.thefarawaydev.realmsofchaos.block.CornucopiaBlock.CORE) == com.thefarawaydev.realmsofchaos.block.CornucopiaBlock.Core.NONE ? 0
+                        : st.getValue(com.thefarawaydev.realmsofchaos.block.CornucopiaBlock.FORMED) ? 13 : 7)));
+        block("plinth_of_plenty", PLENTY_PLINTH, key -> new com.thefarawaydev.realmsofchaos.block.PlentyBlocks.Plinth(BlockBehaviour.Properties.of().setId(key)
+                .mapColor(MapColor.COLOR_PURPLE).requiresCorrectToolForDrops().strength(5.0F, 1200.0F).sound(SoundType.STONE)
+                .lightLevel(st -> st.getValue(com.thefarawaydev.realmsofchaos.block.PlentyBlocks.LIT) ? 10 : 0)));
+        block("column_of_plenty", PLENTY_COLUMN, key -> new com.thefarawaydev.realmsofchaos.block.PlentyBlocks.Column(BlockBehaviour.Properties.of().setId(key)
+                .mapColor(MapColor.COLOR_PURPLE).requiresCorrectToolForDrops().strength(5.0F, 1200.0F).sound(SoundType.STONE).noOcclusion()
+                .lightLevel(st -> st.getValue(com.thefarawaydev.realmsofchaos.block.PlentyBlocks.LIT) ? 8 : 0)));
         door("sky", SKY_DOOR, SKY_TRAPDOOR, net.minecraft.world.level.block.state.properties.BlockSetType.COPPER, MapColor.QUARTZ);
         door("sea", SEA_DOOR, SEA_TRAPDOOR, net.minecraft.world.level.block.state.properties.BlockSetType.DARK_OAK, MapColor.WARPED_WART_BLOCK);
         door("shade", SHADE_DOOR, SHADE_TRAPDOOR, net.minecraft.world.level.block.state.properties.BlockSetType.CRIMSON, MapColor.COLOR_BLACK);

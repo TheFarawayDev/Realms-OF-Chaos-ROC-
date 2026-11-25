@@ -1,22 +1,21 @@
 {
   "type": "minecraft:crafting_shaped",
   "category": "misc",
+  "pattern": [
+    "BNO",
+    "AHA",
+    "GSG"
+  ],
   "key": {
-    "T": "realms_of_chaos:thunder_core",
+    "B": "realms_of_chaos:celestial_bronze_ingot",
     "N": "minecraft:nether_star",
-    "S": "realms_of_chaos:shade_core",
+    "O": "realms_of_chaos:orichalcum_ingot",
     "A": "realms_of_chaos:adamantine_block",
     "H": "minecraft:goat_horn",
     "G": "minecraft:gold_block",
-    "D": "realms_of_chaos:tide_core"
+    "S": "realms_of_chaos:stygian_iron_ingot"
   },
-  "pattern": [
-    "TNS",
-    "AHA",
-    "GDG"
-  ],
   "result": {
-    "id": "realms_of_chaos:cornucopia",
-    "count": 1
+    "id": "realms_of_chaos:cornucopia"
   }
 }

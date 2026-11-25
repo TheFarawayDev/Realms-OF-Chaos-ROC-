@@ -1,0 +1,8 @@
+{
+  "parent": "minecraft:block/cube_bottom_top",
+  "textures": {
+    "side": "realms_of_chaos:block/plinth_of_plenty_side_lit",
+    "top": "realms_of_chaos:block/plinth_of_plenty_top_lit",
+    "bottom": "realms_of_chaos:block/polished_porphyry"
+  }
+}

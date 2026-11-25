@@ -7060,21 +7060,38 @@ public final class SelfTest {
                 int ores = net.minecraft.world.level.levelgen.GenerationStep.Decoration.UNDERGROUND_ORES.ordinal();
                 check(placed.isPresent() && valley.value().getGenerationSettings().features().get(ores).stream().anyMatch(h -> h.is(placed.get().key())),
                         "stygian iron ore lies in the soul sand valleys");
-                // ---- the cornucopia takes a core and brings forth what that core belongs to, into a chest under it
-                BlockPos horn = o.offset(-3, 0, -3);
-                level.setBlock(horn.below(), Blocks.CHEST.defaultBlockState(), 3);
+                // ---- the shrine of plenty: a Cornucopia on a Plinth of Plenty, four Columns of Plenty two high at the corners
+                BlockPos horn = o.offset(-2, 1, -2);
+                level.setBlock(horn.below(), ModContent.PLENTY_PLINTH.get().defaultBlockState(), 3);
                 level.setBlock(horn, ModContent.CORNUCOPIA.get().defaultBlockState(), 3);
+                level.setBlock(horn.below().north(), Blocks.CHEST.defaultBlockState(), 3);
+                check(!com.thefarawaydev.realmsofchaos.block.CornucopiaBlock.formed(level, horn)
+                        && com.thefarawaydev.realmsofchaos.block.CornucopiaBlock.missing(level, horn).size() == 1, "on its plinth, with no columns, the shrine is not whole - and says what it lacks");
+                for (BlockPos c : com.thefarawaydev.realmsofchaos.block.CornucopiaBlock.columns(horn)) level.setBlock(c, ModContent.PLENTY_COLUMN.get().defaultBlockState(), 3);
+                check(com.thefarawaydev.realmsofchaos.block.CornucopiaBlock.formed(level, horn), "four columns two high at the corners: the shrine is whole");
+                level.getBlockState(horn).tick(level, horn, level.getRandom());
+                BlockState lower = level.getBlockState(horn.offset(1, -1, 1)), upper = level.getBlockState(horn.offset(1, 0, 1));
+                check(level.getBlockState(horn).getValue(com.thefarawaydev.realmsofchaos.block.CornucopiaBlock.FORMED)
+                        && lower.getValue(com.thefarawaydev.realmsofchaos.block.PlentyBlocks.LIT) && level.getBlockState(horn.below()).getValue(com.thefarawaydev.realmsofchaos.block.PlentyBlocks.LIT)
+                        && lower.getValue(com.thefarawaydev.realmsofchaos.block.PlentyBlocks.Column.BASE) && !lower.getValue(com.thefarawaydev.realmsofchaos.block.PlentyBlocks.Column.CAPITAL)
+                        && upper.getValue(com.thefarawaydev.realmsofchaos.block.PlentyBlocks.Column.CAPITAL), "whole, the columns and the plinth light; each column wears its base and capital");
                 ItemStack thunder = new ItemStack(ModContent.THUNDER_CORE.get());
                 smith.setItemInHand(net.minecraft.world.InteractionHand.MAIN_HAND, thunder);
                 level.getBlockState(horn).useItemOn(thunder, level, smith, net.minecraft.world.InteractionHand.MAIN_HAND, new BlockHitResult(Vec3.atCenterOf(horn), Direction.UP, horn, false));
                 check(level.getBlockState(horn).getValue(com.thefarawaydev.realmsofchaos.block.CornucopiaBlock.CORE) == com.thefarawaydev.realmsofchaos.block.CornucopiaBlock.Core.STORM
-                        && thunder.isEmpty(), "a thunder core set in the Cornucopia");
+                        && thunder.isEmpty() && com.thefarawaydev.realmsofchaos.ui.BlockLabel.at(level, horn) != null, "a thunder core set in the horn; a panel over it tells how the shrine stands");
                 ItemStack made = com.thefarawaydev.realmsofchaos.block.CornucopiaBlock.produce(level, horn, level.getRandom());
-                var chest = (net.minecraft.world.Container) level.getBlockEntity(horn.below());
-                boolean stored = false;
-                for (int i = 0; i < chest.getContainerSize(); i++) stored |= chest.getItem(i).is(made.getItem());
-                check((made.is(ModContent.STORM_GLASS.get()) || made.is(ModContent.RAW_ADAMANTINE.get())) && stored, "it brings forth storm glass, into the chest under it: " + made);
-                check(level.getBlockTicks().hasScheduledTick(horn, ModContent.CORNUCOPIA.get()), "and will again in a few minutes");
+                var chest = (net.minecraft.world.Container) level.getBlockEntity(horn.below().north());
+                int stored = 0;
+                for (int i = 0; i < chest.getContainerSize(); i++) if (chest.getItem(i).is(made.getItem())) stored += chest.getItem(i).getCount();
+                check((made.is(ModContent.STORM_GLASS.get()) || made.is(ModContent.RAW_ADAMANTINE.get())) && stored == made.getCount() && made.getCount() >= 1,
+                        "it brings forth storm glass, into the chest beside the plinth: " + made);
+                check(!com.thefarawaydev.realmsofchaos.block.CornucopiaBlock.atHome(level, horn, com.thefarawaydev.realmsofchaos.block.CornucopiaBlock.Core.SHADE),
+                        "a shade core is not at home in the overworld");
+                level.setBlock(horn.offset(-1, 0, -1), Blocks.AIR.defaultBlockState(), 3);
+                level.getBlockState(horn).tick(level, horn, level.getRandom());
+                check(!level.getBlockState(horn).getValue(com.thefarawaydev.realmsofchaos.block.CornucopiaBlock.FORMED)
+                        && !level.getBlockState(horn.offset(1, -1, 1)).getValue(com.thefarawaydev.realmsofchaos.block.PlentyBlocks.LIT), "take a column away and the shrine goes dark");
                 // ---- the armour: better than netherite, and a gift for a whole set
                 var nether = net.minecraft.world.item.equipment.ArmorMaterials.NETHERITE;
                 var ad = com.thefarawaydev.realmsofchaos.item.ArmorSets.Set.ADAMANTINE.material;
@@ -7095,7 +7112,7 @@ public final class SelfTest {
                 // ---- every step of the roads can be made
                 for (String id : List.of("storm_glass_from_blasting_fulgurite", "celestial_bronze_ingot", "orichalcum_ingot", "stygian_iron_ingot_from_blasting_raw_stygian_iron",
                         "thunder_core", "tide_core", "shade_core", "zeus_weapon_from_thunder_core", "poseidon_weapon_from_tide_core", "hades_weapon_from_shade_core",
-                        "giant_clam", "cornucopia", "adamantine_chestplate", "celestial_bronze_helmet", "orichalcum_leggings", "stygian_iron_boots"))
+                        "giant_clam", "cornucopia", "plinth_of_plenty", "column_of_plenty", "adamantine_chestplate", "celestial_bronze_helmet", "orichalcum_leggings", "stygian_iron_boots"))
                     check(server.getRecipeManager().byKey(net.minecraft.resources.ResourceKey.create(net.minecraft.core.registries.Registries.RECIPE, RealmsOfChaos.id(id))).isPresent(), "a recipe for " + id);
             } finally {
                 smith.remove(net.minecraft.world.entity.Entity.RemovalReason.DISCARDED);

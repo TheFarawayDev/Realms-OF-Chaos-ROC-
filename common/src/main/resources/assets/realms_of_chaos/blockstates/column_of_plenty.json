@@ -1,0 +1,56 @@
+{
+  "multipart": [
+    {
+      "when": {
+        "lit": "false"
+      },
+      "apply": {
+        "model": "realms_of_chaos:block/column_of_plenty_shaft"
+      }
+    },
+    {
+      "when": {
+        "lit": "false",
+        "base": "true"
+      },
+      "apply": {
+        "model": "realms_of_chaos:block/column_of_plenty_base"
+      }
+    },
+    {
+      "when": {
+        "lit": "false",
+        "capital": "true"
+      },
+      "apply": {
+        "model": "realms_of_chaos:block/column_of_plenty_capital"
+      }
+    },
+    {
+      "when": {
+        "lit": "true"
+      },
+      "apply": {
+        "model": "realms_of_chaos:block/column_of_plenty_shaft_lit"
+      }
+    },
+    {
+      "when": {
+        "lit": "true",
+        "base": "true"
+      },
+      "apply": {
+        "model": "realms_of_chaos:block/column_of_plenty_base_lit"
+      }
+    },
+    {
+      "when": {
+        "lit": "true",
+        "capital": "true"
+      },
+      "apply": {
+        "model": "realms_of_chaos:block/column_of_plenty_capital_lit"
+      }
+    }
+  ]
+}

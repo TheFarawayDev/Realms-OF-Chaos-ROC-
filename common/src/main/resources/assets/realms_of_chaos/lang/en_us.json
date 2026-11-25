@@ -1886,5 +1886,15 @@
   "item.realms_of_chaos.stygian_iron_helmet": "Stygian Iron Helmet",
   "item.realms_of_chaos.stygian_iron_chestplate": "Stygian Iron Chestplate",
   "item.realms_of_chaos.stygian_iron_leggings": "Stygian Iron Leggings",
-  "item.realms_of_chaos.stygian_iron_boots": "Stygian Iron Boots"
+  "item.realms_of_chaos.stygian_iron_boots": "Stygian Iron Boots",
+  "block.realms_of_chaos.plinth_of_plenty": "Plinth of Plenty",
+  "block.realms_of_chaos.column_of_plenty": "Column of Plenty",
+  "block.realms_of_chaos.cornucopia.incomplete": "The shrine is not whole",
+  "block.realms_of_chaos.cornucopia.needs_plinth": "Set the horn on a Plinth of Plenty",
+  "block.realms_of_chaos.cornucopia.needs_columns": "Columns of Plenty: %s of %s, two high at the corners",
+  "block.realms_of_chaos.cornucopia.no_core": "The shrine stands whole. Set a core in the horn's mouth",
+  "block.realms_of_chaos.cornucopia.working": "%s in %s",
+  "block.realms_of_chaos.cornucopia.at_home.storm": "The storm feeds it: twice as fast",
+  "block.realms_of_chaos.cornucopia.at_home.tide": "The sea feeds it: twice as fast",
+  "block.realms_of_chaos.cornucopia.at_home.shade": "The underworld feeds it: twice as fast"
 }
