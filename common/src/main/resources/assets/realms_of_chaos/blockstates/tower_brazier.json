@@ -1,13 +1,124 @@
 {
   "variants": {
-    "tower=0": {
-      "model": "realms_of_chaos:block/tower_brazier_zeus"
+    "facing=north,mount=floor,tower=0": {
+      "model": "realms_of_chaos:block/tower_brazier_floor_zeus"
     },
-    "tower=1": {
-      "model": "realms_of_chaos:block/tower_brazier_poseidon"
+    "facing=east,mount=floor,tower=0": {
+      "model": "realms_of_chaos:block/tower_brazier_floor_zeus"
     },
-    "tower=2": {
-      "model": "realms_of_chaos:block/tower_brazier_hades"
+    "facing=south,mount=floor,tower=0": {
+      "model": "realms_of_chaos:block/tower_brazier_floor_zeus"
+    },
+    "facing=west,mount=floor,tower=0": {
+      "model": "realms_of_chaos:block/tower_brazier_floor_zeus"
+    },
+    "facing=north,mount=standing,tower=0": {
+      "model": "realms_of_chaos:block/tower_brazier_standing_zeus"
+    },
+    "facing=east,mount=standing,tower=0": {
+      "model": "realms_of_chaos:block/tower_brazier_standing_zeus"
+    },
+    "facing=south,mount=standing,tower=0": {
+      "model": "realms_of_chaos:block/tower_brazier_standing_zeus"
+    },
+    "facing=west,mount=standing,tower=0": {
+      "model": "realms_of_chaos:block/tower_brazier_standing_zeus"
+    },
+    "facing=north,mount=wall,tower=0": {
+      "model": "realms_of_chaos:block/tower_brazier_wall_zeus",
+      "y": 0
+    },
+    "facing=east,mount=wall,tower=0": {
+      "model": "realms_of_chaos:block/tower_brazier_wall_zeus",
+      "y": 90
+    },
+    "facing=south,mount=wall,tower=0": {
+      "model": "realms_of_chaos:block/tower_brazier_wall_zeus",
+      "y": 180
+    },
+    "facing=west,mount=wall,tower=0": {
+      "model": "realms_of_chaos:block/tower_brazier_wall_zeus",
+      "y": 270
+    },
+    "facing=north,mount=floor,tower=1": {
+      "model": "realms_of_chaos:block/tower_brazier_floor_poseidon"
+    },
+    "facing=east,mount=floor,tower=1": {
+      "model": "realms_of_chaos:block/tower_brazier_floor_poseidon"
+    },
+    "facing=south,mount=floor,tower=1": {
+      "model": "realms_of_chaos:block/tower_brazier_floor_poseidon"
+    },
+    "facing=west,mount=floor,tower=1": {
+      "model": "realms_of_chaos:block/tower_brazier_floor_poseidon"
+    },
+    "facing=north,mount=standing,tower=1": {
+      "model": "realms_of_chaos:block/tower_brazier_standing_poseidon"
+    },
+    "facing=east,mount=standing,tower=1": {
+      "model": "realms_of_chaos:block/tower_brazier_standing_poseidon"
+    },
+    "facing=south,mount=standing,tower=1": {
+      "model": "realms_of_chaos:block/tower_brazier_standing_poseidon"
+    },
+    "facing=west,mount=standing,tower=1": {
+      "model": "realms_of_chaos:block/tower_brazier_standing_poseidon"
+    },
+    "facing=north,mount=wall,tower=1": {
+      "model": "realms_of_chaos:block/tower_brazier_wall_poseidon",
+      "y": 0
+    },
+    "facing=east,mount=wall,tower=1": {
+      "model": "realms_of_chaos:block/tower_brazier_wall_poseidon",
+      "y": 90
+    },
+    "facing=south,mount=wall,tower=1": {
+      "model": "realms_of_chaos:block/tower_brazier_wall_poseidon",
+      "y": 180
+    },
+    "facing=west,mount=wall,tower=1": {
+      "model": "realms_of_chaos:block/tower_brazier_wall_poseidon",
+      "y": 270
+    },
+    "facing=north,mount=floor,tower=2": {
+      "model": "realms_of_chaos:block/tower_brazier_floor_hades"
+    },
+    "facing=east,mount=floor,tower=2": {
+      "model": "realms_of_chaos:block/tower_brazier_floor_hades"
+    },
+    "facing=south,mount=floor,tower=2": {
+      "model": "realms_of_chaos:block/tower_brazier_floor_hades"
+    },
+    "facing=west,mount=floor,tower=2": {
+      "model": "realms_of_chaos:block/tower_brazier_floor_hades"
+    },
+    "facing=north,mount=standing,tower=2": {
+      "model": "realms_of_chaos:block/tower_brazier_standing_hades"
+    },
+    "facing=east,mount=standing,tower=2": {
+      "model": "realms_of_chaos:block/tower_brazier_standing_hades"
+    },
+    "facing=south,mount=standing,tower=2": {
+      "model": "realms_of_chaos:block/tower_brazier_standing_hades"
+    },
+    "facing=west,mount=standing,tower=2": {
+      "model": "realms_of_chaos:block/tower_brazier_standing_hades"
+    },
+    "facing=north,mount=wall,tower=2": {
+      "model": "realms_of_chaos:block/tower_brazier_wall_hades",
+      "y": 0
+    },
+    "facing=east,mount=wall,tower=2": {
+      "model": "realms_of_chaos:block/tower_brazier_wall_hades",
+      "y": 90
+    },
+    "facing=south,mount=wall,tower=2": {
+      "model": "realms_of_chaos:block/tower_brazier_wall_hades",
+      "y": 180
+    },
+    "facing=west,mount=wall,tower=2": {
+      "model": "realms_of_chaos:block/tower_brazier_wall_hades",
+      "y": 270
     }
   }
 }

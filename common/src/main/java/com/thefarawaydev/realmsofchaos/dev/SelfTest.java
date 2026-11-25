@@ -4381,11 +4381,30 @@ public final class SelfTest {
                 for (int dz = -5; dz <= -3; dz++) check(solid(level, m.offset(dx, 4, dz)), "the loft's floor is whole at " + dx + "," + dz);
             }
             for (int y = 1; y <= 3; y++) check(level.getBlockState(m.offset(0, y, -4)).isAir(), "the way through under the loft is clear");
-            check(level.getBlockState(m.offset(0, 5, -4)).is(ModContent.PASSAGE_CACHE.get()), "a cache stands on the loft");
+            BlockState chest = level.getBlockState(m.offset(0, 6, -4));
+            check(chest.is(ModContent.PASSAGE_CACHE.get()) && solid(level, m.offset(0, 5, -4)), "a cache stands on a dais on the loft");
+            check(chest.getValue(com.thefarawaydev.realmsofchaos.block.CacheBlock.FACING) == net.minecraft.core.Direction.SOUTH
+                    && chest.getValue(com.thefarawaydev.realmsofchaos.block.CacheBlock.TOWER) == plan.line.ordinal(), "facing the room, in its tower's colours");
+            check(level.getBlockState(m.offset(1, 5, -3)).getBlock() instanceof net.minecraft.world.level.block.WallBlock
+                    && level.getBlockState(m.offset(1, 5, -3)).getValue(net.minecraft.world.level.block.state.properties.BlockStateProperties.EAST_WALL) != net.minecraft.world.level.block.state.properties.WallSide.NONE,
+                    "a balustrade runs along the loft's edge, joined up");
+            int wallBraziers = 0, standing = 0;
+            for (BlockPos at : BlockPos.betweenClosed(m.offset(-6, 0, -6), m.offset(6, Passages.TALL, 6))) {
+                BlockState b = level.getBlockState(at);
+                if (!b.is(ModContent.TOWER_BRAZIER.get())) continue;
+                var mount = b.getValue(com.thefarawaydev.realmsofchaos.block.BrazierBlock.MOUNT);
+                if (mount == com.thefarawaydev.realmsofchaos.block.BrazierBlock.Mount.WALL) {
+                    wallBraziers++;
+                    var f = b.getValue(com.thefarawaydev.realmsofchaos.block.BrazierBlock.FACING);
+                    check(solid(level, at.relative(f.getOpposite())), "a wall brazier hangs on a wall: " + at.subtract(m));
+                }
+                if (mount == com.thefarawaydev.realmsofchaos.block.BrazierBlock.Mount.STANDING) standing++;
+            }
+            check(wallBraziers >= 8 && standing >= 4, "braziers on its walls and standing on its floors: " + wallBraziers + " / " + standing);
             Item prize = ModContent.materialItem(plan.line, plan.tier);
             int had = count(hero, prize);
-            check(Passages.loot(level, m.offset(0, 5, -4), hero) && count(hero, prize) > had, "and it pays whoever climbs to it");
-            check(!Passages.loot(level, m.offset(0, 5, -4), hero), "once");
+            check(Passages.loot(level, m.offset(0, 6, -4), hero) && count(hero, prize) > had, "and it pays whoever climbs to it");
+            check(!Passages.loot(level, m.offset(0, 6, -4), hero), "once");
             check(level.getBlockState(m.offset(0, 0, 0)).isCollisionShapeFullBlock(level, m) && level.getBlockState(m.above()).isAir(), "the ways through the room stay open");
 
             // ---- the other shapes, wherever this tower has them

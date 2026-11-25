@@ -604,6 +604,7 @@ def run(assets, data=None):
         gen_doors2(assets, data)
         gen_combat(assets, data)
         gen_furnish2(assets, data)
+        gen_cache_brazier(assets)
         for floor in ("sunstone_panel", "pearl_panel", "ember_panel", "sky_mosaic", "sea_mosaic", "shade_mosaic"):
             connected_breaks(assets, floor)
 
@@ -2592,3 +2593,116 @@ def gen_furnish2(assets, data):
         loot(b)
     loot("dresser", {"right": "false"})
     loot("bunk_bed", {"head": "false", "upper": "false"})
+
+
+# ---- treasure caches and the towers' braziers ------------------------------------------------------------------------
+
+LINES3 = ["zeus", "poseidon", "hades"]
+
+
+def gen_cache_brazier(assets):
+    T = os.path.join(assets, "textures/block")
+    M = os.path.join(assets, "models/block")
+    t = lambda n: f"{MOD}:block/{n}"
+    g = grain(211, 0.06)
+    rot = {"north": 0, "east": 90, "south": 180, "west": 270}
+
+    def save(name, fn):
+        paint_hi(fn).save(os.path.join(T, name + ".png"))
+
+    # ---- the caches: a tower's wood, its metal in bands, a gold lock, coins within
+    woods = {"zeus": (196, 156, 104), "poseidon": (58, 108, 112), "hades": (52, 40, 58)}
+    metals = {"zeus": (226, 178, 70), "poseidon": (206, 214, 220), "hades": (150, 96, 210)}
+    for line in LINES3:
+        wood, metal = woods[line], metals[line]
+        save(f"cache_wood_{line}", lambda x, y, w=wood: shade(w, g[y][x] * (0.78 if y % 5 == 4 else 1.1 if y % 5 == 0 else 1.0) * (0.92 if (x * 7 + y // 5 * 3) % 11 == 0 else 1.0)))
+        save(f"cache_band_{line}", lambda x, y, m=metal: shade(m, 1.25 if x in (0, 1) else 0.7 if x in (14, 15) else 1.0) if (x + 3) % 8 or y % 6 not in (2, 3) else shade(m, 1.45))
+    save("cache_lock", lambda x, y: (40, 26, 14) if (x in (7, 8) and 5 <= y <= 10) or (6 <= x <= 9 and 5 <= y <= 6) else
+         GOLD_HI if x in (1, 2) or y in (1, 2) else GOLD_LO if x in (13, 14) or y in (13, 14) else (60, 40, 20) if x in (0, 15) or y in (0, 15) else GOLD)
+    rnd = random.Random(213)
+    coins = {(rnd.randrange(16), rnd.randrange(16)) for _ in range(46)}
+    save("cache_inside", lambda x, y: GOLD_HI if (x, y) in coins and (x + y) % 3 == 0 else GOLD if (x, y) in coins else (230, 200, 90) if (x + y) % 7 == 0 else (60, 40, 24))
+
+    def chest(line, open_):
+        tx = {"particle": t(f"cache_wood_{line}"), "wood": t(f"cache_wood_{line}"), "band": t(f"cache_band_{line}"), "lock": t("cache_lock"), "in": t("cache_inside")}
+        body = [_el((1, 0, 1.5), (15, 9, 14.5), _all("wood", up="in")),
+                _el((0.5, 0, 1), (15.5, 1.5, 15), _all("band")),
+                _el((3, 1.5, 1), (5, 9, 15), _all("band")), _el((11, 1.5, 1), (13, 9, 15), _all("band")),
+                _el((6.5, 5, 1), (9.5, 8.8, 1.5), _all("lock"))]
+        hinge = {"origin": [8, 9, 14.5], "axis": "x", "angle": 45.0} if open_ else None
+        lid = [_el((1, 9, 1.5), (15, 12.5, 14.5), _all("wood"), hinge),
+               _el((2, 12.5, 2.5), (14, 14, 13.5), _all("wood"), hinge),
+               _el((3, 9, 1), (5, 12.8, 15), _all("band"), hinge), _el((11, 9, 1), (13, 12.8, 15), _all("band"), hinge),
+               _el((3, 12.5, 2), (5, 14.3, 14), _all("band"), hinge), _el((11, 12.5, 2), (13, 14.3, 14), _all("band"), hinge),
+               _el((7, 8.8, 0.8), (9, 11, 1.5), _all("lock"), hinge)]
+        return {"parent": "minecraft:block/block", "textures": tx, "elements": body + lid}
+    for line in LINES3:
+        for open_ in (False, True):
+            wj(os.path.join(M, f"passage_cache_{line}{'_open' if open_ else ''}.json"), chest(line, open_))
+    wj(os.path.join(assets, "blockstates/passage_cache.json"),
+       {"variants": {f"facing={f},open={'true' if o else 'false'},tower={i}": {"model": f"{MOD}:block/passage_cache_{line}{'_open' if o else ''}", "y": r}
+                     for f, r in rot.items() for o in (False, True) for i, line in enumerate(LINES3)}})
+    wj(os.path.join(M, "passage_cache.json"), {"parent": f"{MOD}:block/passage_cache_zeus"})
+    wj(os.path.join(assets, "items/passage_cache.json"), {"model": {"type": "minecraft:model", "model": f"{MOD}:block/passage_cache_zeus"}})
+
+    # ---- braziers: a tower's metal, its embers, its flame (four frames)
+    bmetal = {"zeus": (176, 110, 50), "poseidon": (88, 160, 132), "hades": (58, 52, 66)}
+    fires = {"zeus": ((255, 236, 150), (255, 180, 60)), "poseidon": ((200, 255, 245), (60, 200, 200)), "hades": ((220, 190, 255), (130, 80, 230))}
+    for line in LINES3:
+        m_ = bmetal[line]
+        save(f"brazier_metal_{line}", lambda x, y, m=m_: shade(m, g[y][x] * (1.3 if (x + y) % 6 == 0 else 0.8 if y % 4 == 3 else 1.0)))
+        hot, deep = fires[line]
+        save(f"brazier_coals_{line}", lambda x, y, h=hot, d=deep: mix(d, h, 0.5 + 0.5 * math.sin(x * 1.3 + y * 0.7)) if (x * 3 + y * 5) % 4 else (40, 30, 30))
+        # the flame: a tongue of fire on nothing, flickering
+        frames = []
+        for f in range(4):
+            img = Image.new("RGBA", (16, 16), (0, 0, 0, 0))
+            for y in range(16):
+                width = (15 - y) * 0.42 * (1.0 + 0.18 * math.sin(f * 1.7 + y * 0.9))
+                cx = 7.5 + 1.2 * math.sin(f * 1.3 + y * 0.45)
+                for x in range(16):
+                    d = abs(x - cx)
+                    if d <= width:
+                        c = mix(hot, deep, min(1.0, d / max(0.5, width) * 0.8 + (15 - y) / 30))
+                        img.putpixel((x, y), tuple(c) + (255,))
+            frames.append(img)
+        strip = Image.new("RGBA", (16, 64))
+        for i, fr in enumerate(frames): strip.paste(fr, (0, i * 16))
+        strip.save(os.path.join(T, f"brazier_flame_{line}.png"))
+        wj(os.path.join(T, f"brazier_flame_{line}.png.mcmeta"), {"animation": {"frametime": 3, "interpolate": True}})
+
+    def flames(x0, x1, y0, y1):
+        out = []
+        for ang in (45.0, -45.0):
+            el = _el((x0, y0, 8), (x1, y1, 8), {"north": "flame", "south": "flame"}, {"origin": [8, 8, 8], "axis": "y", "angle": ang})
+            for face in el["faces"].values(): face["uv"] = [0, 0, 16, 16]      # (the flame rises above the block: its picture is the whole texture)
+            out.append(el)
+        return out
+
+    def rim(x0, x1, y0, y1, z0, z1):
+        return [_el((x0, y0, z0), (x1, y1, z0 + 1), _all("metal")), _el((x0, y0, z1 - 1), (x1, y1, z1), _all("metal")),
+                _el((x0, y0, z0 + 1), (x0 + 1, y1, z1 - 1), _all("metal")), _el((x1 - 1, y0, z0 + 1), (x1, y1, z1 - 1), _all("metal"))]
+
+    for line in LINES3:
+        tx = {"particle": t(f"brazier_metal_{line}"), "metal": t(f"brazier_metal_{line}"), "coals": t(f"brazier_coals_{line}"), "flame": t(f"brazier_flame_{line}")}
+        floor = ([_el((5, 0, 5), (11, 1.5, 11), _all("metal")), _el((7, 1.5, 7), (9, 5, 9), _all("metal")), _el((4, 5, 4), (12, 7, 12), _all("metal")),
+                  _el((3, 7, 3), (13, 9.5, 13), _all("metal", up="coals"))] + rim(2.5, 13.5, 8.5, 10.5, 2.5, 13.5) + flames(3, 13, 9.5, 17))
+        legs = [_el((x, 0, z), (x + 1.5, 11, z + 1.5), _all("metal")) for x, z in ((3, 3), (11.5, 3), (3, 11.5), (11.5, 11.5))]
+        standing = (legs + rim(3, 13, 5, 6, 3, 13) + [_el((2, 11, 2), (14, 13.5, 14), _all("metal", up="coals"))]
+                    + rim(1.5, 14.5, 12.5, 14.5, 1.5, 14.5) + flames(2.5, 13.5, 13.5, 22))
+        wall = ([_el((5.5, 3, 15), (10.5, 12, 16), _all("metal")), _el((7.5, 6, 8), (8.5, 7, 15), _all("metal")),
+                 _el((7.5, 4, 12), (8.5, 6.5, 15), _all("metal")), _el((5, 6, 5), (11, 7.5, 11), _all("metal")),
+                 _el((4, 7.5, 4), (12, 10, 12), _all("metal", up="coals"))] + rim(3.5, 12.5, 9, 11, 3.5, 12.5)
+                + flames(4, 12, 10, 17))
+        for name, els in (("floor", floor), ("standing", standing), ("wall", wall)):
+            wj(os.path.join(M, f"tower_brazier_{name}_{line}.json"), {"parent": "minecraft:block/block", "ambientocclusion": False, "textures": tx, "elements": els})
+    variants = {}
+    for i, line in enumerate(LINES3):
+        for mount in ("floor", "standing", "wall"):
+            for f, r in rot.items():
+                v = {"model": f"{MOD}:block/tower_brazier_{mount}_{line}"}
+                if mount == "wall": v["y"] = r
+                variants[f"facing={f},mount={mount},tower={i}"] = v
+    wj(os.path.join(assets, "blockstates/tower_brazier.json"), {"variants": variants})
+    wj(os.path.join(M, "tower_brazier.json"), {"parent": f"{MOD}:block/tower_brazier_standing_zeus"})
+    wj(os.path.join(assets, "items/tower_brazier.json"), {"model": {"type": "minecraft:model", "model": f"{MOD}:block/tower_brazier_standing_zeus"}})

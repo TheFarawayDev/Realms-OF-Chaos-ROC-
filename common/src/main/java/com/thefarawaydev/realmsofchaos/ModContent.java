@@ -213,7 +213,7 @@ public final class ModContent {
                 unbreakable(key).mapColor(MapColor.COLOR_PURPLE).lightLevel(s -> 15).noOcclusion().sound(SoundType.AMETHYST)));
 
         block("passage_cache", PASSAGE_CACHE, key -> new com.thefarawaydev.realmsofchaos.block.CacheBlock(
-                unbreakable(key).mapColor(MapColor.WOOD).lightLevel(s -> 6).sound(SoundType.WOOD)));
+                unbreakable(key).mapColor(MapColor.WOOD).lightLevel(s -> 6).sound(SoundType.WOOD).noOcclusion()));
 
         // a god's shield pylons, and the blocks of the field network - the only blocks here a player makes and breaks
         block("shield_pylon", SHIELD_PYLON, key -> new com.thefarawaydev.realmsofchaos.block.ShieldPylonBlock(

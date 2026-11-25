@@ -71,7 +71,7 @@ public final class Passages {
     public static final int TALL = 8;
     public static final int MAX_SIZE = 6;
     public static final int X0 = 600, PITCH = 160;
-    public static final int LAYOUT_VERSION = 24;
+    public static final int LAYOUT_VERSION = 25;
     public static final String GUARDIAN_TAG = "realms_of_chaos_guardian";
     private static final String HUD = "hud." + RealmsOfChaos.MOD_ID + ".passage.";
 
@@ -974,6 +974,7 @@ public final class Passages {
             com.thefarawaydev.realmsofchaos.block.ConnectedBlock.settle(level, o.offset(-1, -2, -1), o.offset(w, LEVEL_PITCH - 3, w));
             com.thefarawaydev.realmsofchaos.block.WeaponRackBlock.settle(level, o.offset(-1, -2, -1), o.offset(w, LEVEL_PITCH - 3, w));
             com.thefarawaydev.realmsofchaos.block.Furniture.Joining.settle(level, o.offset(-1, -2, -1), o.offset(w, LEVEL_PITCH - 3, w));
+            settleCaches(level, plan);
         });
         return steps;
     }
@@ -1410,28 +1411,7 @@ public final class Passages {
                 set(level, m.offset(3, 0, 3), p.light());
                 set(level, m.offset(-3, 0, -3), p.light());
             }
-            case STAIRWELL -> {
-                // a loft across the north end, a flight of steps up to it at either side, and a cache up there
-                for (int dx = -5; dx <= 5; dx++) {
-                    for (int dz = -5; dz <= -3; dz++) set(level, m.offset(dx, 4, dz), dz == -3 ? p.trim() : ((dx + dz) & 1) == 0 ? p.top() : p.topAlt());
-                    if (Math.abs(dx) <= 4) set(level, m.offset(dx, 5, -3), Math.abs(dx) == 4 || dx == 0 ? p.pillar() : p.trim());      // the parapet
-                }
-                for (int side = -1; side <= 1; side += 2) {
-                    for (int step = 1; step <= 4; step++) {
-                        int dx = side * (step + 1);
-                        for (int y = 1; y < step; y++) set(level, m.offset(dx, y, -2), p.wall());
-                        level.setBlock(m.offset(dx, step, -2), stairs(plan.line, side > 0 ? net.minecraft.core.Direction.EAST : net.minecraft.core.Direction.WEST), 2);
-                    }
-                    for (int y = 1; y <= 3; y++) set(level, m.offset(side * 3, y, -3), p.pillar());                      // what the loft stands on
-                    set(level, m.offset(side * 3, 4, -4), p.light());
-                    set(level, m.offset(side * 2, 5, -5), ModContent.ANCIENT_URN.get());
-                    level.setBlock(m.offset(side * 4, 5, -5), ModContent.TOWER_BRAZIER.get().defaultBlockState()
-                            .setValue(com.thefarawaydev.realmsofchaos.block.BrazierBlock.TOWER, plan.line.ordinal()), 2);
-                }
-                set(level, m.offset(0, 5, -4), ModContent.PASSAGE_CACHE.get());
-                // below, a runner of inlay from the south door to the foot of the loft
-                for (int dz = -2; dz <= 5; dz++) set(level, m.offset(0, 0, dz), p.inlay());
-            }
+            case STAIRWELL -> buildStairwell(level, plan, c, p);
             case CRUSHER -> {
                 // a crusher hall: its floor is striped row by row, so the row that is marked can be told from the next
                 for (int dx = -4; dx <= 4; dx++) {
@@ -1576,8 +1556,7 @@ public final class Passages {
                         }
                     }
                 }
-                for (int[] k : CORNERS) level.setBlock(m.offset(k[0], 1, k[1]), ModContent.TOWER_BRAZIER.get().defaultBlockState()
-                        .setValue(com.thefarawaydev.realmsofchaos.block.BrazierBlock.TOWER, plan.line.ordinal()), 2);
+                for (int[] k : CORNERS) level.setBlock(m.offset(k[0], 1, k[1]), brazier(plan, com.thefarawaydev.realmsofchaos.block.BrazierBlock.Mount.STANDING, null), 2);
                 for (int y = h; y > h - 2; y--) set(level, m.offset(0, y, 0), Blocks.IRON_CHAIN);
                 set(level, m.offset(0, h - 2, 0), ModContent.CHAOS_LAMP.get());
             }
@@ -1645,13 +1624,132 @@ public final class Passages {
             if (!level.getBlockState(at).isAir() || !level.getBlockState(at.below()).isCollisionShapeFullBlock(level, at.below())) continue;
             if (braziers > 0) {
                 braziers--;
-                level.setBlock(at, ModContent.TOWER_BRAZIER.get().defaultBlockState().setValue(com.thefarawaydev.realmsofchaos.block.BrazierBlock.TOWER, plan.line.ordinal()), 2);
+                level.setBlock(at, brazier(plan, com.thefarawaydev.realmsofchaos.block.BrazierBlock.Mount.STANDING, null), 2);
             } else if (tablets > 0) {
                 tablets--;
                 set(level, at, ModContent.LORE_TABLET.get());
             } else {
                 urns--;
                 set(level, at, ModContent.ANCIENT_URN.get());
+            }
+        }
+    }
+
+    /** A tower's brazier, mounted a given way: {@code facing} is the way a wall brazier faces out from its wall. */
+    static BlockState brazier(Plan plan, com.thefarawaydev.realmsofchaos.block.BrazierBlock.Mount mount, net.minecraft.core.Direction facing) {
+        return ((com.thefarawaydev.realmsofchaos.block.BrazierBlock) ModContent.TOWER_BRAZIER.get())
+                .of(plan.line.ordinal(), mount, facing == null ? net.minecraft.core.Direction.NORTH : facing);
+    }
+
+    /** The loft of a stairwell: how high its floor is, and how far south its edge comes (it runs north to the wall). */
+    public static final int LOFT_Y = 4, LOFT_EDGE = -3;
+
+    /**
+     * A stairwell: a two-storey hall. Across its north end a loft three deep, floored in the tower's panels and edged in
+     * trim, carried on two pillars with arches either side of each; a balustrade along its edge with a brazier on each
+     * end post; a flight of steps up to it at either side. Up there the cache stands on a dais with standing braziers
+     * either side, the tower's fire burning in brackets on the wall behind, a runner along it and urns at its ends.
+     * Below, a medallion in the floor, braziers on the walls, and stores tucked under the loft.
+     */
+    private static void buildStairwell(ServerLevel level, Plan plan, Cell c, TowerBuilder.Palette p) {
+        BlockPos m = plan.centre(c);
+        int far = plan.half(c), wall = far + 1;
+        Mason.Stone stone = Mason.of(p.wall());
+        var N = net.minecraft.core.Direction.NORTH;
+        var S = net.minecraft.core.Direction.SOUTH;
+        var E = net.minecraft.core.Direction.EAST;
+        var W = net.minecraft.core.Direction.WEST;
+        var STANDING = com.thefarawaydev.realmsofchaos.block.BrazierBlock.Mount.STANDING;
+        var WALL = com.thefarawaydev.realmsofchaos.block.BrazierBlock.Mount.WALL;
+        var FLOOR = com.thefarawaydev.realmsofchaos.block.BrazierBlock.Mount.FLOOR;
+        // ---- the loft: panels framed in trim
+        for (int dx = -far; dx <= far; dx++) {
+            for (int dz = -far; dz <= LOFT_EDGE; dz++) {
+                boolean edge = dz == LOFT_EDGE || Math.abs(dx) == far;
+                set(level, m.offset(dx, LOFT_Y, dz), edge ? p.trim() : floorPanel(plan.line));
+            }
+        }
+        // carried on two pillars, an arch springing either side of each (the middle left open: the way north runs under it)
+        for (int side = -1; side <= 1; side += 2) {
+            for (int y = 1; y < LOFT_Y; y++) set(level, m.offset(side * 3, y, LOFT_EDGE), y == 1 ? p.trim() : p.pillar());
+            level.setBlock(m.offset(side * 2, LOFT_Y - 1, LOFT_EDGE), Mason.stair(stone.stairs(), side > 0 ? E : W, true), 2);
+            level.setBlock(m.offset(side * 4, LOFT_Y - 1, LOFT_EDGE), Mason.stair(stone.stairs(), side > 0 ? W : E, true), 2);
+        }
+        // ---- the balustrade, open at either end where the stairs arrive; a post at its middle and ends, a brazier on each end post
+        List<BlockPos> rail = new ArrayList<>();
+        for (int dx = -(far - 1); dx <= far - 1; dx++) {
+            BlockPos at = m.offset(dx, LOFT_Y + 1, LOFT_EDGE);
+            if (Math.abs(dx) == far - 1 || dx == 0) set(level, at, p.pillar());
+            else {
+                level.setBlock(at, stone.wall().defaultBlockState(), 2);
+                rail.add(at);
+            }
+        }
+        for (int side = -1; side <= 1; side += 2) level.setBlock(m.offset(side * (far - 1), LOFT_Y + 2, LOFT_EDGE), brazier(plan, FLOOR, null), 2);
+        Mason.join(level, rail);
+        // ---- a flight of steps up either side, each step on its own wall
+        for (int side = -1; side <= 1; side += 2) {
+            for (int step = 1; step <= LOFT_Y; step++) {
+                int dx = side * (step + 1);
+                for (int y = 1; y < step; y++) set(level, m.offset(dx, y, LOFT_EDGE + 1), p.wall());
+                level.setBlock(m.offset(dx, step, LOFT_EDGE + 1), stairs(plan.line, side > 0 ? E : W), 2);
+            }
+        }
+        // ---- up on the loft: the cache on a dais, braziers either side, the tower's fire on the wall behind, a runner, urns
+        BlockPos dais = m.offset(0, LOFT_Y + 1, -4);
+        set(level, dais, p.trim());
+        level.setBlock(dais.east(), Mason.stair(stone.stairs(), W, false), 2);
+        level.setBlock(dais.west(), Mason.stair(stone.stairs(), E, false), 2);
+        level.setBlock(dais.north(), Mason.slab(stone.slab(), false), 2);
+        set(level, dais.above(), ModContent.PASSAGE_CACHE.get());
+        Block runner = Blocks.CARPET.pick(plan.line == Line.ZEUS ? net.minecraft.world.item.DyeColor.YELLOW
+                : plan.line == Line.POSEIDON ? net.minecraft.world.item.DyeColor.CYAN : net.minecraft.world.item.DyeColor.PURPLE);
+        for (int side = -1; side <= 1; side += 2) {
+            level.setBlock(m.offset(side * 2, LOFT_Y + 1, -5), brazier(plan, STANDING, null), 2);
+            set(level, m.offset(side * 4, LOFT_Y + 1, -5), ModContent.ANCIENT_URN.get());
+            for (int dx = 2; dx <= far; dx++) set(level, m.offset(side * dx, LOFT_Y + 1, -4), runner);
+            level.setBlock(m.offset(side * 3, LOFT_Y + 3, -far), brazier(plan, WALL, S), 2);
+            set(level, m.offset(side * 3, LOFT_Y + 2, -wall), Passages.relief(plan.line));
+        }
+        // ---- below: a medallion in the floor, a runner from it to the foot of the loft
+        for (int dz = -2; dz <= 0; dz++) set(level, m.offset(0, 0, dz), p.inlay());
+        for (int dx = -2; dx <= 2; dx++) {
+            for (int dz = 1; dz <= 5; dz++) {
+                int ring = Math.max(Math.abs(dx), Math.abs(dz - 3));
+                set(level, m.offset(dx, 0, dz), ring == 0 ? p.light() : ring == 1 ? p.trim() : p.inlay());
+            }
+        }
+        // braziers in brackets on the walls of the open half, and standing ones either side of the medallion
+        for (int side = -1; side <= 1; side += 2) {
+            level.setBlock(m.offset(side * far, 3, 3), brazier(plan, WALL, side > 0 ? W : E), 2);
+            level.setBlock(m.offset(side * 3, 3, far), brazier(plan, WALL, N), 2);
+            level.setBlock(m.offset(side * 3, 1, 3), brazier(plan, STANDING, null), 2);
+        }
+        // under the loft, out of the way: barrels and an urn against the north wall, a bracket of fire over them
+        for (int side = -1; side <= 1; side += 2) {
+            set(level, m.offset(side * far, 1, -far), Blocks.BARREL);
+            set(level, m.offset(side * far, 2, -far), Blocks.BARREL);
+            set(level, m.offset(side * (far - 1), 1, -far), ModContent.ANCIENT_URN.get());
+            level.setBlock(m.offset(side * 2, 2, -far), brazier(plan, WALL, S), 2);
+        }
+    }
+
+    /**
+     * Turns every cache on a level to face the middle of its room, and dresses it in its tower's wood and metal.
+     * Builders set caches without asking which way they should face.
+     */
+    static void settleCaches(ServerLevel level, Plan plan) {
+        for (Cell c : plan.cells()) {
+            AABB box = plan.cellBox(c);
+            BlockPos m = plan.centre(c);
+            for (BlockPos at : BlockPos.betweenClosed((int) box.minX, (int) box.minY, (int) box.minZ, (int) box.maxX, (int) box.maxY, (int) box.maxZ)) {
+                BlockState state = level.getBlockState(at);
+                if (!state.is(ModContent.PASSAGE_CACHE.get())) continue;
+                int dx = m.getX() - at.getX(), dz = m.getZ() - at.getZ();
+                var facing = dx == 0 && dz == 0 ? net.minecraft.core.Direction.SOUTH : net.minecraft.core.Direction.getApproximateNearest(dx, 0, dz);
+                BlockState dressed = state.setValue(com.thefarawaydev.realmsofchaos.block.CacheBlock.TOWER, plan.line.ordinal())
+                        .setValue(com.thefarawaydev.realmsofchaos.block.CacheBlock.FACING, facing);
+                if (dressed != state) level.setBlock(at, dressed, 2);
             }
         }
     }
