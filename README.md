@@ -18,10 +18,9 @@ The current build is an **Alpha**.
 
 * **The shrine, the clam and the ores, modelled.** The physical blocks are built in layers with real depth, and their
   lit parts glow:
-  * the **Cornucopia** is a horn that truly curves - eighteen tapering segments of ivory set along a curve, three gold
-    bands standing proud of it, an octagonal gold rim round a dark throat, a gem in the mouth that glows in the colour
-    of its core, and grapes, an apple with its leaf and ears of wheat spilling out onto the plinth
-    (`art/renders/cornucopia-horn-side.png`, `cornucopia-horn-front.png`);
+  * the **Orb of Plenty** (once the Cornucopia's horn) is a glassy orb glowing with the light of its core - gold for
+    a thunder core, sea-green for a tide core, violet for a shade core, dark smoked glass with none - cupped by three
+    gold claws on a tripod, inside a tilted ring of gold (`art/renders/orb-of-plenty.png`);
   * the **Plinth of Plenty** has a footing, a gold moulding, a body of inset panels with an inlaid line round each, a
     cornice with a running meander and a polished top; the inlay glows when the shrine is whole;
   * each **Column of Plenty** has a rounded fluted shaft with four inlaid strips that glow, a base of mouldings and an
@@ -55,28 +54,32 @@ The current build is an **Alpha**.
   adamantine (the most protection - 24 points, toughness 4) gives resistance; celestial bronze gives speed and
   haste; orichalcum lets you breathe and swim like the sea's own; stygian iron keeps off fire and withering. They
   cannot burn and are mended with their ingot. (`art/renders/armor-sets.png`)
-* **The Shrine of Plenty: a resource generator of three parts.** The Cornucopia no longer works alone: it is the heart
+* **The Shrine of Plenty: a resource generator of three parts.** The Orb of Plenty no longer works alone: it is the heart
   of a shrine built of three blocks, each hard to make -
-  * the **Cornucopia**, a horn of ivory bound in gold, its round mouth glowing with whatever core is set in it (a
-    nether star, a goat horn, two blocks of adamantine, two blocks of gold and an ingot of each god-metal);
+  * the **Orb of Plenty**, a glass orb on a gold tripod that glows with whatever core is set in it (a
+    nether star, a heart of the sea, two blocks of adamantine, two blocks of gold and an ingot of each god-metal);
   * the **Plinth of Plenty** it stands on, an altar of porphyry with a gold meander and an offering dish (chiseled and
     polished porphyry, gold and an adamantine ingot);
   * four **Columns of Plenty**, fluted porphyry with a gold base and capital, two high at the corners of the three by
     three round the plinth (each from a porphyry pillar, gold and two god-metal ingots).
 
   Whole, the shrine lights: the inlays of the columns and the plinth glow and threads of light run from the columns
-  into the horn. Set a core in the mouth and it brings forth one or two of that core's resource every five minutes -
+  into the orb. Set a core in it and it brings forth one or two of that core's resource every five minutes -
   storm glass for a thunder core, abyssal pearls for a tide core, raw stygian iron for a shade core, and now and then
   raw adamantine - **twice as fast where its core is at home**: in a thunderstorm under open sky, by the sea, or in the
-  nether. What it makes goes into a chest or hopper beside or under the plinth, or spills out on top. Use the horn to
+  nether. What it makes goes into a chest or hopper beside or under the plinth, or spills out on top. Use the orb to
   see a panel over it: what the shrine still lacks, or how long until its next yield. Sneak with an empty hand to take
   the core back. (`art/renders/shrine-of-plenty.png`, `shrine-of-plenty-incomplete.png`, `shrine-of-plenty-above.png`)
 * **The new resources, drawn properly.** Storm glass, abyssal pearls, raw stygian iron and adamantine, the four
   god-metal ingots, the three cores, the sixteen pieces of armour (their icons drawn on the panoply's own shapes, in its manner, so they sit beside the Helm of Athena and the rest - `art/renders/armor-icons.png`), fulgurite, stygian ore and the giant clam are
   redrawn with ramps of colour that cool in the shadows and warm in the light: crystals cut in facets, pearls and gems
-  shaded as spheres, ores as clusters of nuggets, and the armour worn in the same colours and manner
-  as its icons - clean shaded plates lit from the top left: a crested Corinthian helm, a breastplate with a collar,
-  belt and shoulder guards, leggings with a lit knee, and cuffed greaves.
+  shaded as spheres, ores as clusters of nuggets, and the armour worn in two layers, as the game
+  layers leather armour: a base of shaped, shaded plates - a Corinthian helm with eye sockets, a nose guard and a crest,
+  a breastplate with its chest and muscles, a belt set with studs and a hem of leather strips, shoulder guards of two
+  overlapping lames and bracers, plated thighs to a knee guard and a skirt of strips at the hip, greaves with a ridge
+  down the shin and an ankle strap - and over it an overlay with each set's own mark: violet stones on adamantine, a
+  thunderbolt on celestial bronze, a breaking wave on orichalcum, and the light of souls in the eyes, breast and knees
+  of stygian iron.
   (`art/renders/divine-resources-art.png`, `art/renders/armor-sets.png`)
 * **Adamantine, and the first tool set.** A new ore, **Deepslate Adamantine Ore**, lies in small veins in the deepest
   stone of the overworld (below y -40) - about twenty times rarer than diamond. It is as hard as ancient debris and

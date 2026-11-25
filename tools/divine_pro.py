@@ -580,7 +580,7 @@ def gen(assets, data, wj):
     wj(os.path.join(data, "tags/item/god_metals.json"), {"values": [f"{MOD}:celestial_bronze_ingot", f"{MOD}:orichalcum_ingot", f"{MOD}:stygian_iron_ingot"]})
     wj(os.path.join(R, "cornucopia.json"), {"type": "minecraft:crafting_shaped", "category": "misc", "pattern": ["BNO", "AHA", "GSG"],
         "key": {"B": f"{MOD}:celestial_bronze_ingot", "N": "minecraft:nether_star", "O": f"{MOD}:orichalcum_ingot", "A": f"{MOD}:adamantine_block",
-                "H": "minecraft:goat_horn", "G": "minecraft:gold_block", "S": f"{MOD}:stygian_iron_ingot"}, "result": {"id": f"{MOD}:cornucopia"}})
+                "H": "minecraft:heart_of_the_sea", "G": "minecraft:gold_block", "S": f"{MOD}:stygian_iron_ingot"}, "result": {"id": f"{MOD}:cornucopia"}})
     wj(os.path.join(R, "plinth_of_plenty.json"), {"type": "minecraft:crafting_shaped", "category": "misc", "pattern": ["GCG", "PAP", "PPP"],
         "key": {"G": "minecraft:gold_ingot", "C": f"{MOD}:chiseled_porphyry", "P": f"{MOD}:polished_porphyry", "A": f"{MOD}:adamantine_ingot"},
         "result": {"id": f"{MOD}:plinth_of_plenty"}})
@@ -593,9 +593,9 @@ def lang():
         "block.realms_of_chaos.plinth_of_plenty": "Plinth of Plenty",
         "block.realms_of_chaos.column_of_plenty": "Column of Plenty",
         "block.realms_of_chaos.cornucopia.incomplete": "The shrine is not whole",
-        "block.realms_of_chaos.cornucopia.needs_plinth": "Set the horn on a Plinth of Plenty",
+        "block.realms_of_chaos.cornucopia.needs_plinth": "Set the orb on a Plinth of Plenty",
         "block.realms_of_chaos.cornucopia.needs_columns": "Columns of Plenty: %s of %s, two high at the corners",
-        "block.realms_of_chaos.cornucopia.no_core": "The shrine stands whole. Set a core in the horn's mouth",
+        "block.realms_of_chaos.cornucopia.no_core": "The shrine stands whole. Set a core in the orb",
         "block.realms_of_chaos.cornucopia.working": "%s in %s",
         "block.realms_of_chaos.cornucopia.at_home.storm": "The storm feeds it: twice as fast",
         "block.realms_of_chaos.cornucopia.at_home.tide": "The sea feeds it: twice as fast",

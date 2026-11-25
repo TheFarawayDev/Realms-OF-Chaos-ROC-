@@ -3,11 +3,17 @@
     "humanoid": [
       {
         "texture": "realms_of_chaos:stygian_iron"
+      },
+      {
+        "texture": "realms_of_chaos:stygian_iron_overlay"
       }
     ],
     "humanoid_leggings": [
       {
         "texture": "realms_of_chaos:stygian_iron"
+      },
+      {
+        "texture": "realms_of_chaos:stygian_iron_overlay"
       }
     ]
   }

@@ -3,11 +3,17 @@
     "humanoid": [
       {
         "texture": "realms_of_chaos:celestial_bronze"
+      },
+      {
+        "texture": "realms_of_chaos:celestial_bronze_overlay"
       }
     ],
     "humanoid_leggings": [
       {
         "texture": "realms_of_chaos:celestial_bronze"
+      },
+      {
+        "texture": "realms_of_chaos:celestial_bronze_overlay"
       }
     ]
   }

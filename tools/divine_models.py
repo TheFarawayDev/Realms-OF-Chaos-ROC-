@@ -238,62 +238,50 @@ def crystal_overlay(base, glint, spots, seed):
 
 
 # ---------------------------------------------------------------------------------------------------- models
-def horn_path():
-    """The horn's centre line in the y-z plane, mouth (front, z small) to tip, and its half-width at each point -
-    a curve through a few points, sampled finely so the horn tapers and bends smoothly."""
-    key = [(7.5, 2.6), (6.6, 5.0), (6.1, 7.4), (6.3, 9.6), (7.0, 11.5), (8.4, 13.0), (10.2, 13.7), (11.9, 13.2), (13.0, 11.9), (13.4, 10.6)]
-    rk = [4.2, 3.8, 3.3, 2.9, 2.5, 2.1, 1.7, 1.35, 1.0, 0.7]
-    pts, radii = [], []
-    for i in range(len(key) - 1):
-        for s in (0.0, 0.5):
-            p0, p1 = key[i], key[i + 1]
-            pts.append((p0[0] + (p1[0] - p0[0]) * s, p0[1] + (p1[1] - p0[1]) * s))
-            radii.append(rk[i] + (rk[i + 1] - rk[i]) * s)
-    pts.append(key[-1])
-    radii.append(rk[-1])
-    return pts, radii
+def orb_tex(core):
+    """The orb's glass: a swirl of its core's light, brightest at the heart; without a core, dark smoked glass."""
+    if core == "none":
+        return tex(lambda x, y: (58, 46, 70) if (x * 3 + y * 5) % 7 else (84, 70, 100))
+    c = {"storm": (255, 222, 110), "tide": (80, 216, 230), "shade": (164, 110, 250)}[core]
+    t = ramp(c)
+
+    def px(x, y):
+        dx, dy = x + 0.5 - 8, y + 0.5 - 8
+        r = math.hypot(dx, dy)
+        a = math.atan2(dy, dx)
+        swirl = math.sin(a * 2 + r * 0.9)
+        if r < 2.2: return (255, 255, 250)
+        if swirl > 0.55: return t[5]
+        if swirl > -0.1: return t[4]
+        return t[3] if r < 6 else t[2]
+    return tex(px)
 
 
-def cornucopia_model(core):
-    tx = {"particle": f"{MOD}:block/shrine_ivory", "ivory": f"{MOD}:block/shrine_ivory", "gold": f"{MOD}:block/shrine_gold",
-          "mouth": f"{MOD}:block/cornucopia_mouth", "fruit": f"{MOD}:block/cornucopia_fruit", "gem": f"{MOD}:block/cornucopia_gem_{core}"}
-    els = []
-    # a cradle of gold the horn lies in
-    els.append(el((4.5, 0, 5), (11.5, 1, 12), "gold"))
-    els.append(el((6.5, 1, 6.5), (9.5, 3.4, 8.5), "gold"))
-    els.append(el((6.5, 1, 9.5), (9.5, 4.2, 11.5), "gold"))
-    pts, radii = horn_path()
-    for i in range(len(pts) - 1):
-        (y0, z0), (y1, z1) = pts[i], pts[i + 1]
-        dy, dz = y1 - y0, z1 - z0
-        if dz < 0: dy, dz = -dy, -dz
-        length = math.hypot(dy, dz) + 0.45
-        angle = -math.degrees(math.atan2(dy, dz))
-        cy, cz = (y0 + y1) / 2, (z0 + z1) / 2
-        r = (radii[i] + radii[i + 1]) / 2
-        rot = {"origin": [8, cy, cz], "axis": "x", "angle": round(angle, 2)}
-        els.append(el((8 - r, cy - r, cz - length / 2), (8 + r, cy + r, cz + length / 2), "ivory", rot=rot))
-        if i in (2, 6, 10):      # a band of gold standing proud of the horn
-            rb = r + 0.35
-            els.append(el((8 - rb, cy - rb, cz - 0.45), (8 + rb, cy + rb, cz + 0.45), "gold", rot=rot))
-    # the mouth: a flared rim of gold round a dark throat, a gem glowing in it when a core is set
-    y0, z0 = pts[0]
-    R = radii[0] + 0.6
-    els.append(el((8 - R, y0 - R, z0 - 1.6), (8 + R, y0 + R, z0 - 0.5), "gold"))
-    els.append(el((8 - R, y0 - R, z0 - 1.55), (8 + R, y0 + R, z0 - 0.55), "gold", rot={"origin": [8, y0, z0 - 1.05], "axis": "z", "angle": 45.0}))
-    els.append(el((8 - R + 1.1, y0 - R + 1.1, z0 - 1.65), (8 + R - 1.1, y0 + R - 1.1, z0 - 1.6), {"north": "mouth"}, uv={"north": (0, 0, 16, 16)}))
-    if core != "none":
-        els.append(el((6.8, y0 - 1.2, z0 - 1.9), (9.2, y0 + 1.2, z0 - 1.1), "gem", uv=(4, 4, 12, 12), emit=15))
-    # fruit spilling from the mouth onto the plinth: a bunch of grapes, an apple with its leaf, ears of wheat
-    for gx, gy, gz in ((3.2, 0, 0.6), (4.6, 0, 0.4), (3.9, 1.2, 0.8), (3.0, 1.2, 1.9), (4.4, 0, 1.8), (3.7, 2.3, 1.3)):
-        els.append(el((gx, gy, gz), (gx + 1.4, gy + 1.4, gz + 1.4), "fruit", uv=(1, 1, 6, 6)))
-    els.append(el((10, 0, 0.3), (13, 3, 3.3), "fruit", uv=(9, 1, 14, 6)))
-    els.append(el((11.3, 3, 1.6), (11.7, 4.2, 2.0), "fruit", uv=(8, 8, 9, 10)))
-    els.append(el((11.6, 3.6, 1.5), (13.4, 3.8, 2.6), "fruit", uv=(9, 9, 14, 12), rot={"origin": [11.6, 3.7, 2], "axis": "z", "angle": 22.5}))
-    for wx, ang in ((7.0, -20.0), (7.8, -5.0), (8.6, 12.0)):
-        els.append(el((wx, 0.2, 0), (wx + 0.6, 0.8, 4.2), "fruit", uv=(9, 9, 15, 15), rot={"origin": [wx, 0.5, 2], "axis": "y", "angle": ang}))
+def orb_model(core):
+    """The Orb of Plenty: a glassy orb that glows with its core, held by a gold tripod inside a tilted gold ring."""
+    tx = {"particle": f"{MOD}:block/shrine_gold", "gold": f"{MOD}:block/shrine_gold", "orb": f"{MOD}:block/orb_of_plenty_{core}",
+          "dark": f"{MOD}:block/shrine_porphyry_dark"}
+    glow = 15 if core != "none" else None
+    els = [el((4, 0, 4), (12, 1, 12), "gold"),                                   # the foot
+           el((6.5, 1, 6.5), (9.5, 2, 9.5), "dark"),
+           el((7.3, 2, 7.3), (8.7, 4.5, 8.7), "gold")]                           # the stem
+    for ang in (0.0, 120.0, 240.0):                                              # three claws cupping the orb
+        r = {"origin": [8, 4, 8], "axis": "y", "angle": ang if ang <= 180 else ang - 360}
+        els.append(el((7.4, 3.6, 4.6), (8.6, 7.2, 5.4), "gold", rot=r))
+        els.append(el((7.4, 3.6, 5.4), (8.6, 4.4, 7.4), "gold", rot=r))
+    # the orb: a rounded body of three crossed blocks, turned again to round it further
+    c = (8, 9, 8)
+    body = [((4, 6.5, 5.5), (12, 11.5, 10.5)), ((5.5, 5, 5.5), (10.5, 13, 10.5)), ((5.5, 6.5, 4), (10.5, 11.5, 12)), ((5, 6, 5), (11, 12, 11))]
+    for a, b in body:
+        els.append(el(a, b, "orb", uv=(2, 2, 14, 14), emit=glow))
+    for a, b in body[:3]:
+        els.append(el(a, b, "orb", uv=(2, 2, 14, 14), emit=glow, rot={"origin": list(c), "axis": "y", "angle": 45.0}))
+    # a tilted ring of gold round it
+    ring = {"origin": list(c), "x": 22.5, "y": 30.0, "z": 0.0}
+    for a, b in (((2.5, 8.6, 2.5), (13.5, 9.4, 3.3)), ((2.5, 8.6, 12.7), (13.5, 9.4, 13.5)), ((2.5, 8.6, 3.3), (3.3, 9.4, 12.7)), ((12.7, 8.6, 3.3), (13.5, 9.4, 12.7))):
+        els.append(el(a, b, "gold", rot=ring))
     return {"parent": "minecraft:block/block", "textures": tx, "elements": els,
-            "display": {"gui": {"rotation": [25, 210, 0], "translation": [0, 1, 0], "scale": [0.9, 0.9, 0.9]}}}
+            "display": {"gui": {"rotation": [25, 225, 0], "translation": [0, 0, 0], "scale": [0.75, 0.75, 0.75]}}}
 
 
 def plinth_model(lit):
@@ -386,11 +374,9 @@ def gen(assets, data, wj):
     M = os.path.join(assets, "models/block")
     t = lambda n: f"{MOD}:block/{n}"
     textures = {
-        "shrine_gold": gold_tex(), "shrine_ivory": ivory_tex(), "shrine_porphyry": porphyry_tex(4), "shrine_porphyry_dark": porphyry_tex(9, dark=True),
+        "shrine_gold": gold_tex(), "shrine_porphyry": porphyry_tex(4), "shrine_porphyry_dark": porphyry_tex(9, dark=True),
         "shrine_panel": panel_tex(), "shrine_meander": meander_tex(), "shrine_flutes": flutes_tex(),
-        "shrine_inlay": inlay_tex(False), "shrine_inlay_lit": inlay_tex(True), "cornucopia_mouth": mouth_tex(), "cornucopia_fruit": fruit_tex(),
-        "cornucopia_gem_storm": gem_tex((255, 226, 110)), "cornucopia_gem_tide": gem_tex((80, 216, 230)), "cornucopia_gem_shade": gem_tex((164, 110, 250)),
-        "clam_shell": shell_tex(), "clam_mantle": mantle_tex(), "clam_nacre": nacre_tex(), "clam_pearl": pearl_tex(),
+        "shrine_inlay": inlay_tex(False), "shrine_inlay_lit": inlay_tex(True), "clam_shell": shell_tex(), "clam_mantle": mantle_tex(), "clam_nacre": nacre_tex(), "clam_pearl": pearl_tex(),
         "ore_deepslate": deepslate_tex(17), "ore_soul_soil": soul_soil_tex(23),
         "deepslate_adamantine_ore_crystals": crystal_overlay((150, 206, 222), (236, 220, 255), [(3, 3), (11, 4), (5, 11), (12, 12), (8, 7)], 5),
         "stygian_iron_ore_lumps": crystal_overlay((74, 76, 96), (110, 240, 230), [(4, 4), (11, 5), (6, 11), (12, 12)], 6),
@@ -399,7 +385,7 @@ def gen(assets, data, wj):
         img.save(os.path.join(T, f"{name}.png"))
     # (the old flat pictures these replace)
     import glob
-    for old in ("cornucopia_horn", "cornucopia_rim", "cornucopia_stand", "cornucopia_apple", "cornucopia_grapes", "cornucopia_wheat",
+    for old in ("shrine_ivory", "cornucopia_mouth", "cornucopia_fruit", "cornucopia_gem_storm", "cornucopia_gem_tide", "cornucopia_gem_shade", "cornucopia_horn", "cornucopia_rim", "cornucopia_stand", "cornucopia_apple", "cornucopia_grapes", "cornucopia_wheat",
                 "cornucopia_mouth_none", "cornucopia_mouth_storm", "cornucopia_mouth_tide", "cornucopia_mouth_shade",
                 "plinth_of_plenty_side", "plinth_of_plenty_side_lit", "plinth_of_plenty_top", "plinth_of_plenty_top_lit",
                 "column_of_plenty_shaft", "column_of_plenty_shaft_lit", "column_of_plenty_trim", "column_of_plenty_trim_lit",
@@ -413,7 +399,8 @@ def gen(assets, data, wj):
     rot = {"north": 0, "east": 90, "south": 180, "west": 270}
     cv = {}
     for core in ("none", "storm", "tide", "shade"):
-        wj(os.path.join(M, f"cornucopia_{core}.json"), cornucopia_model(core))
+        orb_tex(core).save(os.path.join(T, f"orb_of_plenty_{core}.png"))
+        wj(os.path.join(M, f"cornucopia_{core}.json"), orb_model(core))
         for f, r in rot.items():
             cv[f"core={core},facing={f}"] = {"model": f"{MOD}:block/cornucopia_{core}", "y": r}
     wj(os.path.join(M, "cornucopia.json"), {"parent": f"{MOD}:block/cornucopia_storm"})
