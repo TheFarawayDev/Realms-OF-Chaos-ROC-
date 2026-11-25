@@ -126,89 +126,101 @@ def faces(u, v, w, h, d):
             "left": (u + d + w, v + d, d, h), "back": (u + d + w + d, v + d, w, h)}
 
 
-def plate(px, x0, y0, w, h, t, rows=None, rnd=None):
-    """One face of a box as a plate: lit along its top and left, shadowed along its bottom and right."""
-    for y in range(h):
-        if rows is not None and y not in rows: continue
+def plate(px, x0, y0, w, h, t, rows=None):
+    """One face of a box as a plate, shaded as the icons are: no noise, lit along its top and left with a soft light
+    in the upper corner, shadowed along its right, its bottom edge darkest."""
+    rows = list(rows) if rows is not None else list(range(h))
+    top, bottom = min(rows), max(rows)
+    span = max(1, (w - 1) + (bottom - top))
+    for y in rows:
         for x in range(w):
-            top, bottom = y == (min(rows) if rows else 0), y == (max(rows) if rows else h - 1)
-            if top or x == 0: c = t[4]
-            elif bottom: c = t[1]
+            k = (x + (y - top)) / span                      # 0 at the top left .. 1 at the bottom right
+            if y == bottom and bottom - top > 0: c = t[1]
+            elif y == top or x == 0: c = t[4]
             elif x == w - 1: c = t[2]
-            else: c = t[3] if not rnd or rnd.random() > 0.12 else (t[2] if rnd.random() < 0.6 else t[4])
+            elif k < 0.22: c = t[4]
+            elif k > 0.78: c = t[2]
+            else: c = t[3]
             px[x0 + x, y0 + y] = c + (255,)
 
 
+def band(px, x0, y0, w, y, tr, lit=True):
+    """A row of the trim across a face: its light tone, or its mid tone below a lit one."""
+    for x in range(w):
+        px[x0 + x, y0 + y] = (tr[4] if lit else tr[2]) + (255,)
+
+
 def worn(set_id, base, trim):
+    """The set as it is worn, in the icons' colours and manner: a crested Corinthian helm, a breastplate with a collar,
+    a belt and shoulder guards, leggings belted at the hip with a lit knee, and greaves cuffed below the knee."""
     t, tr = ramp(base), ramp(trim)
-    rnd = random.Random(set_id)
     main, legs = Image.new("RGBA", (64, 32), (0, 0, 0, 0)), Image.new("RGBA", (64, 32), (0, 0, 0, 0))
     mp, lp = main.load(), legs.load()
     head, body, arm, leg = faces(0, 0, 8, 8, 8), faces(16, 16, 8, 12, 4), faces(40, 16, 4, 12, 4), faces(0, 16, 4, 12, 4)
     clear = (0, 0, 0, 0)
-    # the helm: a Corinthian helm, a T cut for the eyes and mouth, a crest from brow to nape, a band at the brow
+
+    # the helm: shaded plates all round, a band of trim at the brow, a crest from brow to nape, a T cut for eyes and mouth
     for name, (x0, y0, w, h) in head.items():
-        plate(mp, x0, y0, w, h, t, rnd=rnd)
-        if name in ("front", "right", "left", "back"):
-            for x in range(w): mp[x0 + x, y0 + 1] = tr[3] + (255,)
+        plate(mp, x0, y0, w, h, t)
+        if name in ("front", "right", "left", "back"): band(mp, x0, y0, w, 1, tr)
     fx, fy = head["front"][0], head["front"][1]
     for x, y in ((1, 3), (2, 3), (5, 3), (6, 3), (1, 4), (2, 4), (5, 4), (6, 4), (3, 6), (4, 6), (3, 7), (4, 7)):
         mp[fx + x, fy + y] = clear
-    for y in (3, 4, 5): mp[fx + 3, fy + y], mp[fx + 4, fy + y] = t[4] + (255,), t[3] + (255,)     # the nose guard
+    for x, y in ((0, 3), (0, 4), (7, 3), (7, 4), (2, 5), (5, 5)):
+        mp[fx + x, fy + y] = t[1] + (255,)                 # the rims of the cuts, in shadow
+    for y in (3, 4, 5):
+        mp[fx + 3, fy + y], mp[fx + 4, fy + y] = t[4] + (255,), t[3] + (255,)   # the nose guard
     tx, ty = head["top"][0], head["top"][1]
     for y in range(8):
         mp[tx + 3, ty + y], mp[tx + 4, ty + y] = tr[4] + (255,), tr[2] + (255,)
-    bx, by = head["back"][0], head["back"][1]
-    for y in range(4): mp[bx + 3, by + y], mp[bx + 4, by + y] = tr[3] + (255,), tr[2] + (255,)
-    # the cuirass: a muscled breastplate, a collar, a belt and the leather strips below it
+    for face, rows in (("back", range(0, 4)), ("front", range(0, 1))):
+        x0, y0 = head[face][0], head[face][1]
+        for y in rows: mp[x0 + 3, y0 + y], mp[x0 + 4, y0 + y] = tr[4] + (255,), tr[2] + (255,)
+
+    # the breastplate: a collar, the curve under the chest, a belt, and a fringe of strips at its hem
     for name, (x0, y0, w, h) in body.items():
-        plate(mp, x0, y0, w, h, t, rnd=rnd)
+        plate(mp, x0, y0, w, h, t)
         if name in ("front", "back", "right", "left"):
-            for x in range(w):
-                mp[x0 + x, y0] = tr[4] + (255,)
-                mp[x0 + x, y0 + 9] = tr[3] + (255,)
-                mp[x0 + x, y0 + 10] = tr[2] + (255,)
-                mp[x0 + x, y0 + 11] = (tr[3] if x % 2 == 0 else t[1]) + (255,)
+            band(mp, x0, y0, w, 0, tr)
+            band(mp, x0, y0, w, 9, tr)
+            band(mp, x0, y0, w, 10, tr, lit=False)
+            for x in range(w): mp[x0 + x, y0 + 11] = (tr[3] if x % 2 == 0 else t[1]) + (255,)
     cx, cy = body["front"][0], body["front"][1]
-    for x, y in ((1, 3), (2, 3), (5, 3), (6, 3), (2, 6), (5, 6), (3, 4), (3, 5), (3, 6), (3, 7)):
-        mp[cx + x, cy + y] = t[2] + (255,)
-    for x, y in ((1, 2), (2, 2), (5, 2), (6, 2), (4, 4), (4, 5), (4, 6), (4, 7)):
-        mp[cx + x, cy + y] = t[4] + (255,)
-    # pauldrons at the shoulder, bracers at the wrist; bare between
+    for x in (1, 2, 5, 6): mp[cx + x, cy + 4] = t[2] + (255,)
+    for x in (1, 2, 5, 6): mp[cx + x, cy + 3] = t[4] + (255,)
+    for y in range(5, 9): mp[cx + 3, cy + y], mp[cx + 4, cy + y] = t[2] + (255,), t[4] + (255,)
+    # shoulder guards: the top of the arm and its four sides down to a trimmed edge
     for name, (x0, y0, w, h) in arm.items():
-        if name in ("top", "bottom"):
+        if name == "bottom": continue
+        if name == "top":
             plate(mp, x0, y0, w, h, t)
             continue
-        plate(mp, x0, y0, w, h, t, rows=range(0, 4))
-        for x in range(w): mp[x0 + x, y0 + 3] = tr[3] + (255,)
-        plate(mp, x0, y0, w, h, t, rows=range(9, 12))
-        for x in range(w): mp[x0 + x, y0 + 9] = tr[4] + (255,)
-    # greaves: from the knee down, two straps of the trim
+        plate(mp, x0, y0, w, h, t, rows=range(0, 5))
+        band(mp, x0, y0, w, 4, tr)
+
+    # greaves: the leg below the knee, a cuff of trim at the top, shaded down to the foot
     for name, (x0, y0, w, h) in leg.items():
         if name == "top": continue
         if name == "bottom":
             plate(mp, x0, y0, w, h, t)
             continue
-        plate(mp, x0, y0, w, h, t, rows=range(6, 12))
-        for x in range(w):
-            mp[x0 + x, y0 + 7] = tr[3] + (255,)
-            mp[x0 + x, y0 + 10] = tr[3] + (255,)
-    # leggings: thigh guards to the knee with a knee plate, the belt and strips over the hips
+        plate(mp, x0, y0, w, h, t, rows=range(7, 12))
+        band(mp, x0, y0, w, 7, tr)
+
+    # leggings: belted at the hip with a fringe below, guarding the thigh to a lit knee
     for name, (x0, y0, w, h) in leg.items():
         if name in ("top", "bottom"): continue
-        plate(lp, x0, y0, w, h, t, rows=range(0, 7), rnd=rnd)
-        for x in range(w):
-            lp[x0 + x, y0] = tr[3] + (255,)
-            lp[x0 + x, y0 + 5] = tr[4] + (255,)
-            lp[x0 + x, y0 + 6] = tr[2] + (255,)
+        plate(lp, x0, y0, w, h, t, rows=range(0, 8))
+        band(lp, x0, y0, w, 0, tr)
+        if name == "front":
+            for y in (4, 5): lp[x0 + 1, y0 + y], lp[x0 + 2, y0 + y] = tr[4] + (255,), tr[3] + (255,)
     for name, (x0, y0, w, h) in body.items():
         if name in ("top", "bottom"): continue
-        for y in range(7, 12):
-            for x in range(w):
-                c = tr[3] if y == 7 else (t[3] if x % 2 == 0 else t[1]) if y < 11 else t[1]
-                lp[x0 + x, y0 + y] = c + (255,)
+        plate(lp, x0, y0, w, h, t, rows=range(7, 12))
+        band(lp, x0, y0, w, 7, tr)
+        for x in range(w):
+            for y in (9, 10): lp[x0 + x, y0 + y] = (t[3] if x % 2 == 0 else t[2]) + (255,)
     return main, legs
-
 
 GOLD = ramp((226, 176, 60))
 PORPH = ramp((118, 40, 64))
