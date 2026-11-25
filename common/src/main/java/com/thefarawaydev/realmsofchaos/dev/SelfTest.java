@@ -4329,8 +4329,8 @@ public final class SelfTest {
                             Passages.Kind kind = plan.kind(c);
                             int h = plan.height(c);
                             check(h >= Passages.HEADROOM && h <= Passages.TALL && plan.half(c) == (plan.wide(c) ? 5 : plan.small(c) ? 3 : 4), plan.label() + ": a room's size is one the level can hold");
-                            if (kind == Passages.Kind.BEAM) {
-                                check(plan.wide(c) && h == 7 && plan.form(c) == Passages.FORM_PLAIN, plan.label() + ": a beam room is wide, for its mirrors");
+                            if (kind == Passages.Kind.BEAM || kind == Passages.Kind.SHUTTERS) {
+                                check(plan.wide(c) && h == 7 && plan.form(c) == Passages.FORM_PLAIN, plan.label() + ": a " + kind + " is wide, for its mirrors or lanterns");
                             } else if (com.thefarawaydev.realmsofchaos.world.Rooms.isPuzzle(kind) || com.thefarawaydev.realmsofchaos.world.Snares.is(kind) || kind == Passages.Kind.TRAP || kind == Passages.Kind.CRUSHER
                                     || kind == Passages.Kind.DARTS || kind == Passages.Kind.HALL) {
                                 check(h == Passages.HEADROOM && !plan.wide(c) && plan.form(c) == Passages.FORM_PLAIN, plan.label() + ": a " + kind + " keeps the plain shape its workings need");
@@ -6563,6 +6563,11 @@ public final class SelfTest {
                 level.getBlockState(hang).onProjectileHit(level, level.getBlockState(hang), new BlockHitResult(Vec3.atCenterOf(hang), Direction.SOUTH, hang, false), arrow);
                 settleRipple.accept(com.thefarawaydev.realmsofchaos.block.Glass.RIPPLE_TICKS * 3);
                 check(!level.getBlockState(hang.offset(1, 1, 0)).getValue(CLEAR), "and another turns it solid again");
+                // shaded, it holds the light in like stone; open, it lets it through like glass
+                net.minecraft.world.level.block.state.BlockState shut = veil.defaultBlockState(), opened = shut.setValue(CLEAR, true);
+                check(shut.getLightDampening() == 15 && !shut.propagatesSkylightDown() && opened.getLightDampening() == 0 && opened.propagatesSkylightDown(),
+                        "shaded veil glass holds back light, open veil glass lets it through");
+                check(smart.defaultBlockState().getLightDampening() == 15 && smart.defaultBlockState().setValue(CLEAR, true).getLightDampening() == 0, "and so does smart glass");
                 var oneWay = (com.thefarawaydev.realmsofchaos.block.Glass.OneWay) ModContent.ONE_WAY_GLASS.get();
                 BlockPos ow = w.offset(0, 1, 3);
                 net.minecraft.world.level.block.state.BlockState north = oneWay.defaultBlockState().setValue(com.thefarawaydev.realmsofchaos.block.Glass.OneWay.FACING, Direction.NORTH);
@@ -6580,6 +6585,82 @@ public final class SelfTest {
                 }
             } finally {
                 hero.stopRiding();
+                hero.remove(net.minecraft.world.entity.Entity.RemovalReason.DISCARDED);
+            }
+        });
+
+        step("veil glass in the puzzles: a shutter hall of veiled lanterns, and every puzzle room's lamps opening when it is solved", () -> {
+            Realm.testAlias(Level.OVERWORLD, Realm.OLYMPUS);
+            com.thefarawaydev.realmsofchaos.world.Rooms.forget();
+            ServerPlayer hero = fakePlayer(server, level, "RocShutters");
+            level.addNewPlayer(hero);
+            data.unmarkPrefix("looted/" + hero.getUUID() + "/");
+            Passages.Plan hall = null;
+            try {
+                Object[] found = room(level, Line.ZEUS, Passages.Kind.SHUTTERS);
+                hall = (Passages.Plan) found[0];
+                Passages.Cell hc = (Passages.Cell) found[1];
+                Passages.build(level, hall);
+                Passages.rearm(level, hall);
+                var veil = ModContent.VEIL_GLASS.get();
+                for (int i = 0; i < 4; i++) {
+                    BlockPos c = com.thefarawaydev.realmsofchaos.world.Rooms.lantern(hall, hc, i);
+                    check(level.getBlockState(c.above()).is(veil) && level.getBlockState(c.east()).is(veil) && !level.getBlockState(c).isAir(), "lantern " + i + ": a lamp in a case of veil glass");
+                }
+                check(!com.thefarawaydev.realmsofchaos.world.Rooms.allOpen(level, hall, hc) && !com.thefarawaydev.realmsofchaos.world.Rooms.solved(level, hall, hc),
+                        "the hall starts with some of its lanterns shut");
+                BlockPos cache = com.thefarawaydev.realmsofchaos.world.Rooms.cache(hall, hc);
+                check(!Passages.loot(level, cache, hero), "its cache is locked");
+                int far = hall.half(hc);
+                net.minecraft.world.level.block.entity.BlockEntity barrel = level.getBlockEntity(hall.centre(hc).offset(far, 1, far));
+                check(barrel instanceof net.minecraft.world.level.block.entity.BarrelBlockEntity b && b.countItem(net.minecraft.world.item.Items.SNOWBALL) == 16,
+                        "a barrel of snowballs for whoever came without a bow");
+                // striking one lantern turns it and the two beside it in the ring
+                boolean[] before = new boolean[4];
+                for (int i = 0; i < 4; i++) before[i] = com.thefarawaydev.realmsofchaos.world.Rooms.lanternOpen(level, hall, hc, i);
+                BlockPos strike = com.thefarawaydev.realmsofchaos.world.Rooms.lantern(hall, hc, 0).above();
+                check(com.thefarawaydev.realmsofchaos.world.Rooms.strikeShutter(level, strike), "a shot at a lantern is a move in the puzzle");
+                boolean solvedAlready = com.thefarawaydev.realmsofchaos.world.Rooms.solved(level, hall, hc);
+                if (!solvedAlready) {
+                    check(com.thefarawaydev.realmsofchaos.world.Rooms.lanternOpen(level, hall, hc, 0) != before[0]
+                            && com.thefarawaydev.realmsofchaos.world.Rooms.lanternOpen(level, hall, hc, 1) != before[1]
+                            && com.thefarawaydev.realmsofchaos.world.Rooms.lanternOpen(level, hall, hc, 3) != before[3]
+                            && com.thefarawaydev.realmsofchaos.world.Rooms.lanternOpen(level, hall, hc, 2) == before[2], "it turns, and its two neighbours with it - not the one across");
+                    check(!com.thefarawaydev.realmsofchaos.world.Rooms.strikeShutter(level, hall.centre(hc).offset(0, 1, 0)), "a strike anywhere else in the hall is no move");
+                    // solve it: try each set of lanterns to strike (a strike twice is no strike at all)
+                    for (int mask = 0; mask < 16 && !com.thefarawaydev.realmsofchaos.world.Rooms.solved(level, hall, hc); mask++) {
+                        for (int i = 0; i < 4; i++) if ((mask >> i & 1) == 1 && !com.thefarawaydev.realmsofchaos.world.Rooms.solved(level, hall, hc))
+                            com.thefarawaydev.realmsofchaos.world.Rooms.strikeShutter(level, com.thefarawaydev.realmsofchaos.world.Rooms.lantern(hall, hc, i).above());
+                        if (com.thefarawaydev.realmsofchaos.world.Rooms.solved(level, hall, hc)) break;
+                        for (int i = 0; i < 4; i++) if ((mask >> i & 1) == 1)
+                            com.thefarawaydev.realmsofchaos.world.Rooms.strikeShutter(level, com.thefarawaydev.realmsofchaos.world.Rooms.lantern(hall, hc, i).above());
+                    }
+                }
+                check(com.thefarawaydev.realmsofchaos.world.Rooms.solved(level, hall, hc), "all four open, the hall is solved");
+                for (int t = 0; t < 40; t++) {
+                    advance(server, 1);
+                    Scheduler.tick(server);
+                }
+                boolean allClear = true;
+                for (int i = 0; i < 4; i++) for (BlockPos b : com.thefarawaydev.realmsofchaos.block.Glass.window(level, com.thefarawaydev.realmsofchaos.world.Rooms.lantern(hall, hc, i).above(), veil))
+                    allClear &= level.getBlockState(b).getValue(com.thefarawaydev.realmsofchaos.block.Glass.Switching.CLEAR);
+                check(allClear, "and every veil of every lantern has opened");
+                check(Passages.loot(level, cache, hero), "the cache opens");
+                // the room's wall lamps: veiled while the puzzle stands, open once it is solved
+                int veiled = 0, open = 0;
+                for (BlockPos s : com.thefarawaydev.realmsofchaos.world.Rooms.sconces(hall, hc)) {
+                    if (!level.getBlockState(s).is(veil)) continue;
+                    veiled++;
+                    if (level.getBlockState(s).getValue(com.thefarawaydev.realmsofchaos.block.Glass.Switching.CLEAR)) open++;
+                }
+                check(veiled > 0 && open == veiled, "the lamps in its walls have opened too: " + open + " of " + veiled);
+                Passages.rearm(level, hall);
+                int shut = 0;
+                for (BlockPos s : com.thefarawaydev.realmsofchaos.world.Rooms.sconces(hall, hc))
+                    if (level.getBlockState(s).is(veil) && !level.getBlockState(s).getValue(com.thefarawaydev.realmsofchaos.block.Glass.Switching.CLEAR)) shut++;
+                check(shut == veiled && !com.thefarawaydev.realmsofchaos.world.Rooms.allOpen(level, hall, hc), "sealed again, the hall is dark and its lanterns set anew");
+            } finally {
+                if (hall != null) Passages.rearm(level, hall);
                 hero.remove(net.minecraft.world.entity.Entity.RemovalReason.DISCARDED);
             }
         });

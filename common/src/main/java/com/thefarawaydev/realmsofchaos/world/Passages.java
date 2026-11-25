@@ -71,13 +71,13 @@ public final class Passages {
     public static final int TALL = 8;
     public static final int MAX_SIZE = 6;
     public static final int X0 = 600, PITCH = 160;
-    public static final int LAYOUT_VERSION = 23;
+    public static final int LAYOUT_VERSION = 24;
     public static final String GUARDIAN_TAG = "realms_of_chaos_guardian";
     private static final String HUD = "hud." + RealmsOfChaos.MOD_ID + ".passage.";
 
     public enum Kind { START, EXIT, SEAL, TREASURE, SHRINE, HALL, ROOM, TRAP, GARDEN, LIBRARY, POOL, ARENA, VAULT, CHIMES, BEAM, PLATES, CRUSHER, DARTS,
         SPIKES, FLAMES, BLADES, STAIRWELL, ARC, GAS, CELLS, STORE, GAUNTLET, OBSERVATORY, ARMORY, BATHS, SANCTUM,
-        PROVING, BARRACKS, DUEL, AMBUSH, OVERLOOK }
+        PROVING, BARRACKS, DUEL, AMBUSH, OVERLOOK, SHUTTERS }
 
     /** How the corridor between two rooms runs: straight, round a baffle to one side or either, or past a nook. */
     public static final int RUN_STRAIGHT = 0, RUN_BEND_LOW = 1, RUN_BEND_HIGH = 2, RUN_SPLIT = 3, RUN_NOOK_LOW = 4, RUN_NOOK_HIGH = 5, RUN_GALLERY = 6, RUN_CAUSEWAY = 7;
@@ -256,6 +256,11 @@ public final class Passages {
                     case AMBUSH, OVERLOOK -> {
                         // an ambush needs a ceiling to drop from; an overlook, room for its gallery
                         h = TALL;
+                        wide = true;
+                    }
+                    case SHUTTERS -> {
+                        // a shutter hall needs the room: a lantern in every quarter, and space round them to shoot from
+                        h = 7;
                         wide = true;
                     }
                     case BEAM -> {
@@ -498,7 +503,7 @@ public final class Passages {
                 kinds[c.x][c.z] = Kind.ARENA;
             }
             // puzzle rooms: one on a small level, up to three on the largest, never the same kind twice
-            List<Kind> puzzles = new ArrayList<>(List.of(Kind.VAULT, Kind.CHIMES, Kind.BEAM, Kind.PLATES));
+            List<Kind> puzzles = new ArrayList<>(List.of(Kind.VAULT, Kind.CHIMES, Kind.BEAM, Kind.PLATES, Kind.SHUTTERS));
             Collections.shuffle(puzzles, random);
             for (int i = 0; i < size - 3 && !free.isEmpty(); i++) {
                 Cell c = free.remove(0);
@@ -581,6 +586,7 @@ public final class Passages {
                         case POOL -> '~';
                         case ARENA -> 'A';
                         case VAULT -> 'v';
+                        case SHUTTERS -> 'u';
                         case CHIMES -> 'c';
                         case BEAM -> '/';
                         case PLATES -> 'p';
@@ -1359,7 +1365,7 @@ public final class Passages {
                 for (int[] k : CORNERS) set(level, m.offset(k[0], 1, k[1]), Blocks.FLOWERING_AZALEA);
                 for (int[] k : CORNERS) set(level, m.offset(k[0], 0, k[1]), Blocks.MOSS_BLOCK);
             }
-            case VAULT, CHIMES, BEAM, PLATES, DARTS -> Rooms.build(level, plan, c, random);
+            case VAULT, CHIMES, BEAM, PLATES, DARTS, SHUTTERS -> Rooms.build(level, plan, c, random);
             case SPIKES, FLAMES, BLADES, ARC, GAS -> Snares.build(level, plan, c, p);
             case GAUNTLET -> Gauntlets.build(level, plan, c, random);
             case CELLS -> {
@@ -2715,6 +2721,7 @@ public final class Passages {
                     case CHIMES -> "chimes";
                     case BEAM -> "beam";
                     case PLATES -> "plates";
+                    case SHUTTERS -> "shutters";
                     case CRUSHER -> "crusher";
                     case DARTS -> "darts";
                     case SPIKES -> "spikes";

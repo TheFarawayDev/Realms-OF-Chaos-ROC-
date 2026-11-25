@@ -104,6 +104,13 @@ The current build is an **Alpha**.
   * Smart and veil glass do not change all at once: the change runs through the window block by block from where it
     started, two ticks a block. (`art/renders/glass-veil-smart.png`, `art/videos/smart-glass-ripple.mp4` - an arrow in
     a target block beside it)
+* **Veil glass in the puzzles.** Smart and veil glass hold back light while shaded and let it through once clear,
+  so a lamp behind them lights a room only when they open.
+  * **Shutter Hall** - a new puzzle room: four lanterns in its quarters, each a lamp in a case of veil glass. Shoot
+    or throw at a lantern and it turns - and the two beside it in the ring turn with it. Open all four and the cache
+    unlocks. Two barrels of snowballs stand by the walls for whoever came without a bow. (`art/renders/shutter-hall.png`)
+  * **Every puzzle room** - vault, chime room, beam room, trembling floor and shutter hall - has its wall lamps set
+    back behind veil glass: dim while the puzzle stands, and opening in a ripple, light pouring in, once it is solved.
 * **The glass in use.**
   * **Tower windows** are glazed in their tower's glass: Zeus's in Reinforced, Poseidon's in Frosted, Hades's in
     One-Way - from inside, the realm beyond; from outside, a ring of silvered panes that shows nothing of who is

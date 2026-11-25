@@ -66,7 +66,8 @@ public final class Rooms {
     // ---- shared ------------------------------------------------------------------------------------------------
 
     public static boolean isPuzzle(Passages.Kind kind) {
-        return kind == Passages.Kind.VAULT || kind == Passages.Kind.CHIMES || kind == Passages.Kind.BEAM || kind == Passages.Kind.PLATES;
+        return kind == Passages.Kind.VAULT || kind == Passages.Kind.CHIMES || kind == Passages.Kind.BEAM || kind == Passages.Kind.PLATES
+                || kind == Passages.Kind.SHUTTERS;
     }
 
     private static String key(Passages.Plan plan, Passages.Cell cell) {
@@ -106,6 +107,8 @@ public final class Rooms {
 
     private static void solve(ServerLevel level, Passages.Plan plan, Passages.Cell cell) {
         ProgressData.get(level.getServer()).markBuilt(flag(plan, cell));
+        // the veils over the room's lamps open, and the light comes in
+        veils(level, plan, cell, true);
         BlockPos m = plan.centre(cell);
         level.playSound(null, m, SoundEvents.UI_TOAST_CHALLENGE_COMPLETE, SoundSource.BLOCKS, 1.0F, 1.3F);
         level.sendParticles(ParticleTypes.END_ROD, m.getX() + 0.5, m.getY() + 2.0, m.getZ() + 0.5, 80, 2.5, 1.0, 2.5, 0.05);
@@ -136,6 +139,7 @@ public final class Rooms {
             case PLATES -> {
                 for (BlockPos plate : plates(plan, cell)) level.setBlock(plate, ModContent.MEMORY_PLATE.get().defaultBlockState(), 2);
             }
+            case SHUTTERS -> buildShutters(level, plan, cell, random);
             case DARTS -> {
                 BlockPos m = plan.centre(cell);
                 for (int dx = -3; dx <= 3; dx++) {
@@ -146,6 +150,142 @@ public final class Rooms {
             }
             default -> { }
         }
+        if (isPuzzle(kind)) lampsBehindVeils(level, plan, cell);
+    }
+
+    // ---- veil glass: lamps that open when a puzzle is solved --------------------------------------------------------
+
+    /** The sconces in a room's walls, a third of the way along each: where a puzzle room keeps its veiled lamps. */
+    public static List<BlockPos> sconces(Passages.Plan plan, Passages.Cell cell) {
+        BlockPos m = plan.centre(cell);
+        int w = plan.half(cell) + 1;
+        List<BlockPos> out = new java.util.ArrayList<>();
+        for (int d : new int[]{-3, 3}) {
+            out.add(m.offset(w, 3, d));
+            out.add(m.offset(-w, 3, d));
+            out.add(m.offset(d, 3, w));
+            out.add(m.offset(d, 3, -w));
+        }
+        return out;
+    }
+
+    /**
+     * A puzzle room's sconces are set back into the wall behind a pane of veil glass: shaded, the room is dim; solved,
+     * they open and it is lit. (Only where there is rock behind the wall to set the lamp in - a corridor is left alone.)
+     */
+    private static void lampsBehindVeils(ServerLevel level, Passages.Plan plan, Passages.Cell cell) {
+        BlockPos m = plan.centre(cell);
+        for (BlockPos s : sconces(plan, cell)) {
+            int ox = Integer.signum(s.getX() - m.getX()), oz = Integer.signum(s.getZ() - m.getZ());
+            BlockPos behind = Math.abs(s.getX() - m.getX()) > Math.abs(s.getZ() - m.getZ()) ? s.offset(ox, 0, 0) : s.offset(0, 0, oz);
+            BlockPos beyond = behind.offset(behind.getX() - s.getX(), 0, behind.getZ() - s.getZ());
+            if (level.getBlockState(behind).isAir() || level.getBlockState(beyond).isAir()) continue;
+            level.setBlock(behind, plan.palette().light().defaultBlockState(), 2);
+            level.setBlock(s, ModContent.VEIL_GLASS.get().defaultBlockState(), 2);
+        }
+    }
+
+    /** Opens (or shuts) every veil of a room: its sconces, and a shutter hall's lanterns. */
+    static void veils(ServerLevel level, Passages.Plan plan, Passages.Cell cell, boolean clear) {
+        var veil = ModContent.VEIL_GLASS.get();
+        var CLEAR = com.thefarawaydev.realmsofchaos.block.Glass.Switching.CLEAR;
+        List<BlockPos> panes = new java.util.ArrayList<>(sconces(plan, cell));
+        if (plan.kind(cell) == Passages.Kind.SHUTTERS) for (int i = 0; i < 4; i++) panes.add(lantern(plan, cell, i).above());
+        for (BlockPos at : panes) {
+            if (!level.getBlockState(at).is(veil)) continue;
+            if (clear) com.thefarawaydev.realmsofchaos.block.Glass.ripple(level, at, veil, CLEAR, true);
+            else for (BlockPos b : com.thefarawaydev.realmsofchaos.block.Glass.window(level, at, veil)) level.setBlock(b, level.getBlockState(b).setValue(CLEAR, false), 2);
+        }
+    }
+
+    // ---- the shutter hall: four veiled lanterns, lights out ----------------------------------------------------------
+
+    /** The four lanterns in ring order: each is a neighbour of the one before and the one after it. */
+    private static final int[][] LANTERNS = {{3, 3}, {3, -3}, {-3, -3}, {-3, 3}};
+
+    /** Where a shutter hall's lantern burns: veil glass round it and over it. */
+    public static BlockPos lantern(Passages.Plan plan, Passages.Cell cell, int i) {
+        return plan.centre(cell).offset(LANTERNS[i][0], 1, LANTERNS[i][1]);
+    }
+
+    /** Whether a lantern's veil is open - or will be, once the change now running through it has got there. */
+    public static boolean lanternOpen(ServerLevel level, Passages.Plan plan, Passages.Cell cell, int i) {
+        BlockPos top = lantern(plan, cell, i).above();
+        Boolean going = com.thefarawaydev.realmsofchaos.block.Glass.heading(top);
+        BlockState s = level.getBlockState(top);
+        return going != null ? going : s.is(ModContent.VEIL_GLASS.get()) && s.getValue(com.thefarawaydev.realmsofchaos.block.Glass.Switching.CLEAR);
+    }
+
+    private static void setLantern(ServerLevel level, Passages.Plan plan, Passages.Cell cell, int i, boolean open, boolean ripple) {
+        var veil = ModContent.VEIL_GLASS.get();
+        var CLEAR = com.thefarawaydev.realmsofchaos.block.Glass.Switching.CLEAR;
+        BlockPos top = lantern(plan, cell, i).above();
+        if (ripple) {
+            com.thefarawaydev.realmsofchaos.block.Glass.ripple(level, top, veil, CLEAR, open);
+        } else {
+            for (BlockPos b : com.thefarawaydev.realmsofchaos.block.Glass.window(level, top, veil)) level.setBlock(b, level.getBlockState(b).setValue(CLEAR, open), 2);
+        }
+    }
+
+    /** Strikes lantern {@code i}: it and the two beside it in the ring turn. */
+    private static void pressLantern(ServerLevel level, Passages.Plan plan, Passages.Cell cell, int i, boolean ripple) {
+        for (int j : new int[]{i + 3, i, i + 1}) setLantern(level, plan, cell, j % 4, !lanternOpen(level, plan, cell, j % 4), ripple);
+    }
+
+    /**
+     * A shutter hall: four lanterns in the quarters, each a lamp in a case of veil glass. Laid open, then struck a few
+     * times at random - so there is always a way back to all four open. Two barrels of snowballs by the walls, for
+     * whoever came without a bow.
+     */
+    private static void buildShutters(ServerLevel level, Passages.Plan plan, Passages.Cell cell, Random random) {
+        BlockState open = ModContent.VEIL_GLASS.get().defaultBlockState().setValue(com.thefarawaydev.realmsofchaos.block.Glass.Switching.CLEAR, true);
+        for (int i = 0; i < 4; i++) {
+            BlockPos c = lantern(plan, cell, i);
+            for (int dx = -1; dx <= 1; dx++) {
+                for (int dz = -1; dz <= 1; dz++) {
+                    level.setBlock(c.offset(dx, -1, dz), plan.palette().trim().defaultBlockState(), 2);
+                    if (dx != 0 || dz != 0) level.setBlock(c.offset(dx, 0, dz), open, 2);
+                    level.setBlock(c.offset(dx, 1, dz), open, 2);
+                }
+            }
+            level.setBlock(c, plan.palette().light().defaultBlockState(), 2);
+        }
+        for (int n = 0; n < 1 + random.nextInt(3); n++) pressLantern(level, plan, cell, random.nextInt(4), false);
+        if (allOpen(level, plan, cell)) pressLantern(level, plan, cell, 0, false);
+        int far = plan.half(cell);
+        for (int s : new int[]{-1, 1}) {
+            BlockPos at = plan.centre(cell).offset(s * far, 1, s * far);
+            level.setBlock(at, net.minecraft.world.level.block.Blocks.BARREL.defaultBlockState(), 2);
+            if (level.getBlockEntity(at) instanceof net.minecraft.world.level.block.entity.BarrelBlockEntity barrel) {
+                barrel.clearContent();
+                barrel.setItem(13, new ItemStack(Items.SNOWBALL, 16));
+            }
+        }
+    }
+
+    public static boolean allOpen(ServerLevel level, Passages.Plan plan, Passages.Cell cell) {
+        for (int i = 0; i < 4; i++) if (!lanternOpen(level, plan, cell, i)) return false;
+        return true;
+    }
+
+    /**
+     * Something shot or thrown has struck veil glass. In an unsolved shutter hall's lantern, that is a move in the
+     * puzzle: the lantern and its two neighbours turn, and when all four stand open the hall is solved.
+     * @return true if it was handled here (and the glass should do nothing else)
+     */
+    public static boolean strikeShutter(ServerLevel level, BlockPos pos) {
+        Place at = place(level, pos, Passages.Kind.SHUTTERS);
+        if (at == null) return false;
+        for (int i = 0; i < 4; i++) {
+            BlockPos c = lantern(at.plan(), at.cell(), i);
+            if (Math.abs(pos.getX() - c.getX()) > 1 || Math.abs(pos.getZ() - c.getZ()) > 1 || pos.getY() < c.getY() || pos.getY() > c.getY() + 1) continue;
+            if (solved(level, at.plan(), at.cell())) return true;          // (solved, it stays open)
+            pressLantern(level, at.plan(), at.cell(), i, true);
+            level.playSound(null, pos, SoundEvents.AMETHYST_BLOCK_RESONATE, SoundSource.BLOCKS, 1.0F, 0.8F + 0.2F * i);
+            if (allOpen(level, at.plan(), at.cell())) solve(level, at.plan(), at.cell());
+            return true;
+        }
+        return false;
     }
 
     /** A passage sealing itself again locks its puzzles again too, and sets them differently. */
@@ -156,12 +296,14 @@ public final class Rooms {
             Passages.Kind kind = plan.kind(cell);
             if (!isPuzzle(kind)) continue;
             data.unmarkBuilt(flag(plan, cell));
+            veils(level, plan, cell, false);
             switch (kind) {
                 case VAULT -> buildVault(level, plan, cell, random);
                 case CHIMES -> {
                     for (int n = 0; n < 4; n++) light(level, chime(plan, cell, n), false);
                 }
                 case BEAM -> buildBeam(level, plan, cell, random);
+                case SHUTTERS -> buildShutters(level, plan, cell, random);
                 default -> {
                     for (BlockPos plate : plates(plan, cell)) light(level, plate, false);
                 }

@@ -41,6 +41,10 @@ import net.minecraft.world.phys.shapes.VoxelShape;
  * <li><b>Smart glass</b> - shaded until it has a redstone signal, then clear.
  * <li><b>Veil glass</b> - a solid-looking pane, untinted, that turns clear and back: on a redstone signal, or when
  *     anything shot or thrown strikes it.
+ * </ul>
+ * Smart and veil glass hold back light while shaded and let it through once clear: a lamp behind them lights the room
+ * only when they open.
+ * <ul>
  * <li><b>One-way glass</b> - a solid pane seen from the side it faces; from behind, nothing at all.
  * </ul>
  *
@@ -188,6 +192,17 @@ public final class Glass {
             return state;
         }
 
+        /** Shaded, it holds back light like stone; clear, it lets light through as glass does. */
+        @Override
+        protected int getLightDampening(BlockState state) {
+            return state.getValue(CLEAR) ? 0 : 15;
+        }
+
+        @Override
+        protected boolean propagatesSkylightDown(BlockState state) {
+            return state.getValue(CLEAR);
+        }
+
         /** True if any block of this window has a redstone signal. */
         public boolean powered(Level level, BlockPos pos) {
             for (BlockPos at : window(level, pos, this)) if (level.hasNeighborSignal(at)) return true;
@@ -239,6 +254,8 @@ public final class Glass {
         @Override
         protected void onProjectileHit(Level level, BlockState state, BlockHitResult hit, Projectile projectile) {
             if (level instanceof ServerLevel server) {
+                // (in a shutter hall, the lanterns' veils are the puzzle: a strike there turns its neighbours too)
+                if (com.thefarawaydev.realmsofchaos.world.Rooms.strikeShutter(server, hit.getBlockPos())) return;
                 Boolean going = heading(hit.getBlockPos());
                 boolean now = going != null ? going : state.getValue(CLEAR);
                 ripple(server, hit.getBlockPos(), this, CLEAR, !now);

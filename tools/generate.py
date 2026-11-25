@@ -883,6 +883,8 @@ def gen_lang():
         "hud.realms_of_chaos.passage.room.proving": "A proving ground. Beat a war drum to call three waves - the cache is for whoever stands at the end",
         "hud.realms_of_chaos.passage.room.proving.done": "A proving ground, its trial won",
         "hud.realms_of_chaos.passage.room.barracks": "A barracks - and its soldiers are awake",
+        "hud.realms_of_chaos.passage.room.shutters": "A shutter hall. Shoot or throw at a lantern's veil: it turns, and the two beside it too. Open all four",
+        "menu.realms_of_chaos.passage.kind.shutters": "Shutter Hall",
         "hud.realms_of_chaos.passage.room.duel": "A duelling circle. Its champion has been waiting",
         "hud.realms_of_chaos.passage.room.ambush": "A quiet hall. Somebody left a cache in the middle of it",
         "hud.realms_of_chaos.passage.room.overlook": "An overlook - keep to the pillars, and climb for the cache",

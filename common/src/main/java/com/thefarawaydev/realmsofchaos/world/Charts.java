@@ -85,7 +85,7 @@ public final class Charts {
             case START -> MapColor.COLOR_LIGHT_GREEN;
             case EXIT -> MapColor.EMERALD;
             case SEAL -> MapColor.COLOR_RED;
-            case TREASURE, VAULT, CHIMES, BEAM, PLATES, STAIRWELL -> MapColor.GOLD;
+            case TREASURE, VAULT, CHIMES, BEAM, PLATES, STAIRWELL, SHUTTERS -> MapColor.GOLD;
             case SHRINE -> MapColor.COLOR_LIGHT_BLUE;
             case TRAP, CRUSHER, DARTS, SPIKES, FLAMES, BLADES, ARC, GAS -> MapColor.COLOR_ORANGE;
             case ARENA, PROVING, DUEL, OVERLOOK -> MapColor.COLOR_PURPLE;
@@ -219,7 +219,7 @@ public final class Charts {
     public static int[][] sign(Passages.Kind kind, boolean sealBroken) {
         return switch (kind) {
             case SEAL -> sealBroken ? BOX : CROSS;
-            case TREASURE, ARENA, STAIRWELL, VAULT, CHIMES, BEAM, PLATES -> DIAMOND;
+            case TREASURE, ARENA, STAIRWELL, VAULT, CHIMES, BEAM, PLATES, SHUTTERS -> DIAMOND;
             case SHRINE -> PLUS;
             case EXIT -> ARCH;
             case TRAP, CRUSHER, DARTS, SPIKES, FLAMES, BLADES, ARC, GAS, GAUNTLET -> BANG;

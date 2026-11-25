@@ -102,6 +102,7 @@ public class PassageMenu extends ButtonMenu {
                 case POOL -> Items.LILY_PAD;
                 case ARENA -> Items.IRON_SWORD;
                 case VAULT -> Items.AMETHYST_SHARD;
+                case SHUTTERS -> Items.SNOWBALL;
                 case CHIMES -> Items.BELL;
                 case BEAM -> Items.SPYGLASS;
                 case PLATES -> Items.STONE_PRESSURE_PLATE;
