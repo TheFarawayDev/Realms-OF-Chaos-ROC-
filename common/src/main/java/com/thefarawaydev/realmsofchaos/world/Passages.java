@@ -71,7 +71,7 @@ public final class Passages {
     public static final int TALL = 8;
     public static final int MAX_SIZE = 6;
     public static final int X0 = 600, PITCH = 160;
-    public static final int LAYOUT_VERSION = 30;
+    public static final int LAYOUT_VERSION = 31;
     public static final String GUARDIAN_TAG = "realms_of_chaos_guardian";
     private static final String HUD = "hud." + RealmsOfChaos.MOD_ID + ".passage.";
 
@@ -983,6 +983,9 @@ public final class Passages {
                     // a puzzle room is shut behind a sliding door of its tower's stone, that glides into the wall when used
                     if (sliding(plan.kind(c))) slidingDoor(level, plan, c, dir, CORRIDOR_FROM + 1 - (plan.small(c) ? 1 : 0), slider(plan.line));
                     if (sliding(plan.kind(next))) slidingDoor(level, plan, c, dir, CORRIDOR_TO - 1 + (plan.small(next) ? 1 : 0), slider(plan.line));
+                    // a treasure room is shut behind a great swinging door of its tower's stone, that swings out into the corridor
+                    if (plan.kind(c) == Kind.TREASURE) swingDoor(level, plan, c, dir, CORRIDOR_FROM + 1 - (plan.small(c) ? 1 : 0), 1, swinger(plan.line));
+                    if (plan.kind(next) == Kind.TREASURE) swingDoor(level, plan, c, dir, CORRIDOR_TO - 1 + (plan.small(next) ? 1 : 0), -1, swinger(plan.line));
                 }
             }
         });
@@ -1223,6 +1226,40 @@ public final class Passages {
             case POSEIDON -> ModContent.SEA_SLIDING_DOOR.get();
             case HADES -> ModContent.SHADE_SLIDING_DOOR.get();
         };
+    }
+
+    /** A tower's own swinging door. */
+    public static Block swinger(Line line) {
+        return switch (line) {
+            case ZEUS -> ModContent.SKY_SWING_DOOR.get();
+            case POSEIDON -> ModContent.SEA_SWING_DOOR.get();
+            case HADES -> ModContent.SHADE_SWING_DOOR.get();
+        };
+    }
+
+    /**
+     * A swinging door three wide and three high across a corridor, {@code d} along it, shut, hung on whichever side
+     * leaves room for it to swing {@code away} along the corridor (1: on along it, -1: back). Where neither side has
+     * room, there is no door.
+     */
+    static void swingDoor(ServerLevel level, Plan plan, Cell c, int dir, int d, int away, Block door) {
+        net.minecraft.core.Direction plusK = dir == 0 ? net.minecraft.core.Direction.SOUTH : net.minecraft.core.Direction.EAST;
+        net.minecraft.core.Direction on = dir == 0 ? net.minecraft.core.Direction.EAST : net.minecraft.core.Direction.SOUTH;
+        net.minecraft.core.Direction facing = away > 0 ? on : on.getOpposite();
+        for (int hingeK = -1; hingeK <= 1; hingeK += 2) {
+            boolean room = true;
+            for (int i = 1; i <= 2 && room; i++)
+                for (int y = 1; y <= 3 && room; y++) if (!level.getBlockState(along(plan, c, dir, d + i * away, hingeK, y)).isAir()) room = false;
+            if (!room) continue;
+            // the hinge on this side: from it the leaf runs across the corridor toward the other side
+            net.minecraft.core.Direction across = hingeK < 0 ? plusK : plusK.getOpposite();
+            var hinge = facing.getClockWise() == across ? net.minecraft.world.level.block.state.properties.DoorHingeSide.LEFT
+                    : net.minecraft.world.level.block.state.properties.DoorHingeSide.RIGHT;
+            BlockState panel = door.defaultBlockState().setValue(com.thefarawaydev.realmsofchaos.block.SwingDoorBlock.FACING, facing)
+                    .setValue(com.thefarawaydev.realmsofchaos.block.SwingDoorBlock.HINGE, hinge);
+            for (int y = 1; y <= 3; y++) for (int k = -1; k <= 1; k++) level.setBlock(along(plan, c, dir, d, k, y), panel, 2 | 16);
+            return;
+        }
     }
 
     /** The side of the corridor a sliding door {@code d} along it slides into (1 or -1), or 0 if neither wall is solid enough to take it. */

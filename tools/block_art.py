@@ -3088,6 +3088,42 @@ def gen_sliding_doors(assets, data):
         wj(os.path.join(data, f"recipe/{name}.json"), {"type": "minecraft:crafting_shaped", "category": "redstone", "key": {"C": m[0], "G": m[1]},
                                                        "pattern": ["CGC", "CCC"], "result": {"id": f"{MOD}:{name}", "count": 4}})
 
+        # ---- the swinging door of the same stuff: boards (or ashlar, or plates) running up the leaf, an iron band
+        # across with studs along it, so that panels stacked into a great door read as one gate with its bands
+        swing = f"{key}_swing_door"
+
+        def leaf(x, y, field=field, frame=frame, band=band, stud=stud, style=style, g=g):
+            if y in (6, 9): return shade(frame, 0.8) if y == 9 else shade(band, 1.2)
+            if y in (7, 8): return stud if x % 5 == 2 else band if y == 7 else shade(band, 0.85)
+            if style == "planks":
+                if x % 4 == 3: return shade(field, 0.7)
+                if x % 4 == 0: return shade(field, 1.12)
+                return shade(field, g[y][x] * (0.92 if (x * 7 + y * 3) % 11 == 0 else 1.0))
+            if style == "stone":
+                # ashlar: courses four high, joints staggered
+                if y % 8 in (5,) or (x + (4 if (y // 8) % 2 else 0)) % 8 == 0: return shade(field, 0.78)
+                return shade(field, g[y][x] * (1.06 if y % 8 == 0 else 1.0))
+            # metal plates with a lit rim
+            if x in (0, 8) or y in (0, 15): return shade(field, 1.18)
+            if x in (7, 15): return shade(field, 0.72)
+            return shade(field, g[y][x])
+        paint_hi(leaf).save(os.path.join(T, f"{swing}.png"))
+        wj(os.path.join(M, f"{swing}.json"), {"parent": "minecraft:block/block",
+                                              "textures": {"particle": t(swing), "face": t(swing), "edge": t(f"{name}_edge")}, "elements": [el]})
+        sv = {}
+        base = {"north": 0, "east": 90, "south": 180, "west": 270}
+        for f, r in base.items():
+            for hinge in ("left", "right"):
+                for opened in (False, True):
+                    for powered in ("false", "true"):
+                        # open, the leaf lies along the way it swings: a quarter turn from shut
+                        rr = (r + (90 if hinge == "left" else 270)) % 360 if opened else r
+                        sv[f"facing={f},hinge={hinge},open={'true' if opened else 'false'},powered={powered}"] = {"model": f"{MOD}:block/{swing}", "y": rr}
+        wj(os.path.join(assets, f"blockstates/{swing}.json"), {"variants": sv})
+        wj(os.path.join(assets, f"items/{swing}.json"), {"model": {"type": "minecraft:model", "model": f"{MOD}:block/{swing}"}})
+        wj(os.path.join(data, f"recipe/{swing}.json"), {"type": "minecraft:crafting_shaped", "category": "redstone", "key": {"C": m[0], "G": m[1]},
+                                                        "pattern": ["CC", "CC", "GC"], "result": {"id": f"{MOD}:{swing}", "count": 4}})
+
 
 def gen_puzzle2(assets, data):
     """The dial hall and the sliding stones: dials, frescoes, carved stones and sockets."""

@@ -944,6 +944,10 @@ def gen_lang():
         "block.realms_of_chaos.sky_sliding_door": "Sky Sliding Door",
         "block.realms_of_chaos.sea_sliding_door": "Sea Sliding Door",
         "block.realms_of_chaos.shade_sliding_door": "Shade Sliding Door",
+        "block.realms_of_chaos.bronze_swing_door": "Bronze Swinging Door",
+        "block.realms_of_chaos.sky_swing_door": "Sky Swinging Door",
+        "block.realms_of_chaos.sea_swing_door": "Sea Swinging Door",
+        "block.realms_of_chaos.shade_swing_door": "Shade Swinging Door",
         "block.realms_of_chaos.moving_dummy": "Sparring Dummy",
         "block.realms_of_chaos.chair": "Chair",
         "block.realms_of_chaos.table": "Table",
@@ -2054,7 +2058,7 @@ DECOR = ["olympian_marble", "olympian_marble_pillar", "gilded_frieze", "abyssal_
          "cloudstone", "cloud_tile", "trench_stone", "nacre_tile", "tartarus_stone", "throne_tile",
          "portal_frame_sky", "portal_frame_sea", "portal_frame_shade", "portal_frame_hub", "arrival_sigil",
          "bronze_trapdoor", "sky_trapdoor", "shade_trapdoor",
-         "arena_sand", "beast_gate", "war_drum", "war_standard", "sprinkler", "bronze_sliding_door", "sky_sliding_door", "sea_sliding_door", "shade_sliding_door",
+         "arena_sand", "beast_gate", "war_drum", "war_standard", "sprinkler", "bronze_sliding_door", "sky_sliding_door", "sea_sliding_door", "shade_sliding_door", "bronze_swing_door", "sky_swing_door", "sea_swing_door", "shade_swing_door",
          "reinforced_glass", "frosted_glass", "smart_glass", "veil_glass", "one_way_glass"] + [f"{b}_{k}" for b in ("olympian_marble", "cloudstone", "trench_stone", "tartarus_stone", "storm_brick", "tide_brick", "ash_brick", "underworld_brick") for k in ("stairs", "slab")]
 PICKAXE_ONLY = ["bronze_door", "sky_door", "shade_door", "verdigris_door", "verdigris_trapdoor"]
 AXE_ONLY = ["sea_door", "sea_trapdoor", "garrison_door", "garrison_trapdoor", "ivory_door", "ivory_trapdoor",

@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "redstone",
+  "key": {
+    "C": "minecraft:polished_blackstone",
+    "G": "minecraft:amethyst_shard"
+  },
+  "pattern": [
+    "CC",
+    "CC",
+    "GC"
+  ],
+  "result": {
+    "id": "realms_of_chaos:shade_swing_door",
+    "count": 4
+  }
+}

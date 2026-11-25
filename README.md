@@ -16,6 +16,16 @@ The current build is an **Alpha**.
 
 ## What's in 1.2.0
 
+* **Swinging doors, of any size.** Ordinary doors built the new way: four Swinging Doors - bronze, Sky, Sea and
+  Shade - each block a panel of boards (or ashlar, or plates) with an iron band and studs across it. Set panels side
+  by side and stacked and they make one leaf, up to 64 panels, hung on one edge. Use it, or give any panel a redstone
+  signal, and the whole leaf swings a quarter turn on its hinge, away from whoever set it - seen to swing, turning
+  smoothly on the hinge, then landing as blocks; use it again, or take the signal away, and it swings back. Something
+  where it would swing holds it shut. The hinge is on the setter's left, or on their right if they set it sneaking.
+  Four at a time from the tower's stone or bronze with a nugget or shard. (`art/renders/swinging-door.png`,
+  `art/videos/swinging-door.mp4`)
+* **Treasure rooms behind swinging doors.** Each treasure room is shut behind a great swinging door of its tower's
+  stone, three wide and three high, that swings out into the corridor.
 * **Sliding doors.** Four of them - bronze, and one in each tower's stone: Sky, Sea and Shade. Each block is a
   coffered panel; set panels side by side and on top of each other and they make one door, of any size up to 64
   panels. Use it, or give any panel a redstone signal, and the whole door glides sideways a block at a time until it
