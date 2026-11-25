@@ -1,0 +1,8 @@
+{
+  "sound_event": "realms_of_chaos:music.olympus",
+  "description": {
+    "translate": "jukebox_song.realms_of_chaos.olympus"
+  },
+  "length_in_seconds": 121.2,
+  "comparator_output": 3
+}

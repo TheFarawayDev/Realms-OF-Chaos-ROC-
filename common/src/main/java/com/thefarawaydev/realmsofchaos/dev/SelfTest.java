@@ -7208,6 +7208,78 @@ public final class SelfTest {
             }
         });
 
+        step("music: a track for every place, a disc for every track, the discs to be found; the tabs; the furniture", () -> {
+            ServerPlayer hero = fakePlayer(server, level, "RocListener");
+            try {
+                // every track has its sound, its jukebox song and its disc
+                var songs = server.registryAccess().lookupOrThrow(net.minecraft.core.registries.Registries.JUKEBOX_SONG);
+                for (String track : ModContent.TRACKS) {
+                    check(ModContent.sound("music." + track) != null, track + ": a sound");
+                    var key = net.minecraft.resources.ResourceKey.create(net.minecraft.core.registries.Registries.JUKEBOX_SONG, RealmsOfChaos.id(track));
+                    check(songs.get(key).isPresent(), track + ": a jukebox song");
+                    check(songs.get(key).get().value().lengthInTicks() > 20 * 60, track + ": over a minute long");
+                    ItemStack disc = new ItemStack(ModContent.disc(track));
+                    check(net.minecraft.world.item.JukeboxSong.fromStack(disc).map(h -> h.is(key)).orElse(false), track + ": its disc plays it");
+                }
+                // which track plays where: a Ruined Gate's, a citadel's, none out in the wilds, a tower's in its realm
+                Realm.testAlias(Level.OVERWORLD, null);
+                Ruins.Site gateSite = Ruins.site(level.getSeed(), Ruins.Kind.GATE), sky = Ruins.site(level.getSeed(), Ruins.Kind.SKY);
+                hero.setPos(gateSite.x() + 0.5, 100, gateSite.z() + 0.5);
+                check("gate".equals(com.thefarawaydev.realmsofchaos.world.MusicCues.cue(hero)), "at the Ruined Gate, its own music");
+                hero.setPos(sky.x() + 0.5, 100, sky.z() + 0.5);
+                check("citadel".equals(com.thefarawaydev.realmsofchaos.world.MusicCues.cue(hero)), "at a citadel, the citadels' music");
+                hero.setPos((gateSite.x() + sky.x()) / 2.0 + 2000, 100, (gateSite.z() + sky.z()) / 2.0 - 2000);
+                check(com.thefarawaydev.realmsofchaos.world.MusicCues.cue(hero) == null, "out in the wilds, the game's own music");
+                Realm.testAlias(Level.OVERWORLD, Realm.OLYMPUS);
+                hero.setPos(5000.5, 100, 5000.5);
+                check("olympus".equals(com.thefarawaydev.realmsofchaos.world.MusicCues.cue(hero)), "in Zeus's realm, Olympus's music: " + com.thefarawaydev.realmsofchaos.world.MusicCues.cue(hero));
+                com.thefarawaydev.realmsofchaos.world.MusicCues.tell(hero);
+                check(Integer.valueOf(ModContent.TRACKS.indexOf("olympus") + 1).equals(com.thefarawaydev.realmsofchaos.ui.HudFeed.value(hero, com.thefarawaydev.realmsofchaos.ui.HudFeed.MUSIC)),
+                        "and the player's game is told");
+                // the discs are found: in the passages' caches now and then
+                int found = 0, rolls = 0;
+                for (Line line : Line.values()) {
+                    Passages.Plan plan = Passages.plan(level, line, 3, 0);
+                    for (int i = 0; i < 60; i++) {
+                        var cell = plan.cells().get(i % plan.cells().size());
+                        for (ItemStack stack : Passages.lootFor(plan, cell, java.util.UUID.randomUUID())) if (ModContent.DISCS.values().stream().anyMatch(d -> stack.is(d.get()))) found++;
+                        rolls++;
+                    }
+                }
+                check(found > 0 && found < rolls / 2, "a disc turns up in a passage cache now and then: " + found + " in " + rolls);
+                // the tabs: seven, none empty, nothing in two
+                var all = ModContent.tabItems();
+                check(new java.util.HashSet<>(all).size() == all.size(), "nothing is in two creative tabs");
+                for (ModContent.Tab tab : ModContent.Tab.values()) check(!ModContent.tabItems(tab).isEmpty(), tab + " tab holds something");
+                check(ModContent.tabOf("chair") == ModContent.Tab.FURNITURE && ModContent.tabOf("porphyry_bricks") == ModContent.Tab.BUILDING
+                        && ModContent.tabOf("olympian_marble_stairs") == ModContent.Tab.BUILDING && ModContent.tabOf("altar_zeus") == ModContent.Tab.REALM
+                        && ModContent.tabOf("divine_orb_of_plenty") == ModContent.Tab.MAIN, "each block in its own tab");
+                // the furniture: each piece stands, turned the way it faces; a stool and an armchair are sat on
+                BlockPos at = BlockPos.containing(hero.position()).offset(0, 40, 0);
+                level.setBlock(at.below(), Blocks.STONE.defaultBlockState(), 2);
+                for (var entry : ModContent.PIECES.entrySet()) {
+                    BlockState piece = entry.getValue().get().defaultBlockState().setValue(com.thefarawaydev.realmsofchaos.block.Furniture.FACING, Direction.EAST);
+                    level.setBlock(at, piece, 2);
+                    check(!level.getBlockState(at).getShape(level, at).isEmpty(), entry.getKey() + " has a shape");
+                }
+                for (String seat : new String[]{"stool", "armchair"}) {
+                    level.setBlock(at, ModContent.PIECES.get(seat).get().defaultBlockState(), 2);
+                    if (level.getPlayerByUUID(hero.getUUID()) == null) level.addNewPlayer(hero);
+                    hero.setPos(at.getX() + 0.5, at.getY() + 1, at.getZ() + 1.5);
+                    level.getBlockState(at).useWithoutItem(level, hero, new BlockHitResult(Vec3.atCenterOf(at), Direction.UP, at, false));
+                    check(hero.isPassenger(), "a " + seat + " is sat on");
+                    hero.stopRiding();
+                }
+                check(ModContent.PIECES.get("standing_lamp").get().defaultBlockState().getLightEmission() > 10, "a standing lamp lights the room");
+                level.setBlock(at, Blocks.AIR.defaultBlockState(), 2);
+                level.setBlock(at.below(), Blocks.AIR.defaultBlockState(), 2);
+            } finally {
+                Realm.testAlias(Level.OVERWORLD, Realm.OLYMPUS);
+                hero.stopRiding();
+                hero.remove(net.minecraft.world.entity.Entity.RemovalReason.DISCARDED);
+            }
+        });
+
         step("every word on the mod's menus is in its language file: nobody is shown a key", () -> {
             ServerPlayer hero = fakePlayer(server, level, "RocProofreader");
             com.thefarawaydev.realmsofchaos.ui.Options.reset(hero);

@@ -1,0 +1,8 @@
+{
+  "sound_event": "realms_of_chaos:music.abyss",
+  "description": {
+    "translate": "jukebox_song.realms_of_chaos.abyss"
+  },
+  "length_in_seconds": 121.1,
+  "comparator_output": 4
+}

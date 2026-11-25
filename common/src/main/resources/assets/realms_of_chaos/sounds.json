@@ -7,6 +7,14 @@
       }
     ]
   },
+  "music.hermitage": {
+    "sounds": [
+      {
+        "name": "realms_of_chaos:music/hermitage",
+        "stream": true
+      }
+    ]
+  },
   "music.olympus": {
     "sounds": [
       {
@@ -27,6 +35,38 @@
     "sounds": [
       {
         "name": "realms_of_chaos:music/underworld",
+        "stream": true
+      }
+    ]
+  },
+  "music.passage": {
+    "sounds": [
+      {
+        "name": "realms_of_chaos:music/passage",
+        "stream": true
+      }
+    ]
+  },
+  "music.trial": {
+    "sounds": [
+      {
+        "name": "realms_of_chaos:music/trial",
+        "stream": true
+      }
+    ]
+  },
+  "music.citadel": {
+    "sounds": [
+      {
+        "name": "realms_of_chaos:music/citadel",
+        "stream": true
+      }
+    ]
+  },
+  "music.gate": {
+    "sounds": [
+      {
+        "name": "realms_of_chaos:music/gate",
         "stream": true
       }
     ]

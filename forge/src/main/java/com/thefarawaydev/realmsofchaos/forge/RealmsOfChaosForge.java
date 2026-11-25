@@ -86,12 +86,21 @@ public final class RealmsOfChaosForge {
             EntityType<com.thefarawaydev.realmsofchaos.entity.RelicProjectile> type = (EntityType<com.thefarawaydev.realmsofchaos.entity.RelicProjectile>) projectile.get();
             return type;
         });
-        RegistryObject<CreativeModeTab> tab = TABS.register("main", () -> CreativeModeTab.builder()
-                .title(ModContent.tabTitle())
-                .icon(ModContent::tabIcon)
-                .displayItems((params, output) -> ModContent.tabItems().forEach(output::accept))
-                .build());
-        ModContent.TAB.bind(tab);
+        // the mod's creative tabs, one for each kind of thing, in order
+        String before = null;
+        for (ModContent.Tab kind : ModContent.Tab.values()) {
+            final String after = before;
+            RegistryObject<CreativeModeTab> tab = TABS.register(kind.id, () -> {
+                CreativeModeTab.Builder builder = CreativeModeTab.builder()
+                        .title(kind.title())
+                        .icon(kind::icon)
+                        .displayItems((params, output) -> ModContent.tabItems(kind).forEach(output::accept));
+                if (after != null) builder.withTabsBefore(RealmsOfChaos.id(after));
+                return builder.build();
+            });
+            if (kind == ModContent.Tab.MAIN) ModContent.TAB.bind(tab);
+            before = kind.id;
+        }
 
         for (com.thefarawaydev.realmsofchaos.ui.Skin.Panel panel : com.thefarawaydev.realmsofchaos.ui.Skin.Panel.values()) {
             RegistryObject<net.minecraft.world.inventory.MenuType<?>> menu = MENUS.register(panel.id(), () -> ModContent.createMenuType(panel));

@@ -1,0 +1,15 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "pattern": [
+    "RYR"
+  ],
+  "key": {
+    "R": "minecraft:red_carpet",
+    "Y": "minecraft:yellow_carpet"
+  },
+  "result": {
+    "id": "realms_of_chaos:rug",
+    "count": 3
+  }
+}

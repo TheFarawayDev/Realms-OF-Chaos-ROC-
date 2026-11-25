@@ -30,6 +30,8 @@ public final class HudFeed {
     public static final String COMPASS = "compass";
     /** A line too long for the game's own action bar: the HUD writes it above the hotbar on two or three lines instead. */
     public static final String SAY = "say";
+    /** Which of the mod's tracks the player's game should play: see {@link com.thefarawaydev.realmsofchaos.world.MusicCues}. */
+    public static final String MUSIC = "music";
     public static final int ILL_HELD = 16;
     /** Bits of the options line. */
     public static final int OPT_CASTS = 1, OPT_COMBAT = 2, OPT_ART = 4;

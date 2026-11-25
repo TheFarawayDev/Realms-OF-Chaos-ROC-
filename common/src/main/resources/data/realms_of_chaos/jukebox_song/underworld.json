@@ -1,0 +1,8 @@
+{
+  "sound_event": "realms_of_chaos:music.underworld",
+  "description": {
+    "translate": "jukebox_song.realms_of_chaos.underworld"
+  },
+  "length_in_seconds": 162.0,
+  "comparator_output": 5
+}

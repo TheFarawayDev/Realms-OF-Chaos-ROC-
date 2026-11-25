@@ -57,6 +57,7 @@ public final class RealmSafety {
             Wards.service(player);
             Skills.service(player, ticker);
             com.thefarawaydev.realmsofchaos.ui.HudFeed.options(player);
+            MusicCues.tell(player);
             // boons belong to the passage they were won in: out of it, they are laid down
             if (Passages.locate(player) == null) {
                 if (Boons.clear(player) > 0) Hud.actionBar(player, Hud.colored(Component.translatable("hud." + com.thefarawaydev.realmsofchaos.RealmsOfChaos.MOD_ID + ".boons.gone"), 0x78E68C));

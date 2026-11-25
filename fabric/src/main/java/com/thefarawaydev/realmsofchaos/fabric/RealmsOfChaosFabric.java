@@ -99,13 +99,16 @@ public class RealmsOfChaosFabric implements ModInitializer {
         Registry.register(BuiltInRegistries.ENTITY_TYPE, RealmsOfChaos.id("relic_projectile"), projectileType);
         ModContent.RELIC_PROJECTILE.bind(() -> projectileType);
 
-        CreativeModeTab tab = FabricCreativeModeTab.builder()
-                .title(ModContent.tabTitle())
-                .icon(ModContent::tabIcon)
-                .displayItems((params, output) -> ModContent.tabItems().forEach(output::accept))
-                .build();
-        Registry.register(BuiltInRegistries.CREATIVE_MODE_TAB, RealmsOfChaos.id("main"), tab);
-        ModContent.TAB.bind(() -> tab);
+        // the mod's creative tabs, one for each kind of thing
+        for (ModContent.Tab kind : ModContent.Tab.values()) {
+            CreativeModeTab tab = FabricCreativeModeTab.builder()
+                    .title(kind.title())
+                    .icon(kind::icon)
+                    .displayItems((params, output) -> ModContent.tabItems(kind).forEach(output::accept))
+                    .build();
+            Registry.register(BuiltInRegistries.CREATIVE_MODE_TAB, RealmsOfChaos.id(kind.id), tab);
+            if (kind == ModContent.Tab.MAIN) ModContent.TAB.bind(() -> tab);
+        }
 
         CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) -> RocCommands.register(dispatcher));
 

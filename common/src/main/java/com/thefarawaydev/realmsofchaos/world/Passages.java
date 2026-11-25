@@ -2499,6 +2499,9 @@ public final class Passages {
     // ---- treasure --------------------------------------------------------------------------------------------
 
     /** One player's share of a cache: always some of this tier's forge material, then a mixed handful. Arenas pay better. */
+    /** The chance a cache holds a tower's disc, and again the passages' disc. */
+    public static final float DISC_CHANCE = 0.07F;
+
     public static List<ItemStack> lootFor(Plan plan, Cell cell, UUID player) {
         Random random = new Random(plan.seed ^ player.getLeastSignificantBits() ^ (cell.x * 131L + cell.z * 17L + 5));
         // an arena's cache and a puzzle's are the richer ones
@@ -2520,6 +2523,9 @@ public final class Passages {
             loot.add(new ItemStack(ModContent.materialItem(plan.line, plan.tier), 1 + random.nextInt(2)));
             loot.add(new ItemStack(random.nextBoolean() ? Items.GOLDEN_APPLE : Items.TOTEM_OF_UNDYING, 1));
         }
+        // now and then a disc: the tower's own music, or the passages'
+        if (random.nextFloat() < DISC_CHANCE) loot.add(new ItemStack(ModContent.disc(plan.line == Line.ZEUS ? "olympus" : plan.line == Line.POSEIDON ? "abyss" : "underworld")));
+        if (random.nextFloat() < DISC_CHANCE) loot.add(new ItemStack(ModContent.disc("passage")));
         if (plan.line == Line.HADES && random.nextFloat() < 0.5F) {
             Tarot card = Tarot.values()[random.nextInt(Tarot.values().length)];
             if (card != Tarot.DEVIL) loot.add(new ItemStack(ModContent.tarotItem(card)));

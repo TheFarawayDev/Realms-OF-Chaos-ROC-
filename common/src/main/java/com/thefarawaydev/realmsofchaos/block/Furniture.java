@@ -355,4 +355,73 @@ public final class Furniture {
             return InteractionResult.SUCCESS;
         }
     }
+
+    // ---- the smaller pieces -----------------------------------------------------------------------------------------
+
+    /**
+     * One piece of furniture in a single block, set facing the way whoever placed it was looking from: a stool or an
+     * armchair to sit on, a nightstand, an amphora, a rug; a lamp or a candelabrum that burns; a shelf hung on a wall.
+     */
+    public static class Piece extends Block implements Seat {
+        private final java.util.Map<Direction, VoxelShape> shapes;
+        private final double seat;
+        private final boolean onWall;
+        /** Where its flames burn, in sixteenths of the block, as drawn facing north; none for a piece that does not burn. */
+        private final double[][] flames;
+
+        /** @param north its shape facing north; @param seat how high it is sat on, or 0 if it is not a seat */
+        public Piece(Properties properties, VoxelShape north, double seat, boolean onWall, double[][] flames) {
+            super(properties);
+            this.shapes = Shapes.rotateHorizontal(north);
+            this.seat = seat;
+            this.onWall = onWall;
+            this.flames = flames;
+            registerDefaultState(stateDefinition.any().setValue(FACING, Direction.NORTH));
+        }
+
+        @Override
+        protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
+            builder.add(FACING);
+        }
+
+        @Override
+        public BlockState getStateForPlacement(BlockPlaceContext context) {
+            // a shelf hangs on the wall it was set against; anything else faces whoever set it down
+            if (onWall) {
+                Direction face = context.getClickedFace();
+                if (face.getAxis().isHorizontal()) return defaultBlockState().setValue(FACING, face);
+            }
+            return defaultBlockState().setValue(FACING, context.getHorizontalDirection().getOpposite());
+        }
+
+        @Override
+        protected VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
+            return shapes.get(state.getValue(FACING));
+        }
+
+        @Override
+        public double seatHeight() {
+            return seat;
+        }
+
+        @Override
+        protected InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hit) {
+            return seat > 0 ? sitOn(level, pos, player, seat) : InteractionResult.PASS;
+        }
+
+        @Override
+        public void animateTick(BlockState state, Level level, BlockPos pos, RandomSource random) {
+            if (flames.length == 0) return;
+            Direction f = state.getValue(FACING);
+            for (double[] at : flames) {
+                // (drawn facing north: turned with the piece)
+                double x = at[0] / 16 - 0.5, z = at[2] / 16 - 0.5;
+                double rx = switch (f) { case EAST -> -z; case SOUTH -> -x; case WEST -> z; default -> x; };
+                double rz = switch (f) { case EAST -> x; case SOUTH -> -z; case WEST -> -x; default -> z; };
+                double px = pos.getX() + 0.5 + rx, py = pos.getY() + at[1] / 16, pz = pos.getZ() + 0.5 + rz;
+                if (random.nextInt(3) == 0) level.addParticle(com.thefarawaydev.realmsofchaos.fx.RocParticles.FLAME_STORM.type(), px, py, pz, 0, 0.004, 0);
+                if (random.nextInt(6) == 0) level.addParticle(net.minecraft.core.particles.ParticleTypes.SMOKE, px, py + 0.1, pz, 0, 0.01, 0);
+            }
+        }
+    }
 }

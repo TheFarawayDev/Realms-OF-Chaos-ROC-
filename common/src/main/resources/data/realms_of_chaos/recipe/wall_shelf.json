@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "pattern": [
+    "SSS",
+    "D D"
+  ],
+  "key": {
+    "S": "#minecraft:wooden_slabs",
+    "D": "minecraft:stick"
+  },
+  "result": {
+    "id": "realms_of_chaos:wall_shelf",
+    "count": 2
+  }
+}

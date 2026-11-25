@@ -139,6 +139,9 @@ public final class ModContent {
             PORPHYRY_TILES = new Ref<>(), PORPHYRY_PILLAR = new Ref<>(), PORPHYRY_DOOR = new Ref<>(), PORPHYRY_TRAPDOOR = new Ref<>(),
             DEEPSLATE_ADAMANTINE_ORE = new Ref<>(), ADAMANTINE_BLOCK = new Ref<>();
     /** What is won from the world itself: fulgurite where lightning strikes sand, clams that grow pearls, iron from the soul valleys; and the Cornucopia. */
+    /** The smaller pieces of furniture, by id. */
+    public static final Map<String, Ref<Block>> PIECES = new java.util.LinkedHashMap<>();
+
     /** The Orb of Plenty's four ranks, the first first. */
     public static final List<Ref<Block>> PLENTY_ORBS = new ArrayList<>();
     public static final Ref<Block> FULGURITE = new Ref<>(), GIANT_CLAM = new Ref<>(), STYGIAN_IRON_ORE = new Ref<>(), CORNUCOPIA = new Ref<>(),
@@ -148,8 +151,19 @@ public final class ModContent {
             CELESTIAL_BRONZE_INGOT = new Ref<>(), ORICHALCUM_INGOT = new Ref<>(), STYGIAN_IRON_INGOT = new Ref<>(),
             THUNDER_CORE = new Ref<>(), TIDE_CORE = new Ref<>(), SHADE_CORE = new Ref<>(), DIVINE_ICHOR = new Ref<>();
     /** The mod's own sounds: its music, and the voices of the shrine and the gate. */
-    public static final java.util.List<String> SOUND_IDS = java.util.List.of("music.hub", "music.olympus", "music.abyss", "music.underworld",
-            "orb_make", "orb_core", "orb_pattern", "orb_ichor", "shrine_awaken", "keystone_set", "gate_awaken", "ui_click");
+    /** The mod's own music, a track for each place: each has a disc of its own, to be found. */
+    public static final java.util.List<String> TRACKS = java.util.List.of("hub", "hermitage", "olympus", "abyss", "underworld", "passage", "trial", "citadel", "gate");
+    public static final java.util.List<String> SOUND_IDS = java.util.stream.Stream.concat(TRACKS.stream().map(t -> "music." + t),
+            java.util.stream.Stream.of("orb_make", "orb_core", "orb_pattern", "orb_ichor", "shrine_awaken", "keystone_set", "gate_awaken", "ui_click")).toList();
+    /** A music disc for each track, by track. */
+    public static final Map<String, Ref<Item>> DISCS = new java.util.LinkedHashMap<>();
+    static {
+        for (String track : TRACKS) DISCS.put(track, new Ref<>());
+    }
+
+    public static Item disc(String track) {
+        return DISCS.get(track).get();
+    }
     public static final Map<String, Ref<net.minecraft.sounds.SoundEvent>> SOUNDS = new java.util.LinkedHashMap<>();
     static {
         for (String id : SOUND_IDS) SOUNDS.put(id, new Ref<>());
@@ -386,6 +400,18 @@ public final class ModContent {
         block("bench", BENCH, key -> new com.thefarawaydev.realmsofchaos.block.Furniture.Bench(furniture(key)));
         block("dresser", DRESSER, key -> new com.thefarawaydev.realmsofchaos.block.Furniture.Dresser(furniture(key)));
         block("bunk_bed", BUNK_BED, key -> new com.thefarawaydev.realmsofchaos.block.Furniture.BunkBed(furniture(key)));
+        // the smaller pieces, each in one block
+        piece("stool", Block.box(3, 0, 3, 13, 10, 13), 0.62, false, null, 0);
+        piece("armchair", net.minecraft.world.phys.shapes.Shapes.or(Block.box(1, 0, 1, 15, 9, 15), Block.box(1, 9, 12, 15, 20, 15),
+                Block.box(1, 9, 1, 3, 14, 12), Block.box(13, 9, 1, 15, 14, 12)), 0.55, false, null, 0);
+        piece("nightstand", Block.box(2, 0, 2, 14, 13, 14), 0, false, null, 0);
+        piece("writing_desk", net.minecraft.world.phys.shapes.Shapes.or(Block.box(0, 12, 0, 16, 14, 16), Block.box(1, 0, 9, 15, 12, 15)), 0, false,
+                new double[][]{{12.5, 18.5, 11.5}}, 9);
+        piece("standing_lamp", Block.box(4, 0, 4, 12, 16, 12), 0, false, new double[][]{{8, 17, 8}}, 14);
+        piece("candelabrum", Block.box(3, 0, 6, 13, 15, 10), 0, false, new double[][]{{4, 15.5, 8}, {8, 17, 8}, {12, 15.5, 8}}, 12);
+        piece("wall_shelf", Block.box(0, 5, 10, 16, 14, 16), 0, true, null, 0);
+        piece("rug", Block.box(0, 0, 0, 16, 1, 16), 0, false, null, 0);
+        piece("amphora", Block.box(4, 0, 4, 12, 15, 12), 0, false, null, 0);
         door("garrison", GARRISON_DOOR, GARRISON_TRAPDOOR, net.minecraft.world.level.block.state.properties.BlockSetType.DARK_OAK, MapColor.COLOR_BROWN);
         door("verdigris", VERDIGRIS_DOOR, VERDIGRIS_TRAPDOOR, net.minecraft.world.level.block.state.properties.BlockSetType.COPPER, MapColor.WARPED_STEM);
         door("ivory", IVORY_DOOR, IVORY_TRAPDOOR, net.minecraft.world.level.block.state.properties.BlockSetType.BIRCH, MapColor.SNOW);
@@ -478,6 +504,10 @@ public final class ModContent {
         item("thunder_core", THUNDER_CORE, key -> new Item(core(key, "thunder_core")));
         item("tide_core", TIDE_CORE, key -> new Item(core(key, "tide_core")));
         item("shade_core", SHADE_CORE, key -> new Item(core(key, "shade_core")));
+        for (String track : TRACKS) {
+            item("music_disc_" + track, DISCS.get(track), key -> new Item(new Item.Properties().setId(key).stacksTo(1).rarity(net.minecraft.world.item.Rarity.RARE)
+                    .jukeboxPlayable(ResourceKey.create(Registries.JUKEBOX_SONG, RealmsOfChaos.id(track)))));
+        }
         item("divine_ichor", DIVINE_ICHOR, key -> new Item(core(key, "divine_ichor").stacksTo(64).rarity(net.minecraft.world.item.Rarity.RARE)));
         for (var set : com.thefarawaydev.realmsofchaos.item.ArmorSets.Set.values()) {
             Map<net.minecraft.world.item.equipment.ArmorType, Ref<Item>> pieces = new java.util.EnumMap<>(net.minecraft.world.item.equipment.ArmorType.class);
@@ -561,6 +591,13 @@ public final class ModContent {
                     .lightLevel(s -> glow > 0 && s.getValue(com.thefarawaydev.realmsofchaos.block.RoomBlock.LIT) ? glow : glow > 0 ? 3 : 0);
             return new com.thefarawaydev.realmsofchaos.block.RoomBlock(kind, open ? properties.noOcclusion() : properties);
         });
+    }
+
+    private static void piece(String id, net.minecraft.world.phys.shapes.VoxelShape north, double seat, boolean onWall, double[][] flames, int light) {
+        Ref<Block> ref = new Ref<>();
+        PIECES.put(id, ref);
+        block(id, ref, key -> new com.thefarawaydev.realmsofchaos.block.Furniture.Piece(furniture(key).lightLevel(s -> light), north, seat, onWall,
+                flames == null ? new double[0][] : flames));
     }
 
     private static void block(String id, Ref<Block> ref, Function<ResourceKey<Block>, Block> factory) {
@@ -699,43 +736,104 @@ public final class ModContent {
         }
     }
 
+    /** The mod's creative tabs, in order: what each is called and what stands for it. */
+    public enum Tab {
+        MAIN("main"), ARMS("arms"), MATERIALS("materials"), BUILDING("building"), FURNITURE("furniture"), CURIOS("curios"), REALM("realm");
+
+        public final String id;
+
+        Tab(String id) {
+            this.id = id;
+        }
+
+        public Component title() {
+            return Component.translatable("itemGroup." + RealmsOfChaos.MOD_ID + "." + id);
+        }
+
+        public ItemStack icon() {
+            return switch (this) {
+                case MAIN -> new ItemStack(CHAOS_CODEX.get());
+                case ARMS -> new ItemStack(WEAPONS.get("zeus").get());
+                case MATERIALS -> new ItemStack(ADAMANTINE_INGOT.get());
+                case BUILDING -> new ItemStack(BLOCK_ITEMS.get("porphyry_bricks").get());
+                case FURNITURE -> new ItemStack(BLOCK_ITEMS.get("chair").get());
+                case CURIOS -> new ItemStack(disc("olympus"));
+                case REALM -> new ItemStack(BLOCK_ITEMS.get("altar_zeus").get());
+            };
+        }
+    }
+
     public static Component tabTitle() {
-        return Component.translatable("itemGroup." + RealmsOfChaos.MOD_ID + ".main");
+        return Tab.MAIN.title();
     }
 
     public static ItemStack tabIcon() {
-        return new ItemStack(WEAPONS.get("zeus").get());
+        return Tab.MAIN.icon();
     }
 
-    /** Everything that belongs in the Realms of Chaos creative tab, in display order. */
+    /** Blocks a player uses in the world, kept with the mod's own things rather than with what is built of stone. */
+    private static final java.util.Set<String> MAIN_BLOCKS = java.util.Set.of("plinth_of_plenty", "column_of_plenty", "waygate_obelisk", "relay_core", "signal_jammer");
+    /** Furniture, and the furnishings that stand about a room. */
+    private static final java.util.Set<String> FURNITURE_BLOCKS = java.util.Set.of("chair", "table", "bench", "dresser", "bunk_bed", "asphodel_bed", "training_dummy",
+            "moving_dummy", "weapon_rack", "scroll_shelf", "celestial_globe", "ancient_urn", "war_standard", "chaos_lamp", "tower_brazier", "stool", "armchair",
+            "nightstand", "standing_lamp", "wall_shelf", "rug", "amphora", "writing_desk", "candelabrum", "wardrobe");
+    /** Stone, tile, glass and doors to build with. */
+    private static final java.util.Set<String> BUILDING_BLOCKS = java.util.Set.of("olympian_marble", "olympian_marble_pillar", "gilded_frieze", "abyssal_tile",
+            "underworld_brick", "olympian_tiles", "chaos_mosaic", "olympian_panel", "abyssal_panel", "underworld_panel", "sky_relief", "sea_relief", "shade_relief",
+            "marble_column", "sunstone_panel", "storm_brick", "coral_column", "pearl_panel", "tide_brick", "bone_column", "ember_panel", "ash_brick", "sky_mosaic",
+            "sea_mosaic", "shade_mosaic", "star_vault", "bronze_grate", "bath_tile", "laurel_hedge", "kelp_weave", "cloudstone", "cloud_tile", "trench_stone",
+            "nacre_tile", "tartarus_stone", "throne_tile", "fresco_tile", "arena_sand", "reinforced_glass", "frosted_glass", "smart_glass", "veil_glass",
+            "one_way_glass", "deepslate_adamantine_ore", "adamantine_block", "fulgurite", "giant_clam", "stygian_iron_ore");
+
+    /** Which tab a block's item belongs in. */
+    public static Tab tabOf(String blockId) {
+        if (blockId.equals("cornucopia") || blockId.endsWith("_orb_of_plenty") || MAIN_BLOCKS.contains(blockId)) return Tab.MAIN;
+        if (FURNITURE_BLOCKS.contains(blockId)) return Tab.FURNITURE;
+        if (BUILDING_BLOCKS.contains(blockId) || blockId.contains("porphyry") || blockId.endsWith("_door") || blockId.endsWith("_trapdoor")
+                || blockId.endsWith("_stairs") || blockId.endsWith("_slab")) return Tab.BUILDING;
+        return Tab.REALM;
+    }
+
+    /** What one creative tab holds, in display order. */
+    public static List<Item> tabItems(Tab tab) {
+        List<Item> out = new ArrayList<>();
+        switch (tab) {
+            case MAIN -> {
+                out.add(CHAOS_CODEX.get());
+                out.add(CHAOS_COMPASS.get());
+                out.add(FIELD_BAG.get());
+                out.add(LOCKPICK.get());
+                for (Line line : Line.values()) out.add(seekerItem(line));
+                for (Line line : Line.values()) out.add(keystoneItem(line));
+                for (Ref<Item> r : List.of(THUNDER_CORE, TIDE_CORE, SHADE_CORE, DIVINE_ICHOR)) out.add(r.get());
+            }
+            case ARMS -> {
+                for (Line line : Line.values()) for (God god : Gods.ofLine(line)) out.add(WEAPONS.get(god.id()).get());
+                for (com.thefarawaydev.realmsofchaos.item.Panoply.Piece piece : com.thefarawaydev.realmsofchaos.item.Panoply.Piece.values()) out.add(piece.item());
+                for (Ref<Item> r : List.of(ADAMANTINE_SWORD, ADAMANTINE_PICKAXE, ADAMANTINE_AXE, ADAMANTINE_SHOVEL, ADAMANTINE_HOE)) out.add(r.get());
+                for (var pieces : ARMOR.values()) for (Ref<Item> r : pieces.values()) out.add(r.get());
+            }
+            case MATERIALS -> {
+                for (Ref<Item> r : List.of(RAW_ADAMANTINE, ADAMANTINE_SCRAP, ADAMANTINE_INGOT, STORM_GLASS, ABYSSAL_PEARL, RAW_STYGIAN_IRON, CELESTIAL_BRONZE_INGOT,
+                        ORICHALCUM_INGOT, STYGIAN_IRON_INGOT)) out.add(r.get());
+                for (Line line : Line.values()) for (int tier = 1; tier <= 4; tier++) out.add(materialItem(line, tier));
+            }
+            case CURIOS -> {
+                for (String track : TRACKS) out.add(disc(track));
+                out.add(TAROT_DECK.get());
+                for (Tarot card : Tarot.values()) out.add(TAROT.get(card).get());
+                for (VoodooDollItem.Pin pin : VoodooDollItem.Pin.values()) out.add(DOLLS.get(pin).get());
+            }
+            default -> {}
+        }
+        for (Def<Block> b : BLOCK_DEFS) if (tabOf(b.id()) == tab) out.add(BLOCK_ITEMS.get(b.id()).get());
+        return out;
+    }
+
+    /** Everything the mod's creative tabs hold, tab by tab. */
     public static List<Item> tabItems() {
         List<Item> out = new ArrayList<>();
-        out.add(CHAOS_CODEX.get());
-        out.add(CHAOS_COMPASS.get());
-        out.add(FIELD_BAG.get());
-        out.add(LOCKPICK.get());
-        for (Ref<Item> r : List.of(RAW_ADAMANTINE, ADAMANTINE_SCRAP, ADAMANTINE_INGOT, ADAMANTINE_SWORD, ADAMANTINE_PICKAXE, ADAMANTINE_AXE, ADAMANTINE_SHOVEL, ADAMANTINE_HOE))
-            out.add(r.get());
-        for (Ref<Item> r : List.of(STORM_GLASS, ABYSSAL_PEARL, RAW_STYGIAN_IRON, CELESTIAL_BRONZE_INGOT, ORICHALCUM_INGOT, STYGIAN_IRON_INGOT,
-                THUNDER_CORE, TIDE_CORE, SHADE_CORE, DIVINE_ICHOR)) out.add(r.get());
-        for (var pieces : ARMOR.values()) for (Ref<Item> r : pieces.values()) out.add(r.get());
-        for (Line line : Line.values()) {
-            for (God god : Gods.ofLine(line)) {
-                out.add(WEAPONS.get(god.id()).get());
-            }
-        }
-        for (Line line : Line.values()) {
-            for (int tier = 1; tier <= 4; tier++) out.add(materialItem(line, tier));
-        }
-        for (com.thefarawaydev.realmsofchaos.item.Panoply.Piece piece : com.thefarawaydev.realmsofchaos.item.Panoply.Piece.values()) out.add(piece.item());
-        for (Line line : Line.values()) out.add(seekerItem(line));
-        for (Line line : Line.values()) out.add(keystoneItem(line));
-        out.add(TAROT_DECK.get());
-        for (Tarot card : Tarot.values()) out.add(TAROT.get(card).get());
-        for (VoodooDollItem.Pin pin : VoodooDollItem.Pin.values()) out.add(DOLLS.get(pin).get());
-        for (Def<Block> b : BLOCK_DEFS) {
-            out.add(BLOCK_ITEMS.get(b.id()).get());
-        }
+        for (Tab tab : Tab.values()) out.addAll(tabItems(tab));
         return out;
     }
 }

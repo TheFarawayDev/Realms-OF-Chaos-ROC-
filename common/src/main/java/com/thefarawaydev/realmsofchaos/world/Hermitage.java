@@ -41,6 +41,11 @@ public final class Hermitage {
         level.setBlock(origin.offset(x, y, z), block.defaultBlockState(), 2);
     }
 
+    private static void piece(ServerLevel level, BlockPos origin, int x, int y, int z, String id, net.minecraft.core.Direction facing) {
+        level.setBlock(origin.offset(x, y, z), ModContent.PIECES.get(id).get().defaultBlockState()
+                .setValue(com.thefarawaydev.realmsofchaos.block.Furniture.FACING, facing), 2);
+    }
+
     /** Builds one island: a mossy garden under a dome of glass, furnished, with the way out on the south side. */
     public static void buildCell(ServerLevel level, int index) {
         BlockPos o = cell(index);
@@ -64,10 +69,23 @@ public final class Hermitage {
         // furnishings round the edge, well away from the arrival spot at the centre
         set(level, o, -5, 1, 0, Blocks.CRAFTING_TABLE);
         set(level, o, 5, 1, 0, Blocks.CHEST);
+        // and in the chest, the island's own music on a disc
+        if (level.getBlockEntity(o.offset(5, 1, 0)) instanceof net.minecraft.world.level.block.entity.ChestBlockEntity chest)
+            chest.setItem(13, new net.minecraft.world.item.ItemStack(com.thefarawaydev.realmsofchaos.ModContent.disc("hermitage")));
         set(level, o, 0, 1, -5, Blocks.BOOKSHELF);
         set(level, o, 1, 1, -5, Blocks.BOOKSHELF);
         set(level, o, -1, 1, -5, Blocks.BOOKSHELF);
         set(level, o, 0, 2, -5, Blocks.LANTERN);
+        // a reading corner by the books: an armchair and a lamp, a desk across from it, a rug between, amphorae by the door
+        piece(level, o, -3, 1, -4, "armchair", net.minecraft.core.Direction.SOUTH);
+        piece(level, o, -4, 1, -5, "standing_lamp", net.minecraft.core.Direction.SOUTH);
+        piece(level, o, 3, 1, -4, "writing_desk", net.minecraft.core.Direction.SOUTH);
+        piece(level, o, 3, 1, -3, "stool", net.minecraft.core.Direction.NORTH);
+        piece(level, o, 4, 1, -5, "candelabrum", net.minecraft.core.Direction.SOUTH);
+        for (int x = -1; x <= 1; x++) for (int z = -3; z <= -2; z++) piece(level, o, x, 1, z, "rug", net.minecraft.core.Direction.SOUTH);
+        piece(level, o, -2, 1, 5, "amphora", net.minecraft.core.Direction.NORTH);
+        piece(level, o, 2, 1, 5, "amphora", net.minecraft.core.Direction.NORTH);
+        piece(level, o, 5, 1, 1, "nightstand", net.minecraft.core.Direction.WEST);
         for (int[] c : new int[][]{{-4, -4}, {4, -4}, {-4, 4}, {4, 4}}) {
             set(level, o, c[0], 1, c[1], Blocks.MOSSY_STONE_BRICKS);
             set(level, o, c[0], 2, c[1], Blocks.VERDANT_FROGLIGHT);

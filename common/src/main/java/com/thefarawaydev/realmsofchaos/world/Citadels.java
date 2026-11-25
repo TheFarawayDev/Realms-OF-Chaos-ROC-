@@ -556,6 +556,7 @@ public final class Citadels {
         loot.add(new ItemStack(Items.GOLDEN_APPLE, 2));
         loot.add(new ItemStack(Items.DIAMOND, 2 + random.nextInt(3)));
         loot.add(new ItemStack(ModContent.materialItem(line, 1), 6 + random.nextInt(5)));
+        loot.add(new ItemStack(ModContent.disc("citadel")));
         return loot;
     }
 
@@ -566,6 +567,8 @@ public final class Citadels {
         loot.add(new ItemStack(Items.COOKED_BEEF, 6 + random.nextInt(6)));
         loot.add(new ItemStack(Items.GOLDEN_CARROT, 4));
         loot.add(new ItemStack(ModContent.materialItem(line, 1), 3 + random.nextInt(3)));
+        // the garrison kept the hub's music among its stores
+        loot.add(new ItemStack(ModContent.disc("hub")));
         return loot;
     }
 

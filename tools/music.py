@@ -307,23 +307,51 @@ def sfx():
     return out
 
 
+# every track, in order: the hub's is composed here, the rest in score.py
+TRACK_IDS = ["hub", "hermitage", "olympus", "abyss", "underworld", "passage", "trial", "citadel", "gate"]
+EFFECT_IDS = ["orb_make", "orb_core", "orb_pattern", "orb_ichor", "shrine_awaken", "keystone_set", "gate_awaken", "ui_click"]
+# bump to write every track and effect again
+SCORE_VERSION = 2
+
+
+def render(name):
+    import score
+    return track(**TRACKS[name]) if name == "hub" else score.COMPOSED[name]()
+
+
 def gen(assets, wj, only_missing=True):
     sounds = {}
     base = os.path.join(assets, "sounds")
-    for name, spec in TRACKS.items():
+    stamp = os.path.join(os.path.dirname(os.path.abspath(__file__)), ".score_version")
+    fresh = not os.path.exists(stamp) or open(stamp).read().strip() != str(SCORE_VERSION)
+    for name in TRACK_IDS:
         path = os.path.join(base, "music", f"{name}.ogg")
-        if not (only_missing and os.path.exists(path)):
-            write_ogg(track(**spec), path, quality=3)
+        if fresh or not (only_missing and os.path.exists(path)):
+            write_ogg(render(name), path, quality=3)
         sounds[f"music.{name}"] = {"sounds": [{"name": f"realms_of_chaos:music/{name}", "stream": True}]}
     effects = None
-    for name in ("orb_make", "orb_core", "orb_pattern", "orb_ichor", "shrine_awaken", "keystone_set", "gate_awaken", "ui_click"):
+    for name in EFFECT_IDS:
         path = os.path.join(base, "fx", f"{name}.ogg")
-        if not (only_missing and os.path.exists(path)):
-            effects = effects or sfx()
+        if fresh or not (only_missing and os.path.exists(path)):
+            if effects is None:
+                import score
+                effects = score.sfx()
             write_ogg(effects[name], path, quality=5)
         sounds[name] = {"sounds": [f"realms_of_chaos:fx/{name}"], "subtitle": f"subtitles.realms_of_chaos.{name}"}
     wj(os.path.join(assets, "sounds.json"), sounds)
+    with open(stamp, "w") as f:
+        f.write(str(SCORE_VERSION))
     return list(sounds)
+
+
+def lengths(assets):
+    """Each track's length in seconds, read back from its file: what a jukebox needs to know."""
+    out = {}
+    for name in TRACK_IDS:
+        path = os.path.join(assets, "sounds", "music", f"{name}.ogg")
+        r = subprocess.run(["ffprobe", "-v", "error", "-show_entries", "format=duration", "-of", "csv=p=0", path], capture_output=True, text=True)
+        out[name] = float(r.stdout.strip() or 0)
+    return out
 
 
 SUBTITLES = {"orb_make": "The Orb of Plenty makes something", "orb_core": "A core is set in the orb", "orb_pattern": "The orb takes a pattern",

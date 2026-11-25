@@ -16,6 +16,49 @@ The current build is an **Alpha**.
 
 ## What's in 1.2.0
 
+* **Nine tracks, each its own.** The music was rewritten so no two tracks share a key, a register, a tempo, a metre or
+  instruments, and there are five new ones. Each plays where it belongs - the server says which, every second:
+
+  | Track | Plays | Key and register | Time | Instruments |
+  | --- | --- | --- | --- | --- |
+  | The Hub | the hub | D dorian, middle | 76 bpm, 4/4 swung | lyre, harp, brushes |
+  | The Hermitage | your Hermitage island | F major pentatonic, high | 66 bpm, 4/4, loose | music box, kalimba, strings, no drums |
+  | Olympus | Zeus's tower | G lydian, high | 112 bpm, 3/4 waltz | flute, pizzicato strings, celesta, horns, triangle |
+  | The Abyss | Poseidon's tower | B aeolian, low | 54, 6/8 rolling | marimba, choir "oo", whale song, drips |
+  | The Underworld | Hades's tower | C# phrygian, lowest | 46 bpm, 5/4 | taiko, organ, low choir, cello, gong, bell |
+  | The Passages | any passage level | A hijaz, middle | 7/8 (2+2+3) | oud, frame drum, shaker, ney flute, ticking |
+  | A God's Trial | while a god's trial is on, anywhere | E minor, low-middle | 138 bpm, 4/4 | driving strings, taiko, snare, brass, choir |
+  | The Citadels | near any of the three citadels | Bb mixolydian, middle | 84 bpm, march | horns, snare drum, timpani, low strings |
+  | The Ruined Gate | at the Ruined Gate | Ab lydian, highest | no beat | choir, glass harmonics, deep swells, gong |
+
+  Each is two to two and a half minutes, with about forty seconds of quiet between plays; anywhere else the game's
+  own music plays. All of it is synthesised (`tools/music.py`, `tools/score.py`): nothing is sampled.
+* **A music disc for every track, to be found.** Nine discs (TheFarawayDev - The Hub, Olympus, ...), each its own
+  label colour and mark, playable in any jukebox (each gives a different comparator signal) (`art/renders/music-disc-jukebox.png`):
+  * The Ruined Gate's disc is in the gate's chest; the Citadels' is with each keystone, and the Hub's among each
+    citadel's stores.
+  * The Hermitage's is in the chest of each new Hermitage island.
+  * A passage cache holds its tower's disc (Olympus, the Abyss or the Underworld) one time in fourteen, and the
+    Passages' disc as often.
+  * A God's Trial is dropped by a tower's king the first time it falls, and now and then (15%) by any other god the
+    first time.
+* **Sound effects with weight.** The orb, shrine, keystone and gate sounds were rebuilt from bells into layered
+  effects: the gate waking draws the air in with a rising rush, lands with a blow that shakes the ground, a gong and
+  a taiko, then a full choir and horns with glass light pouring over it; the shrine wakes with a gong, a rising choir
+  and glass; a keystone is a great struck stone answered by horns and voices; a core rises through a hum to a blow;
+  the orb draws a breath and blooms into a chord of voices and harp; ichor pours thickly with bubbles and a warm swell.
+* **Seven creative tabs.** The one long tab is now: *Realms of Chaos* (the Codex, compass, keystones, seekers,
+  cores, ichor, the orbs and their shrine, waygates and relays), *Chaos: Relics & Arms*, *Chaos: Materials*, *Chaos: Building Blocks*
+  (stone, tile, glass, stairs, slabs and doors), *Chaos: Furniture*, *Chaos: Curios & Music* (discs, tarot, dolls) and *Chaos: Realm
+  Builder* (the creative-only blocks the realms are built of). (`art/renders/creative-tabs.png`)
+* **Furniture, improved and added to.** The wood was redrawn with wandering grain, board joints, knots and worn
+  edges; the seats are tufted velvet with gold piping; the chair has turned legs and a carved, gilded Greek-key crest
+  rail. Nine new pieces, each one block, each crafted: a **stool** and an **armchair** (both sat on), a **nightstand**
+  with a book on it, a **writing desk** with papers, an inkwell and a lit candle, a bronze **standing lamp** and a
+  three-branched **candelabrum** (both give light and flicker), a **wall shelf** of jars, scrolls and a book (hung on
+  the wall it is set against), a **meander rug** and a **painted amphora** in black-figure. New Hermitage islands are
+  furnished with them: a reading corner with an armchair and lamp, a desk with a stool, a rug, a nightstand and
+  amphorae by the door. (`art/renders/furniture-seats.png`, `art/renders/furniture-pieces.png`)
 * **Four ranks of Orb of Plenty.** Above the Orb of Plenty stand the **Greater**, **Exalted** and **Divine Orb of
   Plenty**, each set in the same shrine and each made from the rank below it - harder every time. Each rank can be
   made two ways: from what the gods of the towers drop, or from what the Overworld (and the Nether) gives.

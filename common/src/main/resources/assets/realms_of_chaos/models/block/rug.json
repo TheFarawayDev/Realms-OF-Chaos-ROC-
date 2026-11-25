@@ -1,0 +1,94 @@
+{
+  "parent": "minecraft:block/block",
+  "textures": {
+    "particle": "realms_of_chaos:block/furniture_oak",
+    "oak": "realms_of_chaos:block/furniture_oak",
+    "end": "realms_of_chaos:block/furniture_oak_end",
+    "dark": "realms_of_chaos:block/furniture_dark",
+    "cushion": "realms_of_chaos:block/chair_cushion",
+    "blue": "realms_of_chaos:block/armchair_cushion",
+    "rail": "realms_of_chaos:block/furniture_rail",
+    "rug": "realms_of_chaos:block/meander_rug",
+    "clay": "realms_of_chaos:block/amphora_body",
+    "bronze": "realms_of_chaos:block/furniture_bronze",
+    "flame": "realms_of_chaos:block/furniture_flame",
+    "wax": "realms_of_chaos:block/furniture_wax",
+    "scrolls": "realms_of_chaos:block/furniture_scrolls",
+    "jar": "realms_of_chaos:block/furniture_jar",
+    "leather": "realms_of_chaos:block/furniture_leather",
+    "paper": "realms_of_chaos:block/furniture_paper",
+    "book": "realms_of_chaos:block/furniture_book",
+    "front": "realms_of_chaos:block/dresser_front",
+    "front_r": "realms_of_chaos:block/dresser_front_r"
+  },
+  "elements": [
+    {
+      "from": [
+        0,
+        0,
+        0
+      ],
+      "to": [
+        16,
+        0.75,
+        16
+      ],
+      "faces": {
+        "north": {
+          "texture": "#dark",
+          "uv": [
+            0,
+            15.25,
+            16,
+            16
+          ]
+        },
+        "south": {
+          "texture": "#dark",
+          "uv": [
+            0,
+            15.25,
+            16,
+            16
+          ]
+        },
+        "east": {
+          "texture": "#dark",
+          "uv": [
+            0,
+            15.25,
+            16,
+            16
+          ]
+        },
+        "west": {
+          "texture": "#dark",
+          "uv": [
+            0,
+            15.25,
+            16,
+            16
+          ]
+        },
+        "up": {
+          "texture": "#rug",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
+        },
+        "down": {
+          "texture": "#rug",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
+        }
+      }
+    }
+  ]
+}

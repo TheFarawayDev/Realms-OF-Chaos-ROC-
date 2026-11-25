@@ -13,6 +13,12 @@
     "realms_of_chaos:table",
     "realms_of_chaos:bench",
     "realms_of_chaos:dresser",
-    "realms_of_chaos:bunk_bed"
+    "realms_of_chaos:bunk_bed",
+    "realms_of_chaos:stool",
+    "realms_of_chaos:armchair",
+    "realms_of_chaos:nightstand",
+    "realms_of_chaos:writing_desk",
+    "realms_of_chaos:wall_shelf",
+    "realms_of_chaos:rug"
   ]
 }

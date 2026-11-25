@@ -409,6 +409,7 @@ public final class Ruins {
         for (Line line : Line.values()) loot.add(new ItemStack(ModContent.seekerItem(line)));
         loot.add(new ItemStack(Items.BREAD, 6));
         loot.add(new ItemStack(Items.TORCH, 16));
+        loot.add(new ItemStack(ModContent.disc("gate")));
         chest(level, c.offset(-3, 1, 2), loot);
         return c;
     }

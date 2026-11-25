@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "pattern": [
+    "T",
+    "C",
+    "C"
+  ],
+  "key": {
+    "T": "minecraft:torch",
+    "C": "minecraft:copper_ingot"
+  },
+  "result": {
+    "id": "realms_of_chaos:standing_lamp",
+    "count": 1
+  }
+}

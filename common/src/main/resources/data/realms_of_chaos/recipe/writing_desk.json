@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "pattern": [
+    "SBS",
+    "P P"
+  ],
+  "key": {
+    "S": "#minecraft:wooden_slabs",
+    "B": "minecraft:book",
+    "P": "#minecraft:planks"
+  },
+  "result": {
+    "id": "realms_of_chaos:writing_desk",
+    "count": 1
+  }
+}

@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "pattern": [
+    "PWP",
+    "S S"
+  ],
+  "key": {
+    "P": "#minecraft:planks",
+    "W": "#minecraft:wool",
+    "S": "minecraft:stick"
+  },
+  "result": {
+    "id": "realms_of_chaos:stool",
+    "count": 2
+  }
+}

@@ -20,6 +20,8 @@ import particle_art
 import music
 import station_ui
 import orb_ranks
+import discs
+import furniture_art
 from PIL import Image
 
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
@@ -790,6 +792,12 @@ public final class BuildInfo {{
 def gen_lang():
     lang = {
         "itemGroup.realms_of_chaos.main": "Realms of Chaos",
+        "itemGroup.realms_of_chaos.arms": "Chaos: Relics & Arms",
+        "itemGroup.realms_of_chaos.materials": "Chaos: Materials",
+        "itemGroup.realms_of_chaos.building": "Chaos: Building Blocks",
+        "itemGroup.realms_of_chaos.furniture": "Chaos: Furniture",
+        "itemGroup.realms_of_chaos.curios": "Chaos: Curios & Music",
+        "itemGroup.realms_of_chaos.realm": "Chaos: Realm Builder",
         "item.realms_of_chaos.chaos_compass": "Compass of Chaos",
         "item.realms_of_chaos.chaos_compass.tooltip": "Right-click: scan. Read it above your hotbar for a minute or more. In a passage it points to the nearest seal",
         "item.realms_of_chaos.chaos_compass.mode": "Looking for: %s",
@@ -2043,6 +2051,8 @@ def gen_lang():
     lang.update({f"subtitles.{MOD}.{k}": v for k, v in music.SUBTITLES.items()})
     lang.update(station_ui.lang())
     lang.update(orb_ranks.lang())
+    lang.update(discs.lang())
+    lang.update(furniture_art.lang())
     wj(os.path.join(ASSETS, "lang/en_us.json"), lang)
 
 # ----------------------------------------------------------------------------
@@ -2092,9 +2102,11 @@ DECOR = ["olympian_marble", "olympian_marble_pillar", "gilded_frieze", "abyssal_
          "arena_sand", "beast_gate", "war_drum", "war_standard", "sprinkler", "porphyry", "polished_porphyry", "porphyry_bricks", "porphyry_tiles", "chiseled_porphyry",
          "porphyry_pillar", "adamantine_block", "fulgurite", "giant_clam", "plinth_of_plenty", "column_of_plenty", "bronze_sliding_door", "sky_sliding_door", "sea_sliding_door", "shade_sliding_door",
          "reinforced_glass", "frosted_glass", "smart_glass", "veil_glass", "one_way_glass"] + [f"{b}_{k}" for b in ("olympian_marble", "cloudstone", "trench_stone", "tartarus_stone", "storm_brick", "tide_brick", "ash_brick", "underworld_brick", "polished_porphyry", "porphyry_bricks") for k in ("stairs", "slab")]
-PICKAXE_ONLY = ["bronze_door", "sky_door", "shade_door", "verdigris_door", "verdigris_trapdoor", "porphyry_door", "porphyry_trapdoor", "deepslate_adamantine_ore", "stygian_iron_ore", "cornucopia"]
+PICKAXE_ONLY = ["bronze_door", "sky_door", "shade_door", "verdigris_door", "verdigris_trapdoor", "porphyry_door", "porphyry_trapdoor", "deepslate_adamantine_ore", "stygian_iron_ore", "cornucopia",
+                "standing_lamp", "candelabrum", "amphora"]
 AXE_ONLY = ["sea_door", "sea_trapdoor", "garrison_door", "garrison_trapdoor", "ivory_door", "ivory_trapdoor",
-            "training_dummy", "moving_dummy", "chair", "table", "bench", "dresser", "bunk_bed"]
+            "training_dummy", "moving_dummy", "chair", "table", "bench", "dresser", "bunk_bed",
+            "stool", "armchair", "nightstand", "writing_desk", "wall_shelf", "rug"]
 FIELD_DROPS = FIELD_DROPS + DECOR
 
 # The 22 Major Arcana: (id, numeral, name, what the card does, 8x8 symbol (# ink, + colour), colour)
@@ -5143,7 +5155,9 @@ if __name__ == "__main__":
     armor_art.gen(ASSETS, wj)
     particle_art.gen(ASSETS, wj)
     music.gen(ASSETS, wj)
+    discs.gen(ASSETS, DATA, wj)
     station_ui.gen(ASSETS, wj)
+    furniture_art.gen(ASSETS, DATA, wj)
     gen_recipes()
     gen_field_data()
     gen_tags()

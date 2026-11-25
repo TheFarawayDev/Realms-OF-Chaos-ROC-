@@ -78,7 +78,15 @@ public class Validate {
         @SuppressWarnings("unchecked") EntityType<com.thefarawaydev.realmsofchaos.entity.GodBoss> bt = (EntityType<com.thefarawaydev.realmsofchaos.entity.GodBoss>) boss;
         ModContent.GOD_BOSS.bind(() -> bt);
         check(boss != null, "boss type");
-        check(ModContent.tabItems().size() == 4 + 8 + 10 + 16 + 45 + 12 + 6 + 1 + 22 + 4 + 161 + 8, "tab item count " + ModContent.tabItems().size());
+        // every item is in one creative tab - but for the sprites the relics' moves are drawn with - and no tab is empty
+        var tabbed = ModContent.tabItems();
+        check(new java.util.HashSet<>(tabbed).size() == tabbed.size(), "an item in two tabs");
+        java.util.List<String> untabbed = new java.util.ArrayList<>();
+        for (var def : ModContent.ITEM_DEFS) {
+            if (!tabbed.contains(def.ref().get()) && !def.id().startsWith("orb_")) untabbed.add(def.id());
+        }
+        check(untabbed.isEmpty(), "items in no tab: " + untabbed);
+        for (ModContent.Tab tab : ModContent.Tab.values()) check(!ModContent.tabItems(tab).isEmpty(), "tab " + tab + " is empty");
 
         // 3. dimension types + dimensions parse with vanilla codecs
         HolderLookup.Provider lookup = VanillaRegistries.createWorldLookup();
