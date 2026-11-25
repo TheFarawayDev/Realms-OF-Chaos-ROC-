@@ -58,7 +58,7 @@ The current build is an **Alpha**.
   see a panel over it: what the shrine still lacks, or how long until its next yield. Sneak with an empty hand to take
   the core back. (`art/renders/shrine-of-plenty.png`, `shrine-of-plenty-incomplete.png`, `shrine-of-plenty-above.png`)
 * **The new resources, drawn properly.** Storm glass, abyssal pearls, raw stygian iron and adamantine, the four
-  god-metal ingots, the three cores, the sixteen pieces of armour, fulgurite, stygian ore and the giant clam are
+  god-metal ingots, the three cores, the sixteen pieces of armour (their icons drawn on the panoply's own shapes, in its manner, so they sit beside the Helm of Athena and the rest - `art/renders/armor-icons.png`), fulgurite, stygian ore and the giant clam are
   redrawn with ramps of colour that cool in the shadows and warm in the light: crystals cut in facets, pearls and gems
   shaded as spheres, ores as clusters of nuggets, and the armour worn in the same colours and manner
   as its icons - clean shaded plates lit from the top left: a crested Corinthian helm, a breastplate with a collar,

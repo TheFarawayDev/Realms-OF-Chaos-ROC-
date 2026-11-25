@@ -115,6 +115,43 @@ def scrap(base, vein):
     return outline(cells, t[0])
 
 
+def set_icon(piece, base, trim):
+    """An armour piece drawn the way the panoply is: smooth solids on a 64 canvas, cut to 16 pixels by the item painter,
+    on the panoply's own shapes - the Corinthian helm, the cuirass, belted greaves, the treads - in a set's metal and trim."""
+    import item_art as A
+    ic = A.Icon()
+    M, Tm = A.metal(base), A.metal(trim)
+    dark = A.matte(tuple(max(0, int(c * 0.18)) for c in base))
+    if piece == "helmet":
+        ic.add(A.polygon([(14, 30), (18, 14), (32, 8), (46, 14), (50, 30), (48, 52), (40, 56), (36, 40), (28, 40), (24, 56), (16, 52)]), M, 2)
+        ic.add(A.polygon([(28, 24), (36, 24), (36, 40), (28, 40)]), dark, 3)                  # the T cut for the eyes and mouth
+        ic.add(A.polygon([(22, 22), (42, 22), (42, 26), (22, 26)]), dark, 3)
+        ic.add(A.inter(A.ring(34, 26, 22, 4.0), A.polygon([(0, 0), (64, 0), (64, 14), (0, 14)])), A.cloth(trim), 1)    # the crest
+        ic.add(A.capsule(17, 30, 47, 30, 1.2), Tm, 3)                                           # a band at the brow
+    elif piece == "chestplate":
+        ic.add(A.polygon([(14, 10), (26, 6), (38, 6), (50, 10), (54, 30), (46, 56), (18, 56), (10, 30)]), M, 1)
+        ic.add(A.capsule(22, 13, 42, 13, 1.6), Tm, 2)                                           # the collar
+        ic.add(A.ellipse(13, 15, 7, 5, -0.5), Tm, 2)                                             # shoulder guards
+        ic.add(A.ellipse(51, 15, 7, 5, 0.5), Tm, 2)
+        ic.add(A.capsule(20, 26, 30, 28, 1.0), A.shade_mat(M, 0.7), 2)                         # the curve of the chest
+        ic.add(A.capsule(34, 28, 44, 26, 1.0), A.shade_mat(M, 0.7), 2)
+        ic.add(A.capsule(32, 30, 32, 44, 0.9), A.shade_mat(M, 0.75), 2)
+        ic.add(A.capsule(16, 48, 48, 48, 2.0), Tm, 2)                                           # the belt
+        ic.add(A.circle(32, 48, 2.6), A.gem(trim), 3)
+    elif piece == "leggings":
+        ic.add(A.polygon([(10, 8), (54, 8), (54, 18), (10, 18)]), Tm, 2)                         # the belt
+        for x in (20, 44):
+            ic.add(A.polygon([(x - 10, 14), (x + 10, 14), (x + 8, 40), (x + 9, 56), (x - 9, 56), (x - 8, 40)]), M, 1)
+            ic.add(A.ellipse(x, 36, 5, 6), Tm, 2)                                                 # the knee
+        ic.add(A.circle(32, 13, 2.6), A.gem(trim), 3)
+    else:
+        for x, dx in ((18, -1), (42, 1)):
+            ic.add(A.polygon([(x - 6, 18), (x + 6, 18), (x + 6, 44), (x + 14, 50), (x + 14, 56), (x - 8, 56), (x - 8, 44)]), M, 2)
+            ic.add(A.capsule(x - 6, 24, x + 6, 24, 1.4), Tm, 3)                                   # the cuff
+            ic.add(A.capsule(x - 7, 53, x + 13, 53, 1.0), Tm, 3)                                  # the sole
+    return ic.render()
+
+
 def icon(piece, base, trim):
     t, tr = ramp(base), ramp(trim)
     return template(ICONS[piece], tones_pal(t, {"T": tr[4]}))
@@ -440,7 +477,7 @@ def gen(assets, data, wj):
         img.save(os.path.join(TI, f"{name}.png"))
     for set_id, (base, trim) in SETS.items():
         for piece in ICONS:
-            icon(piece, base, trim).save(os.path.join(TI, f"{set_id}_{piece}.png"))
+            set_icon(piece, base, trim).save(os.path.join(TI, f"{set_id}_{piece}.png"))
         main, legs = worn(set_id, base, trim)
         main.save(os.path.join(assets, "textures/entity/equipment/humanoid", f"{set_id}.png"))
         legs.save(os.path.join(assets, "textures/entity/equipment/humanoid_leggings", f"{set_id}.png"))
