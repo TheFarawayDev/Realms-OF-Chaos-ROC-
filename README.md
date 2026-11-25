@@ -60,8 +60,9 @@ The current build is an **Alpha**.
 * **The new resources, drawn properly.** Storm glass, abyssal pearls, raw stygian iron and adamantine, the four
   god-metal ingots, the three cores, the sixteen pieces of armour, fulgurite, stygian ore and the giant clam are
   redrawn with ramps of colour that cool in the shadows and warm in the light: crystals cut in facets, pearls and gems
-  shaded as spheres, ores as clusters of nuggets, and the armour worn as a Corinthian helm with a crest, a muscled
-  cuirass with pauldrons and a belt of strips, greaves with knee plates, and strapped sandals.
+  shaded as spheres, ores as clusters of nuggets, and the armour worn in the same colours and manner
+  as its icons - clean shaded plates lit from the top left: a crested Corinthian helm, a breastplate with a collar,
+  belt and shoulder guards, leggings with a lit knee, and cuffed greaves.
   (`art/renders/divine-resources-art.png`, `art/renders/armor-sets.png`)
 * **Adamantine, and the first tool set.** A new ore, **Deepslate Adamantine Ore**, lies in small veins in the deepest
   stone of the overworld (below y -40) - about twenty times rarer than diamond. It is as hard as ancient debris and
